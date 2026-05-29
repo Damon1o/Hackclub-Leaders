@@ -1,0 +1,311 @@
+.events-main {
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    padding: clamp(100px, 14vw, 140px) clamp(24px, 6vw, 80px) 80px;
+    margin-bottom: 88px;
+}
+
+.events-main-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* ── Header ── */
+
+.events-header {
+    margin-bottom: 40px;
+}
+
+.events-header h1 {
+    font-family: var(--hackclub-title-font);
+    font-weight: bold;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    color: var(--primary-black);
+    margin: 0 0 12px;
+    padding: 0;
+    line-height: 1;
+}
+
+.events-header p {
+    font-family: var(--hackclub-body-font);
+    font-size: 1.2rem;
+    color: var(--hackclub-muted);
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Search & Filters ── */
+
+.events-search {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.events-search form {
+    display: flex;
+    align-items: center;
+    background: var(--primary-white);
+    border: 1px solid #ddd;
+    border-radius: 2rem;
+    overflow: hidden;
+    flex: 1;
+    max-width: 480px;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.events-search form:focus-within {
+    border-color: var(--hackclub-red);
+    box-shadow: 0 0 0 3px rgba(236, 55, 80, 0.12);
+}
+
+.events-search form input {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    font-family: var(--hackclub-body-font);
+    font-size: 1rem;
+    color: var(--primary-black);
+    outline: none;
+}
+
+.events-search form input::placeholder {
+    color: var(--hackclub-muted);
+}
+
+.events-search form button {
+    padding: 12px 24px;
+    background: var(--primary-black);
+    color: var(--primary-white);
+    border: none;
+    border-radius: 2rem;
+    font-family: var(--hackclub-body-font);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.events-search form button:hover {
+    background: var(--hackclub-red);
+}
+
+.events-filter-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-tag {
+    padding: 8px 16px;
+    border-radius: 2rem;
+    border: 1px solid #ddd;
+    background: transparent;
+    font-family: var(--hackclub-body-font);
+    font-size: 0.9rem;
+    color: var(--primary-black);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.filter-tag:hover,
+.filter-tag.active {
+    background: var(--hackclub-red);
+    border-color: var(--hackclub-red);
+    color: var(--primary-white);
+}
+
+/* ── Events Grid ── */
+
+.events-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.event-card {
+    background: var(--primary-white);
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.event-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+}
+
+.event-card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    flex-shrink: 0;
+}
+
+.event-card-visual {
+    --event-image-fit: cover;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: var(--primary-black);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: var(--event-image-fit);
+    isolation: isolate;
+}
+
+.event-card-visual::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(180deg, rgba(31, 45, 61, 0.04), rgba(31, 45, 61, 0.24));
+}
+
+.event-card-logo {
+    position: relative;
+    z-index: 1;
+    width: min(58%, 190px);
+    max-height: 92px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.24));
+}
+
+.event-card-body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 8px;
+}
+
+.event-card-type {
+    font-family: var(--hackclub-body-font);
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--hackclub-red);
+}
+
+.event-card-title {
+    font-family: var(--hackclub-title-font);
+    font-size: 1.35rem;
+    font-weight: bold;
+    color: var(--primary-black);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.event-card-description {
+    font-family: var(--hackclub-body-font);
+    font-size: 0.95rem;
+    color: var(--hackclub-muted);
+    margin: 0;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.event-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.event-card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--hackclub-body-font);
+    font-size: 0.875rem;
+    color: var(--hackclub-muted);
+}
+
+.event-card-meta-item svg {
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+
+.event-card-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.event-card-register {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: var(--primary-black);
+    color: var(--primary-white);
+    border-radius: 2rem;
+    font-family: var(--hackclub-body-font);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.event-card-register:hover {
+    background: var(--hackclub-red);
+    transform: translateY(-1px);
+}
+
+.event-card-attendees {
+    font-family: var(--hackclub-body-font);
+    font-size: 0.85rem;
+    color: var(--hackclub-muted);
+}
+
+/* ── Empty / Loading states ── */
+
+.events-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--hackclub-muted);
+    font-family: var(--hackclub-body-font);
+}
+
+.events-empty p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .events-search {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .events-search form {
+        max-width: 100%;
+    }
+
+    .events-list {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,204 @@
+/* ── Dark Mode ──────────────────────────────────────────── */
+
+body.dark-mode {
+    background: var(--hackclub-dark);
+    color: var(--primary-white);
+}
+
+/* Navigation */
+
+body.dark-mode .navigation-bar.scrolled {
+    background-color: var(--hackclub-dark);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .navigation-bar .nav-bar-text a,
+body.dark-mode .navigation-bar .nav-links ul li a {
+    color: var(--primary-white);
+}
+
+body.dark-mode .navigation-bar .nav-links ul li a:hover {
+    color: var(--hackclub-red);
+}
+
+body.dark-mode .navigation-bar .mode-switch button {
+    background-color: #2d2d38;
+    border-color: var(--hackclub-muted);
+    color: var(--primary-white);
+}
+
+body.dark-mode .navigation-bar .mode-switch button.active {
+    background-color: var(--hackclub-dark);
+    border-color: var(--hackclub-red);
+}
+
+body.dark-mode .navigation-bar .apply-now-container .apply-now-link,
+body.dark-mode .navigation-bar .apply-now-container .sign-in-link {
+    background-color: var(--hackclub-light);
+    color: var(--hackclub-dark);
+}
+
+body.dark-mode .navigation-bar .apply-now-container .apply-now-link:hover,
+body.dark-mode .navigation-bar .apply-now-container .sign-in-link:hover {
+    background-color: var(--hackclub-red);
+    color: var(--primary-white);
+}
+
+body.dark-mode .dropdown-menu {
+    background-color: #2d2d38;
+    border-color: #3d3d4d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .navigation-bar .nav-links ul li a .dropdown-icon {
+    filter: brightness(0) invert(1);
+}
+
+body.dark-mode .navigation-bar .nav-links ul li a:hover .dropdown-icon {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(90%) saturate(1500%) hue-rotate(326deg);
+}
+
+/* Hero */
+body.dark-mode .hero {
+    background: linear-gradient(rgba(31, 31, 39, 0.7) 60%, rgba(236, 55, 80, 0.3) 100%), url('../images/background.webp');
+    background-size: cover;
+    background-position: center;
+}
+
+body.dark-mode .hero .hero-text .header-text p {
+    color: var(--primary-white) !important;
+}
+
+body.dark-mode .hero .hero-text .minor-text {
+    color: var(--primary-white);
+}
+
+body.dark-mode .hero .hero-text .sign-up-cta {
+    background-color: #2d2d38;
+    border-color: #3d3d4d;
+}
+
+body.dark-mode .hero .hero-text .sign-up-cta .sign-up-input {
+    background-color: transparent;
+    color: var(--primary-white);
+}
+
+body.dark-mode .hero .hero-text .sign-up-cta .sign-up-input::placeholder {
+    color: var(--hackclub-muted);
+}
+
+body.dark-mode .hero .hero-text .join-terms-text {
+    background: rgba(31, 31, 39, 0.85);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--primary-white);
+}
+
+body.dark-mode .hero .hero-text .sign-up-cta .sign-up-button {
+    background-color: var(--hackclub-light);
+    color: var(--hackclub-dark);
+}
+
+/* Final CTA */
+body.dark-mode .final-cta {
+    background: #17171d;
+}
+
+body.dark-mode .final-cta-heading {
+    color: var(--primary-white);
+}
+
+body.dark-mode .final-cta-form-wrap {
+    background: #2d2d38;
+}
+
+body.dark-mode .final-cta-form-wrap:focus-within {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode .final-cta-input {
+    color: var(--primary-white);
+}
+
+body.dark-mode .final-cta-input::placeholder {
+    color: var(--hackclub-muted);
+    opacity: 0.7;
+}
+
+body.dark-mode .final-cta-join-button {
+    background: var(--hackclub-light);
+    color: var(--hackclub-dark);
+}
+
+body.dark-mode .final-cta-subtext,
+body.dark-mode .final-cta-terms {
+    color: var(--primary-white);
+}
+
+body.dark-mode .final-cta-explore-button {
+    background: var(--hackclub-light);
+    color: var(--hackclub-dark);
+}
+
+body.dark-mode .final-cta-explore-button:hover {
+    background: var(--hackclub-red);
+}
+
+body.dark-mode .wave-container {
+    color: var(--hackclub-dark);
+}
+
+body.dark-mode .events-header h1 {
+    color: var(--primary-white);
+}
+
+body.dark-mode .events-search form {
+    background: #2d2d38;
+    border-color: #3d3d4d;
+}
+
+body.dark-mode .events-search form input {
+    color: var(--primary-white);
+}
+
+body.dark-mode .events-search form button {
+    background: var(--hackclub-light);
+    color: var(--hackclub-dark);
+}
+
+body.dark-mode .events-search form button:hover {
+    background: var(--hackclub-red);
+    color: var(--primary-white);
+}
+
+body.dark-mode .filter-tag {
+    border-color: #3d3d4d;
+    color: var(--primary-white);
+}
+
+body.dark-mode .event-card {
+    background: #2d2d38;
+    border-color: #3d3d4d;
+}
+
+body.dark-mode .event-card:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .event-card-title {
+    color: var(--primary-white);
+}
+
+body.dark-mode .event-card-meta,
+body.dark-mode .event-card-footer {
+    border-top-color: #3d3d4d;
+}
+
+body.dark-mode .event-card-register {
+    background: var(--hackclub-light);
+    color: var(--hackclub-dark);
+}
+
+body.dark-mode .event-card-register:hover {
+    background: var(--hackclub-red);
+    color: var(--primary-white);
+}

@@ -1,0 +1,155 @@
+/* ── Final CTA ──────────────────────────────────────────── */
+
+.final-cta {
+    position: relative;
+    background: #f9fafc;
+    padding-top: clamp(80px, 15vw, 192px);
+    padding-bottom: clamp(60px, 10vw, 120px);
+    padding-left: 24px;
+    padding-right: 24px;
+    text-align: center;
+}
+
+.final-cta-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.final-cta-heading {
+    font-family: var(--hackclub-title-font);
+    font-weight: 400;
+    font-size: 40px;
+    line-height: 1;
+    color: #17171d;
+    margin: 0 0 24px;
+}
+
+/* Form pill */
+.final-cta-form-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #e0e6ed;
+    border-radius: 9999px;
+    width: min(616px, calc(100vw - 48px));
+    height: clamp(48px, 12vw, 52px);
+    transition: box-shadow 0.2s ease;
+}
+
+.final-cta-form-wrap:focus-within {
+    box-shadow: 0 0 0 3px rgba(23, 23, 29, 0.12);
+}
+
+.final-cta-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding-left: 24px;
+    padding-right: 116px;
+    font-family: var(--hackclub-body-font);
+    font-size: 20px;
+    color: #17171d;
+}
+
+.final-cta-input::placeholder {
+    opacity: 0.5;
+}
+
+.final-cta-join-button {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    background: var(--primary-black);
+    color: var(--primary-white);
+    border: none;
+    border-radius: 2rem;
+    padding: 12px 24px;
+    font-family: var(--hackclub-body-font);
+    font-weight: normal;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease-in-out;
+    text-decoration: none;
+}
+
+.final-cta-join-button:hover {
+    transform: translateY(calc(-50% - 2px));
+    color: var(--hackclub-red);
+    box-shadow: 0 4px 12px rgba(236, 55, 80, 0.3);
+}
+
+/* Subtext */
+.final-cta-subtext {
+    font-family: var(--hackclub-body-font);
+    font-weight: 400;
+    font-size: 20px;
+    color: #17171d;
+    margin: 48px 0 0;
+    line-height: 1.2;
+}
+
+/* Explore button */
+.final-cta-explore-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #17171d;
+    color: #ffffff;
+    border-radius: 41px;
+    height: 52px;
+    padding-left: 36px;
+    padding-right: 36px;
+    font-family: var(--hackclub-body-font);
+    font-size: 20px;
+    font-weight: normal;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: background 0.2s ease;
+}
+
+.final-cta-explore-button:hover {
+    background: #ec3750;
+}
+
+.final-cta-btn-arrow {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Terms */
+.final-cta-terms {
+    font-family: var(--hackclub-body-font);
+    font-weight: 400;
+    font-style: italic;
+    font-size: 16px;
+    color: #17171d;
+    margin: 20px 0 0;
+    line-height: 1.2;
+}
+
+.final-cta-terms-link {
+    color: #ec3750;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.final-cta-terms-link:hover,
+.final-cta-terms-link:focus-visible {
+    text-decoration-thickness: 2px;
+}

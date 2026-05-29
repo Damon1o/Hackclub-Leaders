@@ -1,0 +1,22 @@
+.wave-container {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: block;
+    line-height: 0;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+    overflow: visible;
+    box-sizing: border-box;
+    color: var(--primary-white);
+}
+
+.wave-container svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    fill: currentColor;
+}

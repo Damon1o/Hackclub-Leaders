@@ -1,0 +1,170 @@
+.footer-link:hover,
+.footer-link:focus-visible,
+.footer-social-link:hover,
+.footer-social-link:focus-visible {
+    opacity: 1 !important;
+}
+
+@media (max-width: 767px) {
+    .site-footer {
+        padding-top: 120px !important;
+    }
+
+    .site-footer-illustration {
+        width: min(320px, 72vw) !important;
+        transform: translateY(-40%) !important;
+    }
+}
+
+.site-footer {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), #000;
+    background-size: 50px 50px;
+    color: #fff;
+    padding-top: 80px;
+    padding-bottom: 60px;
+    padding-left: clamp(24px, 6vw, 80px);
+    padding-right: clamp(24px, 6vw, 80px);
+    font-family: var(--hackclub-body-font);
+    position: relative;
+    overflow: visible;
+    margin-top: 0;
+}
+
+.site-footer-illustration {
+    color: transparent;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transform: translateY(-40.5%);
+    width: clamp(340px, 48vw, 680px);
+    height: auto;
+    display: block;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.site-footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 48px 64px;
+    margin-bottom: 64px;
+}
+
+.site-footer-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex-shrink: 0;
+    width: 280px;
+}
+
+.site-footer-logo-container {
+    margin-bottom: 28px;
+}
+
+.site-footer-logo {
+    color: transparent;
+    display: block;
+    object-fit: contain;
+}
+
+.site-footer-tagline {
+    font-weight: 400;
+    font-size: 20px;
+    color: #fff;
+    margin: 0;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.site-footer-phone {
+    font-weight: 400;
+    font-size: 20px;
+    color: #fff;
+    margin: 0;
+    margin-bottom: 32px;
+    line-height: 1.2;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.site-footer-socials {
+    display: flex;
+    gap: 12px;
+}
+
+.footer-social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    background: transparent;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+    color: #fff;
+}
+
+.site-footer-links-container {
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+}
+
+.site-footer-column {
+    min-width: 140px;
+}
+
+.site-footer-heading {
+    font-weight: 700;
+    font-size: 20px;
+    color: #fff;
+    margin: 0;
+    margin-bottom: 16px;
+    line-height: 1.2;
+}
+
+.site-footer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.footer-link {
+    font-weight: 400;
+    font-size: 16px;
+    color: #fff;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.15s;
+    display: inline-block;
+}
+
+.site-footer-bottom {
+    padding-top: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.site-footer-bottom-text {
+    font-weight: 400;
+    font-size: 16px;
+    color: #fff;
+    opacity: 0.8;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.site-footer-bottom-link {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}

@@ -1,0 +1,78 @@
+:root {
+    --hackclub-red: #ec3750;
+    --hackclub-orange: #ff8c37;
+    --hackclub-yellow: #f1c40f;
+    --hackclub-green: #33d6a6;
+    --hackclub-cyan: #5bc0de;
+    --hackclub-blue: #338eda;
+    --hackclub-purple: #a633d6;
+    --hackclub-muted: #8492a6;
+    --hackclub-dark: #1f1f27;
+    --hackclub-light: #fef6ea;
+
+    --hackclub-title-font: 'Zarathustra', serif;
+    --hackclub-body-font: 'Phantom Sans';
+
+    --primary-black: #1a1a1a;
+    --primary-white: #ffffff;
+    --hackclub-white: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+input,
+button,
+textarea,
+select {
+    font-family: inherit;
+}
+
+@font-face {
+    font-family: 'Phantom Sans';
+    src:
+        url('https://assets.hackclub.com/fonts/Phantom_Sans_0.7/Regular.woff') format('woff'),
+        url('https://assets.hackclub.com/fonts/Phantom_Sans_0.7/Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Phantom Sans';
+    src:
+        url('https://assets.hackclub.com/fonts/Phantom_Sans_0.7/Italic.woff') format('woff'),
+        url('https://assets.hackclub.com/fonts/Phantom_Sans_0.7/Italic.woff2') format('woff2');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Phantom Sans';
+    src:
+        url('https://assets.hackclub.com/fonts/Phantom_Sans_0.7/Bold.woff') format('woff'),
+        url('https://assets.hackclub.com/fonts/Phantom_Sans_0.7/Bold.woff2') format('woff2');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Zarathustra';
+    src: url('../fonts/zarathustra.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+html {
+    background: transparent;
+}
+
+body {
+    background: transparent;
+    color: var(--primary-black);
+    margin: 0;
+}

@@ -1,0 +1,328 @@
+.hero {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 100vh;
+    padding: 120px 96px 80px;
+    gap: 100px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(236, 55, 80, 0.04) 60%, rgba(236, 55, 80, 0.4) 100%);
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    min-width: 900px;
+    height: 70%;
+    background: url('../images/background.webp') center bottom / cover no-repeat;
+    mask-image: linear-gradient(to top, black 40%, transparent 75%);
+    -webkit-mask-image: linear-gradient(to top, black 40%, transparent 75%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.hero .hero-text {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: left;
+}
+
+.hero-video-preview {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    aspect-ratio: 16 / 9;
+}
+
+.hero-video-preview:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 28px 72px rgba(0, 0, 0, 0.35);
+}
+
+.hero-video-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    justify-content: center;
+}
+
+.hero-video-play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.28);
+    transition: background 0.2s ease;
+}
+
+.hero-video-preview:hover .hero-video-play {
+    background: rgba(0, 0, 0, 0.42);
+}
+
+.hero-video-play svg {
+    color: #fff;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+    transition: transform 0.2s ease;
+}
+
+.hero-video-preview:hover .hero-video-play svg {
+    transform: scale(1.12);
+}
+
+.video-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.88);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 200ms ease;
+}
+
+.video-modal-overlay.is-open {
+    display: flex;
+}
+
+.video-modal-overlay.is-visible {
+    opacity: 1;
+}
+
+.video-inner-container {
+    position: relative;
+    width: min(95vw, 1280px);
+    aspect-ratio: 16 / 9;
+    cursor: default;
+}
+
+.video-inner-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+}
+
+.video-close-btn {
+    position: absolute;
+    top: -44px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.video-close-btn:hover {
+    background: var(--hackclub-red);
+    transform: scale(1.1);
+}
+
+@media (max-width: 1024px) {
+
+    .hero-video-preview,
+    .hero .hero-text {
+        flex: 0 0 auto;
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+.hero .hero-text .header-text p {
+    font-family: var(--hackclub-title-font);
+    font-size: clamp(42px, 6vw, 90px);
+    font-weight: normal;
+    line-height: 0.95;
+    color: #17171d;
+    margin: 0;
+    margin-bottom: 16px;
+    text-align: left;
+    line-height: 82.8px;
+    letter-spacing: normal;
+}
+
+.hero .hero-text .minor-text {
+    font-size: 1.25rem;
+    text-align: left;
+    margin: 0;
+    font-family: var(--hackclub-body-font);
+}
+
+.hero .hero-text .sign-up-cta {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 16px;
+    margin-bottom: 16px;
+    border-radius: 2rem;
+    border: 1px solid #ddd;
+    width: 85%;
+    background-color: var(--primary-white);
+}
+
+.hero .hero-text .sign-up-cta .sign-up-input {
+    flex: 1;
+    padding: 12px 24px;
+    border-radius: 2rem;
+    border: none;
+    font-size: 1.2rem;
+    font-family: var(--hackclub-body-font);
+}
+
+.hero .hero-text .sign-up-cta .sign-up-input:focus {
+    outline: none;
+}
+
+.hero .hero-text .sign-up-cta .sign-up-button {
+    flex: 0;
+    padding: 12px 24px;
+    border-radius: 2rem;
+    border: none;
+    background-color: var(--primary-black);
+    color: var(--primary-white);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    font-family: var(--hackclub-body-font);
+}
+
+.hero .hero-text .sign-up-cta .sign-up-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(236, 55, 80, 0.3);
+}
+
+.hero .hero-text .join-terms-text {
+    font-family: var(--hackclub-body-font);
+    font-style: italic;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 1.35;
+    width: fit-content;
+    margin-left: 42.5%;
+    transform: translateX(-50%);
+    background: var(--primary-white);
+    border: 1px solid rgba(23, 23, 29, 0.08);
+    border-radius: 9999px;
+    box-shadow: 0 10px 28px rgba(23, 23, 29, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    pointer-events: auto;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    column-gap: 0;
+    padding: 6px 36px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    height: 38px;
+    word-break: break-word;
+}
+
+@media (max-width: 480px) {
+    .hero .hero-text .join-terms-text {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+    }
+
+    .hero .hero-text .join-terms-text a {
+        font-size: 0.9rem;
+    }
+}
+
+
+.hero .hero-text .join-terms-text a {
+    color: var(--hackclub-red);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    pointer-events: auto;
+    white-space: normal;
+    transition: color 0.2s ease;
+    word-break: break-all;
+}
+
+.hero .hero-text .join-terms-text a:hover {
+    color: var(--hackclub-red);
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+    }
+}
+
+.animated-text-gradient {
+    background: linear-gradient(to right, #ec3750, #ff8c37, #f1c40f, #33d6a6, #338eda, #a633d6, #ec3750);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: teens-gradient 6s linear infinite;
+}
+
+@keyframes teens-gradient {
+    0% {
+        background-position: 0% 0%;
+    }
+
+    20% {
+        background-position: 20% 0%;
+    }
+
+    40% {
+        background-position: 40% 0%;
+    }
+
+    60% {
+        background-position: 60% 0%;
+    }
+
+    80% {
+        background-position: 80% 0%;
+    }
+
+    100% {
+        background-position: 0% 0%;
+    }
+}

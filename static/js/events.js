@@ -1,79 +1,79 @@
 (function () {
-    function ysws(event) {
-        return {
-            ...event,
-            type: 'YSWS',
-            tags: ['ysws', 'global',].concat(event.tags || []),
-            cta: event.cta || 'Explore &rarr;',
-            duration: 'FOREVER',
-            where: event.where || 'Online'
-        };
-    }
-
     const toolboxEvents = [
-        ysws({
+        {
             title: 'Stack',
             type: 'YSWS',
-            tags: ['games'],
-            description: 'Build a fun or completely unhinged project, and we’ll send you FREE LEGO sets of your choice.',
+            tags: ['ysws', 'global', 'games'],
+            description: 'Build a fun or completely unhinged project, and we\'ll send you FREE LEGO sets of your choice.',
             image: '/static/images/events/stack/stack-background.png',
-            logo: '/static/images/events/stack/stack.png',
+            logo: '/static/images/events/stack/stack-logo.png',
+            backgroundColor: 'N/A',
+            imageFit: 'cover',
             url: 'https://stack.hackclub.com/?utm_source=toolbox',
+            duration: 'FOREVER',
             timeline: 'Deadline: N/A',
             where: 'Online',
-        }),
+            cta: 'Explore &rarr;',
+        },
         {
             title: 'Macondo',
             type: 'Hackathon',
             tags: ['hackathon', 'travel'],
             description: 'Make projects, win free prizes, and fly to Bogota, Colombia.',
             image: '/static/images/events/macondo/macondo-background.png',
-            logo: '/static/images/events/macondo/macondo-icon.png',
+            logo: '/static/images/events/macondo/macondo-logo.png',
+            backgroundColor: 'N/A',
+            imageFit: 'cover',
             url: 'https://macondo.hackclub.com/?utm_source=toolbox',
             duration: '3-day hackathon',
             timeline: 'Deadline: September 2026',
             where: 'Bogota, Colombia',
-
+            cta: 'Explore &rarr;',
         },
         {
             title: 'Fallout',
             type: 'Hackathon',
             tags: ['hackathon', 'hardware', 'travel'],
             description: 'Build hardware projects and visit Shenzhen, China.',
-            image: '/static/images/events/fallout/fallout-heidi.gif',
+            image: '/static/images/events/fallout/fallout-background.png',
+            logo: 'N/A',
             backgroundColor: '#38c9ff',
             imageFit: 'contain',
             url: 'https://fallout.hackclub.com?utm_source=toolbox',
             duration: '60 hours of hardware projects',
             timeline: 'Deadline: July 1, 2026',
             where: 'Shenzhen, China',
-
+            cta: 'Explore &rarr;',
         },
         {
             title: 'Stasis',
             type: 'Hackathon',
             tags: ['hackathon', 'hardware', 'travel'],
             description: 'Build hardware projects and fly out to Austin, TX for a hardware hackathon.',
-            image: '/static/images/events/stasis/stasis-banner.png',
+            image: '/static/images/events/stasis/stasis-background.png',
             logo: '/static/images/events/stasis/stasis-logo.png',
+            backgroundColor: 'N/A',
+            imageFit: 'cover',
             url: 'https://stasis.hackclub.com?utm_source=toolbox',
             duration: 'May 15-18 hardware sprint',
             timeline: 'Deadline: May 18, 2026',
             where: 'Austin, TX',
-
+            cta: 'Explore &rarr;',
         },
         {
             title: 'Beest',
             type: 'Hackathon',
             tags: ['hackathon', 'travel'],
             description: 'Code projects, fly to the Netherlands, and build a mechanical animal.',
-            image: '/static/images/events/beest/beest-background.webp',
-            logo: '/static/images/events/beest/beest-icon.webp',
+            image: '/static/images/events/beest/beest-background.png',
+            logo: '/static/images/events/beest/beest-logo.png',
+            backgroundColor: 'N/A',
+            imageFit: 'cover',
             url: 'https://beest.hackclub.com?utm_source=toolbox',
             duration: 'Week-long hackathon',
             timeline: 'Event: July 10-15',
             where: 'Netherlands',
-
+            cta: 'Explore &rarr;',
         },
         {
             title: 'Horizons',
@@ -82,354 +82,479 @@
             description: 'Seven hackathons run by teenagers across the globe, for teenagers everywhere.',
             image: '/static/images/events/horizons/horizons-background.png',
             logo: '/static/images/events/horizons/horizons-logo.png',
+            backgroundColor: 'N/A',
+            imageFit: 'cover',
             url: 'https://horizons.hackclub.com?utm_source=toolbox',
             duration: '7 global hackathons',
             timeline: 'Deadline: August 14, 2026',
             where: 'Global',
-
+            cta: 'Explore &rarr;',
         },
-
-        ysws({
+        {
             title: 'Boba Drops',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Build a website using HTML and CSS, then get free boba.',
-            image: '/static/images/ysws/webdev/boba.png',
+            image: '/static/images/events/boba-drops/boba-drops-background.png',
+            logo: 'N/A',
             backgroundColor: '#C76B0F',
             imageFit: 'contain',
             url: 'https://boba.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Swirl',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Build a cooler HTML and CSS website with a unique feature, then get free ice cream.',
-            image: '/static/images/ysws/webdev/swirl.svg',
+            image: '/static/images/events/swirl/swirl-background.png',
+            logo: 'N/A',
             backgroundColor: '#fde09d',
             imageFit: 'contain',
             url: 'https://swirl.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Toppings',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Add extra flavor to your website with CSS and get toppings for ice cream or boba.',
-            image: '/static/images/ysws/webdev/toppings.png',
+            image: '/static/images/events/toppings/toppings-background.png',
+            logo: 'N/A',
             backgroundColor: '#ffcc00',
             imageFit: 'contain',
             url: 'https://toppings.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Flavorless',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Build a website using only HTML and JavaScript. No CSS allowed.',
-            image: '/static/images/ysws/webdev/flavorless.png',
+            image: '/static/images/events/flavorless/flavorless-background.png',
+            logo: 'N/A',
             backgroundColor: '#ffffff',
             imageFit: 'contain',
             url: 'https://flavorless.hackclub.com/?utm_source=webdev',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Waffles',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Make a website that uses JavaScript, and get free waffles.',
-            image: '/static/images/ysws/webdev/waffles.jpg',
+            image: '/static/images/events/waffles/waffles-background.png',
+            logo: 'N/A',
             backgroundColor: '#f8b84f',
             imageFit: 'cover',
             url: 'https://waffles.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Grub',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Build a website using Tailwind CSS, and get free junk food.',
-            image: '/static/images/ysws/webdev/grub.png',
+            image: '/static/images/events/grub/grub-background.png',
+            logo: 'N/A',
             backgroundColor: '#c10007',
             imageFit: 'contain',
             url: 'https://grub.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Reactive',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Make a website with React, and get a free domain to host it.',
-            image: '/static/images/ysws/webdev/reactive.png',
+            image: '/static/images/events/reactive/reactive-background.png',
+            logo: 'N/A',
             backgroundColor: '#112a4f',
             imageFit: 'contain',
             url: 'https://reactive.hackclub.dev',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Slushies',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Make a web app using Flask, and get a slushie or another food item.',
-            image: '/static/images/ysws/webdev/slushies.png',
+            image: '/static/images/events/slushies/slushies-background.png',
+            logo: 'N/A',
             backgroundColor: '#4E9CDB',
             imageFit: 'contain',
             url: 'https://slushies.hackclub.com',
-
-        }),
-
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'BakeBuild',
             type: 'YSWS',
             tags: ['ysws', 'global', 'cad'],
             description: 'Design a cookie cutter, then get it shipped to you with a cookie.',
-            image: '/static/images/ysws/cad/bakebuild.png',
+            image: '/static/images/events/bakebuild/bakebuild-background.png',
+            logo: 'N/A',
             backgroundColor: '#C76B0F',
             imageFit: 'contain',
             url: 'https://bakebuild.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'FuseRing',
             type: 'YSWS',
             tags: ['ysws', 'global', 'cad'],
             description: 'Design a keyring, then get your keyring and a clip for your backpack.',
-            image: '/static/images/ysws/cad/fusering.svg',
+            image: '/static/images/events/fusering/fusering-background.png',
+            logo: 'N/A',
             backgroundColor: '#FFA35E',
             imageFit: 'contain',
             url: 'https://fusering.hackclub.com/',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Enclosure',
             type: 'YSWS',
             tags: ['ysws', 'global', 'cad', 'hardware'],
             description: 'Make enclosures for your devices or hardware and get them printed.',
-            image: '/static/images/ysws/cad/enclosure.png',
+            image: '/static/images/events/enclosure/enclosure-background.png',
+            logo: 'N/A',
             backgroundColor: '#341C10',
             imageFit: 'contain',
             url: 'https://enclosure.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Squeak',
             type: 'YSWS',
             tags: ['ysws', 'global', 'cad', 'hardware'],
             description: 'Design your own mouse case and get parts to build your own mouse.',
-            image: '/static/images/ysws/cad/squeak.png',
+            image: '/static/images/events/squeak/squeak-background.png',
+            logo: 'N/A',
             backgroundColor: '#0e305b',
             imageFit: 'contain',
             url: 'https://blueprint.hackclub.com/starter-projects/squeak',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Construct',
             type: 'YSWS',
             tags: ['ysws', 'global', 'cad'],
             description: 'As a group, spend 50 hours making CAD projects and get a 3D printer for your club.',
-            image: '/static/images/ysws/cad/construct.png',
+            image: '/static/images/events/construct/construct-background.png',
+            logo: 'N/A',
             backgroundColor: '#b64e07',
             imageFit: 'contain',
             url: 'https://construct.hackclub.com/dashboard/clubs',
-
-        }),
-
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Sprig',
             type: 'YSWS',
             tags: ['ysws', 'global', 'games'],
             description: 'Build a JavaScript game and play it on your own console.',
-            image: '/static/images/ysws/sprig.png',
+            image: '/static/images/events/sprig/sprig-background.png',
+            logo: 'N/A',
             backgroundColor: '#000',
             imageFit: 'contain',
             url: 'https://sprig.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Vibes',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Build a website with good vibes and throw a club pizza party.',
-            image: '/static/images/ysws/vibes.png',
+            image: '/static/images/events/vibes/vibes-background.png',
+            logo: 'N/A',
             backgroundColor: '#ffdd58',
             imageFit: 'contain',
             url: 'https://vibes.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'HackCraft',
             type: 'YSWS',
             tags: ['ysws', 'global', 'games'],
             description: 'Make a Minecraft mod, get Minecraft or another game.',
-            image: '/static/images/ysws/hackcraft.png',
+            image: '/static/images/events/hackcraft/hackcraft-background.png',
+            logo: 'N/A',
             backgroundColor: '#30AE1F',
             imageFit: 'contain',
             url: 'https://hackcraft.hackclub.com/',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Carnival',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Build an extension, plugin, or widget and get prizes.',
-            image: '/static/images/ysws/carnival.jpg',
+            image: '/static/images/events/carnival/carnival-background.png',
+            logo: 'N/A',
             backgroundColor: '#f9dfbd',
             imageFit: 'cover',
             url: 'https://carnival.hackclub.com/',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'TrailIt',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Build a web app, produce a trailer, and get production equipment.',
-            image: '/static/images/ysws/trailit.png',
+            image: '/static/images/events/trailit/trailit-background.png',
+            logo: 'N/A',
             backgroundColor: '#17171D',
             imageFit: 'contain',
             url: 'https://trailit.hackclub.com',
-
-        }),
-
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Forge',
             type: 'YSWS',
             tags: ['ysws', 'global', 'hardware'],
             description: 'Design and build hardware projects, and get them funded.',
-            image: '/static/images/ysws/catalog/forge-landing.png',
+            image: '/static/images/events/forge/forge-background.png',
+            logo: 'N/A',
             backgroundColor: '#1f2d3d',
             imageFit: 'cover',
             url: 'https://forge.hackclub.com/',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Shipyard',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Ship 7 weeks of computing and coding challenges and earn prizes from the shop.',
-            image: '/static/images/ysws/catalog/shipyard-ship.png',
+            image: '/static/images/events/shipyard/shipyard-background.png',
+            logo: 'N/A',
             backgroundColor: '#80d7ff',
             imageFit: 'contain',
             url: 'https://shipyard.hackclub.com/',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Boot',
             type: 'YSWS',
             tags: ['ysws', 'global', 'hardware'],
             description: 'Make your own OS and get hardware to run it.',
-            image: '/static/images/ysws/catalog/boot-hero.png',
+            image: '/static/images/events/boot/boot-background.png',
+            logo: 'N/A',
             backgroundColor: '#000',
             imageFit: 'cover',
             url: 'https://boot.hackclub.com/',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Remixed',
             type: 'YSWS',
             tags: ['ysws', 'global', 'music'],
             description: 'Ship something music related and get stuff to help you make music.',
-            image: '/static/images/ysws/catalog/remixed-og.png',
+            image: '/static/images/events/remixed/remixed-background.png',
+            logo: 'N/A',
             backgroundColor: '#8f70ff',
             imageFit: 'cover',
             url: 'https://remixed.hackclub.com/?ref=ysws-catalog',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'RaspAPI',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web', 'hardware'],
             description: 'Build a public API and get a Raspberry Pi Zero 2W to host it on.',
-            image: '/static/images/ysws/catalog/raspapi-pi.png',
+            image: '/static/images/events/raspapi/raspapi-background.png',
+            logo: 'N/A',
             backgroundColor: '#e7f8ef',
             imageFit: 'contain',
             url: 'https://raspapi.hackclub.com/',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Resolution',
             type: 'YSWS',
             tags: ['ysws', 'global'],
             description: 'Set goals, ship every week, and earn prizes for following through.',
-            image: '/static/images/ysws/catalog/resolution-hero.png',
+            image: '/static/images/events/resolution/resolution-background.png',
+            logo: 'N/A',
             backgroundColor: '#121217',
             imageFit: 'cover',
             url: 'https://resolution.hackclub.com/ref/ysws-catalog',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Fix Hack Club',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Contribute to Hack Club repositories and get a grant of your choice.',
-            image: '/static/images/fix-hack-club.png',
+            image: '/static/images/events/fix-hack-club/fix-hack-club-background.png',
+            logo: 'N/A',
+            backgroundColor: 'N/A',
             imageFit: 'cover',
             url: 'https://fix.hackclub.com/',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Lumen',
             type: 'YSWS',
             tags: ['ysws', 'global', 'games'],
             description: 'Make a Minecraft shader pack, get Minecraft and GPUs.',
-            image: '/static/images/ysws/catalog/lumen.png',
+            image: '/static/images/events/lumen/lumen-background.png',
+            logo: 'N/A',
+            backgroundColor: 'N/A',
             imageFit: 'cover',
             url: 'https://lumen.hackcraft.hackclub.com/',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'iplace',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Join a collaborative canvas of websites and get hosting and domain credits.',
-            image: '/static/images/ysws/catalog/iplace-hero.png',
+            image: '/static/images/events/iplace/iplace-background.png',
+            logo: 'N/A',
             backgroundColor: '#efe7d7',
             imageFit: 'cover',
             url: 'https://iplace.hackclub.com/?utm_source=ysws-catalog',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Hacklet v2',
             type: 'YSWS',
             tags: ['ysws', 'global', 'web'],
             description: 'Build a bookmarklet and get food for your club.',
-            image: '/static/images/ysws/catalog/hacklet.png',
+            image: '/static/images/events/hacklet-v2/hacklet-v2-background.png',
+            logo: 'N/A',
             backgroundColor: '#000',
             imageFit: 'cover',
             url: 'https://hacklet.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Syscall x Terminal Craft',
             type: 'YSWS',
             tags: ['ysws', 'global', 'hardware'],
             description: 'Build a real systems project in Zig or C, build a terminal program, or do both.',
-            image: '/static/images/ysws/catalog/syscall-hero.png',
+            image: '/static/images/events/syscall-x-terminal-craft/syscall-x-terminal-craft-background.png',
+            logo: 'N/A',
             backgroundColor: '#050805',
             imageFit: 'cover',
             url: 'https://syscall.hackclub.com',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Storyboard',
             type: 'YSWS',
             tags: ['ysws', 'global', 'games'],
             description: 'Make a themed visual novel and earn prizes.',
-            image: '/static/images/ysws/catalog/storyboard-logo.webp',
+            image: '/static/images/events/storyboard/storyboard-background.png',
+            logo: 'N/A',
             backgroundColor: '#ffeef6',
             imageFit: 'contain',
             url: 'https://storyboard.hackclub.com/',
-
-        }),
-        ysws({
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
+        {
             title: 'Rework',
             type: 'YSWS',
             tags: ['ysws', 'global', 'cad', 'hardware'],
             description: 'CAD a 3D printer mod and get funding plus Hack Club filament to build it.',
-            image: '/static/images/ysws/cad/rework.png',
+            image: '/static/images/events/rework/rework-background.png',
+            logo: 'N/A',
+            backgroundColor: 'N/A',
             imageFit: 'cover',
             url: 'https://rework.hackclub.com',
-
-        })
+            duration: 'FOREVER',
+            timeline: 'Ongoing',
+            where: 'Online',
+            cta: 'Explore &rarr;',
+        },
     ];
 
     const searchInput = document.getElementById('search-input');
@@ -474,11 +599,13 @@
         card.className = 'event-card';
         card.dataset.tags = event.tags.join(',');
 
-        const style = event.backgroundColor ? `style="--event-image-fit: ${event.imageFit || 'cover'}; background-color: ${event.backgroundColor}; background-image: url('${event.image}');"` : `style="--event-image-fit: ${event.imageFit || 'cover'}; background-image: url('${event.image}');"`;
+        const style = event.backgroundColor !== 'N/A'
+            ? `style="--event-image-fit: ${event.imageFit}; background-color: ${event.backgroundColor}; background-image: url('${event.image}');"`
+            : `style="--event-image-fit: ${event.imageFit}; background-image: url('${event.image}');"`;
 
         card.innerHTML = `
             <div class="event-card-visual" ${style}>
-                ${event.logo ? `<img src="${event.logo}" alt="${event.title} logo" class="event-card-logo">` : ''}
+                ${event.logo !== 'N/A' ? `<img src="${event.logo}" alt="${event.title} logo" class="event-card-logo">` : ''}
             </div>
             <div class="event-card-body">
                 <div class="event-card-type">${event.type}</div>
@@ -491,7 +618,7 @@
                     </div>
                     <div class="event-card-meta-item">
                         ${calendarIcon}
-                        <span>${event.timeline || 'Ongoing'}</span>
+                        <span>${event.timeline}</span>
                     </div>
                     <div class="event-card-meta-item">
                         ${locationIcon}
@@ -500,7 +627,7 @@
                 </div>
             </div>
             <div class="event-card-footer">
-                <span class="event-card-register">${event.cta || 'Explore &rarr;'}</span>
+                <span class="event-card-register">${event.cta}</span>
             </div>
         `;
         return card;

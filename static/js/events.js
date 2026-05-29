@@ -15,8 +15,8 @@
             title: 'Stack',
             tags: ['games'],
             description: 'Build a fun or completely unhinged project, and we’ll send you FREE LEGO sets of your choice.',
-            image: '/static/images/stack-background.png',
-            logo: '/static/images/stack.png',
+            image: '/static/images/events/stack-background.png',
+            logo: '/static/images/events/stack.png',
             url: 'https://stack.hackclub.com/?utm_source=toolbox',
             timeline: 'Deadline: N/A',
             where: 'Online',
@@ -26,8 +26,8 @@
             type: 'Hackathon',
             tags: ['hackathon', 'travel'],
             description: 'Make projects, win free prizes, and fly to Bogota, Colombia.',
-            image: '/static/images/macondo-background.png',
-            logo: '/static/images/macondo-icon.png',
+            image: '/static/images/events/macondo-background.png',
+            logo: '/static/images/events/macondo-icon.png',
             url: 'https://macondo.hackclub.com/?utm_source=toolbox',
             duration: '3-day hackathon',
             timeline: 'Deadline: September 2026',
@@ -39,7 +39,7 @@
             type: 'Hackathon',
             tags: ['hackathon', 'hardware', 'travel'],
             description: 'Build hardware projects and visit Shenzhen, China.',
-            image: '/static/images/fallout-heidi.gif',
+            image: '/static/images/events/fallout-heidi.gif',
             backgroundColor: '#38c9ff',
             imageFit: 'contain',
             url: 'https://fallout.hackclub.com?utm_source=toolbox',
@@ -53,8 +53,8 @@
             type: 'Hackathon',
             tags: ['hackathon', 'hardware', 'travel'],
             description: 'Build hardware projects and fly out to Austin, TX for a hardware hackathon.',
-            image: '/static/images/stasis-banner.png',
-            logo: '/static/images/stasis-logo.png',
+            image: '/static/images/events/stasis-banner.png',
+            logo: '/static/images/events/stasis-logo.png',
             url: 'https://stasis.hackclub.com?utm_source=toolbox',
             duration: 'May 15-18 hardware sprint',
             timeline: 'Deadline: May 18, 2026',
@@ -66,8 +66,8 @@
             type: 'Hackathon',
             tags: ['hackathon', 'travel'],
             description: 'Code projects, fly to the Netherlands, and build a mechanical animal.',
-            image: '/static/images/beest-hero.webp',
-            logo: '/static/images/beest-icon.webp',
+            image: '/static/images/events/beest-hero.webp',
+            logo: '/static/images/events/beest-icon.webp',
             url: 'https://beest.hackclub.com?utm_source=toolbox',
             duration: 'Week-long hackathon',
             timeline: 'Event: July 10-15',
@@ -79,8 +79,8 @@
             type: 'Hackathon',
             tags: ['hackathon', 'global'],
             description: 'Seven hackathons run by teenagers across the globe, for teenagers everywhere.',
-            image: '/static/images/horizons-background.png',
-            logo: '/static/images/horizons-logo.png',
+            image: '/static/images/events/horizons-background.png',
+            logo: '/static/images/events/horizons-logo.png',
             url: 'https://horizons.hackclub.com?utm_source=toolbox',
             duration: '7 global hackathons',
             timeline: 'Deadline: August 14, 2026',
@@ -335,7 +335,7 @@
             title: 'Fix Hack Club',
             tags: ['web'],
             description: 'Contribute to Hack Club repositories and get a grant of your choice.',
-            image: '/static/images/fix-hack-club.png',
+            image: '/static/images/events/fix-hack-club.png',
             imageFit: 'cover',
             url: 'https://fix.hackclub.com/',
 
@@ -394,105 +394,76 @@
             tags: ['cad', 'hardware'],
             description: 'CAD a 3D printer mod and get funding plus Hack Club filament to build it.',
             image: '/static/images/ysws/cad/rework.png',
-            imageFit: 'cover',
+            backgroundColor: '#000',
+            imageFit: 'contain',
             url: 'https://rework.hackclub.com',
 
         }),
 
     ];
 
-    const searchInput = document.getElementById('search-input');
-    const searchForm = document.getElementById('events-search-form');
-    const filterTags = document.querySelectorAll('.filter-tag');
     const list = document.getElementById('events-list');
+    const searchForm = document.getElementById('events-search-form');
+    const searchInput = document.getElementById('search-input');
+    const filterTags = document.querySelectorAll('.filter-tag');
 
-    let cards = [];
     let activeFilter = 'all';
     let searchQuery = '';
 
-    const clockIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>`;
+    function renderEvents() {
+        list.innerHTML = '';
+        let visible = 0;
 
-    const calendarIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>`;
+        toolboxEvents.forEach(event => {
+            const matchesFilter = activeFilter === 'all' || event.tags.includes(activeFilter);
+            const matchesSearch = !searchQuery ||
+                event.title.toLowerCase().includes(searchQuery) ||
+                event.description.toLowerCase().includes(searchQuery);
 
-    const locationIcon = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-        </svg>`;
+            const show = matchesFilter && matchesSearch;
 
-    function createCard(event) {
-        const card = document.createElement('div');
-        card.className = 'event-card';
-        card.dataset.tags = event.tags.join(',');
+            if (show) {
+                const card = document.createElement('div');
+                card.className = 'event-card';
+                card.dataset.tags = event.tags.join(',');
 
-        const style = event.backgroundColor ? `style="background-color: ${event.backgroundColor};"` : '';
-        const imageClass = event.imageFit === 'contain' ? 'contain' : 'cover';
+                const style = event.backgroundColor ? `style="background-color: ${event.backgroundColor};"` : '';
+                const imageClass = event.imageFit === 'contain' ? 'contain' : 'cover';
 
-        card.innerHTML = `
-            <div class="event-image-container" ${style}>
-                <img src="${event.image}" alt="${event.title}" class="${imageClass}" loading="lazy">
-                ${event.logo ? `<img src="${event.logo}" alt="${event.title} logo" class="event-logo">` : ''}
-                <div class="event-type">${event.type}</div>
-            </div>
-            <div class="event-content">
-                <h3 class="event-title">${event.title}</h3>
-                <p class="event-description">${event.description}</p>
-                <div class="event-details">
-                    <div class="detail-item">
-                        <span class="detail-label">${clockIcon} Duration:</span>
-                        <span class="detail-value">${event.duration}</span>
+                card.innerHTML = `
+                    <div class="event-image-container" ${style}>
+                        <img src="${event.image}" alt="${event.title}" class="${imageClass}" loading="lazy">
+                        ${event.logo ? `<img src="${event.logo}" alt="${event.title} logo" class="event-logo">` : ''}
+                        <div class="event-type">${event.type}</div>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">${calendarIcon} Timeline:</span>
-                        <span class="detail-value">${event.timeline || 'Ongoing'}</span>
+                    <div class="event-content">
+                        <h3 class="event-title">${event.title}</h3>
+                        <p class="event-description">${event.description}</p>
+                        <div class="event-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Duration:</span>
+                                <span class="detail-value">${event.duration}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Timeline:</span>
+                                <span class="detail-value">${event.timeline || 'Ongoing'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Where:</span>
+                                <span class="detail-value">${event.where}</span>
+                            </div>
+                        </div>
+                        <a href="${event.url}" target="_blank" class="event-cta">${event.cta}</a>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">${locationIcon} Where:</span>
-                        <span class="detail-value">${event.where}</span>
-                    </div>
-                </div>
-                <a href="${event.url}" target="_blank" class="event-cta">${event.cta}</a>
-            </div>
-        `;
-        return card;
-    }
-
-    function applyFilters() {
-        let visibleCount = 0;
-        cards.forEach(card => {
-            const tags = card.dataset.tags.split(',');
-            const title = card.querySelector('.event-title').textContent.toLowerCase();
-            const desc = card.querySelector('.event-description').textContent.toLowerCase();
-
-            const matchesFilter = activeFilter === 'all' || tags.includes(activeFilter);
-            const matchesSearch = !searchQuery || title.includes(searchQuery) || desc.includes(searchQuery);
-
-            if (matchesFilter && matchesSearch) {
-                card.style.display = 'flex';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
+                `;
+                list.appendChild(card);
             }
+
+            if (show) visible++;
         });
 
         let empty = document.getElementById('events-empty');
-        if (visibleCount === 0) {
+        if (visible === 0) {
             if (!empty) {
                 empty = document.createElement('div');
                 empty.id = 'events-empty';
@@ -505,26 +476,21 @@
         }
     }
 
-    toolboxEvents.forEach(event => {
-        const card = createCard(event);
-        list.appendChild(card);
-        cards.push(card);
-    });
-
     filterTags.forEach(tag => {
         tag.addEventListener('click', () => {
             filterTags.forEach(t => t.classList.remove('active'));
             tag.classList.add('active');
             activeFilter = tag.dataset.filter;
-            applyFilters();
+            renderEvents();
         });
     });
 
     searchInput.addEventListener('input', () => {
         searchQuery = searchInput.value.trim().toLowerCase();
-        applyFilters();
+        renderEvents();
     });
 
     searchForm.addEventListener('submit', event => event.preventDefault());
 
+    renderEvents();
 })();

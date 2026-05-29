@@ -33,7 +33,7 @@
 
         <div class="animated-nav-logo">
 
-            <img src="{{ url_for('static', filename='images/hack-club-banner.svg') }}">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}">
 
         </div>
 
@@ -55,7 +55,8 @@
 
                 <li class="nav-link dropdown">
                     <a href="#">Tools
-                        <img class="dropdown-icon" src="{{ url_for('static', filename='images/dropdown-icon.svg') }}">
+                        <img class="dropdown-icon"
+                            src="{{ url_for('static', filename='images/hackclub-site/dropdown-icon.svg') }}">
                     </a>
                     <div class="dropdown-menu">
                         <a href="https://apply.hackclub.com/">Start a Club</a>
@@ -117,7 +118,6 @@
 
     </section>
 
-    <!-- Video modal (hidden by default, opened on thumbnail click) -->
     <div class="video-modal-overlay" id="videoModal" aria-hidden="true">
         <div class="video-inner-container">
             <button class="video-close-btn" id="videoClose" aria-label="Close video">✕</button>
@@ -239,7 +239,7 @@
     <footer class="site-footer">
 
         <img alt="" loading="lazy" width="680" height="558" decoding="async" data-nimg="1"
-            class="site-footer-illustration" src="{{url_for('static', filename='images/footer.webp')}}" />
+            class="site-footer-illustration" src="{{url_for('static', filename='images/hackclub-site/footer.webp')}}" />
 
         <div class="site-footer-content">
 
@@ -247,7 +247,8 @@
 
                 <div class="site-footer-logo-container"><a href="/"><img alt="Hack Club" loading="lazy" width="200"
                             height="70" decoding="async" data-nimg="1" class="site-footer-logo"
-                            src="{{ url_for('static', filename='images/white-hack-club-banner.svg') }}" /></a></div>
+                            src="{{ url_for('static', filename='images/hackclub-site/white-hack-club-banner.svg') }}" /></a>
+                </div>
 
                 <p class="site-footer-tagline">For teens, by teens.</p>
 

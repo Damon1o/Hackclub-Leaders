@@ -22,7 +22,7 @@
         integrity="sha512-p1U9T0dZVYQgB3cG3L8uV2x/5R7sLz5j3Vh9RzM0G8x+Z4M5eVx6w5Vw==" crossorigin="anonymous"
         referrerpolicy="no-referrer" />
 
-    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
 
 </head>
 
@@ -32,7 +32,7 @@
 
         <div class="animated-nav-logo">
 
-            <img src="{{ url_for('static', filename='images/hack-club-banner.svg') }}">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}">
 
         </div>
 
@@ -54,7 +54,8 @@
 
                 <li class="nav-link dropdown">
                     <a href="#">Tools
-                        <img class="dropdown-icon" src="{{ url_for('static', filename='images/dropdown-icon.svg') }}">
+                        <img class="dropdown-icon"
+                            src="{{ url_for('static', filename='images/hackclub-site/dropdown-icon.svg') }}">
                     </a>
                     <div class="dropdown-menu">
                         <a href="https://apply.hackclub.com/">Start a Club</a>
@@ -119,7 +120,7 @@
     <section class="events-main">
 
         <div class="events-main-background">
-            <img alt="" src="{{ url_for('static', filename='images/background.webp')}}"
+            <img alt="" src="{{ url_for('static', filename='images/hackclub-site/background.webp')}}"
                 style="position: absolute; top: -60px; left: 0px; width: 100%; height: auto; transform: scaleY(-1) translateY(0px); opacity: 0.15; pointer-events: none; z-index: 0;">
         </div>
 
@@ -159,7 +160,7 @@
     <footer class="site-footer">
 
         <img alt="" loading="lazy" width="680" height="558" decoding="async" data-nimg="1"
-            class="site-footer-illustration" src="{{url_for('static', filename='images/footer.webp')}}" />
+            class="site-footer-illustration" src="{{url_for('static', filename='images/hackclub-site/footer.webp')}}" />
 
         <div class="site-footer-content">
 
@@ -167,7 +168,8 @@
 
                 <div class="site-footer-logo-container"><a href="/"><img alt="Hack Club" loading="lazy" width="200"
                             height="70" decoding="async" data-nimg="1" class="site-footer-logo"
-                            src="{{ url_for('static', filename='images/white-hack-club-banner.svg') }}" /></a></div>
+                            src="{{ url_for('static', filename='images/hackclub-site/white-hack-club-banner.svg') }}" /></a>
+                </div>
 
                 <p class="site-footer-tagline">For teens, by teens.</p>
 

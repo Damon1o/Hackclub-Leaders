@@ -3,7 +3,7 @@
         return {
             ...event,
             type: 'YSWS',
-            tags: ['ysws', 'global'].concat(event.tags || []),
+            tags: ['ysws', 'global',].concat(event.tags || []),
             cta: event.cta || 'Explore &rarr;',
             duration: 'FOREVER',
             where: event.where || 'Online'
@@ -13,6 +13,7 @@
     const toolboxEvents = [
         ysws({
             title: 'Stack',
+            type: 'YSWS',
             tags: ['games'],
             description: 'Build a fun or completely unhinged project, and we’ll send you FREE LEGO sets of your choice.',
             image: '/static/images/events/stack/stack-background.png',
@@ -26,8 +27,8 @@
             type: 'Hackathon',
             tags: ['hackathon', 'travel'],
             description: 'Make projects, win free prizes, and fly to Bogota, Colombia.',
-            image: '/static/images/macondo-background.png',
-            logo: '/static/images/macondo-icon.png',
+            image: '/static/images/events/macondo/macondo-background.png',
+            logo: '/static/images/events/macondo/macondo-icon.png',
             url: 'https://macondo.hackclub.com/?utm_source=toolbox',
             duration: '3-day hackathon',
             timeline: 'Deadline: September 2026',
@@ -39,7 +40,7 @@
             type: 'Hackathon',
             tags: ['hackathon', 'hardware', 'travel'],
             description: 'Build hardware projects and visit Shenzhen, China.',
-            image: '/static/images/fallout-heidi.gif',
+            image: '/static/images/events/fallout/fallout-heidi.gif',
             backgroundColor: '#38c9ff',
             imageFit: 'contain',
             url: 'https://fallout.hackclub.com?utm_source=toolbox',
@@ -53,8 +54,8 @@
             type: 'Hackathon',
             tags: ['hackathon', 'hardware', 'travel'],
             description: 'Build hardware projects and fly out to Austin, TX for a hardware hackathon.',
-            image: '/static/images/stasis-banner.png',
-            logo: '/static/images/stasis-logo.png',
+            image: '/static/images/events/stasis/stasis-banner.png',
+            logo: '/static/images/events/stasis/stasis-logo.png',
             url: 'https://stasis.hackclub.com?utm_source=toolbox',
             duration: 'May 15-18 hardware sprint',
             timeline: 'Deadline: May 18, 2026',
@@ -66,8 +67,8 @@
             type: 'Hackathon',
             tags: ['hackathon', 'travel'],
             description: 'Code projects, fly to the Netherlands, and build a mechanical animal.',
-            image: '/static/images/beest-hero.webp',
-            logo: '/static/images/beest-icon.webp',
+            image: '/static/images/events/beest/beest-background.webp',
+            logo: '/static/images/events/beest/beest-icon.webp',
             url: 'https://beest.hackclub.com?utm_source=toolbox',
             duration: 'Week-long hackathon',
             timeline: 'Event: July 10-15',
@@ -79,8 +80,8 @@
             type: 'Hackathon',
             tags: ['hackathon', 'global'],
             description: 'Seven hackathons run by teenagers across the globe, for teenagers everywhere.',
-            image: '/static/images/horizons-background.png',
-            logo: '/static/images/horizons-logo.png',
+            image: '/static/images/events/horizons/horizons-background.png',
+            logo: '/static/images/events/horizons/horizons-logo.png',
             url: 'https://horizons.hackclub.com?utm_source=toolbox',
             duration: '7 global hackathons',
             timeline: 'Deadline: August 14, 2026',
@@ -90,7 +91,8 @@
 
         ysws({
             title: 'Boba Drops',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Build a website using HTML and CSS, then get free boba.',
             image: '/static/images/ysws/webdev/boba.png',
             backgroundColor: '#C76B0F',
@@ -100,7 +102,8 @@
         }),
         ysws({
             title: 'Swirl',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Build a cooler HTML and CSS website with a unique feature, then get free ice cream.',
             image: '/static/images/ysws/webdev/swirl.svg',
             backgroundColor: '#fde09d',
@@ -110,7 +113,8 @@
         }),
         ysws({
             title: 'Toppings',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Add extra flavor to your website with CSS and get toppings for ice cream or boba.',
             image: '/static/images/ysws/webdev/toppings.png',
             backgroundColor: '#ffcc00',
@@ -120,7 +124,8 @@
         }),
         ysws({
             title: 'Flavorless',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Build a website using only HTML and JavaScript. No CSS allowed.',
             image: '/static/images/ysws/webdev/flavorless.png',
             backgroundColor: '#ffffff',
@@ -130,7 +135,8 @@
         }),
         ysws({
             title: 'Waffles',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Make a website that uses JavaScript, and get free waffles.',
             image: '/static/images/ysws/webdev/waffles.jpg',
             backgroundColor: '#f8b84f',
@@ -140,7 +146,8 @@
         }),
         ysws({
             title: 'Grub',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Build a website using Tailwind CSS, and get free junk food.',
             image: '/static/images/ysws/webdev/grub.png',
             backgroundColor: '#c10007',
@@ -150,7 +157,8 @@
         }),
         ysws({
             title: 'Reactive',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Make a website with React, and get a free domain to host it.',
             image: '/static/images/ysws/webdev/reactive.png',
             backgroundColor: '#112a4f',
@@ -160,7 +168,8 @@
         }),
         ysws({
             title: 'Slushies',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Make a web app using Flask, and get a slushie or another food item.',
             image: '/static/images/ysws/webdev/slushies.png',
             backgroundColor: '#4E9CDB',
@@ -171,7 +180,8 @@
 
         ysws({
             title: 'BakeBuild',
-            tags: ['cad'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'cad'],
             description: 'Design a cookie cutter, then get it shipped to you with a cookie.',
             image: '/static/images/ysws/cad/bakebuild.png',
             backgroundColor: '#C76B0F',
@@ -181,7 +191,8 @@
         }),
         ysws({
             title: 'FuseRing',
-            tags: ['cad'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'cad'],
             description: 'Design a keyring, then get your keyring and a clip for your backpack.',
             image: '/static/images/ysws/cad/fusering.svg',
             backgroundColor: '#FFA35E',
@@ -191,7 +202,8 @@
         }),
         ysws({
             title: 'Enclosure',
-            tags: ['cad', 'hardware'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'cad', 'hardware'],
             description: 'Make enclosures for your devices or hardware and get them printed.',
             image: '/static/images/ysws/cad/enclosure.png',
             backgroundColor: '#341C10',
@@ -201,7 +213,8 @@
         }),
         ysws({
             title: 'Squeak',
-            tags: ['cad', 'hardware'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'cad', 'hardware'],
             description: 'Design your own mouse case and get parts to build your own mouse.',
             image: '/static/images/ysws/cad/squeak.png',
             backgroundColor: '#0e305b',
@@ -211,7 +224,8 @@
         }),
         ysws({
             title: 'Construct',
-            tags: ['cad'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'cad'],
             description: 'As a group, spend 50 hours making CAD projects and get a 3D printer for your club.',
             image: '/static/images/ysws/cad/construct.png',
             backgroundColor: '#b64e07',
@@ -222,7 +236,8 @@
 
         ysws({
             title: 'Sprig',
-            tags: ['games'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'games'],
             description: 'Build a JavaScript game and play it on your own console.',
             image: '/static/images/ysws/sprig.png',
             backgroundColor: '#000',
@@ -232,7 +247,8 @@
         }),
         ysws({
             title: 'Vibes',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Build a website with good vibes and throw a club pizza party.',
             image: '/static/images/ysws/vibes.png',
             backgroundColor: '#ffdd58',
@@ -242,7 +258,8 @@
         }),
         ysws({
             title: 'HackCraft',
-            tags: ['games'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'games'],
             description: 'Make a Minecraft mod, get Minecraft or another game.',
             image: '/static/images/ysws/hackcraft.png',
             backgroundColor: '#30AE1F',
@@ -252,7 +269,8 @@
         }),
         ysws({
             title: 'Carnival',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Build an extension, plugin, or widget and get prizes.',
             image: '/static/images/ysws/carnival.jpg',
             backgroundColor: '#f9dfbd',
@@ -262,7 +280,8 @@
         }),
         ysws({
             title: 'TrailIt',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Build a web app, produce a trailer, and get production equipment.',
             image: '/static/images/ysws/trailit.png',
             backgroundColor: '#17171D',
@@ -273,7 +292,8 @@
 
         ysws({
             title: 'Forge',
-            tags: ['hardware'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'hardware'],
             description: 'Design and build hardware projects, and get them funded.',
             image: '/static/images/ysws/catalog/forge-landing.png',
             backgroundColor: '#1f2d3d',
@@ -283,7 +303,8 @@
         }),
         ysws({
             title: 'Shipyard',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Ship 7 weeks of computing and coding challenges and earn prizes from the shop.',
             image: '/static/images/ysws/catalog/shipyard-ship.png',
             backgroundColor: '#80d7ff',
@@ -293,7 +314,8 @@
         }),
         ysws({
             title: 'Boot',
-            tags: ['hardware'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'hardware'],
             description: 'Make your own OS and get hardware to run it.',
             image: '/static/images/ysws/catalog/boot-hero.png',
             backgroundColor: '#000',
@@ -303,7 +325,8 @@
         }),
         ysws({
             title: 'Remixed',
-            tags: ['music'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'music'],
             description: 'Ship something music related and get stuff to help you make music.',
             image: '/static/images/ysws/catalog/remixed-og.png',
             backgroundColor: '#8f70ff',
@@ -313,7 +336,8 @@
         }),
         ysws({
             title: 'RaspAPI',
-            tags: ['web', 'hardware'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web', 'hardware'],
             description: 'Build a public API and get a Raspberry Pi Zero 2W to host it on.',
             image: '/static/images/ysws/catalog/raspapi-pi.png',
             backgroundColor: '#e7f8ef',
@@ -323,7 +347,8 @@
         }),
         ysws({
             title: 'Resolution',
-            tags: ['global'],
+            type: 'YSWS',
+            tags: ['ysws', 'global'],
             description: 'Set goals, ship every week, and earn prizes for following through.',
             image: '/static/images/ysws/catalog/resolution-hero.png',
             backgroundColor: '#121217',
@@ -333,7 +358,8 @@
         }),
         ysws({
             title: 'Fix Hack Club',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Contribute to Hack Club repositories and get a grant of your choice.',
             image: '/static/images/fix-hack-club.png',
             imageFit: 'cover',
@@ -342,7 +368,8 @@
         }),
         ysws({
             title: 'Lumen',
-            tags: ['games'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'games'],
             description: 'Make a Minecraft shader pack, get Minecraft and GPUs.',
             image: '/static/images/ysws/catalog/lumen.png',
             imageFit: 'cover',
@@ -351,7 +378,8 @@
         }),
         ysws({
             title: 'iplace',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Join a collaborative canvas of websites and get hosting and domain credits.',
             image: '/static/images/ysws/catalog/iplace-hero.png',
             backgroundColor: '#efe7d7',
@@ -361,7 +389,8 @@
         }),
         ysws({
             title: 'Hacklet v2',
-            tags: ['web'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'web'],
             description: 'Build a bookmarklet and get food for your club.',
             image: '/static/images/ysws/catalog/hacklet.png',
             backgroundColor: '#000',
@@ -371,7 +400,8 @@
         }),
         ysws({
             title: 'Syscall x Terminal Craft',
-            tags: ['hardware'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'hardware'],
             description: 'Build a real systems project in Zig or C, build a terminal program, or do both.',
             image: '/static/images/ysws/catalog/syscall-hero.png',
             backgroundColor: '#050805',
@@ -381,7 +411,8 @@
         }),
         ysws({
             title: 'Storyboard',
-            tags: ['games'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'games'],
             description: 'Make a themed visual novel and earn prizes.',
             image: '/static/images/ysws/catalog/storyboard-logo.webp',
             backgroundColor: '#ffeef6',
@@ -391,7 +422,8 @@
         }),
         ysws({
             title: 'Rework',
-            tags: ['cad', 'hardware'],
+            type: 'YSWS',
+            tags: ['ysws', 'global', 'cad', 'hardware'],
             description: 'CAD a 3D printer mod and get funding plus Hack Club filament to build it.',
             image: '/static/images/ysws/cad/rework.png',
             imageFit: 'cover',

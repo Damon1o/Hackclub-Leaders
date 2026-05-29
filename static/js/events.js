@@ -600,8 +600,8 @@
         card.dataset.tags = event.tags.join(',');
 
         const style = event.backgroundColor !== 'N/A'
-            ? `style="--event-image-fit: ${event.imageFit}; background-color: ${event.backgroundColor}; background-image: url('${event.image}');"`
-            : `style="--event-image-fit: ${event.imageFit}; background-image: url('${event.image}');"`;
+            ? `style="--event-image-fit: ${event.imageFit}; background-color: ${event.backgroundColor};${event.image !== 'N/A' ? ` background-image: url('${event.image}');` : ''}"`
+            : `style="--event-image-fit: ${event.imageFit};${event.image !== 'N/A' ? ` background-image: url('${event.image}');` : ''}"`;
 
         card.innerHTML = `
             <div class="event-card-visual" ${style}>

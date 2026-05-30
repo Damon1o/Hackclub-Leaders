@@ -9,11 +9,6 @@ def index():
 @app.route('/events')
 def events():
     return flask.render_template('events.html')
-
-@app.route('/ysws')
-def ysws():
-    return flask.render_template('ysws.html')
-
 @app.route('/sign-in')
 def sign_in():
     return flask.render_template('sign-in.html')

@@ -17,7 +17,7 @@
     left: 0;
     width: var(--nav-collapsed);
     height: 100vh;
-    background-color: var(--primary-black);
+    background: linear-gradient(180deg, #1c1c1c 0%, #141414 100%);
     color: var(--primary-white);
     display: flex;
     flex-direction: column;
@@ -25,7 +25,8 @@
     align-items: stretch;
     overflow: hidden;
     /* hides text until expanded   */
-    z-index: 100;
+    z-index: 120;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
     transition: width var(--nav-speed);
 }
 
@@ -59,27 +60,42 @@
     justify-content: flex-start;
 }
 
+.hackclub-logo-container .sidenav-brand-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary-white);
+    text-decoration: none;
+    width: 100%;
+    justify-content: center;
+}
+
 .hackclub-logo-container img {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 6px;
     flex-shrink: 0;
     transition: none;
 }
 
-.hackclub-logo-container a {
-    color: var(--primary-white);
-    text-decoration: none;
+.sidenav-brand-text {
     font-family: var(--hackclub-body-font);
     font-size: 16px;
     font-weight: 700;
     white-space: nowrap;
+    max-width: 0;
+    overflow: hidden;
     opacity: 0;
-    transition: opacity var(--nav-speed);
+    transition: opacity var(--nav-speed), max-width var(--nav-speed);
 }
 
-.sidenav:hover .hackclub-logo-container a {
+.sidenav:hover .sidenav-brand-text {
     opacity: 1;
+    max-width: 140px;
+}
+
+.sidenav:hover .hackclub-logo-container .sidenav-brand-link {
+    justify-content: flex-start;
 }
 
 /* Nav links */
@@ -97,15 +113,15 @@
     /* center icon when collapsed */
     padding: 10px 0;
     padding-left: calc((var(--nav-collapsed) - 20px) / 2);
-    border-radius: 8px;
-    color: var(--primary-white);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
     font-family: var(--hackclub-body-font);
     font-size: 14px;
     font-weight: 500;
     white-space: nowrap;
     transition: background-color 0.2s ease-in-out,
-        padding-left var(--nav-speed);
+        padding-left var(--nav-speed), color 0.2s ease-in-out;
     position: relative;
 }
 
@@ -136,6 +152,7 @@
 
 .sidenav-links a:hover {
     background-color: #2b2b2b;
+    color: #fff;
 }
 
 .sidenav-links a:hover i,
@@ -145,12 +162,19 @@
 
 /* Active state */
 .sidenav-links a.active {
-    background-color: #2b2b2b;
+    background-color: #262626;
+    color: #fff;
+    box-shadow: inset 3px 0 0 var(--hackclub-red);
 }
 
 .sidenav-links a.active i,
 .sidenav-links a.active svg {
     color: var(--hackclub-red);
+}
+
+.sidenav-links a:focus-visible {
+    outline: 2px solid rgba(236, 55, 80, 0.8);
+    outline-offset: 2px;
 }
 
 /* Tooltip shown on collapsed icons */
@@ -204,14 +228,29 @@
     gap: 10px;
     white-space: nowrap;
     width: 100%;
+    justify-content: center;
 }
 
 .user-profile-container img {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     flex-shrink: 0;
     border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.sidenav-avatar-fallback {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--hackclub-red);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
 }
 
 /* Hide name/logout text until expanded */
@@ -219,12 +258,19 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    max-width: 0;
+    overflow: hidden;
     opacity: 0;
-    transition: opacity var(--nav-speed);
+    transition: opacity var(--nav-speed), max-width var(--nav-speed);
 }
 
 .sidenav:hover .user-profile-text {
     opacity: 1;
+    max-width: 220px;
+}
+
+.sidenav:hover .user-profile-container {
+    justify-content: flex-start;
 }
 
 .user-profile-text p {
@@ -248,6 +294,29 @@
 .user-profile-text a:hover {
     color: #fff;
     text-decoration: underline;
+}
+
+.sidenav-toggle {
+    display: none;
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff;
+    color: #222;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    z-index: 140;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.sidenav-toggle:focus-visible {
+    outline: 2px solid rgba(236, 55, 80, 0.6);
+    outline-offset: 2px;
 }
 
 /* ── Mobile (≤ 768px): slide-in drawer ──────────────────── */
@@ -289,5 +358,9 @@
     /* hover expand disabled on mobile — drawer handles it */
     .sidenav:hover {
         width: var(--nav-expanded);
+    }
+
+    .sidenav-toggle {
+        display: inline-flex;
     }
 }

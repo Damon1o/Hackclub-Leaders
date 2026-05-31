@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hack Club Leaders Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidenav.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+
+    <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
+
+</head>
+
+<body>
+
+    <aside class="sidenav" id="sidenav">
+        <div class="sidenav-top">
+            <div class="hackclub-logo-container">
+                <a href="/" class="sidenav-brand-link">
+                    <img src="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}" alt="Hack Club">
+                    <span class="sidenav-brand-text">Dashboard</span>
+                </a>
+            </div>
+
+            <nav class="sidenav-links" aria-label="Dashboard">
+                <a href="/dashboard" class="active" data-tooltip="Home">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/dashboard/team" data-tooltip="Team">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Team</span>
+                </a>
+                <a href="/dashboard/shop" data-tooltip="Shop">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span>Shop</span>
+                </a>
+                <a href="/dashboard/events" data-tooltip="Events">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>Events</span>
+                </a>
+                <a href="/dashboard/settings" data-tooltip="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="/dashboard/newsletters" data-tooltip="Newsletters">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>Newsletters</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidenav-bottom">
+            <div class="user-profile-container">
+                {% if current_user.avatar %}
+                <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
+                {% else %}
+                <div class="sidenav-avatar-fallback">{{ current_user.name[0]|upper }}</div>
+                {% endif %}
+                <div class="user-profile-text">
+                    <p>{{ current_user.name }}</p>
+                    <a href="/sign-out">Logout</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Mobile toggle -->
+    <button class="sidenav-toggle" id="sidenavToggle" aria-label="Toggle sidebar">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <secetion class="settings-container">
+
+        <div class="settings-header">
+
+            <h1>Settings</h1>
+
+            <p>Manage your account settings and preferences here.</p>
+
+        </div>
+
+        <div class="settings-content">
+
+            <div class="settings-section">
+
+                <h2>Account Information</h2>
+
+                <form action="/dashboard/settings" method="POST" class="settings-form">
+
+                    <label for="name">Name</label>
+
+                    <input type="text" id="name" name="name" value="{{ current_user.name }}" required>
+
+                    <label for="email">Email</label>
+
+                    <input type="email" id="email" name="email" value="{{ current_user.email }}" required>
+
+                    <button type="submit" class="save-button">Save Changes</button>
+
+                </form>
+
+            </div> 
+
+        </div>
+
+    </secetion>
+
+</body>
+
+</html>

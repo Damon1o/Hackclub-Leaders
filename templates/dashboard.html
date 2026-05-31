@@ -24,88 +24,55 @@
 
     <!-- Sidebar -->
     <aside class="sidenav" id="sidenav">
-
         <div class="sidenav-top">
-            <div class="sidenav-brand">
+            <div class="hackclub-logo-container">
                 <a href="/" class="sidenav-brand-link">
-                    <img src="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}" alt="Hack Club"
-                        class="sidenav-logo">
-                    <span class="sidenav-brand-name">Leaders</span>
+                    <img src="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}" alt="Hack Club">
+                    <span class="sidenav-brand-text">Dashboard</span>
                 </a>
             </div>
 
-            <!-- ─── Sidebar (replace your existing <section class="sidenav"> block) ─── -->
-            <aside class="sidenav" id="sidenav">
+            <nav class="sidenav-links" aria-label="Dashboard">
+                <a href="/dashboard" class="active" data-tooltip="Home">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/dashboard/team" data-tooltip="Team">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Team</span>
+                </a>
+                <a href="/dashboard/shop" data-tooltip="Shop">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span>Shop</span>
+                </a>
+                <a href="/dashboard/events" data-tooltip="Events">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>Events</span>
+                </a>
+                <a href="/dashboard/settings" data-tooltip="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="/dashboard/newsletters" data-tooltip="Newsletters">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>Newsletters</span>
+                </a>
+            </nav>
+        </div>
 
-                <div class="sidenav-top">
-
-                    <div class="hackclub-logo-container">
-                        <a href="/"><img src="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}"
-                                alt="Hack Club"></a>
-                        <a href="/">Leaders</a>
-                    </div>
-
-                    <div class="sidenav-links">
-                        <a href="/dashboard" class="active" data-tooltip="Home">
-                            <i class="fa-solid fa-house"></i>
-                            <span>Home</span>
-                        </a>
-                        <a href="/dashboard/team" data-tooltip="Team">
-                            <i class="fa-solid fa-user"></i>
-                            <span>Team</span>
-                        </a>
-                        <a href="/dashboard/shop" data-tooltip="Shop">
-                            <i class="fa-solid fa-bag-shopping"></i>
-                            <span>Shop</span>
-                        </a>
-                        <a href="/dashboard/events" data-tooltip="Events">
-                            <i class="fa-solid fa-calendar-days"></i>
-                            <span>Events</span>
-                        </a>
-                        <a href="/dashboard/settings" data-tooltip="Settings">
-                            <i class="fa-solid fa-gear"></i>
-                            <span>Settings</span>
-                        </a>
-                        <a href="/dashboard/newsletters" data-tooltip="Newsletters">
-                            <i class="fa-solid fa-envelope"></i>
-                            <span>Newsletters</span>
-                        </a>
-                    </div>
-
-                </div>
-
-                <div class="sidenav-bottom">
-                    <div class="user-profile-container">
-                        {% if current_user.avatar %}
-                        <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
-                        {% else %}
-                        <div class="sidenav-avatar-fallback">{{ current_user.name[0]|upper }}</div>
-                        {% endif %}
-                        <div class="user-profile-text">
-                            <p>{{ current_user.name }}</p>
-                            <a href="/sign-out">Logout</a>
-                        </div>
-                    </div>
-                </div>
-
-            </aside>
-
-            <div class="sidenav-bottom">
-                <div class="sidenav-user">
-                    {% if current_user.avatar %}
-                    <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}" class="sidenav-avatar">
-                    {% else %}
-                    <div class="sidenav-avatar sidenav-avatar--fallback">
-                        {{ current_user.name[0] | upper }}
-                    </div>
-                    {% endif %}
-                    <div class="sidenav-user-info">
-                        <p class="sidenav-user-name">{{ current_user.name }}</p>
-                        <p class="sidenav-user-email">{{ current_user.email }}</p>
-                    </div>
+        <div class="sidenav-bottom">
+            <div class="user-profile-container">
+                {% if current_user.avatar %}
+                <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
+                {% else %}
+                <div class="sidenav-avatar-fallback">{{ current_user.name[0]|upper }}</div>
+                {% endif %}
+                <div class="user-profile-text">
+                    <p>{{ current_user.name }}</p>
+                    <a href="/sign-out">Logout</a>
                 </div>
             </div>
-
+        </div>
     </aside>
 
     <!-- Mobile toggle -->

@@ -102,17 +102,25 @@
 
         <div class="apply-now-container">
 
+            {% if current_user %}
+            <a href="{{ url_for('dashboard') }}" class="apply-now-link">
+                <p class="apply-now-text">Dashboard</p>
+            </a>
+            {% else %}
             <a href="https://apply.hackclub.com" class="apply-now-link">
-
                 <p class="apply-now-text">Apply now</p>
-
             </a>
+            {% endif %}
 
-            <a href="/sign-in" class="sign-in-link">
-
+            {% if current_user %}
+            <a href="{{ url_for('sign_out') }}" class="sign-in-link">
+                <p class="sign-in-text">Sign out</p>
+            </a>
+            {% else %}
+            <a href="{{ url_for('sign_in') }}" class="sign-in-link">
                 <p class="sign-in-text">Sign in</p>
-
             </a>
+            {% endif %}
 
         </div>
 

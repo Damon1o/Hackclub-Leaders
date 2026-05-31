@@ -1,0 +1,196 @@
+/* ── Sign-In Page ── */
+
+.sign-in-main {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(100px, 14vw, 140px) clamp(24px, 6vw, 80px) 80px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle grid background */
+.sign-in-main::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(var(--sign-in-grid-color, rgba(0, 0, 0, 0.04)) 1px, transparent 1px),
+        linear-gradient(90deg, var(--sign-in-grid-color, rgba(0, 0, 0, 0.04)) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.sign-in-main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 40%, transparent 40%, var(--primary-white, #fff) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Card ── */
+
+.sign-in-card {
+    position: relative;
+    z-index: 1;
+    background: var(--primary-white);
+    border: 1.5px solid #e8e8e8;
+    border-radius: 20px;
+    padding: 48px 52px 44px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.07), 0 1px 4px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ── Header ── */
+
+.sign-in-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--hackclub-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.sign-in-icon svg {
+    width: 28px;
+    height: 28px;
+    fill: #fff;
+}
+
+.sign-in-card h1 {
+    font-family: var(--hackclub-title-font);
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: var(--primary-black);
+    margin: 0 0 8px;
+    line-height: 1.1;
+}
+
+.sign-in-card .sign-in-subtitle {
+    font-family: var(--hackclub-body-font);
+    font-size: 0.95rem;
+    color: var(--hackclub-muted);
+    margin: 0 0 32px;
+    line-height: 1.5;
+}
+
+/* ── Hack Club Button ── */
+
+.sign-in-hc-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 20px;
+    background: var(--hackclub-red);
+    border: 1.5px solid var(--hackclub-red);
+    border-radius: 10px;
+    font-family: var(--hackclub-body-font);
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.sign-in-hc-btn:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+    box-shadow: 0 4px 16px rgba(236, 55, 80, 0.35);
+    transform: translateY(-1px);
+}
+
+.sign-in-hc-btn:active {
+    transform: translateY(0);
+}
+
+.sign-in-hc-btn svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+/* ── Footer note ── */
+
+.sign-in-footer-note {
+    margin-top: 24px;
+    font-family: var(--hackclub-body-font);
+    font-size: 0.8rem;
+    color: var(--hackclub-muted);
+    text-align: center;
+    line-height: 1.6;
+}
+
+.sign-in-footer-note a {
+    color: var(--hackclub-red);
+    text-decoration: none;
+}
+
+.sign-in-footer-note a:hover {
+    text-decoration: underline;
+}
+
+/* ── Flash messages ── */
+
+.sign-in-flash {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: var(--hackclub-body-font);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sign-in-flash.error {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #be123c;
+}
+
+.sign-in-flash.success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+}
+
+/* ── Dark mode overrides ── */
+
+body.dark .sign-in-main::before {
+    --sign-in-grid-color: rgba(255, 255, 255, 0.04);
+}
+
+body.dark .sign-in-main::after {
+    background: radial-gradient(ellipse 70% 60% at 50% 40%, transparent 40%, var(--primary-black, #1a1a1a) 100%);
+}
+
+body.dark .sign-in-card {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.3);
+}
+
+body.dark .sign-in-flash.error {
+    background: rgba(190, 18, 60, 0.15);
+    border-color: rgba(190, 18, 60, 0.3);
+}
+
+@media (max-width: 520px) {
+    .sign-in-card {
+        padding: 36px 28px 32px;
+    }
+}

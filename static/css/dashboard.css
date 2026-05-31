@@ -1,0 +1,570 @@
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f7f7f5;
+}
+
+/* ── Main content ─────────────────────────────────────────────────────────── */
+/* Sidenav styles live in sidenav.css. margin-left must match --nav-collapsed  */
+
+.dashboard-main {
+    margin-left: 60px;
+    flex: 1;
+    padding: 32px 36px 48px;
+    min-height: 100vh;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.dashboard-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+}
+
+.dashboard-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1d1d1d;
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+    font-family: var(--hackclub-title-font);
+}
+
+.dashboard-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    font-family: var(--hackclub-body-font);
+}
+
+.dark-mode-toggle {
+    background: #fff;
+    border: 1.5px solid #e8e8e4;
+    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.dark-mode-toggle:hover {
+    background: #f5f5f2;
+    color: #1d1d1d;
+}
+
+/* ── Flash messages ──────────────────────────────────────────────────────── */
+
+.flash-container {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.flash {
+    display: flex;
+    align-items: center;
+    font-family: var(--hackclub-body-font);
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1.5px solid transparent;
+}
+
+.flash--success {
+    background: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.flash--error {
+    background: #fff0f2;
+    color: #9f1239;
+    border-color: #fecdd3;
+}
+
+.flash-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.6;
+    font-size: 13px;
+    padding: 0 2px;
+}
+
+.flash-close:hover {
+    opacity: 1;
+}
+
+/* ── Stats row ────────────────────────────────────────────────────────────── */
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+    font-family: var(--hackclub-title-font);
+}
+
+.stat-card {
+    background: #fff;
+    border: 1.5px solid #e8e8e4;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: box-shadow 0.15s;
+}
+
+.stat-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.stat-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.stat-card-icon--red {
+    background: #fff0f2;
+    color: var(--hackclub-red);
+}
+
+.stat-card-icon--blue {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.stat-card-icon--green {
+    background: #f0fdf4;
+    color: #22c55e;
+}
+
+.stat-card-icon--orange {
+    background: #fff7ed;
+    color: #f97316;
+}
+
+.stat-card-label {
+    font-size: 12px;
+    color: #888;
+    margin: 0 0 2px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.stat-card-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1d1d1d;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* ── Content grid ─────────────────────────────────────────────────────────── */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.dashboard-card {
+    background: #fff;
+    border: 1.5px solid #e8e8e4;
+    border-radius: 14px;
+    padding: 24px;
+    transition: box-shadow 0.15s;
+}
+
+.dashboard-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.dashboard-card--full {
+    grid-column: 1 / -1;
+}
+
+.dashboard-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    font-family: var(--hackclub-body-font);
+}
+
+.dashboard-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1d1d1d;
+    margin: 0;
+    font-family: var(--hackclub-title-font);
+    letter-spacing: -0.2px;
+}
+
+.dashboard-card-action {
+    font-size: 13px;
+    color: var(--hackclub-red);
+    font-family: var(--hackclub-body-font);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.dashboard-card-action:hover {
+    text-decoration: underline;
+}
+
+/* ── Quick links ──────────────────────────────────────────────────────────── */
+
+.quick-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: var(--hackclub-body-font);
+}
+
+.quick-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+
+.quick-link:hover {
+    background: #f7f7f5;
+    color: var(--hackclub-red);
+}
+
+.quick-link-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f7f7f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--hackclub-red);
+    flex-shrink: 0;
+}
+
+.quick-link-arrow {
+    margin-left: auto;
+    font-size: 11px;
+    color: #ccc;
+}
+
+.quick-link:hover .quick-link-arrow {
+    color: var(--hackclub-red);
+}
+
+/* ── Profile card ─────────────────────────────────────────────────────────── */
+
+.profile-display {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.profile-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e8e8e4;
+    flex-shrink: 0;
+}
+
+.profile-avatar--fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--hackclub-red);
+    color: #fff;
+    font-weight: 700;
+    font-size: 22px;
+}
+
+.profile-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1d1d1d;
+    margin: 0 0 2px;
+    font-family: var(--hackclub-title-font);
+}
+
+.profile-email {
+    font-size: 13px;
+    color: #888;
+    margin: 0 0 8px;
+    font-family: var(--hackclub-body-font);
+}
+
+.profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #166534;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+.profile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 14px;
+    border-top: 1.5px solid #f0f0ec;
+}
+
+.profile-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #888;
+    font-family: var(--hackclub-body-font);
+}
+
+.profile-meta-item i {
+    color: #ccc;
+    width: 14px;
+    flex-shrink: 0;
+}
+
+/* ── Checklist ────────────────────────────────────────────────────────────── */
+
+.checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1.5px solid #f5f5f2;
+    font-family: var(--hackclub-body-font);
+}
+
+.checklist-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.checklist-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    color: #ccc;
+}
+
+.checklist-check--done {
+    background: var(--hackclub-red);
+    border-color: var(--hackclub-red);
+    color: #fff;
+}
+
+.checklist-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.checklist-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d1d1d;
+    margin: 0 0 2px;
+}
+
+.checklist-desc {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+}
+
+.checklist-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--hackclub-red);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.checklist-action:hover {
+    text-decoration: underline;
+}
+
+/* ── Dark mode ────────────────────────────────────────────────────────────── */
+
+.dark .dashboard-layout,
+.dark body {
+    background: #111 !important;
+}
+
+.dark .sidenav {
+    background: #1a1a1a !important;
+    border-right-color: #2a2a2a;
+}
+
+.dark .hackclub-logo-container a {
+    color: #eee;
+}
+
+.dark .sidenav-links a {
+    color: #aaa;
+}
+
+.dark .sidenav-links a:hover {
+    background: #2b2b2b;
+    color: #eee;
+}
+
+.dark .sidenav-links a.active {
+    background: #2b2b2b;
+}
+
+.dark .sidenav-bottom {
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark .user-profile-text p {
+    color: #eee;
+}
+
+.dark .dashboard-main {
+    background: #111;
+}
+
+.dark .dashboard-title {
+    color: #eee;
+}
+
+.dark .dashboard-subtitle {
+    color: #888;
+}
+
+.dark .dark-mode-toggle {
+    background: #1a1a1a;
+    border-color: #2a2a2a;
+    color: #aaa;
+}
+
+.dark .stat-card,
+.dark .dashboard-card {
+    background: #1a1a1a;
+    border-color: #2a2a2a;
+}
+
+.dark .stat-card-value {
+    color: #eee;
+}
+
+.dark .dashboard-card-title {
+    color: #eee;
+}
+
+.dark .quick-link {
+    color: #ccc;
+}
+
+.dark .quick-link:hover {
+    background: #222;
+}
+
+.dark .quick-link-icon {
+    background: #222;
+}
+
+.dark .profile-name {
+    color: #eee;
+}
+
+.dark .profile-meta {
+    border-color: #2a2a2a;
+}
+
+.dark .checklist-item {
+    border-color: #222;
+}
+
+.dark .checklist-label {
+    color: #eee;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-card--full {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    /* sidenav mobile behaviour handled in sidenav.css */
+
+    .dashboard-main {
+        margin-left: 0;
+        padding: 72px 20px 32px;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+}

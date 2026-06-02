@@ -42,13 +42,11 @@
     align-items: stretch;
 }
 
-/* Brand row */
 .hackclub-logo-container {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 18px 0;
-    /* center the icon when collapsed */
     justify-content: center;
     transition: padding var(--nav-speed), justify-content var(--nav-speed);
     white-space: nowrap;

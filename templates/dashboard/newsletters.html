@@ -1,0 +1,72 @@
+{% extends "dashboard_layout.html" %}
+
+{% block page_title %}Newsletters{% endblock %}
+{% block page_subtitle %}Read updates from HQ and send notes to your club.{% endblock %}
+
+{% block header_right %}
+<button class="btn-primary" type="button" data-open-modal="dispatchModal">
+    <span class="button-icon" aria-hidden="true">+</span>
+    New dispatch
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page newsletter-layout" data-dashboard-page="newsletters">
+    <section class="card-modern dashboard-panel newsletter-list-panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Leader dispatches</h2>
+                <p>Open, mark, and draft updates from one archive.</p>
+            </div>
+            <label class="toggle-compact">
+                <span>Subscribed</span>
+                <span class="toggle-switch">
+                    <input type="checkbox" id="newsletterSubscribe">
+                    <span class="toggle-slider"></span>
+                </span>
+            </label>
+        </div>
+        <div class="newsletter-list" id="newsletterList"></div>
+    </section>
+
+    <aside class="card-modern dashboard-panel newsletter-reader" id="newsletterReader">
+        <span class="badge badge-up" id="newsletterReadTime">Archive</span>
+        <h2 id="newsletterTitle">Select a dispatch</h2>
+        <p id="newsletterDate">No message open.</p>
+        <p id="newsletterBody">Choose a dispatch from the archive to read it here.</p>
+        <button class="btn-secondary" type="button" id="toggleReadButton" hidden>Mark read</button>
+    </aside>
+</div>
+
+<div class="modal-backdrop" id="dispatchModal" aria-hidden="true">
+    <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="dispatchModalTitle">
+        <header class="modal-header">
+            <h2 id="dispatchModalTitle">New dispatch</h2>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close">x</button>
+        </header>
+        <form class="modal-form" id="dispatchForm">
+            <label class="form-group">
+                <span class="form-label">Title</span>
+                <input class="form-input" type="text" name="title" required>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Excerpt</span>
+                <input class="form-input" type="text" name="excerpt" required>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Body</span>
+                <textarea class="form-input" name="body" rows="6" required></textarea>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Read time</span>
+                <input class="form-input" type="text" name="readTime" value="2 min read">
+            </label>
+            <p class="form-error" id="dispatchFormError" hidden></p>
+            <div class="modal-actions">
+                <button class="btn-secondary" type="button" data-modal-close>Cancel</button>
+                <button class="btn-primary" type="submit">Send dispatch</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

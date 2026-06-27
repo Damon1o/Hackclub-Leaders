@@ -1,491 +1,137 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "dashboard_layout.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Hack Club Leaders</title>
+{% block page_title %}Analytics{% endblock %}
+{% block page_subtitle %}Welcome back, <strong>{{ current_user.name if current_user else 'User' }}</strong>! 👋{% endblock %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/borders.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidenav.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
-</head>
-
-<body class="dashboard-layout">
-
-    <aside class="sidenav" id="sidenav">
-
-        <div class="sidenav-top">
-
-            <div class="hackclub-logo-container">
-
-                <a href="/" class="sidenav-brand-link">
-
-                    <img src="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}" alt="Hack Club">
-
-                    <span class="sidenav-brand-text">Dashboard</span>
-
-                </a>
-
-            </div>
-
-            <nav class="sidenav-links" aria-label="Dashboard">
-
-                <a href="/dashboard" class="active" data-tooltip="Home">
-
-                    <i class="fa-solid fa-house"></i>
-
-                    <span>Home</span>
-
-                </a>
-
-                <a href="/dashboard/team" data-tooltip="Team">
-
-                    <i class="fa-solid fa-user"></i>
-
-                    <span>Team</span>
-
-                </a>
-
-                <a href="/dashboard/shop" data-tooltip="Shop">
-
-                    <i class="fa-solid fa-bag-shopping"></i>
-
-                    <span>Shop</span>
-
-                </a>
-
-                <a href="/dashboard/events" data-tooltip="Events">
-
-                    <i class="fa-solid fa-calendar-days"></i>
-
-                    <span>Events</span>
-
-                </a>
-
-                <a href="/dashboard/settings" data-tooltip="Settings">
-
-                    <i class="fa-solid fa-gear"></i>
-
-                    <span>Settings</span>
-
-                </a>
-
-                <a href="/dashboard/newsletters" data-tooltip="Newsletters">
-
-                    <i class="fa-solid fa-envelope"></i>
-
-                    <span>Newsletters</span>
-
-                </a>
-
-            </nav>
-
+{% block content %}
+<div class="dashboard-grid-modern">
+    <section class="card-modern card-hero">
+        <div class="card-title">
+            HCB Balance
+            <i class="fa-solid fa-ellipsis"></i>
         </div>
-
-        <div class="sidenav-bottom">
-
-            <div class="user-profile-container">
-
-                {% if current_user.avatar %}
-
-                <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
-
-                {% else %}
-
-                <div class="sidenav-avatar-fallback">{{ current_user.name[0]|upper }}</div>
-
-                {% endif %}
-
-                <div class="user-profile-text">
-
-                    <p>{{ current_user.name }}</p>
-
-                    <a href="/sign-out">Logout</a>
-
-                </div>
-
-            </div>
-
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+            <p class="card-value">$23,450.00</p>
+            <p class="card-meta">Total funds available</p>
         </div>
-
-    </aside>
-
-    <button class="sidenav-toggle" id="sidenavToggle" aria-label="Toggle sidebar">
-
-        <i class="fa-solid fa-bars"></i>
-
-    </button>
-
-    <main class="dashboard-main" id="dashboardMain">
-
-        <header class="dashboard-header">
-
-            <div class="dashboard-header-left">
-
-                <h1 class="dashboard-title">Dashboard</h1>
-
-                <p class="dashboard-subtitle">Welcome back, <strong>{{ current_user.name }}</strong>! 👋</p>
-
+        <div
+            style="display: flex; gap: 24px; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px;">
+            <div>
+                <span style="font-size: 12px; opacity: 0.8;">Raised</span>
+                <div style="font-weight: 700;">$12,000</div>
             </div>
-
-            <div class="dashboard-header-right">
-
-                <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
-
-                    <i class="fa-solid fa-moon"></i>
-
-                </button>
-
+            <div>
+                <span style="font-size: 12px; opacity: 0.8;">Spent</span>
+                <div style="font-weight: 700;">$4,500</div>
             </div>
-
-        </header>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-
-        {% if messages %}
-
-        <div class="flash-container">
-
-            {% for category, message in messages %}
-
-            <div class="flash flash--{{ category }}">
-
-                <i
-                    class="fa-solid {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
-
-                {{ message }}
-
-                <button class="flash-close" onclick="this.parentElement.remove()">
-
-                    <i class="fa-solid fa-xmark"></i>
-
-                </button>
-
+            <div>
+                <span style="font-size: 12px; opacity: 0.8;">Grants</span>
+                <div style="font-weight: 700;">$15,950</div>
             </div>
-
-            {% endfor %}
-
         </div>
+    </section>
 
-        {% endif %}
-
-        {% endwith %}
-
-        <section class="dashboard-stats">
-
-            <div class="stat-card">
-
-                <div class="stat-card-icon stat-card-icon--red">
-
-                    <i class="fa-solid fa-users"></i>
-
+    <section class="card-modern card-donut" style="grid-column: span 5;">
+        <div class="card-title">
+            Club Members
+            <i class="fa-solid fa-ellipsis"></i>
+        </div>
+        <p class="card-value" style="font-size: 32px;">42</p>
+        <div class="donut-container">
+            <div class="donut-chart">
+                <div class="donut-inner">
+                    <i class="fa-solid fa-users" style="color: var(--hackclub-red);"></i>
                 </div>
-
-                <div class="stat-card-body">
-
-                    <p class="stat-card-label">Club Members</p>
-
-                    <p class="stat-card-value">—</p>
-
-                </div>
-
             </div>
+        </div>
+    </section>
 
-            <div class="stat-card">
-
-                <div class="stat-card-icon stat-card-icon--blue">
-
+    <section class="card-modern card-stats-side">
+        <div class="card-title">
+            Upcoming Events
+        </div>
+        <div class="activity-list" style="margin-top: 12px;">
+            <div class="activity-item">
+                <div class="activity-icon orange">
                     <i class="fa-solid fa-calendar-check"></i>
-
                 </div>
-
-                <div class="stat-card-body">
-
-                    <p class="stat-card-label">Upcoming Events</p>
-
-                    <p class="stat-card-value">—</p>
-
+                <div class="activity-content">
+                    <h4 class="activity-title">Hackathon Prep</h4>
+                    <p class="activity-subtitle">Oct 24, 2026</p>
                 </div>
-
+                <span class="badge badge-up">Next</span>
             </div>
-
-            <div class="stat-card">
-
-                <div class="stat-card-icon stat-card-icon--green">
-
-                    <i class="fa-solid fa-trophy"></i>
-
+            <div class="activity-item">
+                <div class="activity-icon blue">
+                    <i class="fa-solid fa-code"></i>
                 </div>
-
-                <div class="stat-card-body">
-
-                    <p class="stat-card-label">YSWS Projects</p>
-
-                    <p class="stat-card-value">—</p>
+                <div class="activity-content">
+                    <h4 class="activity-title">Web Dev Workshop</h4>
+                    <p class="activity-subtitle">Nov 2, 2026</p>
                 </div>
             </div>
-            <div class="stat-card">
-
-                <div class="stat-card-icon stat-card-icon--orange">
-
-                    <i class="fa-solid fa-star"></i>
-
-                </div>
-
-                <div class="stat-card-body">
-
-                    <p class="stat-card-label">HCB Balance</p>
-
-                    <p class="stat-card-value">—</p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-        <div class="dashboard-grid">
-
-            <section class="dashboard-card">
-
-                <div class="dashboard-card-header">
-
-                    <h2 class="dashboard-card-title">Quick Links</h2>
-
-                </div>
-
-                <div class="quick-links">
-
-                    <a href="https://ysws.hackclub.com/" target="_blank" rel="noopener" class="quick-link">
-
-                        <div class="quick-link-icon">
-
-                            <i class="fa-solid fa-rocket"></i>
-
-                        </div>
-
-                        <span>YSWS Programs</span>
-
-                        <i class="fa-solid fa-arrow-up-right-from-square quick-link-arrow"></i>
-                    </a>
-                    <a href="https://toolbox.hackclub.com/" target="_blank" rel="noopener" class="quick-link">
-
-                        <div class="quick-link-icon">
-
-                            <i class="fa-solid fa-toolbox"></i>
-
-                        </div>
-
-                        <span>Toolbox</span>
-
-                        <i class="fa-solid fa-arrow-up-right-from-square quick-link-arrow"></i>
-                    </a>
-                    <a href="https://hackclub.slack.com/" target="_blank" rel="noopener" class="quick-link">
-
-                        <div class="quick-link-icon">
-
-                            <i class="fa-brands fa-slack"></i>
-
-                        </div>
-
-                        <span>Slack Community</span>
-
-                        <i class="fa-solid fa-arrow-up-right-from-square quick-link-arrow"></i>
-                    </a>
-                    <a href="https://hcb.hackclub.com/" target="_blank" rel="noopener" class="quick-link">
-
-                        <div class="quick-link-icon">
-
-                            <i class="fa-solid fa-piggy-bank"></i>
-
-                        </div>
-
-                        <span>HCB (Finances)</span>
-
-                        <i class="fa-solid fa-arrow-up-right-from-square quick-link-arrow"></i>
-
-                    </a>
-
-                    <a href="https://guide.leaders.hackclub.com/" target="_blank" rel="noopener" class="quick-link">
-
-                        <div class="quick-link-icon">
-
-                            <i class="fa-solid fa-book-open"></i>
-
-                        </div>
-
-                        <span>Leaders Guide</span>
-
-                        <i class="fa-solid fa-arrow-up-right-from-square quick-link-arrow"></i>
-
-                    </a>
-
-                    <a href="https://hackclub.github.io/map" target="_blank" rel="noopener" class="quick-link">
-
-                        <div class="quick-link-icon">
-
-                            <i class="fa-solid fa-map-location-dot"></i>
-
-                        </div>
-
-                        <span>Club Map</span>
-
-                        <i class="fa-solid fa-arrow-up-right-from-square quick-link-arrow"></i>
-
-                    </a>
-
-                </div>
-
-            </section>
-
-            <section class="dashboard-card">
-
-                <div class="dashboard-card-header">
-
-                    <h2 class="dashboard-card-title">Your Profile</h2>
-
-                    <a href="/dashboard/settings" class="dashboard-card-action">Edit</a>
-
-                </div>
-
-                <div class="profile-display">
-
-                    {% if current_user.avatar %}
-
-                    <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}" class="profile-avatar">
-
-                    {% else %}
-
-                    <div class="profile-avatar profile-avatar--fallback">
-
-                        {{ current_user.name[0] | upper }}
-
-                    </div>
-
-                    {% endif %}
-
-                    <div class="profile-info">
-
-                        <p class="profile-name">{{ current_user.name }}</p>
-
-                        <p class="profile-email">{{ current_user.email }}</p>
-
-                        <span class="profile-badge">
-
-                            <i class="fa-solid fa-circle-check"></i> Hack Club Leader
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <div class="profile-meta">
-
-                    <div class="profile-meta-item">
-
-                        <i class="fa-solid fa-id-badge"></i>
-
-                        <span>ID: {{ current_user.id }}</span>
-
-                    </div>
-
-                    <div class="profile-meta-item">
-
-                        <i class="fa-solid fa-shield-halved"></i>
-
-                        <span>Signed in via {{ current_user.provider | capitalize }}</span>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-            <section class="dashboard-card dashboard-card--full">
-
-                <div class="dashboard-card-header">
-
-                    <h2 class="dashboard-card-title">Getting Started</h2>
-
-                </div>
-
-                <div class="checklist">
-
-                    <div class="checklist-item">
-
-                        <div class="checklist-check checklist-check--done">
-
-                            <i class="fa-solid fa-check"></i>
-
-                        </div>
-
-                        <div class="checklist-body">
-
-                            <p class="checklist-label">Sign in to the Leaders Portal</p>
-
-                            <p class="checklist-desc">You're in! Your Hack Club identity is connected.</p>
-
-                        </div>
-
-                    </div>
-
-                    <div class="checklist-item">
-                        <div class="checklist-check">
-                            <i class="fa-solid fa-check"></i>
-                        </div>
-                        <div class="checklist-body">
-                            <p class="checklist-label">Set up your club on Slack</p>
-                            <p class="checklist-desc">Join the Hack Club Slack and connect with other leaders.</p>
-                        </div>
-                        <a href="https://hackclub.slack.com/" target="_blank" class="checklist-action">Go <i
-                                class="fa-solid fa-arrow-right"></i></a>
-                    </div>
-                    <div class="checklist-item">
-                        <div class="checklist-check">
-                            <i class="fa-solid fa-check"></i>
-                        </div>
-                        <div class="checklist-body">
-                            <p class="checklist-label">Apply for a YSWS grant</p>
-                            <p class="checklist-desc">You Ship, We Ship — run a project and earn hardware for your club.
-                            </p>
-                        </div>
-                        <a href="https://ysws.hackclub.com/" target="_blank" class="checklist-action">Go <i
-                                class="fa-solid fa-arrow-right"></i></a>
-                    </div>
-                    <div class="checklist-item">
-                        <div class="checklist-check">
-                            <i class="fa-solid fa-check"></i>
-                        </div>
-                        <div class="checklist-body">
-                            <p class="checklist-label">Set up HCB for your finances</p>
-                            <p class="checklist-desc">Hack Club Bank gives your club a nonprofit bank account, free.</p>
-                        </div>
-                        <a href="https://hcb.hackclub.com/" target="_blank" class="checklist-action">Go <i
-                                class="fa-solid fa-arrow-right"></i></a>
-                    </div>
-                </div>
-
-            </section>
-
+        </div>
+    </section>
+
+    <section class="card-modern card-activity">
+        <div class="card-title" style="margin-bottom: 24px;">
+            Getting Started Checklist
+            <span class="badge badge-up" style="font-size: 14px;">1 / 4 Done</span>
         </div>
 
-    </main>
+        <div class="activity-list" style="margin-top: 0;">
+            <a href="#" style="text-decoration: none;" class="activity-item">
+                <div class="activity-icon green">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <div class="activity-content">
+                    <h4 class="activity-title">Sign in to the Leaders Portal</h4>
+                    <p class="activity-subtitle">You're in! Your Hack Club identity is connected.</p>
+                </div>
+                <i class="fa-solid fa-ellipsis" style="color: #ccc;"></i>
+            </a>
 
-    <script src="{{ url_for('static', filename='js/sidenav.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
+            <a href="https://hackclub.slack.com/" target="_blank" style="text-decoration: none;"
+                class="activity-item">
+                <div class="activity-icon red">
+                    <i class="fa-brands fa-slack"></i>
+                </div>
+                <div class="activity-content">
+                    <h4 class="activity-title">Set up your club on Slack</h4>
+                    <p class="activity-subtitle">Join the Hack Club Slack and connect with other leaders.
+                    </p>
+                </div>
+                <span class="badge badge-up"><i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    Go</span>
+            </a>
 
+            <a href="https://ysws.hackclub.com/" target="_blank" style="text-decoration: none;"
+                class="activity-item">
+                <div class="activity-icon blue">
+                    <i class="fa-solid fa-rocket"></i>
+                </div>
+                <div class="activity-content">
+                    <h4 class="activity-title">Apply for a YSWS grant</h4>
+                    <p class="activity-subtitle">Run a project and earn hardware for your club.</p>
+                </div>
+                <span class="badge badge-up"><i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    Go</span>
+            </a>
 
-</body>
-
-</html>
+            <a href="https://hcb.hackclub.com/" target="_blank" style="text-decoration: none;"
+                class="activity-item">
+                <div class="activity-icon orange">
+                    <i class="fa-solid fa-piggy-bank"></i>
+                </div>
+                <div class="activity-content">
+                    <h4 class="activity-title">Set up HCB for your finances</h4>
+                    <p class="activity-subtitle">Hack Club Bank gives your club a nonprofit bank account.
+                    </p>
+                </div>
+                <span class="badge badge-up"><i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    Go</span>
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -16,7 +16,7 @@
     top: 0;
     left: 0;
     width: var(--nav-collapsed);
-    height: 100vh;
+    height: 90%;
     background: linear-gradient(180deg, #1c1c1c 0%, #141414 100%);
     color: var(--primary-white);
     display: flex;

@@ -1,0 +1,101 @@
+{% extends "dashboard_layout.html" %}
+
+{% block page_title %}Events{% endblock %}
+{% block page_subtitle %}Plan meetings, workshops, and demo days.{% endblock %}
+
+{% block header_right %}
+<button class="btn-primary" type="button" data-open-modal="eventModal">
+    <span class="button-icon" aria-hidden="true">+</span>
+    New event
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page" data-dashboard-page="events">
+    <section class="dashboard-metrics">
+        <article class="metric-tile">
+            <span class="metric-label">Upcoming</span>
+            <strong id="eventTotal">0</strong>
+        </article>
+        <article class="metric-tile">
+            <span class="metric-label">RSVPs</span>
+            <strong id="rsvpTotal">0</strong>
+        </article>
+        <article class="metric-tile">
+            <span class="metric-label">Expected</span>
+            <strong id="attendeeTotal">0</strong>
+        </article>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2>Upcoming schedule</h2>
+                <p>Track what is happening next and who plans to attend.</p>
+            </div>
+        </div>
+        <div class="timeline-list" id="eventList"></div>
+        <div class="empty-state" id="eventsEmpty" hidden>
+            <h3>No events scheduled</h3>
+            <p>Create a workshop, meeting, or demo day for your club.</p>
+            <button class="btn-primary" type="button" data-open-modal="eventModal">New event</button>
+        </div>
+    </section>
+</div>
+
+<div class="modal-backdrop" id="eventModal" aria-hidden="true">
+    <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+        <header class="modal-header">
+            <h2 id="eventModalTitle">New event</h2>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close">x</button>
+        </header>
+        <form class="modal-form" id="eventForm">
+            <input type="hidden" name="id">
+            <label class="form-group">
+                <span class="form-label">Title</span>
+                <input class="form-input" type="text" name="title" required>
+            </label>
+            <div class="form-row">
+                <label class="form-group">
+                    <span class="form-label">Date</span>
+                    <input class="form-input" type="date" name="date" required>
+                </label>
+                <label class="form-group">
+                    <span class="form-label">Time</span>
+                    <input class="form-input" type="time" name="time" required>
+                </label>
+            </div>
+            <label class="form-group">
+                <span class="form-label">Location</span>
+                <input class="form-input" type="text" name="location" required>
+            </label>
+            <div class="form-row">
+                <label class="form-group">
+                    <span class="form-label">Type</span>
+                    <input class="form-input" type="text" name="type" value="Workshop">
+                </label>
+                <label class="form-group">
+                    <span class="form-label">Expected</span>
+                    <input class="form-input" type="number" name="attendees" min="0" value="12">
+                </label>
+            </div>
+            <label class="toggle-row">
+                <span>
+                    <strong>RSVP as attending</strong>
+                    <small>Show this event in your committed list.</small>
+                </span>
+                <span class="toggle-switch">
+                    <input type="checkbox" name="rsvp">
+                    <span class="toggle-slider"></span>
+                </span>
+            </label>
+            <p class="form-error" id="eventFormError" hidden></p>
+            <div class="modal-actions">
+                <button class="btn-secondary" type="button" id="deleteEventButton" hidden>Delete</button>
+                <button class="btn-secondary" type="button" data-modal-close>Cancel</button>
+                <button class="btn-primary" type="submit">Save event</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

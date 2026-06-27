@@ -1,0 +1,91 @@
+{% extends "dashboard_layout.html" %}
+
+{% block page_title %}Team{% endblock %}
+{% block page_subtitle %}Manage your club leaders and members.{% endblock %}
+
+{% block header_right %}
+<button class="btn-primary" type="button" data-open-modal="memberModal">
+    <span class="button-icon" aria-hidden="true">+</span>
+    Invite member
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page" data-dashboard-page="team">
+    <section class="dashboard-metrics">
+        <article class="metric-tile">
+            <span class="metric-label">Members</span>
+            <strong id="memberTotal">0</strong>
+        </article>
+        <article class="metric-tile">
+            <span class="metric-label">Leaders</span>
+            <strong id="leaderTotal">0</strong>
+        </article>
+        <article class="metric-tile">
+            <span class="metric-label">Invites</span>
+            <strong id="inviteTotal">0</strong>
+        </article>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2>Your club roster</h2>
+                <p>Keep roles, contact info, and invites current.</p>
+            </div>
+            <span class="badge badge-up" id="memberCountLabel">0 people</span>
+        </div>
+        <div class="item-grid roster-grid" id="teamRoster"></div>
+        <div class="empty-state" id="teamEmpty" hidden>
+            <h3>No members yet</h3>
+            <p>Invite your first member to start building the club roster.</p>
+            <button class="btn-primary" type="button" data-open-modal="memberModal">Invite member</button>
+        </div>
+    </section>
+</div>
+
+<div class="modal-backdrop" id="memberModal" aria-hidden="true">
+    <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle">
+        <header class="modal-header">
+            <h2 id="memberModalTitle">Invite member</h2>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close">x</button>
+        </header>
+        <form class="modal-form" id="memberForm">
+            <input type="hidden" name="id">
+            <label class="form-group">
+                <span class="form-label">Name</span>
+                <input class="form-input" type="text" name="name" autocomplete="name" required>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Email</span>
+                <input class="form-input" type="email" name="email" autocomplete="email" required>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Role</span>
+                <select class="form-input" name="role">
+                    <option>Leader</option>
+                    <option>Member</option>
+                    <option>Mentor</option>
+                </select>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Avatar URL</span>
+                <input class="form-input" type="url" name="avatar" placeholder="https://...">
+            </label>
+            <label class="form-group" id="memberStatusGroup">
+                <span class="form-label">Status</span>
+                <select class="form-input" name="status">
+                    <option>Active</option>
+                    <option>Invited</option>
+                </select>
+            </label>
+            <p class="form-error" id="memberFormError" hidden></p>
+            <div class="modal-actions">
+                <button class="btn-secondary" type="button" id="deleteMemberButton" hidden>Remove</button>
+                <button class="btn-secondary" type="button" data-modal-close>Cancel</button>
+                <button class="btn-primary" type="submit">Save member</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

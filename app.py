@@ -1,4 +1,5 @@
 from urllib.parse import urlencode
+from datetime import date
 import os
 import secrets
 import requests
@@ -30,6 +31,210 @@ def login_required(f):
     return decorated
 
 
+def _item_id(prefix):
+    return f'{prefix}-{secrets.token_hex(4)}'
+
+
+def get_csrf_token():
+    token = session.get('csrf_token')
+    if not token:
+        token = secrets.token_urlsafe(24)
+        session['csrf_token'] = token
+    return token
+
+
+def default_dashboard_state():
+    user = session.get('user') or {}
+    leader_name = user.get('name') or 'Club Leader'
+    leader_email = user.get('email') or 'leader@hackclub.com'
+
+    return {
+        'members': [
+            {
+                'id': 'member-leader',
+                'name': leader_name,
+                'email': leader_email,
+                'role': 'Leader',
+                'avatar': user.get('avatar') or '',
+                'status': 'Active',
+            },
+            {
+                'id': 'member-sarah',
+                'name': 'Sarah J.',
+                'email': 'sarah@example.com',
+                'role': 'Member',
+                'avatar': '',
+                'status': 'Active',
+            },
+            {
+                'id': 'member-alex',
+                'name': 'Alex Chen',
+                'email': 'alex@example.com',
+                'role': 'Member',
+                'avatar': '',
+                'status': 'Active',
+            },
+        ],
+        'events': [
+            {
+                'id': 'event-hackathon-prep',
+                'title': 'Hackathon Prep Meeting',
+                'date': '2026-10-24',
+                'time': '15:30',
+                'location': 'Room 402',
+                'type': 'Workshop',
+                'rsvp': True,
+                'attendees': 18,
+            },
+            {
+                'id': 'event-web-dev',
+                'title': 'Web Dev Workshop: Build a Personal Site',
+                'date': '2026-11-02',
+                'time': '15:30',
+                'location': 'Room 402',
+                'type': 'Workshop',
+                'rsvp': False,
+                'attendees': 24,
+            },
+            {
+                'id': 'event-demo-day',
+                'title': 'End of Semester Pizza Party and Demo Day',
+                'date': '2026-12-15',
+                'time': '16:00',
+                'location': 'Library',
+                'type': 'Demo Day',
+                'rsvp': False,
+                'attendees': 31,
+            },
+        ],
+        'shopItems': [
+            {
+                'id': 'stickers',
+                'name': 'Sticker Pack',
+                'description': 'A fresh batch of Hack Club laptop stickers for your members.',
+                'price': 'Free',
+                'action': 'Add to Cart',
+                'icon': 'note-sticky',
+                'accent': 'red',
+            },
+            {
+                'id': 'posters',
+                'name': 'Meeting Posters',
+                'description': 'Fill-in-the-blank posters to hang up around your school.',
+                'price': 'Free',
+                'action': 'Add to Cart',
+                'icon': 'scroll',
+                'accent': 'blue',
+            },
+            {
+                'id': 'arduino',
+                'name': 'Arduino Kit',
+                'description': 'Basic electronics kit for running a hardware workshop.',
+                'price': '$25.00',
+                'action': 'Request Grant',
+                'icon': 'microchip',
+                'accent': 'purple',
+            },
+        ],
+        'cart': [],
+        'orders': [],
+        'newsletters': [
+            {
+                'id': 'dispatch-hardware-grants',
+                'title': 'Winter Hardware Grants are Open',
+                'excerpt': 'Apply for up to $500 to buy Raspberry Pis and Arduinos for your club. Plus, check out the new Sprig game engine.',
+                'body': 'Hardware grant applications are open for clubs planning electronics workshops this winter. Tell us what you want to build, how many members will participate, and what parts your club needs.',
+                'date': '2026-10-12',
+                'readTime': '3 min read',
+                'read': False,
+            },
+            {
+                'id': 'dispatch-hackathon-guide',
+                'title': 'How to host your first hackathon',
+                'excerpt': 'A step-by-step guide from leaders who just hosted an event with 50+ students at their high school.',
+                'body': 'Start with a short theme, pick a realistic schedule, and recruit mentors before opening registration. The best first hackathons keep scope tight and make demo time feel celebratory.',
+                'date': '2026-09-28',
+                'readTime': '5 min read',
+                'read': False,
+            },
+            {
+                'id': 'dispatch-school-year',
+                'title': 'Welcome to the new school year',
+                'excerpt': 'Updates on Hack Club Bank, new sticker designs, and how to recruit members.',
+                'body': 'The new school year kit includes updated posters, refreshed stickers, and a checklist for reaching your first ten members.',
+                'date': '2026-08-15',
+                'readTime': '2 min read',
+                'read': True,
+            },
+        ],
+        'settings': {
+            'clubName': 'Hack Club at State High',
+            'location': 'State College, PA',
+            'website': 'https://statehigh.hackclub.com',
+            'avatar': '',
+            'publicDirectory': True,
+            'emailNotifications': True,
+            'darkModeDefault': False,
+            'newsletterSubscribed': True,
+        },
+    }
+
+
+def get_dashboard_state():
+    if 'dashboard_state' not in session:
+        session['dashboard_state'] = default_dashboard_state()
+
+    state = session['dashboard_state']
+    defaults = default_dashboard_state()
+    for key, value in defaults.items():
+        state.setdefault(key, value)
+
+    settings = state.setdefault('settings', {})
+    for key, value in defaults['settings'].items():
+        settings.setdefault(key, value)
+
+    session['dashboard_state'] = state
+    return state
+
+
+def save_dashboard_state(state):
+    session['dashboard_state'] = state
+    session.modified = True
+
+
+def require_dashboard_csrf():
+    token = request.headers.get('X-CSRF-Token', '')
+    expected = session.get('csrf_token', '')
+    if not token or not expected or not secrets.compare_digest(token, expected):
+        return flask.jsonify({'error': 'Your session token expired. Refresh and try again.'}), 400
+    return None
+
+
+def json_payload():
+    payload = request.get_json(silent=True)
+    return payload if isinstance(payload, dict) else {}
+
+
+def json_error(message, status=400):
+    return flask.jsonify({'error': message}), status
+
+
+def find_by_id(items, item_id):
+    return next((item for item in items if item.get('id') == item_id), None)
+
+
+def clean_text(value, fallback=''):
+    if value is None:
+        return fallback
+    return str(value).strip()
+
+
+def parse_bool(value):
+    if isinstance(value, bool):
+        return value
+    return str(value).lower() in {'1', 'true', 'yes', 'on'}
+
+
 # ── Public pages ──────────────────────────────────────────────────────────────
 
 @app.route('/')
@@ -58,27 +263,414 @@ def sign_out():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return flask.render_template('dashboard.html')
+    return flask.render_template('dashboard.html', dashboard_state=get_dashboard_state())
+
+@app.route('/dashboard/team')
+@login_required
+def dashboard_team():
+    return flask.render_template('dashboard/team.html', dashboard_state=get_dashboard_state())
 
 @app.route('/dashboard/events')
 @login_required
 def dashboard_events():
-    return flask.render_template('dashboard/events.html')
+    return flask.render_template('dashboard/events.html', dashboard_state=get_dashboard_state())
 
 @app.route('/dashboard/shop')
 @login_required
 def dashboard_shop():
-    return flask.render_template('dashboard/shop.html')
+    return flask.render_template('dashboard/shop.html', dashboard_state=get_dashboard_state())
 
 @app.route('/dashboard/newsletters')
 @login_required
 def dashboard_newsletters():
-    return flask.render_template('dashboard/newsletters.html')
+    return flask.render_template('dashboard/newsletters.html', dashboard_state=get_dashboard_state())
 
 @app.route('/dashboard/settings')
 @login_required
 def dashboard_settings():
-    return flask.render_template('dashboard/settings.html')
+    return flask.render_template('dashboard/settings.html', dashboard_state=get_dashboard_state())
+
+
+# Dashboard JSON API
+
+@app.get('/api/dashboard/state')
+@login_required
+def api_dashboard_state():
+    return flask.jsonify({'state': get_dashboard_state()})
+
+
+@app.post('/api/dashboard/team')
+@login_required
+def api_team_add():
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    payload = json_payload()
+    name = clean_text(payload.get('name'))
+    email = clean_text(payload.get('email')).lower()
+    role = clean_text(payload.get('role'), 'Member').title()
+    avatar = clean_text(payload.get('avatar'))
+
+    if not name:
+        return json_error('Member name is required.')
+    if '@' not in email:
+        return json_error('Enter a valid member email.')
+    if role not in {'Leader', 'Member', 'Mentor'}:
+        return json_error('Choose Leader, Member, or Mentor.')
+
+    state = get_dashboard_state()
+    member = {
+        'id': _item_id('member'),
+        'name': name,
+        'email': email,
+        'role': role,
+        'avatar': avatar,
+        'status': 'Invited',
+    }
+    state['members'].append(member)
+    save_dashboard_state(state)
+    return flask.jsonify({'member': member, 'state': state})
+
+
+@app.patch('/api/dashboard/team/<member_id>')
+@login_required
+def api_team_update(member_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    member = find_by_id(state['members'], member_id)
+    if not member:
+        return json_error('Member not found.', 404)
+
+    payload = json_payload()
+    name = clean_text(payload.get('name'), member['name'])
+    email = clean_text(payload.get('email'), member['email']).lower()
+    role = clean_text(payload.get('role'), member['role']).title()
+    avatar = clean_text(payload.get('avatar'), member.get('avatar', ''))
+    status = clean_text(payload.get('status'), member.get('status', 'Active')).title()
+
+    if not name:
+        return json_error('Member name is required.')
+    if '@' not in email:
+        return json_error('Enter a valid member email.')
+    if role not in {'Leader', 'Member', 'Mentor'}:
+        return json_error('Choose Leader, Member, or Mentor.')
+    if status not in {'Active', 'Invited'}:
+        return json_error('Choose Active or Invited status.')
+
+    member.update({
+        'name': name,
+        'email': email,
+        'role': role,
+        'avatar': avatar,
+        'status': status,
+    })
+    save_dashboard_state(state)
+    return flask.jsonify({'member': member, 'state': state})
+
+
+@app.delete('/api/dashboard/team/<member_id>')
+@login_required
+def api_team_delete(member_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    original_count = len(state['members'])
+    state['members'] = [member for member in state['members'] if member.get('id') != member_id]
+    if len(state['members']) == original_count:
+        return json_error('Member not found.', 404)
+    save_dashboard_state(state)
+    return flask.jsonify({'state': state})
+
+
+def event_from_payload(payload, existing=None):
+    existing = existing or {}
+    title = clean_text(payload.get('title'), existing.get('title', ''))
+    event_date = clean_text(payload.get('date'), existing.get('date', ''))
+    event_time = clean_text(payload.get('time'), existing.get('time', ''))
+    location = clean_text(payload.get('location'), existing.get('location', ''))
+    event_type = clean_text(payload.get('type'), existing.get('type', 'Workshop'))
+    attendees = payload.get('attendees', existing.get('attendees', 0))
+
+    if not title:
+        return None, 'Event title is required.'
+    try:
+        date.fromisoformat(event_date)
+    except ValueError:
+        return None, 'Choose a valid event date.'
+    if not event_time:
+        return None, 'Event time is required.'
+    if not location:
+        return None, 'Event location is required.'
+    try:
+        attendees = max(0, int(attendees))
+    except (TypeError, ValueError):
+        attendees = existing.get('attendees', 0)
+
+    return {
+        'title': title,
+        'date': event_date,
+        'time': event_time,
+        'location': location,
+        'type': event_type,
+        'rsvp': parse_bool(payload.get('rsvp', existing.get('rsvp', False))),
+        'attendees': attendees,
+    }, None
+
+
+@app.post('/api/dashboard/events')
+@login_required
+def api_events_add():
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    event_data, error = event_from_payload(json_payload())
+    if error:
+        return json_error(error)
+
+    state = get_dashboard_state()
+    event = {'id': _item_id('event'), **event_data}
+    state['events'].append(event)
+    state['events'].sort(key=lambda item: (item.get('date', ''), item.get('time', '')))
+    save_dashboard_state(state)
+    return flask.jsonify({'event': event, 'state': state})
+
+
+@app.patch('/api/dashboard/events/<event_id>')
+@login_required
+def api_events_update(event_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    event = find_by_id(state['events'], event_id)
+    if not event:
+        return json_error('Event not found.', 404)
+
+    event_data, error = event_from_payload(json_payload(), event)
+    if error:
+        return json_error(error)
+
+    event.update(event_data)
+    state['events'].sort(key=lambda item: (item.get('date', ''), item.get('time', '')))
+    save_dashboard_state(state)
+    return flask.jsonify({'event': event, 'state': state})
+
+
+@app.delete('/api/dashboard/events/<event_id>')
+@login_required
+def api_events_delete(event_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    original_count = len(state['events'])
+    state['events'] = [event for event in state['events'] if event.get('id') != event_id]
+    if len(state['events']) == original_count:
+        return json_error('Event not found.', 404)
+    save_dashboard_state(state)
+    return flask.jsonify({'state': state})
+
+
+@app.post('/api/dashboard/cart')
+@login_required
+def api_cart_add():
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    payload = json_payload()
+    item_id = clean_text(payload.get('itemId'))
+    state = get_dashboard_state()
+    item = find_by_id(state['shopItems'], item_id)
+    if not item:
+        return json_error('Shop item not found.', 404)
+
+    try:
+        quantity = max(1, int(payload.get('quantity', 1) or 1))
+    except (TypeError, ValueError):
+        return json_error('Cart quantity must be a number.')
+    cart_item = find_by_id(state['cart'], item_id)
+    if cart_item:
+        cart_item['quantity'] += quantity
+    else:
+        state['cart'].append({'id': item_id, 'quantity': quantity})
+    save_dashboard_state(state)
+    return flask.jsonify({'state': state})
+
+
+@app.patch('/api/dashboard/cart/<item_id>')
+@login_required
+def api_cart_update(item_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    payload = json_payload()
+    try:
+        quantity = max(0, int(payload.get('quantity', 1)))
+    except (TypeError, ValueError):
+        return json_error('Cart quantity must be a number.')
+
+    state = get_dashboard_state()
+    cart_item = find_by_id(state['cart'], item_id)
+    if not cart_item:
+        return json_error('Cart item not found.', 404)
+
+    if quantity == 0:
+        state['cart'] = [item for item in state['cart'] if item.get('id') != item_id]
+    else:
+        cart_item['quantity'] = quantity
+    save_dashboard_state(state)
+    return flask.jsonify({'state': state})
+
+
+@app.delete('/api/dashboard/cart/<item_id>')
+@login_required
+def api_cart_delete(item_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    state['cart'] = [item for item in state['cart'] if item.get('id') != item_id]
+    save_dashboard_state(state)
+    return flask.jsonify({'state': state})
+
+
+@app.post('/api/dashboard/checkout')
+@login_required
+def api_cart_checkout():
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    if not state['cart']:
+        return json_error('Add at least one item before submitting a request.')
+
+    order = {
+        'id': _item_id('order'),
+        'date': date.today().isoformat(),
+        'status': 'Requested',
+        'items': [dict(item) for item in state['cart']],
+    }
+    state['orders'].insert(0, order)
+    state['cart'] = []
+    save_dashboard_state(state)
+    return flask.jsonify({'order': order, 'state': state})
+
+
+@app.post('/api/dashboard/newsletters')
+@login_required
+def api_newsletters_add():
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    payload = json_payload()
+    title = clean_text(payload.get('title'))
+    excerpt = clean_text(payload.get('excerpt'))
+    body = clean_text(payload.get('body'))
+    read_time = clean_text(payload.get('readTime'), '2 min read')
+
+    if not title:
+        return json_error('Dispatch title is required.')
+    if not excerpt:
+        return json_error('Dispatch excerpt is required.')
+    if not body:
+        return json_error('Dispatch body is required.')
+
+    state = get_dashboard_state()
+    newsletter = {
+        'id': _item_id('dispatch'),
+        'title': title,
+        'excerpt': excerpt,
+        'body': body,
+        'date': date.today().isoformat(),
+        'readTime': read_time,
+        'read': False,
+    }
+    state['newsletters'].insert(0, newsletter)
+    save_dashboard_state(state)
+    return flask.jsonify({'newsletter': newsletter, 'state': state})
+
+
+@app.patch('/api/dashboard/newsletters/<newsletter_id>')
+@login_required
+def api_newsletters_update(newsletter_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    newsletter = find_by_id(state['newsletters'], newsletter_id)
+    if not newsletter:
+        return json_error('Dispatch not found.', 404)
+
+    payload = json_payload()
+    if 'read' in payload:
+        newsletter['read'] = parse_bool(payload.get('read'))
+    save_dashboard_state(state)
+    return flask.jsonify({'newsletter': newsletter, 'state': state})
+
+
+@app.patch('/api/dashboard/newsletter-subscription')
+@login_required
+def api_newsletter_subscription_update():
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    state['settings']['newsletterSubscribed'] = parse_bool(json_payload().get('subscribed'))
+    save_dashboard_state(state)
+    return flask.jsonify({'state': state})
+
+
+@app.patch('/api/dashboard/settings')
+@login_required
+def api_settings_update():
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    payload = json_payload()
+    club_name = clean_text(payload.get('clubName'))
+    location = clean_text(payload.get('location'))
+    website = clean_text(payload.get('website'))
+    avatar = clean_text(payload.get('avatar'))
+
+    if not club_name:
+        return json_error('Club name is required.')
+    if not location:
+        return json_error('School or location is required.')
+    if website and not website.startswith(('http://', 'https://')):
+        return json_error('Club website must start with http:// or https://.')
+    if avatar and not avatar.startswith(('http://', 'https://')):
+        return json_error('Avatar URL must start with http:// or https://.')
+
+    state = get_dashboard_state()
+    state['settings'].update({
+        'clubName': club_name,
+        'location': location,
+        'website': website,
+        'avatar': avatar,
+        'publicDirectory': parse_bool(payload.get('publicDirectory')),
+        'emailNotifications': parse_bool(payload.get('emailNotifications')),
+        'darkModeDefault': parse_bool(payload.get('darkModeDefault')),
+        'newsletterSubscribed': parse_bool(payload.get('newsletterSubscribed')),
+    })
+    save_dashboard_state(state)
+    return flask.jsonify({'state': state})
 
 
 # ── Hack Club OAuth ───────────────────────────────────────────────────────────
@@ -166,8 +758,12 @@ def hackclub_callback():
 
 @app.context_processor
 def inject_user():
-    return dict(current_user=session.get('user'))
+    return dict(
+        current_user=session.get('user'),
+        csrf_token=get_csrf_token() if session.get('user') else '',
+    )
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+

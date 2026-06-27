@@ -1,118 +1,93 @@
-<!DOCTYPE html>
+{% extends "dashboard_layout.html" %}
 
-<html lang="en">
+{% block page_title %}Settings{% endblock %}
+{% block page_subtitle %}Manage your profile and club information.{% endblock %}
 
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Hack Club Leaders Dashboard</title>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidenav.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-
-
-    <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
-
-</head>
-
-<body>
-
-    <aside class="sidenav" id="sidenav">
-        <div class="sidenav-top">
-            <div class="hackclub-logo-container">
-                <a href="/" class="sidenav-brand-link">
-                    <img src="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}" alt="Hack Club">
-                    <span class="sidenav-brand-text">Dashboard</span>
-                </a>
-            </div>
-
-            <nav class="sidenav-links" aria-label="Dashboard">
-                <a href="/dashboard" class="active" data-tooltip="Home">
-                    <i class="fa-solid fa-house"></i>
-                    <span>Home</span>
-                </a>
-                <a href="/dashboard/team" data-tooltip="Team">
-                    <i class="fa-solid fa-user"></i>
-                    <span>Team</span>
-                </a>
-                <a href="/dashboard/shop" data-tooltip="Shop">
-                    <i class="fa-solid fa-bag-shopping"></i>
-                    <span>Shop</span>
-                </a>
-                <a href="/dashboard/events" data-tooltip="Events">
-                    <i class="fa-solid fa-calendar-days"></i>
-                    <span>Events</span>
-                </a>
-                <a href="/dashboard/settings" data-tooltip="Settings">
-                    <i class="fa-solid fa-gear"></i>
-                    <span>Settings</span>
-                </a>
-                <a href="/dashboard/newsletters" data-tooltip="Newsletters">
-                    <i class="fa-solid fa-envelope"></i>
-                    <span>Newsletters</span>
-                </a>
-            </nav>
-        </div>
-
-        <div class="sidenav-bottom">
-            <div class="user-profile-container">
-                {% if current_user.avatar %}
-                <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
-                {% else %}
-                <div class="sidenav-avatar-fallback">{{ current_user.name[0]|upper }}</div>
-                {% endif %}
-                <div class="user-profile-text">
-                    <p>{{ current_user.name }}</p>
-                    <a href="/sign-out">Logout</a>
-                </div>
+{% block content %}
+{% set settings = dashboard_state.settings %}
+<div class="dashboard-page settings-layout" data-dashboard-page="settings">
+    <section class="card-modern dashboard-panel settings-main">
+        <div class="panel-heading">
+            <div>
+                <h2>Club profile</h2>
+                <p>These details power the local dashboard session.</p>
             </div>
         </div>
+
+        <form class="settings-form" id="settingsForm">
+            <label class="form-group">
+                <span class="form-label">Club name</span>
+                <input type="text" class="form-input" name="clubName" value="{{ settings.clubName }}" required>
+            </label>
+            <label class="form-group">
+                <span class="form-label">School / location</span>
+                <input type="text" class="form-input" name="location" value="{{ settings.location }}" required>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Club website</span>
+                <input type="url" class="form-input" name="website" value="{{ settings.website }}" placeholder="https://...">
+            </label>
+            <label class="form-group">
+                <span class="form-label">Profile image URL</span>
+                <input type="url" class="form-input" name="avatar" value="{{ settings.avatar }}" placeholder="https://...">
+            </label>
+            <p class="form-error" id="settingsFormError" hidden></p>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Save changes</button>
+                <span class="save-state" id="settingsSaveState" aria-live="polite"></span>
+            </div>
+        </form>
+    </section>
+
+    <aside class="card-modern dashboard-panel settings-side">
+        <div class="club-preview" id="clubPreview">
+            <div class="club-preview-avatar" id="clubPreviewAvatar">H</div>
+            <div>
+                <h2 id="clubPreviewName">{{ settings.clubName }}</h2>
+                <p id="clubPreviewLocation">{{ settings.location }}</p>
+            </div>
+        </div>
+
+        <label class="toggle-row">
+            <span>
+                <strong>Public directory</strong>
+                <small>Show the club on the Hack Club map.</small>
+            </span>
+            <span class="toggle-switch">
+                <input type="checkbox" name="publicDirectory" form="settingsForm" {% if settings.publicDirectory %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </span>
+        </label>
+        <label class="toggle-row">
+            <span>
+                <strong>Email notifications</strong>
+                <small>Receive HQ dispatches and reminders.</small>
+            </span>
+            <span class="toggle-switch">
+                <input type="checkbox" name="emailNotifications" form="settingsForm" {% if settings.emailNotifications %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </span>
+        </label>
+        <label class="toggle-row">
+            <span>
+                <strong>Dark mode default</strong>
+                <small>Load this dashboard in the dark theme.</small>
+            </span>
+            <span class="toggle-switch">
+                <input type="checkbox" name="darkModeDefault" form="settingsForm" {% if settings.darkModeDefault %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </span>
+        </label>
+        <label class="toggle-row">
+            <span>
+                <strong>Newsletter subscription</strong>
+                <small>Keep leader dispatches enabled.</small>
+            </span>
+            <span class="toggle-switch">
+                <input type="checkbox" name="newsletterSubscribed" form="settingsForm" {% if settings.newsletterSubscribed %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </span>
+        </label>
     </aside>
-
-    <!-- Mobile toggle -->
-    <button class="sidenav-toggle" id="sidenavToggle" aria-label="Toggle sidebar">
-        <i class="fa-solid fa-bars"></i>
-    </button>
-
-    <secetion class="settings-container">
-
-        <div class="settings-header">
-
-            <h1>Settings</h1>
-
-            <p>Manage your account settings and preferences here.</p>
-
-        </div>
-
-        <div class="settings-content">
-
-            <div class="settings-section">
-
-                <h2>Account Information</h2>
-
-                <form action="/dashboard/settings" method="POST" class="settings-form">
-
-                    <label for="name">Name</label>
-
-                    <input type="text" id="name" name="name" value="{{ current_user.name }}" required>
-
-                    <label for="email">Email</label>
-
-                    <input type="email" id="email" name="email" value="{{ current_user.email }}" required>
-
-                    <button type="submit" class="save-button">Save Changes</button>
-
-                </form>
-
-            </div>
-
-        </div>
-
-    </secetion>
-
-</body>
-
-</html>
+</div>
+{% endblock %}

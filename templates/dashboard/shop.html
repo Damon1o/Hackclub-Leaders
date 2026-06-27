@@ -1,0 +1,40 @@
+{% extends "dashboard_layout.html" %}
+
+{% block page_title %}Shop{% endblock %}
+{% block page_subtitle %}Request stickers, posters, and hardware for your club.{% endblock %}
+
+{% block header_right %}
+<button class="btn-secondary" type="button" id="viewCartButton">
+    Cart <span id="cartCount">0</span>
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page shop-layout" data-dashboard-page="shop">
+    <section class="card-modern dashboard-panel shop-catalog">
+        <div class="panel-heading">
+            <div>
+                <h2>Swag and hardware</h2>
+                <p>Build a request and submit it for your club session.</p>
+            </div>
+        </div>
+        <div class="item-grid" id="shopGrid"></div>
+    </section>
+
+    <aside class="card-modern dashboard-panel cart-panel" id="cartPanel">
+        <div class="panel-heading compact">
+            <div>
+                <h2>Request cart</h2>
+                <p id="cartSummary">No items yet.</p>
+            </div>
+        </div>
+        <div class="cart-list" id="cartList"></div>
+        <div class="empty-state tight" id="cartEmpty">
+            <h3>Your cart is empty</h3>
+            <p>Add materials before submitting a request.</p>
+        </div>
+        <button class="btn-primary full-width" type="button" id="checkoutButton">Submit request</button>
+        <div class="order-history" id="orderHistory"></div>
+    </aside>
+</div>
+{% endblock %}

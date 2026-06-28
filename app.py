@@ -15,7 +15,7 @@ app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
 HACKCLUB_CLIENT_ID     = os.environ.get('HACKCLUB_CLIENT_ID', '')
 HACKCLUB_CLIENT_SECRET = os.environ.get('HACKCLUB_CLIENT_SECRET', '')
-BASE_URL               = os.environ.get('BASE_URL', 'http://127.0.0.1:5000')
+BASE_URL               = os.environ.get('BASE_URL', 'https://hackclub-leaders.vercel.app')
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

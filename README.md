@@ -160,4 +160,8 @@ pip freeze > requirements.txt
 
 ## License
 
+<<<<<<< HEAD
 MIT
+=======
+MIT
+>>>>>>> ac281c25c586812d05ca7007561e0afc94f1f139

@@ -25,11 +25,13 @@
             </label>
             <label class="form-group">
                 <span class="form-label">Club website</span>
-                <input type="url" class="form-input" name="website" value="{{ settings.website }}" placeholder="https://...">
+                <input type="url" class="form-input" name="website" value="{{ settings.website }}"
+                    placeholder="https://...">
             </label>
             <label class="form-group">
                 <span class="form-label">Profile image URL</span>
-                <input type="url" class="form-input" name="avatar" value="{{ settings.avatar }}" placeholder="https://...">
+                <input type="url" class="form-input" name="avatar" value="{{ settings.avatar }}"
+                    placeholder="https://...">
             </label>
             <p class="form-error" id="settingsFormError" hidden></p>
             <div class="form-actions">
@@ -54,7 +56,8 @@
                 <small>Show the club on the Hack Club map.</small>
             </span>
             <span class="toggle-switch">
-                <input type="checkbox" name="publicDirectory" form="settingsForm" {% if settings.publicDirectory %}checked{% endif %}>
+                <input type="checkbox" name="publicDirectory" form="settingsForm" {% if settings.publicDirectory
+                    %}checked{% endif %}>
                 <span class="toggle-slider"></span>
             </span>
         </label>
@@ -64,17 +67,20 @@
                 <small>Receive HQ dispatches and reminders.</small>
             </span>
             <span class="toggle-switch">
-                <input type="checkbox" name="emailNotifications" form="settingsForm" {% if settings.emailNotifications %}checked{% endif %}>
+                <input type="checkbox" name="emailNotifications" form="settingsForm" {% if settings.emailNotifications
+                    %}checked{% endif %}>
                 <span class="toggle-slider"></span>
             </span>
         </label>
+
         <label class="toggle-row">
             <span>
                 <strong>Dark mode default</strong>
                 <small>Load this dashboard in the dark theme.</small>
             </span>
             <span class="toggle-switch">
-                <input type="checkbox" name="darkModeDefault" form="settingsForm" {% if settings.darkModeDefault %}checked{% endif %}>
+                <input type="checkbox" name="darkModeDefault" form="settingsForm" {% if settings.darkModeDefault
+                    %}checked{% endif %}>
                 <span class="toggle-slider"></span>
             </span>
         </label>
@@ -84,7 +90,8 @@
                 <small>Keep leader dispatches enabled.</small>
             </span>
             <span class="toggle-switch">
-                <input type="checkbox" name="newsletterSubscribed" form="settingsForm" {% if settings.newsletterSubscribed %}checked{% endif %}>
+                <input type="checkbox" name="newsletterSubscribed" form="settingsForm" {% if
+                    settings.newsletterSubscribed %}checked{% endif %}>
                 <span class="toggle-slider"></span>
             </span>
         </label>

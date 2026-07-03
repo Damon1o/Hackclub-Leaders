@@ -373,7 +373,7 @@
             type: 'YSWS',
             tags: ['ysws', 'web'],
             description: 'Build a website with good vibes and throw a club pizza party.',
-            image: '/static/images/events/vibes/vibes-background.png',
+            image: 'N/A',
             logo: 'N/A',
             backgroundColor: '#ffdd58',
             imageFit: 'contain',
@@ -437,7 +437,7 @@
             type: 'YSWS',
             tags: ['ysws', 'web'],
             description: 'Ship 7 weeks of computing and coding challenges and earn prizes from the shop.',
-            image: '/static/images/events/shipyard/shipyard-background.png',
+            image: 'N/A',
             logo: 'N/A',
             backgroundColor: '#80d7ff',
             imageFit: 'contain',
@@ -485,7 +485,7 @@
             type: 'YSWS',
             tags: ['ysws', 'web', 'hardware'],
             description: 'Build a public API and get a Raspberry Pi Zero 2W to host it on.',
-            image: '/static/images/events/raspapi/raspapi-background.png',
+            image: 'N/A',
             logo: 'N/A',
             backgroundColor: '#e7f8ef',
             imageFit: 'contain',
@@ -501,7 +501,7 @@
             type: 'YSWS',
             tags: ['ysws'],
             description: 'Set goals, ship every week, and earn prizes for following through.',
-            image: '/static/images/events/resolution/resolution-background.png',
+            image: 'N/A',
             logo: 'N/A',
             backgroundColor: '#121217',
             imageFit: 'cover',
@@ -549,7 +549,7 @@
             type: 'YSWS',
             tags: ['ysws', 'web'],
             description: 'Join a collaborative canvas of websites and get hosting and domain credits.',
-            image: '/static/images/events/iplace/iplace-background.png',
+            image: 'N/A',
             logo: 'N/A',
             backgroundColor: '#efe7d7',
             imageFit: 'cover',
@@ -565,7 +565,7 @@
             type: 'YSWS',
             tags: ['ysws', 'web'],
             description: 'Build a bookmarklet and get food for your club.',
-            image: '/static/images/events/hacklet-v2/hacklet-v2-background.png',
+            image: 'N/A',
             logo: 'N/A',
             backgroundColor: '#000',
             imageFit: 'cover',
@@ -581,7 +581,7 @@
             type: 'YSWS',
             tags: ['ysws', 'hardware'],
             description: 'Build a real systems project in Zig or C, build a terminal program, or do both.',
-            image: '/static/images/events/syscall-x-terminal-craft/syscall-x-terminal-craft-background.png',
+            image: 'N/A',
             logo: 'N/A',
             backgroundColor: '#050805',
             imageFit: 'cover',
@@ -597,7 +597,7 @@
             type: 'YSWS',
             tags: ['ysws', 'games'],
             description: 'Make a themed visual novel and earn prizes.',
-            image: '/static/images/events/storyboard/storyboard-background.png',
+            image: 'N/A',
             logo: 'N/A',
             backgroundColor: '#ffeef6',
             imageFit: 'contain',
@@ -676,9 +676,13 @@
             card.style.border = `2px solid ${event.borderColor}`;
         }
 
+        const visualContent = event.logo !== 'N/A'
+            ? `<img src="${event.logo}" alt="${event.title} logo" class="event-card-logo">`
+            : (event.image === 'N/A' ? `<span class="event-card-fallback">${event.title}</span>` : '');
+
         card.innerHTML = `
             <div class="event-card-visual" ${style}>
-                ${event.logo !== 'N/A' ? `<img src="${event.logo}" alt="${event.title} logo" class="event-card-logo">` : ''}
+                ${visualContent}
             </div>
             <div class="event-card-body">
                 <div class="event-card-type">${event.type}</div>

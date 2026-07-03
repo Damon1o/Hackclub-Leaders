@@ -8,8 +8,8 @@ A web portal for Hack Club leaders built with Flask. Sign in with your Hack Club
 
 - **Hack Club OAuth 2.0** — sign in via [identity.hackclub.com](https://identity.hackclub.com), no passwords required
 - **Protected dashboard** — all `/dashboard/*` routes require authentication
-- **Collapsible sidebar** — icon-only rail by default, expands on hover
-- **Dark mode** — toggleable, persisted via JS
+- **Club management** — team roster, event schedule with RSVPs, shop request cart, newsletter dispatches, and club settings, all backed by a JSON API with CSRF protection
+- **Dark mode** — toggleable, persisted via JS, with a per-club default in settings
 - **Flash messages** — success/error feedback on auth events
 - **Jinja2 templating** — `current_user` injected into every template via context processor
 
@@ -23,25 +23,20 @@ A web portal for Hack Club leaders built with Flask. Sign in with your Hack Club
 ├── .env                    # Environment variables (never commit this)
 ├── requirements.txt
 ├── static/
-│   ├── css/
-│   │   ├── base.css
-│   │   ├── borders.css
-│   │   ├── dashboard.css
-│   │   ├── dark-mode.css
-│   │   ├── footer.css
-│   │   └── sidenav.css
-│   ├── js/
-│   │   ├── dark-mode.js
-│   │   ├── navigation.js
-│   │   └── sign-in.js
+│   ├── css/            # base, navigation, hero, events, dashboard, dark-mode, ...
+│   ├── js/             # dashboard.js, events.js, hero.js, navigation.js, dark-mode.js, sign-in.js
+│   ├── fonts/
 │   └── images/
+│       ├── events/
 │       └── hackclub-site/
 └── templates/
     ├── index.html
     ├── events.html
     ├── sign-in.html
     ├── dashboard.html
+    ├── dashboard_layout.html
     └── dashboard/
+        ├── team.html
         ├── events.html
         ├── shop.html
         ├── newsletters.html
@@ -104,7 +99,11 @@ The app will be available at [http://127.0.0.1:5000](http://127.0.0.1:5000).
 | `/sign-in` | No | Sign-in page |
 | `/sign-out` | No | Clears session, redirects home |
 | `/dashboard` | Yes | Leader dashboard |
+| `/dashboard/team` | Yes | Team roster management |
 | `/dashboard/events` | Yes | Events management |
+| `/dashboard/ships` | Yes | Shipped-project tracker |
+| `/dashboard/levels` | Yes | Club level progression |
+| `/dashboard/tools` | Yes | Leader tools & resources |
 | `/dashboard/shop` | Yes | Shop |
 | `/dashboard/newsletters` | Yes | Newsletters |
 | `/dashboard/settings` | Yes | Account settings |
@@ -130,15 +129,25 @@ CSRF is prevented using a `state` parameter stored in the session and verified o
 
 ---
 
-## Deployment
+## Deployment (Vercel)
 
-When deploying (e.g. to Railway, Render, or a VPS), update your `.env`:
+The repo is set up for Vercel: `vercel.json` builds `app.py` with `@vercel/python` and serves `static/` from the CDN.
 
-```env
-BASE_URL=https://your-production-domain.com
-```
+1. Import the repo at [vercel.com/new](https://vercel.com/new) (or run `npx vercel`).
+2. In **Project Settings → Environment Variables**, set:
 
-Make sure `SECRET_KEY` is a strong, stable value in production — rotating it will invalidate all existing sessions.
+| Variable | Value |
+|---|---|
+| `SECRET_KEY` | A long random string — **required**: without it each serverless instance generates its own key and sessions/CSRF break randomly |
+| `HACKCLUB_CLIENT_ID` | OAuth client ID from Hack Club Identity |
+| `HACKCLUB_CLIENT_SECRET` | OAuth client secret |
+| `BASE_URL` | Your production URL, e.g. `https://your-app.vercel.app` (no trailing slash) |
+
+3. Register `{BASE_URL}/auth/hackclub/callback` as the redirect URI at [identity.hackclub.com](https://identity.hackclub.com).
+
+Preview deployments work without `BASE_URL` (the app falls back to the request host via `ProxyFix`), but sign-in only succeeds on hosts whose callback URL is registered with Hack Club Identity.
+
+Deploying elsewhere (Railway, Render, a VPS) needs no config changes — just the same environment variables.
 
 ---
 
@@ -160,8 +169,4 @@ pip freeze > requirements.txt
 
 ## License
 
-<<<<<<< HEAD
 MIT
-=======
-MIT
->>>>>>> ac281c25c586812d05ca7007561e0afc94f1f139

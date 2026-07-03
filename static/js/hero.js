@@ -42,3 +42,40 @@
         if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
     });
 })();
+
+// Email "Join!" CTAs — hand the visitor to the sign-in page to continue with
+// Hack Club Auth. The email just personalizes the hand-off.
+(function () {
+    function wireJoin(inputSelector, buttonSelector) {
+        const input = document.querySelector(inputSelector);
+        const button = document.querySelector(buttonSelector);
+        if (!input || !button) return;
+
+        function join() {
+            const email = input.value.trim();
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                input.setCustomValidity('Enter a valid email like orpheus@hackclub.com');
+                input.reportValidity();
+                return;
+            }
+            input.setCustomValidity('');
+            const query = email ? `?email=${encodeURIComponent(email)}` : '';
+            window.location.href = `/sign-in${query}`;
+        }
+
+        button.addEventListener('click', event => {
+            event.preventDefault();
+            join();
+        });
+        input.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                join();
+            }
+        });
+        input.addEventListener('input', () => input.setCustomValidity(''));
+    }
+
+    wireJoin('.sign-up-input', '.sign-up-button');
+    wireJoin('#ready-email-input', '.final-cta-join-button');
+})();

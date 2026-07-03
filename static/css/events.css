@@ -182,6 +182,21 @@
     filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.24));
 }
 
+/* Title stand-in for cards that ship no logo or artwork */
+.event-card-fallback {
+    position: relative;
+    z-index: 1;
+    font-family: var(--hackclub-title-font);
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: var(--primary-white);
+    background: rgba(23, 23, 29, 0.45);
+    padding: 8px 20px;
+    border-radius: 12px;
+    max-width: 85%;
+    text-align: center;
+}
+
 .event-card-body {
     padding: 20px 24px;
     display: flex;

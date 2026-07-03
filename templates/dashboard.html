@@ -1,137 +1,86 @@
 {% extends "dashboard_layout.html" %}
 
-{% block page_title %}Analytics{% endblock %}
+{% block page_title %}Home{% endblock %}
 {% block page_subtitle %}Welcome back, <strong>{{ current_user.name if current_user else 'User' }}</strong>! 👋{% endblock %}
 
 {% block content %}
-<div class="dashboard-grid-modern">
+<div class="dashboard-grid-modern dashboard-page" data-dashboard-page="home">
     <section class="card-modern card-hero">
         <div class="card-title">
-            HCB Balance
-            <i class="fa-solid fa-ellipsis"></i>
+            <span id="homeClubName">Your club</span>
         </div>
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-            <p class="card-value">$23,450.00</p>
-            <p class="card-meta">Total funds available</p>
+            <p class="card-value" id="homeMemberTotal">0</p>
+            <p class="card-meta" id="homeClubMeta">members strong</p>
         </div>
         <div
             style="display: flex; gap: 24px; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px;">
             <div>
-                <span style="font-size: 12px; opacity: 0.8;">Raised</span>
-                <div style="font-weight: 700;">$12,000</div>
+                <span style="font-size: 12px; opacity: 0.8;">Events</span>
+                <div style="font-weight: 700;" id="homeEventTotal">0</div>
             </div>
             <div>
-                <span style="font-size: 12px; opacity: 0.8;">Spent</span>
-                <div style="font-weight: 700;">$4,500</div>
+                <span style="font-size: 12px; opacity: 0.8;">RSVPs</span>
+                <div style="font-weight: 700;" id="homeRsvpTotal">0</div>
             </div>
             <div>
-                <span style="font-size: 12px; opacity: 0.8;">Grants</span>
-                <div style="font-weight: 700;">$15,950</div>
+                <span style="font-size: 12px; opacity: 0.8;">Shop requests</span>
+                <div style="font-weight: 700;" id="homeOrderTotal">0</div>
+            </div>
+            <div>
+                <span style="font-size: 12px; opacity: 0.8;">Ships</span>
+                <div style="font-weight: 700;" id="homeShipTotal">0</div>
             </div>
         </div>
     </section>
 
-    <section class="card-modern card-donut" style="grid-column: span 5;">
+    <section class="card-modern card-donut">
         <div class="card-title">
             Club Members
-            <i class="fa-solid fa-ellipsis"></i>
         </div>
-        <p class="card-value" style="font-size: 32px;">42</p>
+        <p class="card-value" style="font-size: 32px;" id="homeRosterTotal">0</p>
         <div class="donut-container">
-            <div class="donut-chart">
+            <div class="donut-chart" id="homeRosterDonut">
                 <div class="donut-inner">
                     <i class="fa-solid fa-users" style="color: var(--hackclub-red);"></i>
                 </div>
             </div>
+        </div>
+        <p class="card-meta" id="homeRosterBreakdown" style="text-align: center;"></p>
+    </section>
+
+    <section class="card-modern card-level-strip">
+        <div class="card-title">
+            Club level
+            <a class="text-button" href="/dashboard/levels">View perks</a>
+        </div>
+        <div class="level-strip-row">
+            <strong class="level-strip-value" id="homeLevelName">Level 1</strong>
+            <div class="level-progress-track" aria-hidden="true">
+                <div class="level-progress-fill" id="homeLevelFill"></div>
+            </div>
+            <span class="card-meta" id="homeLevelText"></span>
         </div>
     </section>
 
     <section class="card-modern card-stats-side">
         <div class="card-title">
             Upcoming Events
+            <a class="text-button" href="/dashboard/events">View all</a>
         </div>
-        <div class="activity-list" style="margin-top: 12px;">
-            <div class="activity-item">
-                <div class="activity-icon orange">
-                    <i class="fa-solid fa-calendar-check"></i>
-                </div>
-                <div class="activity-content">
-                    <h4 class="activity-title">Hackathon Prep</h4>
-                    <p class="activity-subtitle">Oct 24, 2026</p>
-                </div>
-                <span class="badge badge-up">Next</span>
-            </div>
-            <div class="activity-item">
-                <div class="activity-icon blue">
-                    <i class="fa-solid fa-code"></i>
-                </div>
-                <div class="activity-content">
-                    <h4 class="activity-title">Web Dev Workshop</h4>
-                    <p class="activity-subtitle">Nov 2, 2026</p>
-                </div>
-            </div>
+        <div class="activity-list" id="homeUpcomingEvents" style="margin-top: 12px;"></div>
+        <div class="empty-state" id="homeEventsEmpty" hidden>
+            <h3>Nothing scheduled</h3>
+            <p>Plan your next meeting from the Events page.</p>
         </div>
     </section>
 
     <section class="card-modern card-activity">
         <div class="card-title" style="margin-bottom: 24px;">
             Getting Started Checklist
-            <span class="badge badge-up" style="font-size: 14px;">1 / 4 Done</span>
+            <span class="badge badge-up" style="font-size: 14px;" id="homeChecklistCount">0 / 4 Done</span>
         </div>
-
-        <div class="activity-list" style="margin-top: 0;">
-            <a href="#" style="text-decoration: none;" class="activity-item">
-                <div class="activity-icon green">
-                    <i class="fa-solid fa-check"></i>
-                </div>
-                <div class="activity-content">
-                    <h4 class="activity-title">Sign in to the Leaders Portal</h4>
-                    <p class="activity-subtitle">You're in! Your Hack Club identity is connected.</p>
-                </div>
-                <i class="fa-solid fa-ellipsis" style="color: #ccc;"></i>
-            </a>
-
-            <a href="https://hackclub.slack.com/" target="_blank" style="text-decoration: none;"
-                class="activity-item">
-                <div class="activity-icon red">
-                    <i class="fa-brands fa-slack"></i>
-                </div>
-                <div class="activity-content">
-                    <h4 class="activity-title">Set up your club on Slack</h4>
-                    <p class="activity-subtitle">Join the Hack Club Slack and connect with other leaders.
-                    </p>
-                </div>
-                <span class="badge badge-up"><i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    Go</span>
-            </a>
-
-            <a href="https://ysws.hackclub.com/" target="_blank" style="text-decoration: none;"
-                class="activity-item">
-                <div class="activity-icon blue">
-                    <i class="fa-solid fa-rocket"></i>
-                </div>
-                <div class="activity-content">
-                    <h4 class="activity-title">Apply for a YSWS grant</h4>
-                    <p class="activity-subtitle">Run a project and earn hardware for your club.</p>
-                </div>
-                <span class="badge badge-up"><i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    Go</span>
-            </a>
-
-            <a href="https://hcb.hackclub.com/" target="_blank" style="text-decoration: none;"
-                class="activity-item">
-                <div class="activity-icon orange">
-                    <i class="fa-solid fa-piggy-bank"></i>
-                </div>
-                <div class="activity-content">
-                    <h4 class="activity-title">Set up HCB for your finances</h4>
-                    <p class="activity-subtitle">Hack Club Bank gives your club a nonprofit bank account.
-                    </p>
-                </div>
-                <span class="badge badge-up"><i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    Go</span>
-            </a>
-        </div>
+        <div class="activity-list" style="margin-top: 0;" id="homeChecklist"></div>
     </section>
 </div>
 {% endblock %}

@@ -5,6 +5,14 @@ body.dark-mode {
     color: var(--primary-white);
 }
 
+/* Flash banners */
+
+body.dark-mode .flash-banner {
+    background: #2d2d38;
+    color: var(--primary-white);
+    border-color: #3d3d4d;
+}
+
 /* Navigation */
 
 body.dark-mode .navigation-bar.scrolled {
@@ -60,7 +68,7 @@ body.dark-mode .navigation-bar .nav-links ul li a:hover .dropdown-icon {
 
 /* Hero */
 body.dark-mode .hero {
-    background: linear-gradient(rgba(31, 31, 39, 0.7) 60%, rgba(236, 55, 80, 0.3) 100%), url('../images/background.webp');
+    background: linear-gradient(rgba(31, 31, 39, 0.7) 60%, rgba(236, 55, 80, 0.3) 100%), url('../images/hackclub-site/background.webp');
     background-size: cover;
     background-position: center;
 }

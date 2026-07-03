@@ -1,0 +1,75 @@
+{% extends "dashboard_layout.html" %}
+
+{% block title %}Club Levels{% endblock %}
+{% block page_title %}Club Levels{% endblock %}
+{% block page_subtitle %}Ship projects to unlock perks for your whole club.{% endblock %}
+
+{% block content %}
+<div class="dashboard-page" data-dashboard-page="levels">
+    <section class="card-modern level-status-card">
+        <span class="metric-label">Current level</span>
+        <strong class="level-status-value" id="levelCurrentName">Level 1</strong>
+        <p class="card-meta" id="levelShipCount">0 ships completed</p>
+        <div class="level-progress-track" role="progressbar" aria-label="Progress to next level"
+            aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="levelProgressTrack">
+            <div class="level-progress-fill" id="levelProgressFill"></div>
+        </div>
+        <p class="card-meta" id="levelProgressText"></p>
+    </section>
+
+    <section class="levels-grid">
+        <article class="card-modern level-card" data-level="1">
+            <div class="level-card-head">
+                <span class="level-dot" aria-hidden="true"></span>
+                <h2>Level 1</h2>
+                <span class="badge level-badge" data-level-badge="1"></span>
+            </div>
+            <p class="level-requirement">Every registered club starts here.</p>
+            <ul class="level-perks">
+                <li><strong>Map listing</strong> — your club on the official Hack Club Map</li>
+                <li><strong>Program eligibility</strong> — join Hack Club programs &amp; initiatives</li>
+                <li><strong>Branding rights</strong> — use Hack Club branding for your club</li>
+                <li><strong>Team support</strong> — help from the Hack Club team</li>
+                <li><strong>Bi-weekly newsletter</strong> — updates and resources by email</li>
+            </ul>
+        </article>
+
+        <article class="card-modern level-card" data-level="2">
+            <div class="level-card-head">
+                <span class="level-dot" aria-hidden="true"></span>
+                <h2>Level 2</h2>
+                <span class="badge level-badge" data-level-badge="2"></span>
+            </div>
+            <p class="level-requirement">Ship <strong>4 projects</strong> to reach this level. Everything in Level 1, plus:</p>
+            <ul class="level-perks">
+                <li><strong>Monthly promo packages</strong> — posters and materials to promote your club</li>
+                <li><strong>Free stickers</strong> — <a href="http://forms.hackclub.com/stickers" target="_blank" rel="noopener noreferrer">order here</a> to hand out at meetings</li>
+                <li><strong>Club mail</strong> — monthly physical packages for your club</li>
+            </ul>
+        </article>
+
+        <article class="card-modern level-card" data-level="3">
+            <div class="level-card-head">
+                <span class="level-dot" aria-hidden="true"></span>
+                <h2>Level 3</h2>
+                <span class="badge level-badge" data-level-badge="3"></span>
+            </div>
+            <p class="level-requirement">Ship <strong>8 projects</strong> to reach this level. Everything in Levels 1–2, plus:</p>
+            <ul class="level-perks">
+                <li><strong>Premium perks</strong> — additional exclusive benefits</li>
+                <li><strong>Leadership recognition</strong> — recognized as a thriving Hack Club</li>
+            </ul>
+        </article>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full level-cta">
+        <div class="panel-heading">
+            <div>
+                <h2>Ready to level up?</h2>
+                <p>Log the projects your members have shipped and watch the perks unlock.</p>
+            </div>
+            <a class="btn-primary" href="/dashboard/ships">Log a ship</a>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -356,6 +356,27 @@
     color: var(--hackclub-red);
 }
 
+/* ── Checklist toggles ────────────────────────────────────────────────────── */
+
+.checklist-toggle {
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.checklist-toggle:not(:disabled):hover {
+    transform: scale(1.08);
+}
+
+.checklist-toggle:disabled {
+    cursor: default;
+}
+
+.activity-item.is-done .activity-title {
+    text-decoration: line-through;
+    color: #888;
+}
+
 /* ── Donut chart ──────────────────────────────────────────────────────────── */
 
 .donut-container {
@@ -1767,4 +1788,456 @@ body.dark-mode .dashboard-footer a {
         align-items: flex-end;
         padding: 12px;
     }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   HACK CLUB THEME RESTYLE
+   Tokens from theme.hackclub.com: snow #f9fafc, smoke #e0e6ed, slate #3c4858,
+   muted #8492a6, darker #121217. Pill buttons + scale hover like hackclub.com.
+───────────────────────────────────────────────────────────────────────────── */
+
+.dashboard-layout {
+    /* Dashboard headings use Phantom Sans Bold, like hackclub.com */
+    --hackclub-title-font: 'Phantom Sans', system-ui, sans-serif;
+    background: #f9fafc;
+}
+
+/* ── Reactive background canvas ───────────────────────────────────────────── */
+
+.dashboard-bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.dashboard-wrapper,
+.dashboard-footer {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Cards: Hack Club radii, borders, shadows ─────────────────────────────── */
+
+.card-modern,
+.metric-tile,
+.item-card,
+.shop-item,
+.timeline-item,
+.newsletter-row,
+.empty-state,
+.dashboard-modal {
+    border-radius: 12px;
+}
+
+.card-modern,
+.metric-tile {
+    border: 1px solid #e0e6ed;
+    box-shadow: 0 8px 32px rgba(20, 45, 78, 0.0625);
+}
+
+.card-hero {
+    border: none;
+}
+
+.dashboard-title {
+    color: #1f2d3d;
+    letter-spacing: -0.02em;
+    font-size: 42px;
+}
+
+.dashboard-subtitle,
+.card-meta,
+.metric-label {
+    color: #8492a6;
+}
+
+/* ── Pill buttons with hackclub.com scale hover ───────────────────────────── */
+
+.btn-primary,
+.btn-secondary,
+.button-primary {
+    border-radius: 999px;
+    font-family: var(--hackclub-body-font), system-ui, sans-serif;
+    font-weight: 700;
+    transition: transform 0.125s ease-in-out, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.btn-primary,
+.button-primary {
+    background: linear-gradient(-45deg, #ec3750, #ff5b77);
+}
+
+.btn-primary:hover,
+.button-primary:hover {
+    transform: scale(1.0625);
+    background: linear-gradient(-45deg, #ec3750, #ff5b77);
+    box-shadow: 0 6px 18px rgba(236, 55, 80, 0.35);
+}
+
+.btn-secondary {
+    background: #e0e6ed;
+    color: #3c4858;
+}
+
+.btn-secondary:hover {
+    background: #d3dce6;
+    transform: scale(1.0625);
+}
+
+.badge {
+    border-radius: 999px;
+}
+
+/* ── Sidebar polish ───────────────────────────────────────────────────────── */
+
+.dashboard-sidebar {
+    background: #121217;
+}
+
+.dashboard-sidebar-link {
+    width: 46px;
+    height: 46px;
+}
+
+/* ── Level progress ───────────────────────────────────────────────────────── */
+
+.level-progress-track {
+    flex: 1;
+    min-width: 120px;
+    height: 12px;
+    border-radius: 999px;
+    background: #e0e6ed;
+    overflow: hidden;
+}
+
+.level-progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ec3750, #ff8c37);
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card-level-strip {
+    grid-column: span 12;
+}
+
+.level-strip-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.level-strip-value {
+    font-family: var(--hackclub-title-font);
+    font-size: 26px;
+    color: #1f2d3d;
+    white-space: nowrap;
+}
+
+.level-strip-row .card-meta {
+    margin: 0;
+    white-space: nowrap;
+}
+
+/* ── Levels page ──────────────────────────────────────────────────────────── */
+
+.level-status-card {
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 32px;
+}
+
+.level-status-card .level-progress-track {
+    width: min(420px, 100%);
+    flex: none;
+}
+
+.level-status-value {
+    font-family: var(--hackclub-title-font);
+    font-size: 44px;
+    line-height: 1;
+    color: var(--hackclub-red);
+}
+
+.levels-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.level-card {
+    gap: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.level-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 36px rgba(20, 45, 78, 0.1);
+}
+
+.level-card.is-current {
+    border: 2px solid var(--hackclub-red);
+}
+
+.level-card.is-future {
+    opacity: 0.82;
+}
+
+.level-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.level-card-head h2 {
+    margin: 0;
+    font-family: var(--hackclub-title-font);
+    font-size: 22px;
+    color: #1f2d3d;
+}
+
+.level-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 3px solid #e0e6ed;
+    flex-shrink: 0;
+}
+
+.level-card.is-current .level-dot {
+    background: var(--hackclub-green);
+    border-color: var(--hackclub-green);
+}
+
+.level-card.is-past .level-dot {
+    background: var(--hackclub-blue);
+    border-color: var(--hackclub-blue);
+}
+
+.level-badge {
+    margin-left: auto;
+}
+
+.badge-past {
+    background: rgba(51, 142, 218, 0.14);
+    color: #1e5e9e;
+}
+
+.badge-future {
+    background: #e0e6ed;
+    color: #6a7686;
+}
+
+.level-requirement {
+    margin: 0;
+    color: #3c4858;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.level-perks {
+    margin: 0;
+    padding-left: 20px;
+    display: grid;
+    gap: 8px;
+    color: #3c4858;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.level-perks a {
+    color: var(--hackclub-blue);
+    font-weight: 700;
+}
+
+.level-cta .btn-primary {
+    align-self: center;
+    white-space: nowrap;
+}
+
+/* ── Tools page ───────────────────────────────────────────────────────────── */
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.tool-card {
+    gap: 10px;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+a.tool-card:hover {
+    transform: translateY(-4px) rotate(-0.4deg);
+    box-shadow: 0 16px 40px rgba(20, 45, 78, 0.12);
+    border-color: rgba(236, 55, 80, 0.4);
+}
+
+.tool-card h2 {
+    margin: 0;
+    font-family: var(--hackclub-title-font);
+    font-size: 20px;
+    color: #1f2d3d;
+}
+
+.tool-card p {
+    margin: 0;
+    color: #3c4858;
+    font-size: 14px;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.tool-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: rgba(236, 55, 80, 0.1);
+    color: var(--hackclub-red);
+}
+
+.tool-featured .tool-icon {
+    background: linear-gradient(135deg, #ec3750, #ff8c37);
+    color: #fff;
+}
+
+.tool-action {
+    color: var(--hackclub-red);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.tool-placeholder {
+    border-style: dashed;
+    opacity: 0.75;
+}
+
+.tool-placeholder .tool-icon {
+    background: #e0e6ed;
+    color: #8492a6;
+}
+
+/* ── Join link (team page) ────────────────────────────────────────────────── */
+
+.join-link-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.join-link-code {
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: #f0f4f8;
+    border: 1px dashed #c0ccda;
+    color: #3c4858;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+/* ── Mobile: more sidebar icons need to fit the bottom bar ────────────────── */
+
+@media (max-width: 768px) {
+    .dashboard-sidebar-link {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
+
+    .sidebar-icon {
+        width: 19px;
+        height: 19px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .levels-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Dark mode (hackclub darker palette) ──────────────────────────────────── */
+
+body.dark-mode.dashboard-layout {
+    background: #121217;
+}
+
+body.dark-mode .card-modern,
+body.dark-mode .metric-tile,
+body.dark-mode .dashboard-modal {
+    background: #17171d;
+    border-color: #252429;
+}
+
+body.dark-mode .card-hero {
+    border: none;
+}
+
+body.dark-mode .dashboard-title,
+body.dark-mode .level-strip-value,
+body.dark-mode .level-card-head h2,
+body.dark-mode .tool-card h2 {
+    color: #f9fafc;
+}
+
+body.dark-mode .level-requirement,
+body.dark-mode .level-perks,
+body.dark-mode .tool-card p {
+    color: #a9b3c1;
+}
+
+body.dark-mode .level-progress-track {
+    background: #252429;
+}
+
+body.dark-mode .level-dot {
+    border-color: #3c4858;
+}
+
+body.dark-mode .btn-secondary {
+    background: #252429;
+    color: #e0e6ed;
+}
+
+body.dark-mode .btn-secondary:hover {
+    background: #30323a;
+}
+
+body.dark-mode .badge-future {
+    background: #252429;
+    color: #8492a6;
+}
+
+body.dark-mode .badge-past {
+    background: rgba(51, 142, 218, 0.18);
+    color: #8cc2f0;
+}
+
+body.dark-mode .join-link-code {
+    background: #1b1d22;
+    border-color: #3c4858;
+    color: #e0e6ed;
+}
+
+body.dark-mode .tool-icon {
+    background: rgba(236, 55, 80, 0.16);
+}
+
+body.dark-mode .tool-featured .tool-icon {
+    background: linear-gradient(135deg, #c72f44, #d9582a);
+    color: #fff;
 }

@@ -1,15 +1,22 @@
 from urllib.parse import urlencode
 from datetime import date
+import base64
+import json
 import os
 import secrets
+import zlib
 import requests
 import flask
 from flask import Flask, redirect, url_for, session, request, flash
+from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
+# Vercel terminates TLS at its proxy — trust X-Forwarded-* so request.url_root
+# (the OAuth redirect fallback) is https:// with the real deployment host.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
@@ -138,6 +145,22 @@ def default_dashboard_state():
         ],
         'cart': [],
         'orders': [],
+        'ships': [
+            {
+                'id': 'ship-portfolio',
+                'title': 'Personal Portfolio Site',
+                'member': 'Sarah J.',
+                'url': 'https://sarah.hackclub.dev',
+                'date': '2026-06-14',
+            },
+            {
+                'id': 'ship-sprig-game',
+                'title': 'Sprig Maze Game',
+                'member': 'Alex Chen',
+                'url': 'https://sprig.hackclub.com/share/maze',
+                'date': '2026-06-21',
+            },
+        ],
         'newsletters': [
             {
                 'id': 'dispatch-hardware-grants',
@@ -168,6 +191,7 @@ def default_dashboard_state():
             },
         ],
         'settings': {
+            'joinCode': secrets.token_hex(3),
             'clubName': 'Hack Club at State High',
             'location': 'State College, PA',
             'website': 'https://statehigh.hackclub.com',
@@ -181,32 +205,66 @@ def default_dashboard_state():
 
 
 def get_dashboard_state():
-    if 'dashboard_state' not in session:
-        session['dashboard_state'] = default_dashboard_state()
+    state = session.get('dashboard_state')
+    if state is None:
+        state = default_dashboard_state()
+        session['dashboard_state'] = state
+        return state
 
-    state = session['dashboard_state']
     defaults = default_dashboard_state()
+    changed = False
     for key, value in defaults.items():
-        state.setdefault(key, value)
+        if key not in state:
+            state[key] = value
+            changed = True
 
     settings = state.setdefault('settings', {})
     for key, value in defaults['settings'].items():
-        settings.setdefault(key, value)
+        if key not in settings:
+            settings[key] = value
+            changed = True
 
-    session['dashboard_state'] = state
+    if changed:
+        session.modified = True
     return state
 
 
+# The whole dashboard state lives in the (signed) session cookie. Browsers cap
+# cookies at ~4093 bytes, and Werkzeug silently drops the Set-Cookie header
+# past that — the API would report success while nothing persists. Keep a
+# margin for the signature, the user dict, and base64 overhead.
+MAX_STATE_COOKIE_BYTES = 2800
+
+
+class StateTooLarge(Exception):
+    pass
+
+
+def _state_cookie_size(state):
+    raw = json.dumps(state, separators=(',', ':')).encode()
+    return len(base64.urlsafe_b64encode(zlib.compress(raw)))
+
+
 def save_dashboard_state(state):
+    if _state_cookie_size(state) > MAX_STATE_COOKIE_BYTES:
+        raise StateTooLarge()
     session['dashboard_state'] = state
     session.modified = True
+
+
+@app.errorhandler(StateTooLarge)
+def handle_state_too_large(_error):
+    return flask.jsonify({
+        'error': 'Your club data is full — this demo stores everything in a browser cookie. '
+                 'Remove an old dispatch, event, or member before adding more.'
+    }), 413
 
 
 def require_dashboard_csrf():
     token = request.headers.get('X-CSRF-Token', '')
     expected = session.get('csrf_token', '')
     if not token or not expected or not secrets.compare_digest(token, expected):
-        return flask.jsonify({'error': 'Your session token expired. Refresh and try again.'}), 400
+        return flask.jsonify({'error': 'Your session token expired. Refresh and try again.'}), 403
     return None
 
 
@@ -223,10 +281,10 @@ def find_by_id(items, item_id):
     return next((item for item in items if item.get('id') == item_id), None)
 
 
-def clean_text(value, fallback=''):
+def clean_text(value, fallback='', max_len=300):
     if value is None:
         return fallback
-    return str(value).strip()
+    return str(value).strip()[:max_len]
 
 
 def parse_bool(value):
@@ -274,6 +332,21 @@ def dashboard_team():
 @login_required
 def dashboard_events():
     return flask.render_template('dashboard/events.html', dashboard_state=get_dashboard_state())
+
+@app.route('/dashboard/ships')
+@login_required
+def dashboard_ships():
+    return flask.render_template('dashboard/ships.html', dashboard_state=get_dashboard_state())
+
+@app.route('/dashboard/levels')
+@login_required
+def dashboard_levels():
+    return flask.render_template('dashboard/levels.html', dashboard_state=get_dashboard_state())
+
+@app.route('/dashboard/tools')
+@login_required
+def dashboard_tools():
+    return flask.render_template('dashboard/tools.html', dashboard_state=get_dashboard_state())
 
 @app.route('/dashboard/shop')
 @login_required
@@ -384,6 +457,59 @@ def api_team_delete(member_id):
     state['members'] = [member for member in state['members'] if member.get('id') != member_id]
     if len(state['members']) == original_count:
         return json_error('Member not found.', 404)
+    save_dashboard_state(state)
+    return flask.jsonify({'state': state})
+
+
+@app.post('/api/dashboard/ships')
+@login_required
+def api_ships_add():
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    payload = json_payload()
+    title = clean_text(payload.get('title'), max_len=120)
+    member = clean_text(payload.get('member'), max_len=80)
+    url = clean_text(payload.get('url'))
+    ship_date = clean_text(payload.get('date'), date.today().isoformat(), max_len=10)
+
+    if not title:
+        return json_error('Project title is required.')
+    if not member:
+        return json_error('Who shipped it? Add a member name.')
+    if url and not url.startswith(('http://', 'https://')):
+        return json_error('Project URL must start with http:// or https://.')
+    try:
+        date.fromisoformat(ship_date)
+    except ValueError:
+        return json_error('Choose a valid ship date.')
+
+    state = get_dashboard_state()
+    ship = {
+        'id': _item_id('ship'),
+        'title': title,
+        'member': member,
+        'url': url,
+        'date': ship_date,
+    }
+    state['ships'].insert(0, ship)
+    save_dashboard_state(state)
+    return flask.jsonify({'ship': ship, 'state': state})
+
+
+@app.delete('/api/dashboard/ships/<ship_id>')
+@login_required
+def api_ships_delete(ship_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    original_count = len(state['ships'])
+    state['ships'] = [ship for ship in state['ships'] if ship.get('id') != ship_id]
+    if len(state['ships']) == original_count:
+        return json_error('Ship not found.', 404)
     save_dashboard_state(state)
     return flask.jsonify({'state': state})
 
@@ -579,8 +705,8 @@ def api_newsletters_add():
     payload = json_payload()
     title = clean_text(payload.get('title'))
     excerpt = clean_text(payload.get('excerpt'))
-    body = clean_text(payload.get('body'))
-    read_time = clean_text(payload.get('readTime'), '2 min read')
+    body = clean_text(payload.get('body'), max_len=1000)
+    read_time = clean_text(payload.get('readTime'), '2 min read', max_len=20)
 
     if not title:
         return json_error('Dispatch title is required.')
@@ -675,6 +801,13 @@ def api_settings_update():
 
 # ── Hack Club OAuth ───────────────────────────────────────────────────────────
 
+def oauth_redirect_uri():
+    """Callback URL registered with Hack Club — falls back to the current host
+    when BASE_URL is not configured (e.g. local development)."""
+    base = BASE_URL or request.url_root.rstrip('/')
+    return f'{base}/auth/hackclub/callback'
+
+
 @app.route('/auth/hackclub')
 def hackclub_login():
     """Redirect the user to Hack Club's OAuth authorization page."""
@@ -687,7 +820,7 @@ def hackclub_login():
 
     params = {
         'client_id':     HACKCLUB_CLIENT_ID,
-        'redirect_uri':  f'{BASE_URL}/auth/hackclub/callback',
+        'redirect_uri':  oauth_redirect_uri(),
         'response_type': 'code',
         'scope':         'openid profile email',
         'state':         state,
@@ -714,29 +847,37 @@ def hackclub_callback():
         flash('No authorization code returned from Hack Club.', 'error')
         return redirect(url_for('sign_in'))
 
-    token_response = requests.post(
-        'https://identity.hackclub.com/oauth/token',
-        data={
-            'client_id':     HACKCLUB_CLIENT_ID,
-            'client_secret': HACKCLUB_CLIENT_SECRET,
-            'code':          code,
-            'redirect_uri':  f'{BASE_URL}/auth/hackclub/callback',
-            'grant_type':    'authorization_code',
-        },
-        timeout=10,
-    )
-    token_data = token_response.json()
+    try:
+        token_response = requests.post(
+            'https://identity.hackclub.com/oauth/token',
+            data={
+                'client_id':     HACKCLUB_CLIENT_ID,
+                'client_secret': HACKCLUB_CLIENT_SECRET,
+                'code':          code,
+                'redirect_uri':  oauth_redirect_uri(),
+                'grant_type':    'authorization_code',
+            },
+            timeout=10,
+        )
+        token_data = token_response.json()
+    except (requests.RequestException, ValueError):
+        flash('Could not reach Hack Club to finish signing in. Please try again.', 'error')
+        return redirect(url_for('sign_in'))
 
     if 'access_token' not in token_data:
         flash(f'Hack Club token exchange failed: {token_data.get("error", "unknown error")}', 'error')
         return redirect(url_for('sign_in'))
 
-    user_response = requests.get(
-        'https://identity.hackclub.com/oauth/userinfo',
-        headers={'Authorization': f'Bearer {token_data["access_token"]}'},
-        timeout=10,
-    )
-    user_data = user_response.json()
+    try:
+        user_response = requests.get(
+            'https://identity.hackclub.com/oauth/userinfo',
+            headers={'Authorization': f'Bearer {token_data["access_token"]}'},
+            timeout=10,
+        )
+        user_data = user_response.json()
+    except (requests.RequestException, ValueError):
+        flash('Could not retrieve your Hack Club profile. Please try again.', 'error')
+        return redirect(url_for('sign_in'))
 
     if 'sub' not in user_data:
         flash('Could not retrieve your Hack Club profile. Please try again.', 'error')

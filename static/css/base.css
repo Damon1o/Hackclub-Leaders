@@ -16,6 +16,11 @@
     --primary-black: #1a1a1a;
     --primary-white: #ffffff;
     --hackclub-white: #ffffff;
+    --background: #ffffff;
+}
+
+body.dark-mode {
+    --background: var(--hackclub-dark);
 }
 
 * {
@@ -75,4 +80,51 @@ body {
     background: transparent;
     color: var(--primary-black);
     margin: 0;
+}
+
+.flash-stack {
+    position: fixed;
+    top: 84px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(480px, calc(100vw - 32px));
+    pointer-events: none;
+}
+
+.flash-banner {
+    font-family: var(--hackclub-body-font), system-ui, sans-serif;
+    background: var(--primary-white);
+    color: var(--primary-black);
+    border: 1px solid #e0e6ed;
+    border-left: 4px solid var(--hackclub-blue);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 12px 16px;
+    font-size: 15px;
+    pointer-events: auto;
+    animation: flash-in 0.25s ease;
+}
+
+.flash-banner.flash-success {
+    border-left-color: var(--hackclub-green);
+}
+
+.flash-banner.flash-error {
+    border-left-color: var(--hackclub-red);
+}
+
+@keyframes flash-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

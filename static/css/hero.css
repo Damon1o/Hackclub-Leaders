@@ -21,7 +21,7 @@
     width: 100%;
     min-width: 900px;
     height: 70%;
-    background: url('../images/background.webp') center bottom / cover no-repeat;
+    background: url('../images/hackclub-site/background.webp') center bottom / cover no-repeat;
     mask-image: linear-gradient(to top, black 40%, transparent 75%);
     -webkit-mask-image: linear-gradient(to top, black 40%, transparent 75%);
     pointer-events: none;

@@ -4,10 +4,12 @@
 {% block page_subtitle %}Manage your club leaders and members.{% endblock %}
 
 {% block header_right %}
+{% if is_leader %}
 <button class="btn-primary" type="button" data-open-modal="memberModal">
     <span class="button-icon" aria-hidden="true">+</span>
     Invite member
 </button>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -27,6 +29,7 @@
         </article>
     </section>
 
+    {% if is_leader %}
     <section class="card-modern dashboard-panel dashboard-panel-full join-link-card">
         <div class="panel-heading">
             <div>
@@ -41,6 +44,7 @@
             </button>
         </div>
     </section>
+    {% endif %}
 
     <section class="card-modern dashboard-panel dashboard-panel-full">
         <div class="panel-heading">
@@ -54,7 +58,9 @@
         <div class="empty-state" id="teamEmpty" hidden>
             <h3>No members yet</h3>
             <p>Invite your first member to start building the club roster.</p>
+            {% if is_leader %}
             <button class="btn-primary" type="button" data-open-modal="memberModal">Invite member</button>
+            {% endif %}
         </div>
     </section>
 </div>

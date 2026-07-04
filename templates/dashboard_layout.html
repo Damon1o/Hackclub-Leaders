@@ -17,7 +17,7 @@
     <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
 </head>
 
-<body class="dashboard-layout">
+<body class="dashboard-layout" data-viewer-role="{{ viewer_role }}">
     <a class="skip-link" href="#dashboardMain">Skip to dashboard</a>
 
     <section class="navigation-bar">
@@ -129,12 +129,7 @@
                         <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
                     </svg>
                 </a>
-                <a href="/dashboard/tools" class="dashboard-sidebar-link {% if current_path == '/dashboard/tools' %}active{% endif %}" title="Tools" aria-label="Tools">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
-                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-                    </svg>
-                </a>
+                {% if is_leader %}
                 <a href="/dashboard/shop" class="dashboard-sidebar-link {% if current_path == '/dashboard/shop' %}active{% endif %}" title="Shop" aria-label="Shop">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
@@ -143,6 +138,7 @@
                         <path d="M16 10a4 4 0 0 1-8 0" />
                     </svg>
                 </a>
+                {% endif %}
                 <a href="/dashboard/newsletters" class="dashboard-sidebar-link {% if current_path == '/dashboard/newsletters' %}active{% endif %}" title="Newsletters" aria-label="Newsletters">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
@@ -150,23 +146,43 @@
                         <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                     </svg>
                 </a>
-                <a href="/dashboard/settings" class="dashboard-sidebar-link {% if current_path == '/dashboard/settings' %}active{% endif %}" title="Settings" aria-label="Settings">
+            </nav>
+            <nav class="dashboard-sidebar-nav dashboard-sidebar-bottom" aria-label="Dashboard utilities">
+                <a href="/dashboard/map" class="dashboard-sidebar-link {% if current_path == '/dashboard/map' %}active{% endif %}" title="Club Map" aria-label="Club Map">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
+                        <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" />
+                        <path d="M15 5.764v15" />
+                        <path d="M9 3.236v15" />
+                    </svg>
+                </a>
+                {% if is_leader %}
+                <a href="/dashboard/tools" class="dashboard-sidebar-link {% if current_path == '/dashboard/tools' %}active{% endif %}" title="Tools" aria-label="Tools">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                    </svg>
+                </a>
+                <a href="/dashboard/settings" class="dashboard-sidebar-link {% if current_path == '/dashboard/settings' %}active{% endif %}" title="Club Settings" aria-label="Club Settings">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
                         <circle cx="12" cy="12" r="3" />
                     </svg>
                 </a>
-            </nav>
-            <div class="sidebar-profile" title="{{ current_user.name if current_user else 'User' }}">
-                {% if current_user and current_user.avatar %}
-                <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
-                {% else %}
-                <div class="sidebar-profile-fallback">
-                    {{ current_user.name[0] | upper if current_user else 'U' }}
-                </div>
                 {% endif %}
-            </div>
+                <a href="/dashboard/profile" id="sidebarProfile"
+                    class="sidebar-profile {% if current_path == '/dashboard/profile' %}active{% endif %}"
+                    title="Your profile" aria-label="Your profile">
+                    {% if current_user and current_user.avatar %}
+                    <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
+                    {% else %}
+                    <div class="sidebar-profile-fallback">
+                        {{ current_user.name[0] | upper if current_user else 'U' }}
+                    </div>
+                    {% endif %}
+                </a>
+            </nav>
         </aside>
 
         <main class="dashboard-main" id="dashboardMain">

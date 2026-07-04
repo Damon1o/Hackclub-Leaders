@@ -3,6 +3,10 @@
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
     const pageNode = document.querySelector('[data-dashboard-page]');
     const page = pageNode?.dataset.dashboardPage || '';
+    // Server-rendered role: 'Leader' | 'Mentor' | 'Member'. The API enforces
+    // this independently — hiding controls here is purely cosmetic.
+    const viewerRole = document.body.dataset.viewerRole || 'Leader';
+    const isLeader = viewerRole !== 'Member';
 
     let dashboardState = {};
     let selectedNewsletterId = '';
@@ -44,31 +48,63 @@
         return dashboardState.ships || [];
     }
 
-    // Club levels mirror leaders.hackclub.com: 4 ships → Level 2, 8 → Level 3.
+    // Club levels mirror levels.md: 4 ships → Level 2, 8 → Level 3, and ships
+    // must come from 4+ different members (including the leader) to advance.
     const LEVEL_THRESHOLDS = [0, 4, 8];
+    const SHIPPERS_REQUIRED = 4;
+
+    function shipperCount() {
+        const unique = new Set();
+        ships().forEach((ship) => {
+            const key = String(ship.member || '').trim().toLowerCase();
+            if (key) unique.add(key);
+        });
+        return unique.size;
+    }
 
     function clubLevel() {
         const count = ships().length;
-        if (count >= LEVEL_THRESHOLDS[2]) return 3;
-        if (count >= LEVEL_THRESHOLDS[1]) return 2;
+        const shippers = shipperCount();
+        if (shippers >= SHIPPERS_REQUIRED && count >= LEVEL_THRESHOLDS[2]) return 3;
+        if (shippers >= SHIPPERS_REQUIRED && count >= LEVEL_THRESHOLDS[1]) return 2;
         return 1;
     }
 
     function levelProgress() {
         const count = ships().length;
+        const shippers = shipperCount();
         const level = clubLevel();
         if (level === 3) {
-            return { level, count, next: null, remaining: 0, percent: 100 };
+            return { level, count, shippers, next: null, remaining: 0, remainingShippers: 0, percent: 100 };
         }
         const floor = LEVEL_THRESHOLDS[level - 1];
         const ceiling = LEVEL_THRESHOLDS[level];
+        const remaining = Math.max(0, ceiling - count);
+        // The distinct-member requirement only gates Level 2 — once 4 members
+        // have shipped, Level 3 is purely about total ships.
+        const remainingShippers = level === 1 ? Math.max(0, SHIPPERS_REQUIRED - shippers) : 0;
+        const shipFraction = Math.min(1, (count - floor) / (ceiling - floor));
+        const shipperFraction = level === 1 ? Math.min(1, shippers / SHIPPERS_REQUIRED) : 1;
         return {
             level,
             count,
+            shippers,
             next: level + 1,
-            remaining: ceiling - count,
-            percent: Math.round(((count - floor) / (ceiling - floor)) * 100),
+            remaining,
+            remainingShippers,
+            percent: Math.round(Math.min(shipFraction, shipperFraction) * 100),
         };
+    }
+
+    function levelRequirementText(progress) {
+        const parts = [];
+        if (progress.remaining > 0) {
+            parts.push(`${progress.remaining} more ${progress.remaining === 1 ? 'ship' : 'ships'}`);
+        }
+        if (progress.remainingShippers > 0) {
+            parts.push(`${progress.remainingShippers} more ${progress.remainingShippers === 1 ? 'member' : 'members'} shipping`);
+        }
+        return parts.join(' and ');
     }
 
     function settings() {
@@ -255,7 +291,7 @@
                 <p>${escapeHtml(member.email)}</p>
                 <div class="card-footer-line">
                     <span class="status-chip">${escapeHtml(member.status || 'Active')}</span>
-                    <button class="text-button" type="button" data-edit-member="${escapeHtml(member.id)}">Edit</button>
+                    ${isLeader ? `<button class="text-button" type="button" data-edit-member="${escapeHtml(member.id)}">Edit</button>` : ''}
                 </div>
             </article>
         `).join('');
@@ -320,7 +356,7 @@
                     <div class="timeline-actions">
                         ${index === 0 ? '<span class="badge badge-up">Next up</span>' : ''}
                         <button class="btn-secondary small" type="button" data-toggle-rsvp="${escapeHtml(event.id)}">${event.rsvp ? 'RSVPed' : 'RSVP'}</button>
-                        <button class="text-button" type="button" data-edit-event="${escapeHtml(event.id)}">Edit</button>
+                        ${isLeader ? `<button class="text-button" type="button" data-edit-event="${escapeHtml(event.id)}">Edit</button>` : ''}
                     </div>
                 </div>
             </article>
@@ -336,7 +372,7 @@
 
         $('#shipTotal').textContent = progress.count;
         $('#shipLevel').textContent = progress.level;
-        $('#shipToNext').textContent = progress.next ? progress.remaining : '—';
+        $('#shipToNext').textContent = `${progress.shippers} / ${SHIPPERS_REQUIRED}`;
 
         if (!list) return;
         list.innerHTML = ships().map((ship) => `
@@ -352,7 +388,7 @@
                     </div>
                     <div class="timeline-actions">
                         <span class="badge badge-up">Shipped</span>
-                        <button class="text-button" type="button" data-delete-ship="${escapeHtml(ship.id)}">Remove</button>
+                        ${isLeader ? `<button class="text-button" type="button" data-delete-ship="${escapeHtml(ship.id)}">Remove</button>` : ''}
                     </div>
                 </div>
             </article>
@@ -369,7 +405,7 @@
         $('#levelProgressFill').style.width = `${progress.percent}%`;
         $('#levelProgressTrack')?.setAttribute('aria-valuenow', progress.percent);
         $('#levelProgressText').textContent = progress.next
-            ? `Ship ${progress.remaining} more project${progress.remaining === 1 ? '' : 's'} to reach Level ${progress.next}.`
+            ? `${levelRequirementText(progress) || 'Almost there'} to reach Level ${progress.next}.`
             : 'Max level reached — your club is thriving!';
 
         $$('[data-level]').forEach((card) => {
@@ -595,21 +631,35 @@
         $('#homeLevelName').textContent = `Level ${progress.level}`;
         $('#homeLevelFill').style.width = `${progress.percent}%`;
         $('#homeLevelText').textContent = progress.next
-            ? `${progress.remaining} more ${progress.remaining === 1 ? 'ship' : 'ships'} to Level ${progress.next}`
+            ? `${levelRequirementText(progress) || 'Almost there'} to Level ${progress.next}`
             : 'Max level reached!';
 
         $('#homeRosterTotal').textContent = people.length;
         const leaders = people.filter((member) => member.role === 'Leader').length;
         const mentors = people.filter((member) => member.role === 'Mentor').length;
         const plain = people.length - leaders - mentors;
-        $('#homeRosterBreakdown').textContent = people.length
-            ? `${leaders} ${leaders === 1 ? 'leader' : 'leaders'} · ${plain} ${plain === 1 ? 'member' : 'members'} · ${mentors} ${mentors === 1 ? 'mentor' : 'mentors'}`
-            : 'Invite your first member from the Team page.';
-        const donut = $('#homeRosterDonut');
-        if (donut && people.length) {
-            const leaderPct = Math.round((leaders / people.length) * 100);
-            const memberPct = leaderPct + Math.round((plain / people.length) * 100);
-            donut.style.background = `conic-gradient(var(--hackclub-red) 0% ${leaderPct}%, #ff8c37 ${leaderPct}% ${memberPct}%, #338eda ${memberPct}% 100%)`;
+
+        const bar = $('#homeTeamBar');
+        if (bar) {
+            const total = people.length;
+            const setSegment = (selector, count) => {
+                const segment = $(selector, bar);
+                if (segment) segment.style.width = total ? `${(count / total) * 100}%` : '0%';
+            };
+            setSegment('.seg-leaders', leaders);
+            setSegment('.seg-members', plain);
+            setSegment('.seg-mentors', mentors);
+        }
+
+        const breakdown = $('#homeRosterBreakdown');
+        if (breakdown) {
+            breakdown.innerHTML = people.length
+                ? `
+                    <span class="legend-item"><span class="legend-dot dot-red" aria-hidden="true"></span>${leaders} ${leaders === 1 ? 'leader' : 'leaders'}</span>
+                    <span class="legend-item"><span class="legend-dot dot-orange" aria-hidden="true"></span>${plain} ${plain === 1 ? 'member' : 'members'}</span>
+                    <span class="legend-item"><span class="legend-dot dot-purple" aria-hidden="true"></span>${mentors} ${mentors === 1 ? 'mentor' : 'mentors'}</span>
+                `
+                : 'Invite your first member from the Team page.';
         }
 
         const list = $('#homeUpcomingEvents');
@@ -1008,6 +1058,49 @@
                 showToast('Settings saved.');
             } catch (error) {
                 setFormError('settingsFormError', error.message);
+                if (stateLabel) stateLabel.textContent = '';
+            }
+        });
+
+        $('#profileForm')?.addEventListener('input', (event) => {
+            const data = formObject(event.currentTarget);
+            const avatarBox = $('#profilePreviewAvatar');
+            const nameNode = $('#profilePreviewName');
+            const emailNode = $('#profilePreviewEmail');
+            if (nameNode) nameNode.textContent = data.name || 'You';
+            if (emailNode) emailNode.textContent = data.email || '';
+            if (avatarBox) {
+                avatarBox.textContent = initials(data.name || 'You');
+                const safeAvatar = String(data.avatar || '').replace(/\\/g, '%5C').replace(/"/g, '%22');
+                avatarBox.style.backgroundImage = safeAvatar ? `url("${safeAvatar}")` : '';
+                avatarBox.classList.toggle('has-image', Boolean(data.avatar));
+            }
+        });
+
+        $('#profileForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const stateLabel = $('#profileSaveState');
+            setFormError('profileFormError', '');
+            if (stateLabel) stateLabel.textContent = 'Saving...';
+            try {
+                const data = formObject(event.currentTarget);
+                const result = await apiRequest('/api/dashboard/profile', {
+                    method: 'PATCH',
+                    body: data,
+                });
+                const user = result.user || {};
+                const rail = $('#sidebarProfile');
+                if (rail) {
+                    rail.title = user.name || 'Your profile';
+                    const img = rail.querySelector('img');
+                    const fallback = rail.querySelector('.sidebar-profile-fallback');
+                    if (img && user.avatar) img.src = user.avatar;
+                    if (fallback) fallback.textContent = (user.name || 'U').charAt(0).toUpperCase();
+                }
+                if (stateLabel) stateLabel.textContent = 'Saved';
+                showToast('Profile saved.');
+            } catch (error) {
+                setFormError('profileFormError', error.message);
                 if (stateLabel) stateLabel.textContent = '';
             }
         });

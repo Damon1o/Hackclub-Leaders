@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/borders.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/hero.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ambient-bg.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/showcase.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/final-cta.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
 
@@ -145,6 +147,13 @@
 
     <section class="hero">
 
+        <div class="ambient-bg" aria-hidden="true">
+            <span class="ambient-blob ambient-blob-red"></span>
+            <span class="ambient-blob ambient-blob-orange"></span>
+            <span class="ambient-blob ambient-blob-blue"></span>
+            <span class="ambient-cursor-glow"></span>
+        </div>
+
         <div class="hero-text">
 
             <div class="header-text">
@@ -220,7 +229,226 @@
 
     </section>
 
+    <section class="showcase-section">
+
+        <div class="ambient-bg" aria-hidden="true">
+            <span class="ambient-blob ambient-blob-red"></span>
+            <span class="ambient-blob ambient-blob-blue"></span>
+            <span class="ambient-cursor-glow"></span>
+        </div>
+
+        <div class="showcase-inner">
+
+            <h2 class="showcase-heading reveal">Imagine a world where <span class="animated-text-gradient">you</span>
+                made this:</h2>
+
+            <p class="showcase-subtext reveal">100,000 teens started exactly where you are. We're here to help you
+                build your first crazy thing.</p>
+
+            <div class="showcase-grid">
+
+                <a class="showcase-card reveal" href="https://shaaarkai.itch.io/specter" target="_blank"
+                    rel="noopener noreferrer">
+                    <div class="showcase-card-visual">
+                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/specter.webp') }}"
+                            alt="Specter" loading="lazy">
+                    </div>
+                    <div class="showcase-card-body">
+                        <span class="showcase-card-program">Milkyway</span>
+                        <h3 class="showcase-card-title">Specter</h3>
+                        <p class="showcase-card-byline">by Yessa, 18, Philippines</p>
+                    </div>
+                </a>
+
+                <a class="showcase-card reveal" href="https://blueprint.hackclub.com/projects/52" target="_blank"
+                    rel="noopener noreferrer">
+                    <div class="showcase-card-visual">
+                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/brew75.webp') }}"
+                            alt="Brew75" loading="lazy">
+                    </div>
+                    <div class="showcase-card-body">
+                        <span class="showcase-card-program">Blueprint</span>
+                        <h3 class="showcase-card-title">Brew75</h3>
+                        <p class="showcase-card-byline">by Alexander, 16, US</p>
+                    </div>
+                </a>
+
+                <a class="showcase-card reveal" href="https://deltea.itch.io/starbird" target="_blank"
+                    rel="noopener noreferrer">
+                    <div class="showcase-card-visual">
+                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/starbird.webp') }}"
+                            alt="Starbird" loading="lazy">
+                    </div>
+                    <div class="showcase-card-body">
+                        <span class="showcase-card-program">Milkyway</span>
+                        <h3 class="showcase-card-title">Starbird</h3>
+                        <p class="showcase-card-byline">by Deltea, 16, US</p>
+                    </div>
+                </a>
+
+                <a class="showcase-card reveal" href="https://github.com/Dieu-de-l-elec/AngstromIO-devboard"
+                    target="_blank" rel="noopener noreferrer">
+                    <div class="showcase-card-visual">
+                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/angstromio.webp') }}"
+                            alt="AngstromIO" loading="lazy">
+                    </div>
+                    <div class="showcase-card-body">
+                        <span class="showcase-card-program">Blueprint</span>
+                        <h3 class="showcase-card-title">AngstromIO</h3>
+                        <p class="showcase-card-byline">by Clément, 17, France</p>
+                    </div>
+                </a>
+
+                <a class="showcase-card reveal" href="https://thatotherandrew.itch.io/kamikamace" target="_blank"
+                    rel="noopener noreferrer">
+                    <div class="showcase-card-visual">
+                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/kamikamace.webp') }}"
+                            alt="Kamikamace" loading="lazy">
+                    </div>
+                    <div class="showcase-card-body">
+                        <span class="showcase-card-program">Daydream</span>
+                        <h3 class="showcase-card-title">Kamikamace</h3>
+                        <p class="showcase-card-byline">by Andromeda, Nihaal &amp; Rimma, UK &amp; US</p>
+                    </div>
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="happening-section">
+
+        <div class="happening-inner">
+
+            <h2 class="happening-heading reveal">Imagine a world where you were <span
+                    class="animated-text-gradient">here</span>:</h2>
+
+            <p class="happening-subtext reveal">Every event below is free, open to any teen, and happening right now.
+                Yes, you can go.</p>
+
+            <div class="happening-grid">
+
+                <a class="happening-card reveal" href="https://stardance.hackclub.com/program_page" target="_blank"
+                    rel="noopener noreferrer">
+                    <div class="happening-card-visual">
+                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/stardance.webp') }}"
+                            alt="Stardance" loading="lazy">
+                        <span class="happening-card-date">Ends 30 Sept</span>
+                    </div>
+                    <div class="happening-card-body">
+                        <h3 class="happening-card-title">Stardance</h3>
+                        <p class="happening-card-description">The largest STEM event of the summer: make anything you
+                            want and earn free prizes.</p>
+                        <span class="happening-card-cta">Join Stardance →</span>
+                    </div>
+                </a>
+
+                <a class="happening-card reveal" href="https://macondo.hackclub.com/" target="_blank"
+                    rel="noopener noreferrer">
+                    <div class="happening-card-visual">
+                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/macondo.webp') }}"
+                            alt="Macondo" loading="lazy">
+                        <span class="happening-card-date">14–16 Aug</span>
+                    </div>
+                    <div class="happening-card-body">
+                        <h3 class="happening-card-title">Macondo</h3>
+                        <p class="happening-card-description">Get up to $1,000 for hardware projects or make software
+                            projects to earn fruits for prizes.</p>
+                        <span class="happening-card-cta">Join Macondo →</span>
+                    </div>
+                </a>
+
+                <a class="happening-card reveal" href="https://horizons.hackclub.com" target="_blank"
+                    rel="noopener noreferrer">
+                    <div class="happening-card-visual">
+                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/horizons.webp') }}"
+                            alt="Horizons" loading="lazy">
+                        <span class="happening-card-date">Ends 15 Aug</span>
+                    </div>
+                    <div class="happening-card-body">
+                        <h3 class="happening-card-title">Horizons</h3>
+                        <p class="happening-card-description">7 hackathons. 7 countries. You're invited — for free!</p>
+                        <span class="happening-card-cta">Join Horizons →</span>
+                    </div>
+                </a>
+
+                <a class="happening-card reveal" href="https://stack.hackclub.com" target="_blank"
+                    rel="noopener noreferrer">
+                    <div class="happening-card-visual">
+                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/stack.webp') }}"
+                            alt="Stack" loading="lazy">
+                        <span class="happening-card-date">Ends 4 Jul</span>
+                    </div>
+                    <div class="happening-card-body">
+                        <h3 class="happening-card-title">Stack</h3>
+                        <p class="happening-card-description">Build a fun or completely unhinged project, and we'll
+                            send you FREE LEGO sets.</p>
+                        <span class="happening-card-cta">Join Stack →</span>
+                    </div>
+                </a>
+
+            </div>
+
+            <div class="happening-more reveal">
+                <a href="/events">See all events
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 8H13M13 8L8.5 3.5M13 8L8.5 12.5" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </a>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="supporters-section">
+
+        <div class="ambient-bg" aria-hidden="true">
+            <span class="ambient-blob ambient-blob-red"></span>
+            <span class="ambient-blob ambient-blob-orange"></span>
+            <span class="ambient-cursor-glow"></span>
+        </div>
+
+        <div class="supporters-inner">
+
+            <h2 class="supporters-heading reveal">Hack Club is free for every teenager, forever.</h2>
+
+            <p class="supporters-subtext reveal">Made possible by supporters like the Musk Foundation, Michael Dell
+                (CEO of Dell), Dr.&nbsp;Lisa Su (CEO of AMD), Tobi Lutke (CEO of Shopify), and Tom Preston-Werner
+                (co-founder of GitHub).</p>
+
+            <div class="supporters-logos reveal">
+                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/github.webp') }}" alt="GitHub"
+                    loading="lazy">
+                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/amd.webp') }}" alt="AMD"
+                    loading="lazy">
+                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/mit.webp') }}" alt="MIT"
+                    loading="lazy">
+                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/donor-masked.webp') }}" alt=""
+                    loading="lazy">
+                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/donor-4.webp') }}" alt=""
+                    loading="lazy">
+            </div>
+
+            <p class="supporters-note reveal">Hack Club is a 501(c)(3) nonprofit. Our finances are fully open — anyone
+                can see exactly how money is spent. <a href="https://hackclub.com/philanthropy" target="_blank"
+                    rel="noopener noreferrer">Learn more</a>.</p>
+
+        </div>
+
+    </section>
+
     <section class="final-cta">
+
+        <div class="ambient-bg" aria-hidden="true">
+            <span class="ambient-blob ambient-blob-red"></span>
+            <span class="ambient-blob ambient-blob-blue"></span>
+            <span class="ambient-cursor-glow"></span>
+        </div>
 
         <div class="final-cta-inner">
 
@@ -424,6 +652,8 @@
     <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <script src="{{ url_for('static', filename='js/hero.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ambient-bg.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/showcase.js') }}"></script>
 
 </body>
 

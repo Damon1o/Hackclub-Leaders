@@ -1,0 +1,36 @@
+{% extends "dashboard_layout.html" %}
+
+{% block title %}Club Map{% endblock %}
+{% block page_title %}Club Map{% endblock %}
+{% block page_subtitle %}Every active Hack Club on the planet — make sure yours is on it.{% endblock %}
+
+{% block header_right %}
+<a class="btn-secondary" href="https://hackclub.github.io/map/" target="_blank" rel="noopener noreferrer">
+    Open full map <span class="button-icon" aria-hidden="true">↗</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+<div class="dashboard-page" data-dashboard-page="map">
+    <section class="card-modern map-card">
+        <div class="panel-heading">
+            <div>
+                <h2>The Hack Club Map</h2>
+                <p id="mapClubCount">Loading clubs…</p>
+            </div>
+        </div>
+        <div id="clubMap" class="club-map" role="application" aria-label="Map of Hack Clubs worldwide"></div>
+        <div class="empty-state tight" id="mapError" hidden>
+            <h3>Couldn't load the map</h3>
+            <p>The club directory didn't respond. Check your connection and refresh the page.</p>
+        </div>
+    </section>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="{{ url_for('static', filename='js/club-map.js') }}"></script>
+{% endblock %}

@@ -1,4 +1,8 @@
-/* ── Sign-In Page ── */
+/* ─────────────────────────────────────────────────────────────────────────────
+   SIGN-IN — "Leaders Portal" hero
+   Mirrors the dashboard's Club HQ look: sticker cards with hard offset
+   shadows, marker-swipe highlight, red eyebrow. Tokens come from base.css.
+───────────────────────────────────────────────────────────────────────────── */
 
 .sign-in-main {
     width: 100%;
@@ -6,7 +10,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(100px, 14vw, 140px) clamp(24px, 6vw, 80px) 80px;
+    padding: clamp(110px, 14vw, 150px) clamp(24px, 6vw, 80px) 90px;
     position: relative;
     overflow: hidden;
 }
@@ -33,68 +37,74 @@
     z-index: 0;
 }
 
-/* ── Card ── */
+/* ── Hero layout ── */
 
-.sign-in-card {
+.sign-in-hero {
     position: relative;
     z-index: 1;
-    background: var(--primary-white);
-    border: 1.5px solid #e8e8e8;
-    border-radius: 20px;
-    padding: 48px 52px 44px;
-    width: 100%;
-    max-width: 440px;
-    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.07), 0 1px 4px rgba(0, 0, 0, 0.04);
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-/* ── Header ── */
-
-.sign-in-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    background: var(--hackclub-red);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
+    gap: clamp(40px, 7vw, 110px);
+    width: 100%;
+    max-width: 1080px;
 }
 
-.sign-in-icon svg {
-    width: 28px;
-    height: 28px;
-    fill: #fff;
+.sign-in-copy {
+    flex: 1 1 480px;
+    max-width: 540px;
 }
 
-.sign-in-card h1 {
-    font-family: var(--hackclub-title-font);
-    font-size: 1.75rem;
-    font-weight: bold;
-    color: var(--primary-black);
-    margin: 0 0 8px;
-    line-height: 1.1;
-}
+/* ── Copy ── */
 
-.sign-in-card .sign-in-subtitle {
+.sign-in-eyebrow {
+    margin: 0 0 10px;
     font-family: var(--hackclub-body-font);
-    font-size: 0.95rem;
-    color: var(--hackclub-muted);
-    margin: 0 0 32px;
-    line-height: 1.5;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--hackclub-red);
 }
 
-/* ── Hack Club Button ── */
+.sign-in-title {
+    margin: 0 0 18px;
+    font-family: var(--hackclub-title-font);
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    font-weight: bold;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    color: var(--primary-black);
+}
+
+/* Same marker swipe as the dashboard's .marker-highlight */
+.marker-swipe {
+    background: linear-gradient(100deg,
+            rgba(236, 55, 80, 0.28) 0%,
+            rgba(255, 140, 55, 0.30) 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 38%;
+    background-position: 0 92%;
+    padding: 0 2px;
+}
+
+.sign-in-subtitle {
+    margin: 0 0 32px;
+    font-family: var(--hackclub-body-font);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--hackclub-muted);
+    max-width: 46ch;
+}
+
+/* ── Hack Club button ── */
 
 .sign-in-hc-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    width: 100%;
-    padding: 14px 20px;
+    padding: 14px 28px;
     background: var(--hackclub-red);
     border: 1.5px solid var(--hackclub-red);
     border-radius: 10px;
@@ -127,12 +137,12 @@
 /* ── Footer note ── */
 
 .sign-in-footer-note {
-    margin-top: 24px;
+    margin-top: 22px;
     font-family: var(--hackclub-body-font);
     font-size: 0.8rem;
     color: var(--hackclub-muted);
-    text-align: center;
     line-height: 1.6;
+    max-width: 46ch;
 }
 
 .sign-in-footer-note a {
@@ -169,28 +179,195 @@
     color: #166534;
 }
 
-/* ── Dark mode overrides ── */
+/* ── Sticker pile (dashboard features as laptop-lid stickers) ── */
 
-body.dark .sign-in-main::before {
+.sign-in-stickers {
+    position: relative;
+    flex: 0 0 380px;
+    height: 460px;
+}
+
+.pile-sticker {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 18px;
+    background: var(--primary-white);
+    border: 2px solid var(--pile-color, var(--hackclub-red));
+    border-radius: 12px;
+    box-shadow: 0 3px 0 var(--pile-color, var(--hackclub-red));
+    font-family: var(--hackclub-body-font);
+    font-size: 15px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: var(--pile-color, var(--hackclub-red));
+    rotate: var(--pile-tilt, 0deg);
+    transition: rotate 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+        translate 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: pile-float 5s ease-in-out infinite;
+    animation-delay: var(--pile-delay, 0s);
+}
+
+.pile-sticker:hover {
+    rotate: 0deg;
+    translate: 0 -4px;
+    animation-play-state: paused;
+}
+
+.pile-sticker i {
+    font-size: 14px;
+}
+
+@keyframes pile-float {
+    0%, 100% { margin-top: 0; }
+    50% { margin-top: -7px; }
+}
+
+/* Flag sticker (image, no card chrome) */
+.pile-flag {
+    top: 0;
+    left: 26px;
+    width: 132px;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    --pile-tilt: -7deg;
+    --pile-delay: -1.2s;
+    filter: drop-shadow(0 4px 8px rgba(20, 45, 78, 0.18));
+}
+
+.pile-red {
+    top: 74px;
+    right: 8px;
+    --pile-color: var(--hackclub-red);
+    --pile-tilt: 5deg;
+    --pile-delay: -0.4s;
+}
+
+.pile-blue {
+    top: 168px;
+    left: 0;
+    --pile-color: var(--hackclub-blue);
+    --pile-tilt: -4deg;
+    --pile-delay: -2.1s;
+}
+
+.pile-orange {
+    top: 252px;
+    right: 30px;
+    --pile-color: var(--hackclub-orange);
+    --pile-tilt: 2.5deg;
+    --pile-delay: -3.3s;
+}
+
+.pile-green {
+    top: 344px;
+    left: 34px;
+    --pile-color: #27a37e;
+    --pile-tilt: -5deg;
+    --pile-delay: -1.7s;
+}
+
+.pile-purple {
+    bottom: 0;
+    right: 0;
+    --pile-color: var(--hackclub-purple);
+    --pile-tilt: 4deg;
+    --pile-delay: -2.8s;
+}
+
+/* Mini progress bar inside the "Level up" sticker */
+.pile-bar {
+    display: inline-block;
+    width: 56px;
+    height: 7px;
+    border-radius: 999px;
+    background: rgba(255, 140, 55, 0.22);
+    overflow: hidden;
+}
+
+.pile-bar span {
+    display: block;
+    width: 68%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--hackclub-orange);
+}
+
+/* ── Dark mode ── */
+
+body.dark-mode .sign-in-main::before {
     --sign-in-grid-color: rgba(255, 255, 255, 0.04);
 }
 
-body.dark .sign-in-main::after {
+body.dark-mode .sign-in-main::after {
     background: radial-gradient(ellipse 70% 60% at 50% 40%, transparent 40%, var(--primary-black, #1a1a1a) 100%);
 }
 
-body.dark .sign-in-card {
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.3);
+body.dark-mode .sign-in-title {
+    color: var(--primary-white);
 }
 
-body.dark .sign-in-flash.error {
+body.dark-mode .pile-sticker {
+    background: #17171d;
+}
+
+body.dark-mode .pile-flag {
+    background: none;
+}
+
+body.dark-mode .sign-in-flash.error {
     background: rgba(190, 18, 60, 0.15);
     border-color: rgba(190, 18, 60, 0.3);
 }
 
+body.dark-mode .sign-in-flash.success {
+    background: rgba(22, 101, 52, 0.15);
+    border-color: rgba(22, 101, 52, 0.35);
+    color: #4ade80;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 960px) {
+    .sign-in-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 44px;
+    }
+
+    .sign-in-stickers {
+        position: static;
+        flex: none;
+        height: auto;
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .pile-sticker {
+        position: static;
+        animation: none;
+    }
+
+    .pile-flag {
+        width: 96px;
+    }
+}
+
 @media (max-width: 520px) {
-    .sign-in-card {
-        padding: 36px 28px 32px;
+    .pile-sticker {
+        font-size: 13px;
+        padding: 10px 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pile-sticker {
+        animation: none;
     }
 }

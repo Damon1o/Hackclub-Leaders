@@ -7,9 +7,11 @@ import secrets
 import zlib
 import requests
 import flask
-from flask import Flask, redirect, url_for, session, request, flash
+from flask import Flask, g, redirect, url_for, session, request, flash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
+
+from storage import make_storage, SessionStorage, StorageError
 
 load_dotenv()
 
@@ -36,6 +38,46 @@ def login_required(f):
             return redirect(url_for('sign_in'))
         return f(*args, **kwargs)
     return decorated
+
+
+LEADER_ROLES = {'Leader', 'Mentor'}
+
+
+def viewer_role():
+    """The signed-in user's club role, from their roster entry (matched by
+    email). Accounts with no roster entry lead the club they created."""
+    user = session.get('user') or {}
+    email = (user.get('email') or '').strip().lower()
+    state = get_dashboard_state() if user else {}
+    for member in state.get('members', []):
+        if (member.get('email') or '').strip().lower() == email:
+            return member.get('role') or 'Member'
+    return 'Leader'
+
+
+def viewer_is_leader():
+    return viewer_role() in LEADER_ROLES
+
+
+def leader_required(f):
+    """Decorator: pages only leaders and mentors may open."""
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('user'):
+            return redirect(url_for('sign_in'))
+        if not viewer_is_leader():
+            flash('That page is for club leaders and mentors.', 'error')
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def require_leader_api():
+    """JSON guard for API actions members may not perform."""
+    if not viewer_is_leader():
+        return flask.jsonify({'error': 'Only leaders and mentors can do that.'}), 403
+    return None
 
 
 def _item_id(prefix):
@@ -204,13 +246,39 @@ def default_dashboard_state():
     }
 
 
+# ── Storage layer ─────────────────────────────────────────────────────────────
+# All persistence goes through a backend from storage.py, selected by the
+# STORAGE_BACKEND env var. "session" (default) keeps the classic cookie
+# behavior; "airtable" shares one state per club in an Airtable base.
+# Never touch session['dashboard_state'] directly outside this section.
+
+def _storage():
+    if 'storage_backend' not in g:
+        g.storage_backend = make_storage(session)
+    return g.storage_backend
+
+
+def _club_key():
+    """Which club's state this request operates on (the leader's email)."""
+    if 'club_key' not in g:
+        email = (session.get('user') or {}).get('email') or ''
+        g.club_key = _storage().resolve_club_key(email)
+    return g.club_key
+
+
 def get_dashboard_state():
-    state = session.get('dashboard_state')
+    if 'dashboard_state' in g:
+        return g.dashboard_state
+
+    backend = _storage()
+    state = backend.load(_club_key())
     if state is None:
         state = default_dashboard_state()
-        session['dashboard_state'] = state
+        g.dashboard_state = state
+        save_dashboard_state(state)
         return state
 
+    # Hydrate sections/settings added since this state was first saved.
     defaults = default_dashboard_state()
     changed = False
     for key, value in defaults.items():
@@ -224,8 +292,16 @@ def get_dashboard_state():
             settings[key] = value
             changed = True
 
-    if changed:
-        session.modified = True
+    if isinstance(backend, SessionStorage):
+        if changed:
+            session.modified = True
+    else:
+        # Shared backends don't store the static catalog or the per-visitor
+        # cart; the defaults merge above restored the catalog, the session
+        # keeps the cart.
+        state['cart'] = session.get('cart_items') or []
+
+    g.dashboard_state = state
     return state
 
 
@@ -246,10 +322,18 @@ def _state_cookie_size(state):
 
 
 def save_dashboard_state(state):
-    if _state_cookie_size(state) > MAX_STATE_COOKIE_BYTES:
-        raise StateTooLarge()
-    session['dashboard_state'] = state
-    session.modified = True
+    backend = _storage()
+    if isinstance(backend, SessionStorage):
+        if _state_cookie_size(state) > MAX_STATE_COOKIE_BYTES:
+            raise StateTooLarge()
+        backend.save(_club_key(), state)
+    else:
+        session['cart_items'] = state.get('cart') or []
+        session.modified = True
+        persisted = {key: value for key, value in state.items()
+                     if key not in ('shopItems', 'cart')}
+        backend.save(_club_key(), persisted)
+    g.dashboard_state = state
 
 
 @app.errorhandler(StateTooLarge)
@@ -258,6 +342,14 @@ def handle_state_too_large(_error):
         'error': 'Your club data is full — this demo stores everything in a browser cookie. '
                  'Remove an old dispatch, event, or member before adding more.'
     }), 413
+
+
+@app.errorhandler(StorageError)
+def handle_storage_error(error):
+    if request.path.startswith('/api/'):
+        return flask.jsonify({'error': f'Database error: {error}'}), 502
+    flash(f'Database error: {error}', 'error')
+    return redirect(url_for('index'))
 
 
 def require_dashboard_csrf():
@@ -344,12 +436,12 @@ def dashboard_levels():
     return flask.render_template('dashboard/levels.html', dashboard_state=get_dashboard_state())
 
 @app.route('/dashboard/tools')
-@login_required
+@leader_required
 def dashboard_tools():
     return flask.render_template('dashboard/tools.html', dashboard_state=get_dashboard_state())
 
 @app.route('/dashboard/shop')
-@login_required
+@leader_required
 def dashboard_shop():
     return flask.render_template('dashboard/shop.html', dashboard_state=get_dashboard_state())
 
@@ -358,10 +450,33 @@ def dashboard_shop():
 def dashboard_newsletters():
     return flask.render_template('dashboard/newsletters.html', dashboard_state=get_dashboard_state())
 
-@app.route('/dashboard/settings')
+@app.route('/join/<code>')
+def join_club(code):
+    # Join links never write into the roster — they greet the visitor and
+    # point them onward; leaders see their own club when opening their link.
+    state = get_dashboard_state() if session.get('user') else {}
+    club_settings = state.get('settings') or {}
+    own_link = bool(session.get('user')) and club_settings.get('joinCode') == code
+    return flask.render_template(
+        'join.html',
+        own_link=own_link,
+        club_name=club_settings.get('clubName') if own_link else None,
+    )
+
+@app.route('/dashboard/map')
 @login_required
+def dashboard_map():
+    return flask.render_template('dashboard/map.html', dashboard_state=get_dashboard_state())
+
+@app.route('/dashboard/settings')
+@leader_required
 def dashboard_settings():
     return flask.render_template('dashboard/settings.html', dashboard_state=get_dashboard_state())
+
+@app.route('/dashboard/profile')
+@login_required
+def dashboard_profile():
+    return flask.render_template('dashboard/profile.html', dashboard_state=get_dashboard_state())
 
 
 # Dashboard JSON API
@@ -378,6 +493,9 @@ def api_team_add():
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     payload = json_payload()
     name = clean_text(payload.get('name'))
@@ -412,6 +530,9 @@ def api_team_update(member_id):
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     state = get_dashboard_state()
     member = find_by_id(state['members'], member_id)
@@ -434,6 +555,10 @@ def api_team_update(member_id):
     if status not in {'Active', 'Invited'}:
         return json_error('Choose Active or Invited status.')
 
+    leaders = [m for m in state['members'] if m.get('role') == 'Leader']
+    if member.get('role') == 'Leader' and role != 'Leader' and len(leaders) == 1:
+        return json_error('A club needs at least one leader.')
+
     member.update({
         'name': name,
         'email': email,
@@ -451,8 +576,15 @@ def api_team_delete(member_id):
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     state = get_dashboard_state()
+    target = find_by_id(state['members'], member_id)
+    leaders = [m for m in state['members'] if m.get('role') == 'Leader']
+    if target and target.get('role') == 'Leader' and len(leaders) == 1:
+        return json_error('A club needs at least one leader.')
     original_count = len(state['members'])
     state['members'] = [member for member in state['members'] if member.get('id') != member_id]
     if len(state['members']) == original_count:
@@ -504,6 +636,9 @@ def api_ships_delete(ship_id):
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     state = get_dashboard_state()
     original_count = len(state['ships'])
@@ -555,6 +690,9 @@ def api_events_add():
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     event_data, error = event_from_payload(json_payload())
     if error:
@@ -575,12 +713,17 @@ def api_events_update(event_id):
     if csrf_error:
         return csrf_error
 
+    payload = json_payload()
+    # Members may RSVP, but only leaders and mentors may edit event details.
+    if not viewer_is_leader() and set(payload.keys()) - {'rsvp'}:
+        return flask.jsonify({'error': 'Only leaders and mentors can edit events.'}), 403
+
     state = get_dashboard_state()
     event = find_by_id(state['events'], event_id)
     if not event:
         return json_error('Event not found.', 404)
 
-    event_data, error = event_from_payload(json_payload(), event)
+    event_data, error = event_from_payload(payload, event)
     if error:
         return json_error(error)
 
@@ -596,6 +739,9 @@ def api_events_delete(event_id):
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     state = get_dashboard_state()
     original_count = len(state['events'])
@@ -612,6 +758,9 @@ def api_cart_add():
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     payload = json_payload()
     item_id = clean_text(payload.get('itemId'))
@@ -639,6 +788,9 @@ def api_cart_update(item_id):
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     payload = json_payload()
     try:
@@ -665,6 +817,9 @@ def api_cart_delete(item_id):
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     state = get_dashboard_state()
     state['cart'] = [item for item in state['cart'] if item.get('id') != item_id]
@@ -678,6 +833,9 @@ def api_cart_checkout():
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     state = get_dashboard_state()
     if not state['cart']:
@@ -701,6 +859,9 @@ def api_newsletters_add():
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     payload = json_payload()
     title = clean_text(payload.get('title'))
@@ -755,6 +916,9 @@ def api_newsletter_subscription_update():
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     state = get_dashboard_state()
     state['settings']['newsletterSubscribed'] = parse_bool(json_payload().get('subscribed'))
@@ -768,6 +932,9 @@ def api_settings_update():
     csrf_error = require_dashboard_csrf()
     if csrf_error:
         return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
 
     payload = json_payload()
     club_name = clean_text(payload.get('clubName'))
@@ -797,6 +964,44 @@ def api_settings_update():
     })
     save_dashboard_state(state)
     return flask.jsonify({'state': state})
+
+
+@app.patch('/api/dashboard/profile')
+@login_required
+def api_profile_update():
+    """Personal details for the signed-in user (any role, own account only)."""
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    payload = json_payload()
+    name = clean_text(payload.get('name'), max_len=80)
+    email = clean_text(payload.get('email'), max_len=120)
+    avatar = clean_text(payload.get('avatar'), max_len=300)
+    bio = clean_text(payload.get('bio'), max_len=500)
+
+    if not name:
+        return json_error('Name is required.')
+    if not email or '@' not in email:
+        return json_error('A valid email is required.')
+    if avatar and not avatar.startswith(('http://', 'https://')):
+        return json_error('Avatar URL must start with http:// or https://.')
+
+    old_email = ((session.get('user') or {}).get('email') or '').strip().lower()
+    user = dict(session.get('user') or {})
+    user.update({'name': name, 'email': email, 'avatar': avatar, 'bio': bio})
+    session['user'] = user
+
+    # Keep the Team page roster in step: your roster entry is matched by the
+    # email you signed in with, so profile edits carry over to it.
+    state = get_dashboard_state()
+    for member in state.get('members', []):
+        if (member.get('email') or '').strip().lower() == old_email:
+            member.update({'name': name, 'email': email.lower(), 'avatar': avatar})
+            save_dashboard_state(state)
+            return flask.jsonify({'user': user, 'state': state})
+
+    return flask.jsonify({'user': user})
 
 
 # ── Hack Club OAuth ───────────────────────────────────────────────────────────
@@ -899,9 +1104,12 @@ def hackclub_callback():
 
 @app.context_processor
 def inject_user():
+    signed_in = bool(session.get('user'))
     return dict(
         current_user=session.get('user'),
-        csrf_token=get_csrf_token() if session.get('user') else '',
+        csrf_token=get_csrf_token() if signed_in else '',
+        viewer_role=viewer_role() if signed_in else '',
+        is_leader=viewer_is_leader() if signed_in else False,
     )
 
 

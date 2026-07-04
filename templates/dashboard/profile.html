@@ -1,0 +1,80 @@
+{% extends "dashboard_layout.html" %}
+
+{% block page_title %}Your Profile{% endblock %}
+{% block page_subtitle %}Manage your personal details — how you appear across the Leaders Portal.{% endblock %}
+
+{% block content %}
+<div class="dashboard-page settings-layout" data-dashboard-page="profile">
+    <section class="card-modern dashboard-panel settings-main">
+        <div class="panel-heading">
+            <div>
+                <h2>Personal details</h2>
+                <p>These details are yours alone — club-wide settings live in Club Settings.</p>
+            </div>
+        </div>
+
+        <form class="settings-form" id="profileForm">
+            <label class="form-group">
+                <span class="form-label">Name</span>
+                <input type="text" class="form-input" name="name" value="{{ current_user.name or '' }}" required>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Email</span>
+                <input type="email" class="form-input" name="email" value="{{ current_user.email or '' }}" required>
+                <small class="form-hint">Your club role is matched to the roster by this email.</small>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Profile picture URL</span>
+                <input type="url" class="form-input" name="avatar" value="{{ current_user.avatar or '' }}"
+                    placeholder="https://...">
+            </label>
+            <label class="form-group">
+                <span class="form-label">Bio</span>
+                <textarea class="form-input" name="bio" rows="4"
+                    placeholder="A line or two about you...">{{ current_user.bio or '' }}</textarea>
+            </label>
+            <p class="form-error" id="profileFormError" hidden></p>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Save changes</button>
+                <span class="save-state" id="profileSaveState" aria-live="polite"></span>
+            </div>
+        </form>
+    </section>
+
+    <aside class="card-modern dashboard-panel settings-side">
+        <div class="club-preview" id="profilePreview">
+            <div class="club-preview-avatar" id="profilePreviewAvatar">
+                {{ current_user.name[0] | upper if current_user and current_user.name else 'U' }}
+            </div>
+            <div>
+                <h2 id="profilePreviewName">{{ current_user.name or 'You' }}</h2>
+                <p id="profilePreviewEmail">{{ current_user.email or '' }}</p>
+            </div>
+        </div>
+        <p class="profile-role-line">
+            Signed in via Hack Club as a
+            <span class="badge badge-role">{{ viewer_role or 'Member' }}</span>
+        </p>
+
+        {% set viewer_email = (current_user.email or '') | lower | trim %}
+        {% set ns = namespace(entry=None) %}
+        {% for member in dashboard_state.members %}
+        {% if (member.email or '') | lower | trim == viewer_email %}
+        {% set ns.entry = member %}
+        {% endif %}
+        {% endfor %}
+
+        <div class="profile-roster-note">
+            {% if ns.entry %}
+            <p>You're on the club roster as <strong>{{ ns.entry.name }}</strong>
+                ({{ ns.entry.role }} · {{ ns.entry.status }}). Saving your profile
+                updates your roster entry too.</p>
+            {% else %}
+            <p>You're not on the club roster yet — add yourself on the Team page
+                with this email and your profile will stay linked to it.</p>
+            {% endif %}
+        </div>
+        <a class="btn-secondary full-width" href="/dashboard/team">Open the Team page</a>
+    </aside>
+</div>
+{% endblock %}

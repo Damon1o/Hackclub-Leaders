@@ -1,0 +1,127 @@
+/* ── Ambient animated backgrounds ───────────────────────────
+   Slow-drifting color glows + a cursor-following highlight
+   layered behind existing page backgrounds. Opacities are kept
+   very low so the overall look stays the same. */
+
+.ambient-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.ambient-blob {
+    position: absolute;
+    width: clamp(420px, 46vw, 760px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    filter: blur(64px);
+    will-change: transform;
+}
+
+.ambient-blob-red {
+    top: -12%;
+    left: -8%;
+    background: radial-gradient(closest-side, rgba(236, 55, 80, 0.07), transparent 70%);
+    animation: ambient-drift-a 26s ease-in-out infinite;
+}
+
+.ambient-blob-orange {
+    bottom: -18%;
+    right: -6%;
+    background: radial-gradient(closest-side, rgba(255, 140, 55, 0.06), transparent 70%);
+    animation: ambient-drift-b 34s ease-in-out infinite;
+}
+
+.ambient-blob-blue {
+    top: 30%;
+    right: 22%;
+    background: radial-gradient(closest-side, rgba(51, 142, 218, 0.05), transparent 70%);
+    animation: ambient-drift-c 42s ease-in-out infinite;
+}
+
+@keyframes ambient-drift-a {
+    0%,
+    100% {
+        transform: translate3d(-6%, -4%, 0) scale(1);
+    }
+
+    50% {
+        transform: translate3d(14%, 10%, 0) scale(1.12);
+    }
+}
+
+@keyframes ambient-drift-b {
+    0%,
+    100% {
+        transform: translate3d(6%, 8%, 0) scale(1.08);
+    }
+
+    50% {
+        transform: translate3d(-12%, -10%, 0) scale(0.96);
+    }
+}
+
+@keyframes ambient-drift-c {
+    0%,
+    100% {
+        transform: translate3d(-8%, 10%, 0) scale(0.95);
+    }
+
+    50% {
+        transform: translate3d(10%, -12%, 0) scale(1.1);
+    }
+}
+
+/* Soft glow that trails the cursor (positioned by ambient-bg.js) */
+
+.ambient-cursor-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 560px;
+    aspect-ratio: 1;
+    margin: -280px 0 0 -280px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(236, 55, 80, 0.06), transparent 70%);
+    transform: translate3d(var(--glow-x, -9999px), var(--glow-y, -9999px), 0);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    will-change: transform;
+}
+
+.ambient-cursor-glow.is-active {
+    opacity: 1;
+}
+
+/* Gentle pointer parallax on the existing background art.
+   The slight scale hides edges revealed by the shift. */
+
+.hero::before {
+    transform: translateX(calc(-50% + var(--amb-px, 0px))) translateY(var(--amb-py, 0px)) scale(1.04);
+    will-change: transform;
+}
+
+.events-main-background img {
+    will-change: transform;
+}
+
+@media (hover: none) {
+    .ambient-cursor-glow {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ambient-blob,
+    .ambient-cursor-glow {
+        display: none;
+    }
+
+    .hero::before {
+        transform: translateX(-50%);
+        will-change: auto;
+    }
+}

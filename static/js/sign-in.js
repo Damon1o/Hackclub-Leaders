@@ -1,14 +1,29 @@
 (function () {
-    const card = document.querySelector('.sign-in-card');
-    if (card) {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(16px)';
-        card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-        requestAnimationFrame(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Fade the copy in, then drop the stickers in one by one
+    if (!reduceMotion) {
+        const copy = document.querySelector('.sign-in-copy');
+        if (copy) {
+            copy.style.opacity = '0';
+            copy.style.transform = 'translateY(16px)';
+            copy.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
             requestAnimationFrame(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
+                requestAnimationFrame(() => {
+                    copy.style.opacity = '1';
+                    copy.style.transform = 'translateY(0)';
+                });
             });
+        }
+
+        document.querySelectorAll('.pile-sticker').forEach(function (el, i) {
+            el.style.opacity = '0';
+            el.style.scale = '0.7';
+            el.style.transition = 'opacity 0.35s ease, scale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            setTimeout(function () {
+                el.style.opacity = '1';
+                el.style.scale = '1';
+            }, 250 + i * 110);
         });
     }
 

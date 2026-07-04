@@ -4,10 +4,12 @@
 {% block page_subtitle %}Plan meetings, workshops, and demo days.{% endblock %}
 
 {% block header_right %}
+{% if is_leader %}
 <button class="btn-primary" type="button" data-open-modal="eventModal">
     <span class="button-icon" aria-hidden="true">+</span>
     New event
 </button>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -38,7 +40,9 @@
         <div class="empty-state" id="eventsEmpty" hidden>
             <h3>No events scheduled</h3>
             <p>Create a workshop, meeting, or demo day for your club.</p>
+            {% if is_leader %}
             <button class="btn-primary" type="button" data-open-modal="eventModal">New event</button>
+            {% endif %}
         </div>
     </section>
 </div>

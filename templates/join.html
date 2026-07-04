@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join a Hack Club - Hack Club Leaders</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/borders.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sign-in.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
+</head>
+
+<body>
+
+    <section class="navigation-bar">
+        <div class="animated-nav-logo">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" alt="Hack Club">
+        </div>
+        <div class="nav-bar-text">
+            <a href="/">Hack Club Leaders</a>
+        </div>
+        <div class="apply-now-container">
+            {% if current_user %}
+            <a href="{{ url_for('dashboard') }}" class="apply-now-link">
+                <p class="apply-now-text">Dashboard</p>
+            </a>
+            {% else %}
+            <a href="{{ url_for('sign_in') }}" class="sign-in-link">
+                <p class="sign-in-text">Sign in</p>
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="sign-in-main">
+        <div class="sign-in-card">
+            <div class="sign-in-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 3h16v13l-8 5-8-5V3z" />
+                </svg>
+            </div>
+
+            {% if own_link %}
+            <h1>This is {{ club_name or 'your club' }}'s invite link</h1>
+            <p class="sign-in-subtitle">
+                Share it with members so they know where to find your club.
+                Keep your roster current from the Team page.
+            </p>
+            <a href="{{ url_for('dashboard_team') }}" class="sign-in-hc-btn">Open the Team page</a>
+            {% else %}
+            <h1>You're invited to a Hack Club! 🎉</h1>
+            <p class="sign-in-subtitle">
+                A club leader shared this link with you. Ask them for meeting
+                times and details — and in the meantime, see what Hack Club is
+                all about.
+            </p>
+            <a href="https://hackclub.com/" class="sign-in-hc-btn" target="_blank" rel="noopener noreferrer">
+                Explore Hack Club
+            </a>
+            <p class="sign-in-footer-note">
+                Leading a club yourself? <a href="{{ url_for('sign_in') }}">Sign in to the Leaders Portal</a>.
+            </p>
+            {% endif %}
+        </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
+
+</body>
+
+</html>

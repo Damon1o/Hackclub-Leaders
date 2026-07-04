@@ -1,8 +1,21 @@
 __pycache__/
 .env
+.env.*
 .agent/
 .idea/
+.vscode/
 *.pyc
 *.pyo
 *.pyd
+venv/
+.venv/
 everything-claude-code/
+
+# Vercel CLI artifacts
+.vercel/
+
+# Ruflo / claude-flow runtime data (regenerated locally)
+.claude-flow/
+.swarm/
+ruvector.db
+.claude/settings.local.json

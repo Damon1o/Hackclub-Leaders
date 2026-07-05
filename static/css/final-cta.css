@@ -153,3 +153,62 @@
 .final-cta-terms-link:focus-visible {
     text-decoration-thickness: 2px;
 }
+
+/* ── Mobile responsiveness ─────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .final-cta-heading {
+        font-size: 32px;
+    }
+
+    .final-cta-input {
+        font-size: 18px;
+        padding-right: 100px;
+    }
+
+    .final-cta-join-button {
+        font-size: 16px;
+        padding: 13px 16px;
+    }
+
+    .final-cta-subtext {
+        font-size: 17px;
+        margin-top: 36px;
+    }
+
+    .final-cta-explore-button {
+        font-size: 17px;
+        height: auto;
+        padding: 14px 24px;
+        white-space: normal;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .final-cta {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .final-cta-heading {
+        font-size: 28px;
+    }
+
+    .final-cta-input {
+        font-size: 16px;
+        padding-left: 18px;
+        padding-right: 88px;
+    }
+
+    .final-cta-join-button {
+        font-size: 15px;
+        padding: 13px 14px;
+    }
+
+    .final-cta-explore-button {
+        font-size: 15px;
+        gap: 6px;
+        padding: 13px 20px;
+    }
+}

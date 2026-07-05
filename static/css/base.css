@@ -23,8 +23,22 @@ body.dark-mode {
     --background: var(--hackclub-dark);
 }
 
-* {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
+}
+
+img,
+video,
+svg {
+    max-width: 100%;
+    height: auto;
+}
+
+html,
+body {
+    overflow-x: hidden;
 }
 
 input,

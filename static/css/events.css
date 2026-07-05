@@ -304,6 +304,12 @@
 }
 
 @media (max-width: 768px) {
+    /* Nav goes multi-row on mobile (grows past its 80px desktop height) —
+       the clamp() above floors out too low to clear it. */
+    .events-main {
+        padding-top: 210px;
+    }
+
     .events-search {
         flex-direction: column;
         align-items: stretch;
@@ -313,7 +319,42 @@
         max-width: 100%;
     }
 
+    .events-search form input,
+    .events-search form button {
+        min-height: 44px;
+    }
+
+    .filter-tag {
+        min-height: 44px;
+        padding: 10px 18px;
+    }
+
     .events-list {
         grid-template-columns: 1fr;
+    }
+
+    .event-card-footer {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .event-card-register {
+        min-height: 44px;
+        padding: 10px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .events-main {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .event-card-body {
+        padding: 16px 18px;
+    }
+
+    .event-card-footer {
+        padding: 14px 18px;
     }
 }

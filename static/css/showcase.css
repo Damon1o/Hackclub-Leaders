@@ -364,3 +364,32 @@ body.dark-mode .supporters-logos img {
 body.dark-mode .supporters-logos img:hover {
     filter: grayscale(0) invert(0);
 }
+
+/* ── Mobile responsiveness ─────────────────────────────────── */
+
+@media (max-width: 768px) {
+
+    .showcase-grid,
+    .happening-grid {
+        gap: 16px;
+    }
+
+    .showcase-subtext,
+    .happening-subtext {
+        font-size: 1.05rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .showcase-card-visual {
+        height: 140px;
+    }
+
+    .happening-card-visual {
+        height: 130px;
+    }
+
+    .supporters-logos {
+        gap: 24px;
+    }
+}

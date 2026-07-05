@@ -326,3 +326,58 @@
         background-position: 0% 0%;
     }
 }
+
+/* ── Mobile responsiveness ─────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .hero {
+        /* .navigation-bar is fixed and wraps to ~180-190px tall in this range
+           (logo/text/mode-switch row + nav-links row + side-by-side apply/sign-in row) */
+        padding: 210px 24px 60px;
+        min-height: auto;
+        gap: 48px;
+        align-items: stretch;
+    }
+
+    .hero .hero-text .header-text p {
+        line-height: 1;
+    }
+
+    .hero .hero-text .sign-up-cta {
+        width: 100%;
+    }
+
+    .hero .hero-text .join-terms-text {
+        margin-left: 0;
+        align-self: center;
+        transform: none;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        height: auto;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        /* apply-now-container's buttons stack to full-width at this breakpoint,
+           pushing the fixed nav to ~230-240px tall */
+        padding: 270px 20px 48px;
+        gap: 32px;
+    }
+
+    .hero .hero-text .minor-text {
+        font-size: 1.05rem;
+    }
+
+    .hero .hero-text .sign-up-cta {
+        gap: 8px;
+    }
+
+    .hero .hero-text .sign-up-cta .sign-up-input,
+    .hero .hero-text .sign-up-cta .sign-up-button {
+        font-size: 1rem;
+        padding: 14px 18px;
+    }
+}

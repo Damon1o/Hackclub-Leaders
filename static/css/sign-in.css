@@ -476,6 +476,15 @@ body.dark-mode .sign-in-flash.success {
 
 /* ── Responsive ── */
 
+/* Nav goes multi-row on mobile (grows past its 80px desktop height) —
+   the clamp() above floors out too low to clear it, so bump top
+   clearance specifically for that breakpoint. */
+@media (max-width: 768px) {
+    .sign-in-main {
+        padding-top: 210px;
+    }
+}
+
 @media (max-width: 960px) {
     .sign-in-hero {
         flex-direction: column;

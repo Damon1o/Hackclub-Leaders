@@ -2327,8 +2327,8 @@ input:checked + .toggle-slider:before {
     }
 
     .dashboard-sidebar-link {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         border-radius: 12px;
     }
 
@@ -2338,9 +2338,15 @@ input:checked + .toggle-slider:before {
     }
 
     .sidebar-profile {
-        width: 36px;
-        height: 36px;
+        width: 44px;
+        height: 44px;
         border-radius: 10px;
+    }
+
+    /* Modal close buttons are the main icon-only tap target on mobile */
+    .icon-button {
+        width: 44px;
+        height: 44px;
     }
 
     .dashboard-main {

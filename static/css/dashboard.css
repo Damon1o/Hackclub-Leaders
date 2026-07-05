@@ -508,6 +508,20 @@ body.dark-mode .btn-secondary {
     color: var(--hackclub-red);
 }
 
+.badge-pending {
+    background: rgba(255, 140, 55, 0.16);
+    color: #b25a12;
+}
+
+body.dark-mode .badge-pending {
+    color: #ffb066;
+}
+
+/* Ships awaiting approval read as muted until an admin approves them. */
+.ship-item.is-pending {
+    opacity: 0.72;
+}
+
 body.dark-mode .badge-up {
     color: #4be3b4;
 }
@@ -1423,6 +1437,182 @@ body.dark-mode .shop-price {
     padding-top: 8px;
 }
 
+/* ── HackTime card ────────────────────────────────────────────────────────── */
+
+.hacktime-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+}
+
+.hacktime-total strong,
+.hacktime-avg strong {
+    display: block;
+    font-family: var(--hackclub-title-font);
+    font-size: 30px;
+    line-height: 1.1;
+    color: var(--dash-ink);
+}
+
+.hacktime-total span,
+.hacktime-avg span {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--dash-muted);
+}
+
+.hacktime-langs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.hacktime-lang {
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--dash-fill);
+    border: 1px solid var(--dash-border);
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--dash-slate);
+}
+
+.hacktime-loading,
+.hacktime-empty {
+    margin: 0;
+    font-size: 14px;
+    color: var(--dash-muted);
+}
+
+/* ── Projects ─────────────────────────────────────────────────────────────── */
+
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+}
+
+.project-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 18px;
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: 14px;
+    box-shadow: var(--dash-shadow-sm);
+}
+
+.project-card.is-readonly {
+    background: var(--dash-fill);
+    box-shadow: none;
+}
+
+.project-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.project-card-head h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--dash-ink);
+}
+
+.project-desc {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--dash-slate);
+}
+
+.project-owner {
+    margin: 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--dash-muted);
+}
+
+.project-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-top: 4px;
+}
+
+/* ── Request an item ──────────────────────────────────────────────────────── */
+
+.request-item-block {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--dash-border);
+}
+
+.request-item-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.request-item-form {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.request-item-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.request-item-list h3 {
+    margin: 0 0 2px;
+    font-size: 14px;
+    color: var(--dash-ink);
+}
+
+.request-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--dash-fill);
+    border: 1px solid var(--dash-border);
+    border-radius: 10px;
+}
+
+.request-item-row strong {
+    display: block;
+    font-size: 14px;
+    color: var(--dash-ink);
+}
+
+.request-item-row span {
+    font-size: 13px;
+    color: var(--dash-muted);
+}
+
+.request-item-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+    .request-item-fields {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ── Newsletters ──────────────────────────────────────────────────────────── */
 
 .newsletter-list {
@@ -1638,6 +1828,120 @@ body.dark-mode .form-error {
     background: var(--dash-fill);
     border: 1px solid var(--dash-border);
     border-radius: 12px;
+}
+
+/* ── Admin ────────────────────────────────────────────────────────────────── */
+
+.sidebar-admin-link.active,
+.sidebar-admin-link:hover {
+    color: #fff;
+}
+
+.admin-review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-review-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    background: var(--dash-fill);
+    border: 1px solid var(--dash-border);
+    border-radius: 12px;
+}
+
+.admin-review-main h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    color: var(--dash-ink);
+}
+
+.admin-review-meta {
+    margin: 0;
+    font-size: 13px;
+    color: var(--dash-muted);
+}
+
+.admin-review-meta a {
+    color: var(--hackclub-red);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.admin-review-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.admin-table-scroll {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.admin-table th,
+.admin-table td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--dash-border);
+    white-space: nowrap;
+}
+
+.admin-table th {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--dash-muted);
+}
+
+.admin-table td {
+    color: var(--dash-slate);
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table-action {
+    text-align: right;
+}
+
+.admin-member-list {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-member-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--dash-slate);
+}
+
+.admin-member-name {
+    font-weight: bold;
+    color: var(--dash-ink);
+}
+
+.admin-empty-note {
+    color: var(--dash-muted);
+    font-size: 13px;
 }
 
 .profile-roster-note p {

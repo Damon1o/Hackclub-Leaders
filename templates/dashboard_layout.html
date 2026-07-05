@@ -13,11 +13,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
 </head>
 
-<body class="dashboard-layout" data-viewer-role="{{ viewer_role }}">
+<body class="dashboard-layout" data-viewer-role="{{ viewer_role }}" data-viewer-email="{{ (current_user.email if current_user else '') | lower }}">
     <a class="skip-link" href="#dashboardMain">Skip to dashboard</a>
 
     <section class="navigation-bar">
@@ -122,6 +123,13 @@
                         <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
                     </svg>
                 </a>
+                <a href="/dashboard/projects" class="dashboard-sidebar-link {% if current_path == '/dashboard/projects' %}active{% endif %}" title="Projects" aria-label="Projects">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
+                        <path d="M2 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z" />
+                        <path d="M8 13h8" />
+                    </svg>
+                </a>
                 <a href="/dashboard/levels" class="dashboard-sidebar-link {% if current_path == '/dashboard/levels' %}active{% endif %}" title="Levels" aria-label="Levels">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
@@ -168,6 +176,15 @@
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
                         <circle cx="12" cy="12" r="3" />
+                    </svg>
+                </a>
+                {% endif %}
+                {% if is_admin %}
+                <a href="/dashboard/admin" class="dashboard-sidebar-link sidebar-admin-link {% if current_path.startswith('/dashboard/admin') %}active{% endif %}" title="Admin" aria-label="Admin">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <path d="m9 12 2 2 4-4" />
                     </svg>
                 </a>
                 {% endif %}
@@ -224,9 +241,9 @@
 
     <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
     <script id="dashboard-state" type="application/json">{{ dashboard_state | default({}) | tojson }}</script>
-    <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 
 </html>

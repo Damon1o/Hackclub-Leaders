@@ -154,6 +154,151 @@
     text-decoration: underline;
 }
 
+/* ── Card (join + welcome pages) ── */
+
+.sign-in-card {
+    position: relative;
+    z-index: 1;
+    background: var(--primary-white);
+    border: 1.5px solid #e8e8e8;
+    border-radius: 20px;
+    padding: 48px 52px 44px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.07), 0 1px 4px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+}
+
+.sign-in-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--hackclub-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.sign-in-icon svg {
+    width: 28px;
+    height: 28px;
+    fill: #fff;
+}
+
+.sign-in-card h1 {
+    font-family: var(--hackclub-title-font);
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: var(--primary-black);
+    margin: 0 0 8px;
+    line-height: 1.15;
+}
+
+.sign-in-card .sign-in-subtitle {
+    font-size: 0.95rem;
+    margin: 0 0 28px;
+}
+
+.sign-in-card .sign-in-hc-btn {
+    display: flex;
+    width: 100%;
+}
+
+/* ── Welcome page (join code / create club) ── */
+
+.welcome-join-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.welcome-code-input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    font-family: var(--hackclub-body-font);
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    background: var(--primary-white);
+    color: var(--primary-black);
+}
+
+.welcome-code-input:focus {
+    outline: none;
+    border-color: var(--hackclub-red);
+    box-shadow: 0 0 0 3px rgba(236, 55, 80, 0.15);
+}
+
+.welcome-backend-note {
+    margin: 12px 0 0;
+    font-family: var(--hackclub-body-font);
+    font-size: 0.8rem;
+    color: var(--hackclub-muted);
+    line-height: 1.5;
+}
+
+.welcome-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0;
+    color: var(--hackclub-muted);
+    font-family: var(--hackclub-body-font);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.welcome-divider::before,
+.welcome-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e8e8e8;
+}
+
+.welcome-create-btn {
+    width: 100%;
+    padding: 13px 20px;
+    background: none;
+    border: 1.5px solid #d8d8d8;
+    border-radius: 10px;
+    font-family: var(--hackclub-body-font);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--primary-black);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.welcome-create-btn:hover {
+    border-color: var(--hackclub-red);
+    color: var(--hackclub-red);
+    background: rgba(236, 55, 80, 0.05);
+}
+
+body.dark-mode .sign-in-card {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .welcome-code-input {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .welcome-divider::before,
+body.dark-mode .welcome-divider::after {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode .welcome-create-btn {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--primary-white);
+}
+
 /* ── Flash messages ── */
 
 .sign-in-flash {
@@ -363,6 +508,10 @@ body.dark-mode .sign-in-flash.success {
     .pile-sticker {
         font-size: 13px;
         padding: 10px 14px;
+    }
+
+    .sign-in-card {
+        padding: 36px 28px 32px;
     }
 }
 

@@ -26,6 +26,15 @@ HACKCLUB_CLIENT_ID     = os.environ.get('HACKCLUB_CLIENT_ID', '')
 HACKCLUB_CLIENT_SECRET = os.environ.get('HACKCLUB_CLIENT_SECRET', '')
 BASE_URL               = os.environ.get('BASE_URL', '')
 
+# Comma-separated allowlist of admin emails. Admins see and edit every club and
+# review shipped projects. Kept in env (not the database) so there is no
+# in-app way to grant oneself admin.
+ADMIN_EMAILS = {
+    email.strip().lower()
+    for email in os.environ.get('ADMIN_EMAILS', '').split(',')
+    if email.strip()
+}
+
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -48,7 +57,7 @@ def viewer_role():
     email). Accounts with no roster entry lead the club they created."""
     user = session.get('user') or {}
     email = (user.get('email') or '').strip().lower()
-    state = get_dashboard_state() if user else {}
+    state = (viewer_club_lite() or {}) if user else {}
     for member in state.get('members', []):
         if (member.get('email') or '').strip().lower() == email:
             return member.get('role') or 'Member'
@@ -80,6 +89,33 @@ def require_leader_api():
     return None
 
 
+def is_admin():
+    """True when the signed-in email is in the ADMIN_EMAILS allowlist."""
+    email = ((session.get('user') or {}).get('email') or '').strip().lower()
+    return bool(email) and email in ADMIN_EMAILS
+
+
+def admin_required(f):
+    """Decorator: pages only site admins may open."""
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('user'):
+            return redirect(url_for('sign_in'))
+        if not is_admin():
+            flash('That page is for site administrators.', 'error')
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def require_admin_api():
+    """JSON guard for admin-only API actions."""
+    if not is_admin():
+        return flask.jsonify({'error': 'Admins only.'}), 403
+    return None
+
+
 def _item_id(prefix):
     return f'{prefix}-{secrets.token_hex(4)}'
 
@@ -107,55 +143,10 @@ def default_dashboard_state():
                 'avatar': user.get('avatar') or '',
                 'status': 'Active',
             },
-            {
-                'id': 'member-sarah',
-                'name': 'Sarah J.',
-                'email': 'sarah@example.com',
-                'role': 'Member',
-                'avatar': '',
-                'status': 'Active',
-            },
-            {
-                'id': 'member-alex',
-                'name': 'Alex Chen',
-                'email': 'alex@example.com',
-                'role': 'Member',
-                'avatar': '',
-                'status': 'Active',
-            },
         ],
-        'events': [
-            {
-                'id': 'event-hackathon-prep',
-                'title': 'Hackathon Prep Meeting',
-                'date': '2026-10-24',
-                'time': '15:30',
-                'location': 'Room 402',
-                'type': 'Workshop',
-                'rsvp': True,
-                'attendees': 18,
-            },
-            {
-                'id': 'event-web-dev',
-                'title': 'Web Dev Workshop: Build a Personal Site',
-                'date': '2026-11-02',
-                'time': '15:30',
-                'location': 'Room 402',
-                'type': 'Workshop',
-                'rsvp': False,
-                'attendees': 24,
-            },
-            {
-                'id': 'event-demo-day',
-                'title': 'End of Semester Pizza Party and Demo Day',
-                'date': '2026-12-15',
-                'time': '16:00',
-                'location': 'Library',
-                'type': 'Demo Day',
-                'rsvp': False,
-                'attendees': 31,
-            },
-        ],
+        # New clubs start empty — events, ships, and members are added by
+        # the club itself, so levels and stats reflect real activity.
+        'events': [],
         'shopItems': [
             {
                 'id': 'stickers',
@@ -187,22 +178,9 @@ def default_dashboard_state():
         ],
         'cart': [],
         'orders': [],
-        'ships': [
-            {
-                'id': 'ship-portfolio',
-                'title': 'Personal Portfolio Site',
-                'member': 'Sarah J.',
-                'url': 'https://sarah.hackclub.dev',
-                'date': '2026-06-14',
-            },
-            {
-                'id': 'ship-sprig-game',
-                'title': 'Sprig Maze Game',
-                'member': 'Alex Chen',
-                'url': 'https://sprig.hackclub.com/share/maze',
-                'date': '2026-06-21',
-            },
-        ],
+        'itemRequests': [],
+        'projects': [],
+        'ships': [],
         'newsletters': [
             {
                 'id': 'dispatch-hardware-grants',
@@ -229,14 +207,14 @@ def default_dashboard_state():
                 'body': 'The new school year kit includes updated posters, refreshed stickers, and a checklist for reaching your first ten members.',
                 'date': '2026-08-15',
                 'readTime': '2 min read',
-                'read': True,
+                'read': False,
             },
         ],
         'settings': {
             'joinCode': secrets.token_hex(3),
-            'clubName': 'Hack Club at State High',
-            'location': 'State College, PA',
-            'website': 'https://statehigh.hackclub.com',
+            'clubName': f"{leader_name}'s Hack Club",
+            'location': '',
+            'website': '',
             'avatar': '',
             'publicDirectory': True,
             'emailNotifications': True,
@@ -266,16 +244,41 @@ def _club_key():
     return g.club_key
 
 
+def viewer_club_state():
+    """The viewer's full stored club state, or None if they have no club yet.
+    Loads at most once per request."""
+    if 'club_state_loaded' not in g:
+        g.club_state_loaded = True
+        g.club_state = _storage().load(_club_key())
+    return g.club_state
+
+
+def viewer_club_lite():
+    """Club settings + members only — enough to gate access and resolve the
+    viewer's role, without the full multi-table load. Page shells use this so
+    the heavy sections can stream in client-side."""
+    if 'club_lite' in g:
+        return g.club_lite
+    # If the full state is already loaded this request, reuse it.
+    if g.get('club_state_loaded') and g.get('club_state') is not None:
+        g.club_lite = g.club_state
+    else:
+        g.club_lite = _storage().load_lite(_club_key())
+    return g.club_lite
+
+
 def get_dashboard_state():
     if 'dashboard_state' in g:
         return g.dashboard_state
 
     backend = _storage()
-    state = backend.load(_club_key())
+    state = viewer_club_state()
     if state is None:
+        # No club yet — serve defaults in memory without persisting them.
+        # A club record is only created when the user explicitly starts one
+        # (or joins one) on the welcome page.
         state = default_dashboard_state()
         g.dashboard_state = state
-        save_dashboard_state(state)
         return state
 
     # Hydrate sections/settings added since this state was first saved.
@@ -334,6 +337,8 @@ def save_dashboard_state(state):
                      if key not in ('shopItems', 'cart')}
         backend.save(_club_key(), persisted)
     g.dashboard_state = state
+    g.club_state = state
+    g.club_state_loaded = True
 
 
 @app.errorhandler(StateTooLarge)
@@ -408,32 +413,128 @@ def sign_out():
     return redirect(url_for('index'))
 
 
+# ── Club membership gate ─────────────────────────────────────────────────────
+# Signed-in users whose identity isn't in the database yet (no club of their
+# own, not on any roster) must join with a code or start a club before the
+# dashboard opens.
+
+@app.before_request
+def require_club_membership():
+    path = request.path
+    if not (path.startswith('/dashboard') or path.startswith('/api/dashboard')):
+        return None
+    if path.startswith('/dashboard/welcome'):
+        return None
+    # Admin area is club-agnostic — admins operate across every club and may
+    # have no club of their own.
+    if path.startswith('/dashboard/admin') or path.startswith('/api/admin'):
+        return None
+    if not session.get('user'):
+        return None  # login_required on the view handles the redirect
+    if is_admin() or viewer_club_lite() is not None:
+        return None
+    if path.startswith('/api/'):
+        return json_error('Join or create a club first.', 403)
+    return redirect(url_for('dashboard_welcome'))
+
+
+def _welcome_csrf_ok():
+    token = request.form.get('csrf_token', '')
+    expected = session.get('csrf_token', '')
+    return bool(token and expected and secrets.compare_digest(token, expected))
+
+
+@app.route('/dashboard/welcome')
+@login_required
+def dashboard_welcome():
+    if viewer_club_lite() is not None:
+        return redirect(url_for('dashboard'))
+    return flask.render_template(
+        'welcome.html',
+        prefill_code=clean_text(request.args.get('code'), max_len=20),
+        shared_backend=not isinstance(_storage(), SessionStorage),
+    )
+
+
+@app.post('/dashboard/welcome/join')
+@login_required
+def dashboard_welcome_join():
+    if viewer_club_lite() is not None:
+        return redirect(url_for('dashboard'))
+    if not _welcome_csrf_ok():
+        flash('Your session expired. Please try again.', 'error')
+        return redirect(url_for('dashboard_welcome'))
+
+    code = clean_text(request.form.get('joinCode'), max_len=20)
+    backend = _storage()
+    club_key = backend.find_club_by_join_code(code) if code else None
+    if not club_key:
+        flash('That join code was not found. Double-check it with your club leader.', 'error')
+        return redirect(url_for('dashboard_welcome'))
+
+    user = session.get('user') or {}
+    email = (user.get('email') or '').strip().lower()
+    club_state = backend.load(club_key) or {}
+    members = club_state.setdefault('members', [])
+    if not any((m.get('email') or '').strip().lower() == email for m in members):
+        members.append({
+            'id': _item_id('member'),
+            'name': user.get('name') or email,
+            'email': email,
+            'role': 'Member',
+            'avatar': user.get('avatar') or '',
+            'status': 'Active',
+        })
+        backend.save(club_key, club_state)
+    flash('Welcome to the club!', 'success')
+    return redirect(url_for('dashboard'))
+
+
+@app.post('/dashboard/welcome/create')
+@login_required
+def dashboard_welcome_create():
+    if viewer_club_lite() is not None:
+        return redirect(url_for('dashboard'))
+    if not _welcome_csrf_ok():
+        flash('Your session expired. Please try again.', 'error')
+        return redirect(url_for('dashboard_welcome'))
+
+    save_dashboard_state(default_dashboard_state())
+    flash('Your club is ready — welcome, leader!', 'success')
+    return redirect(url_for('dashboard'))
+
+
 # ── Dashboard pages ───────────────────────────────────────────────────────────
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return flask.render_template('dashboard.html', dashboard_state=get_dashboard_state())
+    return flask.render_template('dashboard.html')
 
 @app.route('/dashboard/team')
 @login_required
 def dashboard_team():
-    return flask.render_template('dashboard/team.html', dashboard_state=get_dashboard_state())
+    return flask.render_template('dashboard/team.html')
 
 @app.route('/dashboard/events')
 @login_required
 def dashboard_events():
-    return flask.render_template('dashboard/events.html', dashboard_state=get_dashboard_state())
+    return flask.render_template('dashboard/events.html')
 
 @app.route('/dashboard/ships')
 @login_required
 def dashboard_ships():
-    return flask.render_template('dashboard/ships.html', dashboard_state=get_dashboard_state())
+    return flask.render_template('dashboard/ships.html')
+
+@app.route('/dashboard/projects')
+@login_required
+def dashboard_projects():
+    return flask.render_template('dashboard/projects.html')
 
 @app.route('/dashboard/levels')
 @login_required
 def dashboard_levels():
-    return flask.render_template('dashboard/levels.html', dashboard_state=get_dashboard_state())
+    return flask.render_template('dashboard/levels.html')
 
 @app.route('/dashboard/tools')
 @leader_required
@@ -443,12 +544,12 @@ def dashboard_tools():
 @app.route('/dashboard/shop')
 @leader_required
 def dashboard_shop():
-    return flask.render_template('dashboard/shop.html', dashboard_state=get_dashboard_state())
+    return flask.render_template('dashboard/shop.html')
 
 @app.route('/dashboard/newsletters')
 @login_required
 def dashboard_newsletters():
-    return flask.render_template('dashboard/newsletters.html', dashboard_state=get_dashboard_state())
+    return flask.render_template('dashboard/newsletters.html')
 
 @app.route('/join/<code>')
 def join_club(code):
@@ -466,7 +567,7 @@ def join_club(code):
 @app.route('/dashboard/map')
 @login_required
 def dashboard_map():
-    return flask.render_template('dashboard/map.html', dashboard_state=get_dashboard_state())
+    return flask.render_template('dashboard/map.html')
 
 @app.route('/dashboard/settings')
 @leader_required
@@ -477,6 +578,157 @@ def dashboard_settings():
 @login_required
 def dashboard_profile():
     return flask.render_template('dashboard/profile.html', dashboard_state=get_dashboard_state())
+
+
+# ── Admin ─────────────────────────────────────────────────────────────────────
+# Site admins (ADMIN_EMAILS) work across every club: view/edit any club and
+# approve the shipped projects that count toward club levels.
+
+def _persist_club(club_key, state):
+    """Save a full state dict for an arbitrary club through the backend,
+    stripping the static catalog / transient cart on shared backends."""
+    backend = _storage()
+    if isinstance(backend, SessionStorage):
+        backend.save(club_key, state)
+    else:
+        persisted = {key: value for key, value in state.items()
+                     if key not in ('shopItems', 'cart')}
+        backend.save(club_key, persisted)
+
+
+def _load_admin_club(club_key):
+    """(state, error_response) for an admin acting on a specific club."""
+    state = _storage().load(club_key)
+    if state is None:
+        return None, json_error('Club not found.', 404)
+    return state, None
+
+
+@app.route('/dashboard/admin')
+@admin_required
+def dashboard_admin():
+    backend = _storage()
+    return flask.render_template(
+        'dashboard/admin.html',
+        clubs=backend.list_clubs(),
+        pending_ships=backend.list_pending_ships(),
+    )
+
+
+@app.route('/dashboard/admin/club/<club_key>')
+@admin_required
+def dashboard_admin_club(club_key):
+    club_key = (club_key or '').strip().lower()
+    state = _storage().load(club_key)
+    if state is None:
+        flash('That club no longer exists.', 'error')
+        return redirect(url_for('dashboard_admin'))
+    return flask.render_template(
+        'dashboard/admin_club.html',
+        club_key=club_key,
+        club=state,
+    )
+
+
+@app.patch('/api/admin/clubs/<club_key>')
+@login_required
+def api_admin_club_update(club_key):
+    admin_error = require_admin_api()
+    if admin_error:
+        return admin_error
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+    club_key = (club_key or '').strip().lower()
+    state, error = _load_admin_club(club_key)
+    if error:
+        return error
+
+    payload = json_payload()
+    club_name = clean_text(payload.get('clubName'))
+    website = clean_text(payload.get('website'))
+    avatar = clean_text(payload.get('avatar'))
+    if not club_name:
+        return json_error('Club name is required.')
+    if website and not website.startswith(('http://', 'https://')):
+        return json_error('Club website must start with http:// or https://.')
+    if avatar and not avatar.startswith(('http://', 'https://')):
+        return json_error('Avatar URL must start with http:// or https://.')
+
+    settings = state.setdefault('settings', {})
+    settings['clubName'] = club_name
+    settings['location'] = clean_text(payload.get('location'))
+    settings['website'] = website
+    settings['avatar'] = avatar
+    if 'publicDirectory' in payload:
+        settings['publicDirectory'] = parse_bool(payload.get('publicDirectory'))
+    _persist_club(club_key, state)
+    return flask.jsonify({'club': state})
+
+
+@app.patch('/api/admin/ships/<club_key>/<ship_id>')
+@login_required
+def api_admin_ship_update(club_key, ship_id):
+    admin_error = require_admin_api()
+    if admin_error:
+        return admin_error
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+    club_key = (club_key or '').strip().lower()
+    state, error = _load_admin_club(club_key)
+    if error:
+        return error
+
+    ship = find_by_id(state.get('ships') or [], ship_id)
+    if not ship:
+        return json_error('Ship not found.', 404)
+
+    payload = json_payload()
+    # Approve / reject is the common case; admins may also fix fields.
+    if 'approved' in payload:
+        ship['approved'] = parse_bool(payload.get('approved'))
+    if 'title' in payload:
+        title = clean_text(payload.get('title'), ship.get('title', ''), max_len=120)
+        if not title:
+            return json_error('Project title is required.')
+        ship['title'] = title
+    if 'member' in payload:
+        member = clean_text(payload.get('member'), ship.get('member', ''), max_len=80)
+        if not member:
+            return json_error('Who shipped it? Add a member name.')
+        ship['member'] = member
+    if 'url' in payload:
+        url = clean_text(payload.get('url'), ship.get('url', ''))
+        if url and not url.startswith(('http://', 'https://')):
+            return json_error('Project URL must start with http:// or https://.')
+        ship['url'] = url
+
+    _persist_club(club_key, state)
+    return flask.jsonify({'ship': ship})
+
+
+@app.delete('/api/admin/ships/<club_key>/<ship_id>')
+@login_required
+def api_admin_ship_delete(club_key, ship_id):
+    admin_error = require_admin_api()
+    if admin_error:
+        return admin_error
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+    club_key = (club_key or '').strip().lower()
+    state, error = _load_admin_club(club_key)
+    if error:
+        return error
+
+    ships = state.get('ships') or []
+    remaining = [s for s in ships if s.get('id') != ship_id]
+    if len(remaining) == len(ships):
+        return json_error('Ship not found.', 404)
+    state['ships'] = remaining
+    _persist_club(club_key, state)
+    return flask.jsonify({'ok': True})
 
 
 # Dashboard JSON API
@@ -624,8 +876,48 @@ def api_ships_add():
         'member': member,
         'url': url,
         'date': ship_date,
+        # Ships start unapproved and only count toward the club level once an
+        # admin approves them.
+        'approved': False,
     }
     state['ships'].insert(0, ship)
+    save_dashboard_state(state)
+    return flask.jsonify({'ship': ship, 'state': state})
+
+
+@app.patch('/api/dashboard/ships/<ship_id>')
+@login_required
+def api_ships_update(ship_id):
+    # Members may edit shipped projects — no leader gate here.
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    ship = find_by_id(state['ships'], ship_id)
+    if not ship:
+        return json_error('Ship not found.', 404)
+
+    payload = json_payload()
+    title = clean_text(payload.get('title'), ship.get('title', ''), max_len=120)
+    member = clean_text(payload.get('member'), ship.get('member', ''), max_len=80)
+    url = clean_text(payload.get('url'), ship.get('url', ''))
+    ship_date = clean_text(payload.get('date'), ship.get('date', ''), max_len=10)
+
+    if not title:
+        return json_error('Project title is required.')
+    if not member:
+        return json_error('Who shipped it? Add a member name.')
+    if url and not url.startswith(('http://', 'https://')):
+        return json_error('Project URL must start with http:// or https://.')
+    try:
+        date.fromisoformat(ship_date)
+    except ValueError:
+        return json_error('Choose a valid ship date.')
+
+    # Editing a project sends it back to the review queue.
+    ship.update({'title': title, 'member': member, 'url': url,
+                 'date': ship_date, 'approved': False})
     save_dashboard_state(state)
     return flask.jsonify({'ship': ship, 'state': state})
 
@@ -853,6 +1145,161 @@ def api_cart_checkout():
     return flask.jsonify({'order': order, 'state': state})
 
 
+@app.post('/api/dashboard/item-requests')
+@login_required
+def api_item_request_add():
+    """Suggest a product that isn't in the shop yet."""
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
+
+    payload = json_payload()
+    name = clean_text(payload.get('name'), max_len=120)
+    note = clean_text(payload.get('note'), max_len=300)
+    if not name:
+        return json_error('What item would you like added?')
+
+    state = get_dashboard_state()
+    item_request = {
+        'id': _item_id('itemreq'),
+        'name': name,
+        'note': note,
+        'date': date.today().isoformat(),
+        'status': 'Submitted',
+    }
+    state.setdefault('itemRequests', []).insert(0, item_request)
+    save_dashboard_state(state)
+    return flask.jsonify({'itemRequest': item_request, 'state': state})
+
+
+@app.delete('/api/dashboard/item-requests/<request_id>')
+@login_required
+def api_item_request_delete(request_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
+
+    state = get_dashboard_state()
+    requests_list = state.get('itemRequests') or []
+    remaining = [r for r in requests_list if r.get('id') != request_id]
+    if len(remaining) == len(requests_list):
+        return json_error('Request not found.', 404)
+    state['itemRequests'] = remaining
+    save_dashboard_state(state)
+    return flask.jsonify({'state': state})
+
+
+# ── Projects (member-owned) ───────────────────────────────────────────────────
+# Any member can create and manage their OWN projects and submit them to the
+# club. Ownership is keyed to the account email — you can only edit or delete
+# projects you created.
+
+def _viewer_email():
+    return ((session.get('user') or {}).get('email') or '').strip().lower()
+
+
+def _owned_project_or_error(state, project_id):
+    """(project, None) if the viewer owns it, else (None, error_response)."""
+    project = find_by_id(state.get('projects') or [], project_id)
+    if not project:
+        return None, json_error('Project not found.', 404)
+    if (project.get('ownerEmail') or '').strip().lower() != _viewer_email():
+        return None, json_error('You can only change your own projects.', 403)
+    return project, None
+
+
+@app.post('/api/dashboard/projects')
+@login_required
+def api_project_add():
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    payload = json_payload()
+    name = clean_text(payload.get('name'), max_len=120)
+    description = clean_text(payload.get('description'), max_len=500)
+    url = clean_text(payload.get('url'))
+    if not name:
+        return json_error('Project name is required.')
+    if url and not url.startswith(('http://', 'https://')):
+        return json_error('Project URL must start with http:// or https://.')
+
+    user = session.get('user') or {}
+    state = get_dashboard_state()
+    project = {
+        'id': _item_id('project'),
+        'name': name,
+        'description': description,
+        'url': url,
+        'status': 'Draft',
+        'ownerEmail': _viewer_email(),
+        'ownerName': user.get('name') or _viewer_email(),
+        'date': date.today().isoformat(),
+    }
+    state.setdefault('projects', []).insert(0, project)
+    save_dashboard_state(state)
+    return flask.jsonify({'project': project, 'state': state})
+
+
+@app.patch('/api/dashboard/projects/<project_id>')
+@login_required
+def api_project_update(project_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    project, error = _owned_project_or_error(state, project_id)
+    if error:
+        return error
+
+    payload = json_payload()
+    if 'name' in payload:
+        name = clean_text(payload.get('name'), project.get('name', ''), max_len=120)
+        if not name:
+            return json_error('Project name is required.')
+        project['name'] = name
+    if 'description' in payload:
+        project['description'] = clean_text(payload.get('description'),
+                                            project.get('description', ''), max_len=500)
+    if 'url' in payload:
+        url = clean_text(payload.get('url'), project.get('url', ''))
+        if url and not url.startswith(('http://', 'https://')):
+            return json_error('Project URL must start with http:// or https://.')
+        project['url'] = url
+    if 'status' in payload:
+        status = clean_text(payload.get('status'), project.get('status', 'Draft')).title()
+        if status not in {'Draft', 'Submitted'}:
+            return json_error('Status must be Draft or Submitted.')
+        project['status'] = status
+
+    save_dashboard_state(state)
+    return flask.jsonify({'project': project, 'state': state})
+
+
+@app.delete('/api/dashboard/projects/<project_id>')
+@login_required
+def api_project_delete(project_id):
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    state = get_dashboard_state()
+    _project, error = _owned_project_or_error(state, project_id)
+    if error:
+        return error
+    state['projects'] = [p for p in state.get('projects') or []
+                         if p.get('id') != project_id]
+    save_dashboard_state(state)
+    return flask.jsonify({'state': state})
+
+
 @app.post('/api/dashboard/newsletters')
 @login_required
 def api_newsletters_add():
@@ -979,6 +1426,7 @@ def api_profile_update():
     email = clean_text(payload.get('email'), max_len=120)
     avatar = clean_text(payload.get('avatar'), max_len=300)
     bio = clean_text(payload.get('bio'), max_len=500)
+    hackatime_id = clean_text(payload.get('hackatimeId'), max_len=40)
 
     if not name:
         return json_error('Name is required.')
@@ -986,10 +1434,13 @@ def api_profile_update():
         return json_error('A valid email is required.')
     if avatar and not avatar.startswith(('http://', 'https://')):
         return json_error('Avatar URL must start with http:// or https://.')
+    if hackatime_id and not hackatime_id.isdigit():
+        return json_error('Hackatime user ID should be just the number from your profile URL.')
 
     old_email = ((session.get('user') or {}).get('email') or '').strip().lower()
     user = dict(session.get('user') or {})
-    user.update({'name': name, 'email': email, 'avatar': avatar, 'bio': bio})
+    user.update({'name': name, 'email': email, 'avatar': avatar, 'bio': bio,
+                 'hackatimeId': hackatime_id})
     session['user'] = user
 
     # Keep the Team page roster in step: your roster entry is matched by the
@@ -1002,6 +1453,57 @@ def api_profile_update():
             return flask.jsonify({'user': user, 'state': state})
 
     return flask.jsonify({'user': user})
+
+
+# ── HackTime (Hackatime) coding stats ─────────────────────────────────────────
+# Proxies each member's PUBLIC Hackatime stats so the browser doesn't hit CORS
+# or need the third-party host directly. Public profiles need no API key —
+# members supply the numeric user ID from their hackatime.hackclub.com profile.
+
+HACKATIME_API = 'https://hackatime.hackclub.com/api/v1'
+
+
+@app.get('/api/dashboard/hackatime')
+@login_required
+def api_hackatime_stats():
+    user_id = (request.args.get('userId')
+               or (session.get('user') or {}).get('hackatimeId') or '').strip()
+    if not user_id:
+        return json_error('Add your Hackatime user ID on your profile first.', 400)
+    if not user_id.isdigit():
+        return json_error('That Hackatime user ID is not valid.', 400)
+
+    try:
+        response = requests.get(
+            f'{HACKATIME_API}/users/{user_id}/stats',
+            params={'features': 'projects,languages'},
+            headers={'Accept': 'application/json'},
+            timeout=8,
+        )
+    except requests.RequestException:
+        return json_error('Could not reach Hackatime right now.', 502)
+
+    if response.status_code == 404:
+        return json_error('No public Hackatime profile for that ID.', 404)
+    if response.status_code >= 400:
+        return json_error('Hackatime returned an error.', 502)
+
+    data = (response.json() or {}).get('data') or {}
+    if not data.get('is_coding_activity_visible', True):
+        return json_error('That Hackatime profile is private.', 403)
+
+    languages = [
+        {'name': lang.get('name'), 'text': lang.get('text'),
+         'totalSeconds': lang.get('total_seconds')}
+        for lang in (data.get('languages') or [])[:5]
+    ]
+    return flask.jsonify({
+        'username': data.get('username'),
+        'totalSeconds': data.get('total_seconds'),
+        'humanReadableTotal': data.get('human_readable_total'),
+        'humanReadableDailyAverage': data.get('human_readable_daily_average'),
+        'languages': languages,
+    })
 
 
 # ── Hack Club OAuth ───────────────────────────────────────────────────────────
@@ -1110,6 +1612,7 @@ def inject_user():
         csrf_token=get_csrf_token() if signed_in else '',
         viewer_role=viewer_role() if signed_in else '',
         is_leader=viewer_is_leader() if signed_in else False,
+        is_admin=is_admin() if signed_in else False,
     )
 
 

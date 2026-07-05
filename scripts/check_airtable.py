@@ -34,6 +34,14 @@ REQUIRED_FIELDS = {
     'Orders': ['App Id', 'Date', 'Status', 'Items', 'Club Email'],
 }
 
+# Added after the initial schema; the app runs fine without them (that feature
+# just won't persist until the table exists), so they warn instead of failing.
+OPTIONAL_FIELDS = {
+    'ItemRequests': ['App Id', 'Name', 'Note', 'Date', 'Status', 'Club Email'],
+    'Projects': ['App Id', 'Name', 'Description', 'URL', 'Status',
+                 'Owner Email', 'Owner Name', 'Date', 'Club Email'],
+}
+
 ENV_TABLE_OVERRIDES = {
     'Clubs': 'AIRTABLE_TABLE_CLUBS',
     'Members': 'AIRTABLE_TABLE_MEMBERS',
@@ -41,6 +49,8 @@ ENV_TABLE_OVERRIDES = {
     'Ships': 'AIRTABLE_TABLE_SHIPS',
     'Newsletters': 'AIRTABLE_TABLE_NEWSLETTERS',
     'Orders': 'AIRTABLE_TABLE_ORDERS',
+    'ItemRequests': 'AIRTABLE_TABLE_ITEM_REQUESTS',
+    'Projects': 'AIRTABLE_TABLE_PROJECTS',
 }
 
 
@@ -92,12 +102,27 @@ def main():
         else:
             print(f'  OK    {name}')
 
+    # Optional tables: warn but don't fail — the app degrades gracefully.
+    for default_name, required in OPTIONAL_FIELDS.items():
+        name = os.environ.get(ENV_TABLE_OVERRIDES[default_name], default_name)
+        table = tables.get(name)
+        if table is None:
+            print(f'  OPTIONAL (absent)  {name} — that feature won\'t persist '
+                  'until you add this table.')
+            continue
+        have = {field['name'] for field in table['fields']}
+        missing = [field for field in required if field not in have]
+        if missing:
+            print(f'  OPTIONAL {name}: missing fields -> {", ".join(missing)}')
+        else:
+            print(f'  OK    {name}')
+
     if problems:
-        print(f'\n{problems} table(s) need attention. Fix them in Airtable '
-              'and run this again.')
+        print(f'\n{problems} required table(s) need attention. Fix them in '
+              'Airtable and run this again.')
         sys.exit(1)
 
-    print('\nAll tables ready. Set STORAGE_BACKEND=airtable and restart '
+    print('\nRequired tables ready. Set STORAGE_BACKEND=airtable and restart '
           'the app.')
 
 

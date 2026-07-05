@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Hack Club Leaders</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/borders.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sign-in.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
+</head>
+
+<body>
+
+    <section class="navigation-bar">
+        <div class="animated-nav-logo">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" alt="Hack Club">
+        </div>
+        <div class="nav-bar-text">
+            <a href="/">Hack Club Leaders</a>
+        </div>
+        <div class="apply-now-container">
+            <a href="{{ url_for('sign_out') }}" class="sign-in-link">
+                <p class="sign-in-text">Sign out</p>
+            </a>
+        </div>
+    </section>
+
+    <section class="sign-in-main">
+        <div class="sign-in-card">
+            <div class="sign-in-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 3h16v13l-8 5-8-5V3z" />
+                </svg>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="sign-in-flash {{ category }}">
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <h1>Hi {{ current_user.name.split(' ')[0] if current_user and current_user.name else 'there' }}, find your club</h1>
+            <p class="sign-in-subtitle">
+                Your account isn't part of a club yet. Enter the join code your
+                club leader shared with you, or start a brand-new club.
+            </p>
+
+            <form class="welcome-join-form" method="post" action="{{ url_for('dashboard_welcome_join') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="text" class="welcome-code-input" name="joinCode"
+                    value="{{ prefill_code }}" placeholder="Join code (e.g. a1b2c3)"
+                    autocomplete="off" autocapitalize="off" spellcheck="false" required>
+                <button type="submit" class="sign-in-hc-btn">Join your club</button>
+            </form>
+
+            {% if not shared_backend %}
+            <p class="welcome-backend-note">
+                Join codes need the shared database — in local demo mode you
+                can only start your own club.
+            </p>
+            {% endif %}
+
+            <div class="welcome-divider"><span>or</span></div>
+
+            <form method="post" action="{{ url_for('dashboard_welcome_create') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="welcome-create-btn">Start a new club as its leader</button>
+            </form>
+        </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
+
+</body>
+
+</html>

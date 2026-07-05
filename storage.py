@@ -35,6 +35,7 @@ kept in the session by app.py).
 
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 
@@ -47,11 +48,17 @@ EVENT_FIELDS = [('title', 'Title'), ('date', 'Date'), ('time', 'Time'),
                 ('location', 'Location'), ('type', 'Type'), ('rsvp', 'RSVP'),
                 ('attendees', 'Attendees')]
 SHIP_FIELDS = [('title', 'Title'), ('member', 'Member'), ('url', 'URL'),
-               ('date', 'Date')]
+               ('date', 'Date'), ('approved', 'Approved')]
 NEWSLETTER_FIELDS = [('title', 'Title'), ('excerpt', 'Excerpt'),
                      ('body', 'Body'), ('date', 'Date'),
                      ('readTime', 'Read Time'), ('read', 'Read')]
 ORDER_FIELDS = [('date', 'Date'), ('status', 'Status')]
+ITEM_REQUEST_FIELDS = [('name', 'Name'), ('note', 'Note'), ('date', 'Date'),
+                       ('status', 'Status')]
+PROJECT_FIELDS = [('name', 'Name'), ('description', 'Description'),
+                  ('url', 'URL'), ('status', 'Status'),
+                  ('ownerEmail', 'Owner Email'), ('ownerName', 'Owner Name'),
+                  ('date', 'Date')]
 
 SETTINGS_FIELDS = [('clubName', 'Club Name'), ('location', 'Location'),
                    ('website', 'Website'), ('avatar', 'Avatar'),
@@ -61,8 +68,8 @@ SETTINGS_FIELDS = [('clubName', 'Club Name'), ('location', 'Location'),
                    ('darkModeDefault', 'Dark Mode Default'),
                    ('newsletterSubscribed', 'Newsletter Subscribed')]
 
-BOOL_KEYS = {'rsvp', 'read', 'publicDirectory', 'emailNotifications',
-             'darkModeDefault', 'newsletterSubscribed'}
+BOOL_KEYS = {'rsvp', 'read', 'approved', 'publicDirectory',
+             'emailNotifications', 'darkModeDefault', 'newsletterSubscribed'}
 
 
 class StorageError(Exception):
@@ -81,9 +88,45 @@ class SessionStorage:
     def load(self, club_key):
         return self._session.get('dashboard_state')
 
+    def load_lite(self, club_key):
+        # Everything is already in memory, so lite == full here.
+        return self._session.get('dashboard_state')
+
     def save(self, club_key, state):
         self._session['dashboard_state'] = state
         self._session.modified = True
+
+    def find_club_by_join_code(self, code):
+        # Cookie state is per-browser, so there is no other club to find.
+        return None
+
+    def list_clubs(self):
+        # Only this browser's own club exists in session mode.
+        state = self._session.get('dashboard_state')
+        if not state:
+            return []
+        settings = state.get('settings') or {}
+        return [{
+            'clubKey': self.resolve_club_key(
+                (self._session.get('user') or {}).get('email')),
+            'clubName': settings.get('clubName') or 'Club',
+            'location': settings.get('location') or '',
+            'memberCount': len(state.get('members') or []),
+            'shipCount': len(state.get('ships') or []),
+            'pendingShips': sum(1 for s in state.get('ships') or []
+                                if not s.get('approved')),
+        }]
+
+    def list_pending_ships(self):
+        clubs = self.list_clubs()
+        club_key = clubs[0]['clubKey'] if clubs else ''
+        club_name = clubs[0]['clubName'] if clubs else ''
+        state = self._session.get('dashboard_state') or {}
+        return [
+            {'clubKey': club_key, 'clubName': club_name, 'ship': ship}
+            for ship in state.get('ships') or []
+            if not ship.get('approved')
+        ]
 
 
 class AirtableStorage:
@@ -100,7 +143,14 @@ class AirtableStorage:
         ('SHIPS', 'Ships', 'ships', SHIP_FIELDS),
         ('NEWSLETTERS', 'Newsletters', 'newsletters', NEWSLETTER_FIELDS),
         ('ORDERS', 'Orders', 'orders', ORDER_FIELDS),
+        ('ITEM_REQUESTS', 'ItemRequests', 'itemRequests', ITEM_REQUEST_FIELDS),
+        ('PROJECTS', 'Projects', 'projects', PROJECT_FIELDS),
     ]
+
+    # Tables added after the initial schema: if the base doesn't have them yet,
+    # the app degrades gracefully (that section is empty / not persisted)
+    # instead of erroring, so a live base keeps working until the table exists.
+    OPTIONAL_CHILD_KEYS = {'itemRequests', 'projects'}
 
     def __init__(self, token=None, base_id=None):
         self.token = token or os.environ.get('AIRTABLE_TOKEN', '')
@@ -147,6 +197,14 @@ class AirtableStorage:
         """All records in `table` where {field} = value, following pagination."""
         safe = self._escape_formula_value(value)
         params = {'filterByFormula': f"{{{field}}}='{safe}'", 'pageSize': 100}
+        return self._paged(table, params)
+
+    def _list_all(self, table):
+        """Every record in `table`, following pagination."""
+        return self._paged(table, {'pageSize': 100})
+
+    def _paged(self, table, params):
+        params = dict(params)
         records = []
         while True:
             data = self._request('get', table, params=params)
@@ -181,8 +239,135 @@ class AirtableStorage:
                 return club_email
         return email
 
+    def find_club_by_join_code(self, code):
+        """The club key owning this join code, or None."""
+        code = (code or '').strip()
+        if not code:
+            return None
+        records = self._list(self.clubs_table, 'Join Code', code)
+        for record in records:
+            leader = (record['fields'].get('Leader Email') or '').strip().lower()
+            if leader:
+                return leader
+        return None
+
+    def list_clubs(self):
+        """Summary of every club, for the admin overview. Three full-table
+        scans (clubs, members, ships), run concurrently."""
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            clubs_future = pool.submit(self._list_all, self.clubs_table)
+            members_future = pool.submit(self._list_all, self.tables['members'])
+            ships_future = pool.submit(self._list_all, self.tables['ships'])
+            club_rows = clubs_future.result()
+            member_rows = members_future.result()
+            ship_rows = ships_future.result()
+
+        member_counts, ship_counts, pending_counts = {}, {}, {}
+        for record in member_rows:
+            key = (record['fields'].get('Club Email') or '').strip().lower()
+            if key:
+                member_counts[key] = member_counts.get(key, 0) + 1
+        for record in ship_rows:
+            key = (record['fields'].get('Club Email') or '').strip().lower()
+            if not key:
+                continue
+            ship_counts[key] = ship_counts.get(key, 0) + 1
+            if not record['fields'].get('Approved'):
+                pending_counts[key] = pending_counts.get(key, 0) + 1
+
+        clubs = []
+        for record in club_rows:
+            fields = record['fields']
+            key = (fields.get('Leader Email') or '').strip().lower()
+            if not key:
+                continue
+            clubs.append({
+                'clubKey': key,
+                'clubName': fields.get('Club Name') or 'Club',
+                'location': fields.get('Location') or '',
+                'memberCount': member_counts.get(key, 0),
+                'shipCount': ship_counts.get(key, 0),
+                'pendingShips': pending_counts.get(key, 0),
+            })
+        clubs.sort(key=lambda c: c['clubName'].lower())
+        return clubs
+
+    def list_pending_ships(self):
+        """Every unapproved ship across all clubs, newest first, for the
+        admin review queue. Clubs and ships scanned concurrently."""
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            clubs_future = pool.submit(self._list_all, self.clubs_table)
+            ships_future = pool.submit(self._list_all, self.tables['ships'])
+            club_rows = clubs_future.result()
+            ship_rows = ships_future.result()
+
+        club_names = {
+            (r['fields'].get('Leader Email') or '').strip().lower():
+                r['fields'].get('Club Name') or 'Club'
+            for r in club_rows
+        }
+        pending = []
+        for record in ship_rows:
+            fields = record['fields']
+            if fields.get('Approved'):
+                continue
+            key = (fields.get('Club Email') or '').strip().lower()
+            ship = {'id': fields.get('App Id') or record['id']}
+            for item_key, field in SHIP_FIELDS:
+                value = fields.get(field)
+                ship[item_key] = bool(value) if item_key in BOOL_KEYS else (value or '')
+            pending.append({
+                'clubKey': key,
+                'clubName': club_names.get(key, key or 'Unknown club'),
+                'ship': ship,
+            })
+        pending.sort(key=lambda p: p['ship'].get('date') or '', reverse=True)
+        return pending
+
+    def load_lite(self, club_key):
+        """Just the club settings + members — enough for the membership gate
+        and role check. Two parallel queries instead of the full eight, so the
+        page shell returns fast; the rest is fetched client-side."""
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            club_future = pool.submit(
+                self._list, self.clubs_table, 'Leader Email', club_key)
+            members_future = pool.submit(
+                self._list, self.tables['members'], 'Club Email', club_key)
+            club_records = club_future.result()
+            member_records = members_future.result()
+
+        if not club_records:
+            return None
+        club_fields = club_records[0]['fields']
+        settings = {}
+        for state_key, field in SETTINGS_FIELDS:
+            value = club_fields.get(field)
+            settings[state_key] = (bool(value) if state_key in BOOL_KEYS
+                                   else (value or ''))
+
+        members = []
+        for record in member_records:
+            fields = record['fields']
+            item = {'id': fields.get('App Id') or record['id']}
+            for item_key, field in MEMBER_FIELDS:
+                value = fields.get(field)
+                item[item_key] = bool(value) if item_key in BOOL_KEYS else (value or '')
+            members.append(item)
+        return {'settings': settings, 'members': members, '_lite': True}
+
     def load(self, club_key):
-        club_records = self._list(self.clubs_table, 'Leader Email', club_key)
+        # Fire the club lookup and every child-table query at once — they are
+        # independent GETs, so this turns ~8 sequential round-trips into one.
+        with ThreadPoolExecutor(max_workers=len(self.CHILD_TABLES) + 1) as pool:
+            club_future = pool.submit(
+                self._list, self.clubs_table, 'Leader Email', club_key)
+            child_futures = {
+                state_key: pool.submit(
+                    self._list, self.tables[state_key], 'Club Email', club_key)
+                for _s, _d, state_key, _f in self.CHILD_TABLES
+            }
+            club_records = club_future.result()
+
         if not club_records:
             return None
         club_fields = club_records[0]['fields']
@@ -197,8 +382,15 @@ class AirtableStorage:
 
         state = {'settings': settings}
         for _suffix, _default, state_key, field_pairs in self.CHILD_TABLES:
+            try:
+                records = child_futures[state_key].result()
+            except StorageError:
+                if state_key in self.OPTIONAL_CHILD_KEYS:
+                    state[state_key] = []
+                    continue
+                raise
             items = []
-            for record in self._list(self.tables[state_key], 'Club Email', club_key):
+            for record in records:
                 fields = record['fields']
                 item = {'id': fields.get('App Id') or record['id']}
                 for item_key, field in field_pairs:
@@ -219,11 +411,30 @@ class AirtableStorage:
         return state
 
     def save(self, club_key, state):
-        self._save_club(club_key, state.get('settings') or {})
-        for _suffix, _default, state_key, field_pairs in self.CHILD_TABLES:
+        # The club row and each child table are independent; sync them all
+        # concurrently instead of one blocking round-trip after another.
+        def sync(state_key, field_pairs):
             self._sync_children(self.tables[state_key], club_key,
                                 state.get(state_key) or [], field_pairs,
                                 serialize_items=(state_key == 'orders'))
+
+        with ThreadPoolExecutor(max_workers=len(self.CHILD_TABLES) + 1) as pool:
+            futures = [pool.submit(
+                self._save_club, club_key, state.get('settings') or {})]
+            future_keys = {}
+            for _s, _d, state_key, field_pairs in self.CHILD_TABLES:
+                future = pool.submit(sync, state_key, field_pairs)
+                future_keys[future] = state_key
+                futures.append(future)
+
+            for future in futures:
+                state_key = future_keys.get(future)
+                try:
+                    future.result()
+                except StorageError:
+                    if state_key in self.OPTIONAL_CHILD_KEYS:
+                        continue  # table not created yet — skip persisting it
+                    raise
 
     # ── Sync helpers ─────────────────────────────────────────────────────────
 

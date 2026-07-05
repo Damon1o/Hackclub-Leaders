@@ -1,0 +1,112 @@
+{% extends "dashboard_layout.html" %}
+
+{% block title %}Admin{% endblock %}
+{% block page_title %}Admin{% endblock %}
+{% block page_subtitle %}Every club, and the shipped projects waiting on your review.{% endblock %}
+
+{% block content %}
+<div class="dashboard-page" data-dashboard-page="admin">
+    <section class="dashboard-metrics">
+        <article class="metric-tile">
+            <span class="metric-label">Clubs</span>
+            <strong>{{ clubs | length }}</strong>
+        </article>
+        <article class="metric-tile">
+            <span class="metric-label">Ships pending review</span>
+            <strong>{{ pending_ships | length }}</strong>
+        </article>
+        <article class="metric-tile">
+            <span class="metric-label">Total members</span>
+            <strong>{{ clubs | sum(attribute='memberCount') }}</strong>
+        </article>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2>Ship review queue</h2>
+                <p>Ships only count toward a club's level once you approve them.</p>
+            </div>
+        </div>
+
+        {% if pending_ships %}
+        <div class="admin-review-list">
+            {% for item in pending_ships %}
+            <article class="admin-review-item">
+                <div class="admin-review-main">
+                    <h3>{{ item.ship.title }}</h3>
+                    <p class="admin-review-meta">
+                        <a href="{{ url_for('dashboard_admin_club', club_key=item.clubKey) }}">{{ item.clubName }}</a>
+                        · {{ item.ship.member }} · {{ item.ship.date }}
+                    </p>
+                    {% if item.ship.url %}
+                    <a class="text-button" href="{{ item.ship.url }}" target="_blank" rel="noopener noreferrer">{{ item.ship.url }}</a>
+                    {% endif %}
+                </div>
+                <div class="admin-review-actions">
+                    <button class="btn-primary small" type="button"
+                        data-approve-ship data-admin-ship="{{ item.clubKey }}::{{ item.ship.id }}">Approve</button>
+                    <button class="btn-secondary small" type="button"
+                        data-remove-ship-admin data-admin-ship="{{ item.clubKey }}::{{ item.ship.id }}">Reject</button>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>Nothing to review</h3>
+            <p>Every shipped project has been reviewed. New submissions will appear here.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2>All clubs</h2>
+                <p>Open a club to edit its profile or manage its shipped projects.</p>
+            </div>
+        </div>
+
+        {% if clubs %}
+        <div class="admin-table-scroll">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Club</th>
+                        <th>Location</th>
+                        <th>Members</th>
+                        <th>Ships</th>
+                        <th>Pending</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for club in clubs %}
+                    <tr>
+                        <td><strong>{{ club.clubName }}</strong></td>
+                        <td>{{ club.location or '—' }}</td>
+                        <td>{{ club.memberCount }}</td>
+                        <td>{{ club.shipCount }}</td>
+                        <td>
+                            {% if club.pendingShips %}
+                            <span class="badge badge-pending">{{ club.pendingShips }}</span>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="admin-table-action">
+                            <a class="btn-secondary small" href="{{ url_for('dashboard_admin_club', club_key=club.clubKey) }}">Manage</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No clubs yet</h3>
+            <p>Once leaders start clubs, they'll show up here.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

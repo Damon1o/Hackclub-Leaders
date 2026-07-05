@@ -1,0 +1,88 @@
+{% extends "dashboard_layout.html" %}
+
+{% block title %}Projects{% endblock %}
+{% block page_title %}Projects{% endblock %}
+{% block page_subtitle %}Create your own projects and submit them to your club.{% endblock %}
+
+{% block header_right %}
+<button class="btn-primary" type="button" data-open-modal="projectModal">
+    <span class="button-icon" aria-hidden="true">+</span>
+    New project
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page" data-dashboard-page="projects"
+     data-hackatime-id="{{ current_user.hackatimeId or '' }}">
+    <section class="card-modern dashboard-panel dashboard-panel-full hacktime-card" id="hacktimeCard" hidden>
+        <div class="panel-heading">
+            <div>
+                <h2>Your coding time</h2>
+                <p>Pulled live from HackTime.</p>
+            </div>
+            <a class="text-button" href="https://hackatime.hackclub.com" target="_blank" rel="noopener noreferrer">Open HackTime →</a>
+        </div>
+        <div id="hacktimeBody" class="hacktime-body">
+            <p class="hacktime-loading">Loading your coding time…</p>
+        </div>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2>Your projects</h2>
+                <p>These are linked to your account — only you can edit them.</p>
+            </div>
+        </div>
+        <div class="project-grid" id="projectMineList"></div>
+        <div class="empty-state" id="projectsEmpty" hidden>
+            <h3>No projects yet</h3>
+            <p>Start a project, then submit it to your club when it's ready.</p>
+            <button class="btn-primary" type="button" data-open-modal="projectModal">New project</button>
+        </div>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2>Submitted to your club</h2>
+                <p>Projects members have submitted, newest first.</p>
+            </div>
+        </div>
+        <div class="project-grid" id="projectSubmittedList"></div>
+        <div class="empty-state" id="projectSubmittedEmpty" hidden>
+            <h3>Nothing submitted yet</h3>
+            <p>Submitted projects from your club will show up here.</p>
+        </div>
+    </section>
+</div>
+
+<div class="modal-backdrop" id="projectModal" aria-hidden="true">
+    <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+        <header class="modal-header">
+            <h2 id="projectModalTitle">New project</h2>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close">x</button>
+        </header>
+        <form class="modal-form" id="projectForm">
+            <input type="hidden" name="id" value="">
+            <label class="form-group">
+                <span class="form-label">Project name</span>
+                <input class="form-input" type="text" name="name" placeholder="Weather dashboard" required>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Description</span>
+                <textarea class="form-input" name="description" rows="3" placeholder="What is it? What did you build?"></textarea>
+            </label>
+            <label class="form-group">
+                <span class="form-label">Project URL (optional)</span>
+                <input class="form-input" type="url" name="url" placeholder="https://...">
+            </label>
+            <p class="form-error" id="projectFormError" hidden></p>
+            <div class="modal-actions">
+                <button class="btn-secondary" type="button" data-modal-close>Cancel</button>
+                <button class="btn-primary" type="submit">Save project</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

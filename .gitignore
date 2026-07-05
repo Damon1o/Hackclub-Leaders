@@ -19,3 +19,11 @@ everything-claude-code/
 .swarm/
 ruvector.db
 .claude/settings.local.json
+
+# Accidental shell-redirect artifacts (stray files from malformed commands)
+/$(wc
+/0.05
+/400
+/draw(0))
+/item.id
+/ship.approved)

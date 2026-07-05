@@ -1,7 +1,7 @@
 {% extends "dashboard_layout.html" %}
 
 {% block page_title %}Shop{% endblock %}
-{% block page_subtitle %}Request stickers, posters, and hardware for your club.{% endblock %}
+{% block page_subtitle %}Order stickers, posters, and hardware for your club.{% endblock %}
 
 {% block header_right %}
 <button class="btn-secondary" type="button" id="viewCartButton">
@@ -15,25 +15,49 @@
         <div class="panel-heading">
             <div>
                 <h2>Swag and hardware</h2>
-                <p>Build a request and submit it for your club session.</p>
+                <p>Add items to your cart and check out for your club.</p>
             </div>
         </div>
         <div class="item-grid" id="shopGrid"></div>
+
+        <div class="request-item-block">
+            <div class="panel-heading compact">
+                <div>
+                    <h2>Can't find it? Request an item</h2>
+                    <p>Suggest something you'd like added to the shop.</p>
+                </div>
+            </div>
+            <form class="request-item-form" id="itemRequestForm">
+                <div class="request-item-fields">
+                    <label class="form-group">
+                        <span class="form-label">Item name</span>
+                        <input class="form-input" type="text" name="name" placeholder="e.g. Soldering iron kit" required>
+                    </label>
+                    <label class="form-group">
+                        <span class="form-label">Why do you need it? (optional)</span>
+                        <input class="form-input" type="text" name="note" placeholder="A quick note for the team">
+                    </label>
+                </div>
+                <p class="form-error" id="itemRequestFormError" hidden></p>
+                <button class="btn-secondary" type="submit">Submit request</button>
+            </form>
+            <div class="request-item-list" id="itemRequestList"></div>
+        </div>
     </section>
 
     <aside class="card-modern dashboard-panel cart-panel" id="cartPanel">
         <div class="panel-heading compact">
             <div>
-                <h2>Request cart</h2>
+                <h2>Shopping cart</h2>
                 <p id="cartSummary">No items yet.</p>
             </div>
         </div>
         <div class="cart-list" id="cartList"></div>
         <div class="empty-state tight" id="cartEmpty">
             <h3>Your cart is empty</h3>
-            <p>Add materials before submitting a request.</p>
+            <p>Add items from the shop to get started.</p>
         </div>
-        <button class="btn-primary full-width" type="button" id="checkoutButton">Submit request</button>
+        <button class="btn-primary full-width" type="button" id="checkoutButton">Place order</button>
         <div class="order-history" id="orderHistory"></div>
     </aside>
 </div>

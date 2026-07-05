@@ -7,6 +7,7 @@
     // this independently — hiding controls here is purely cosmetic.
     const viewerRole = document.body.dataset.viewerRole || 'Leader';
     const isLeader = viewerRole !== 'Member';
+    const viewerEmail = (document.body.dataset.viewerEmail || '').trim().toLowerCase();
 
     let dashboardState = {};
     let selectedNewsletterId = '';
@@ -16,6 +17,10 @@
     } catch (error) {
         dashboardState = {};
     }
+
+    // Client-rendered pages ship an empty shell (fast) and hydrate from the
+    // cache + a background fetch. Server-rendered pages embed their full state.
+    const hadEmbeddedData = dashboardState && Object.keys(dashboardState).length > 0;
 
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -36,6 +41,10 @@
         return dashboardState.cart || [];
     }
 
+    function itemRequests() {
+        return dashboardState.itemRequests || [];
+    }
+
     function orders() {
         return dashboardState.orders || [];
     }
@@ -48,6 +57,15 @@
         return dashboardState.ships || [];
     }
 
+    function projects() {
+        return dashboardState.projects || [];
+    }
+
+    // Only admin-approved ships count toward the club level.
+    function approvedShips() {
+        return ships().filter((ship) => ship.approved);
+    }
+
     // Club levels mirror levels.md: 4 ships → Level 2, 8 → Level 3, and ships
     // must come from 4+ different members (including the leader) to advance.
     const LEVEL_THRESHOLDS = [0, 4, 8];
@@ -55,7 +73,7 @@
 
     function shipperCount() {
         const unique = new Set();
-        ships().forEach((ship) => {
+        approvedShips().forEach((ship) => {
             const key = String(ship.member || '').trim().toLowerCase();
             if (key) unique.add(key);
         });
@@ -63,7 +81,7 @@
     }
 
     function clubLevel() {
-        const count = ships().length;
+        const count = approvedShips().length;
         const shippers = shipperCount();
         if (shippers >= SHIPPERS_REQUIRED && count >= LEVEL_THRESHOLDS[2]) return 3;
         if (shippers >= SHIPPERS_REQUIRED && count >= LEVEL_THRESHOLDS[1]) return 2;
@@ -71,7 +89,7 @@
     }
 
     function levelProgress() {
-        const count = ships().length;
+        const count = approvedShips().length;
         const shippers = shipperCount();
         const level = clubLevel();
         if (level === 3) {
@@ -151,9 +169,41 @@
         }).format(date);
     }
 
+    // Stale-while-revalidate cache: the page shell no longer waits on the full
+    // data load, so we paint instantly from the last-known state in
+    // localStorage, then refresh from the network.
+    const CACHE_KEY = 'hcl:state:' + (viewerEmail || 'anon');
+
+    function cacheState(state) {
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(state));
+        } catch (error) {
+            /* storage full or unavailable — non-fatal */
+        }
+    }
+
+    function readCachedState() {
+        try {
+            return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+        } catch (error) {
+            return null;
+        }
+    }
+
     function setState(nextState) {
         dashboardState = nextState || dashboardState;
+        cacheState(dashboardState);
         renderPage();
+    }
+
+    async function refreshState() {
+        // Pull the authoritative state in the background; apiRequest calls
+        // setState (which caches + re-renders) when the payload carries state.
+        try {
+            await apiRequest('/api/dashboard/state');
+        } catch (error) {
+            /* keep showing cached data if the refresh fails */
+        }
     }
 
     async function apiRequest(path, options = {}) {
@@ -370,13 +420,15 @@
         const empty = $('#shipsEmpty');
         const progress = levelProgress();
 
-        $('#shipTotal').textContent = progress.count;
+        // "Ships" tile counts everything logged; the level only credits
+        // approved ships, so surface both.
+        $('#shipTotal').textContent = ships().length;
         $('#shipLevel').textContent = progress.level;
         $('#shipToNext').textContent = `${progress.shippers} / ${SHIPPERS_REQUIRED}`;
 
         if (!list) return;
         list.innerHTML = ships().map((ship) => `
-            <article class="timeline-item ship-item">
+            <article class="timeline-item ship-item ${ship.approved ? '' : 'is-pending'}">
                 <div class="timeline-date">
                     <strong>${escapeHtml(formatDate(ship.date).split(',')[0])}</strong>
                     <span>${escapeHtml(ship.member)}</span>
@@ -387,13 +439,106 @@
                         ${ship.url ? `<p><a class="text-button" href="${escapeHtml(ship.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(ship.url)}</a></p>` : ''}
                     </div>
                     <div class="timeline-actions">
-                        <span class="badge badge-up">Shipped</span>
+                        ${ship.approved
+                            ? '<span class="badge badge-up">Approved</span>'
+                            : '<span class="badge badge-pending" title="Waiting for admin review — not counting toward your level yet">Pending review</span>'}
+                        <button class="text-button" type="button" data-edit-ship="${escapeHtml(ship.id)}">Edit</button>
                         ${isLeader ? `<button class="text-button" type="button" data-delete-ship="${escapeHtml(ship.id)}">Remove</button>` : ''}
                     </div>
                 </div>
             </article>
         `).join('');
         empty.hidden = ships().length > 0;
+    }
+
+    async function initHacktime() {
+        if (page !== 'projects') return;
+        const card = $('#hacktimeCard');
+        const body = $('#hacktimeBody');
+        const pageNode = document.querySelector('[data-hackatime-id]');
+        const hasId = Boolean((pageNode?.dataset.hackatimeId || '').trim());
+        if (!card || !body) return;
+
+        if (!hasId) {
+            card.hidden = false;
+            body.innerHTML = `<p class="hacktime-empty">Add your Hackatime user ID on your
+                <a class="text-button" href="/dashboard/profile">profile</a> to show your coding time here.</p>`;
+            return;
+        }
+
+        card.hidden = false;
+        try {
+            const stats = await apiRequest('/api/dashboard/hackatime');
+            const langs = (stats.languages || [])
+                .filter((l) => l.name)
+                .map((l) => `<span class="hacktime-lang">${escapeHtml(l.name)} · ${escapeHtml(l.text || '')}</span>`)
+                .join('');
+            body.innerHTML = `
+                <div class="hacktime-stats">
+                    <div class="hacktime-total">
+                        <strong>${escapeHtml(stats.humanReadableTotal || '0m')}</strong>
+                        <span>total on HackTime</span>
+                    </div>
+                    ${stats.humanReadableDailyAverage ? `<div class="hacktime-avg">
+                        <strong>${escapeHtml(stats.humanReadableDailyAverage)}</strong>
+                        <span>daily average</span>
+                    </div>` : ''}
+                </div>
+                ${langs ? `<div class="hacktime-langs">${langs}</div>` : ''}`;
+        } catch (error) {
+            body.innerHTML = `<p class="hacktime-empty">${escapeHtml(error.message)}</p>`;
+        }
+    }
+
+    function projectStatusBadge(status) {
+        return status === 'Submitted'
+            ? '<span class="badge badge-up">Submitted</span>'
+            : '<span class="badge badge-pending">Draft</span>';
+    }
+
+    function renderProjects() {
+        if (page !== 'projects') return;
+        const mineList = $('#projectMineList');
+        const submittedList = $('#projectSubmittedList');
+        const mine = projects().filter(
+            (p) => String(p.ownerEmail || '').trim().toLowerCase() === viewerEmail);
+        const submitted = projects().filter((p) => p.status === 'Submitted');
+
+        if (mineList) {
+            mineList.innerHTML = mine.map((project) => `
+                <article class="project-card">
+                    <div class="project-card-head">
+                        <h3>${escapeHtml(project.name)}</h3>
+                        ${projectStatusBadge(project.status)}
+                    </div>
+                    ${project.description ? `<p class="project-desc">${escapeHtml(project.description)}</p>` : ''}
+                    ${project.url ? `<a class="text-button" href="${escapeHtml(project.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(project.url)}</a>` : ''}
+                    <div class="project-card-actions">
+                        ${project.status === 'Submitted'
+                            ? `<button class="btn-secondary small" type="button" data-project-status="Draft" data-project-id="${escapeHtml(project.id)}">Unsubmit</button>`
+                            : `<button class="btn-primary small" type="button" data-project-status="Submitted" data-project-id="${escapeHtml(project.id)}">Submit to club</button>`}
+                        <button class="text-button" type="button" data-edit-project="${escapeHtml(project.id)}">Edit</button>
+                        <button class="text-button" type="button" data-delete-project="${escapeHtml(project.id)}">Delete</button>
+                    </div>
+                </article>
+            `).join('');
+        }
+        $('#projectsEmpty').hidden = mine.length > 0;
+
+        if (submittedList) {
+            submittedList.innerHTML = submitted.map((project) => `
+                <article class="project-card is-readonly">
+                    <div class="project-card-head">
+                        <h3>${escapeHtml(project.name)}</h3>
+                        <span class="badge badge-up">Submitted</span>
+                    </div>
+                    ${project.description ? `<p class="project-desc">${escapeHtml(project.description)}</p>` : ''}
+                    <p class="project-owner">by ${escapeHtml(project.ownerName || project.ownerEmail || 'Member')}</p>
+                    ${project.url ? `<a class="text-button" href="${escapeHtml(project.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(project.url)}</a>` : ''}
+                </article>
+            `).join('');
+        }
+        $('#projectSubmittedEmpty').hidden = submitted.length > 0;
     }
 
     function renderLevels() {
@@ -448,7 +593,7 @@
 
         $('#cartCount').textContent = totalQuantity;
         $('#cartSummary').textContent = totalQuantity
-            ? `${totalQuantity} ${totalQuantity === 1 ? 'item' : 'items'} ready to request.`
+            ? `${totalQuantity} ${totalQuantity === 1 ? 'item' : 'items'} in your cart.`
             : 'No items yet.';
 
         if (grid) {
@@ -488,6 +633,31 @@
         empty.hidden = cart().length > 0;
         checkoutButton.disabled = cart().length === 0;
         renderOrders();
+        renderItemRequests();
+    }
+
+    function renderItemRequests() {
+        const list = $('#itemRequestList');
+        if (!list) return;
+        if (!itemRequests().length) {
+            list.innerHTML = '';
+            return;
+        }
+        list.innerHTML = `
+            <h3>Your requests</h3>
+            ${itemRequests().map((req) => `
+                <div class="request-item-row">
+                    <div>
+                        <strong>${escapeHtml(req.name)}</strong>
+                        ${req.note ? `<span>${escapeHtml(req.note)}</span>` : ''}
+                    </div>
+                    <div class="request-item-row-actions">
+                        <span class="status-chip">${escapeHtml(req.status || 'Submitted')}</span>
+                        <button class="text-button" type="button" data-remove-item-request="${escapeHtml(req.id)}">Remove</button>
+                    </div>
+                </div>
+            `).join('')}
+        `;
     }
 
     function renderOrders() {
@@ -498,7 +668,7 @@
             return;
         }
         history.innerHTML = `
-            <h3>Recent requests</h3>
+            <h3>Recent orders</h3>
             ${orders().slice(0, 3).map((order) => {
                 const summary = (order.items || [])
                     .map((item) => `${Number(item.quantity || 0)}× ${(shopItem(item.id) || {}).name || item.id}`)
@@ -554,8 +724,48 @@
         const form = $('#shipForm');
         if (!form) return;
         form.reset();
+        form.elements.id.value = '';
         form.elements.date.value = new Date().toISOString().slice(0, 10);
+        $('#shipModalTitle').textContent = 'Log a ship';
         setFormError('shipFormError', '');
+    }
+
+    function prepareNewProject() {
+        const form = $('#projectForm');
+        if (!form) return;
+        form.reset();
+        form.elements.id.value = '';
+        $('#projectModalTitle').textContent = 'New project';
+        setFormError('projectFormError', '');
+    }
+
+    function prepareEditProject(projectId) {
+        const form = $('#projectForm');
+        const project = projects().find((item) => item.id === projectId);
+        if (!form || !project) return;
+        form.reset();
+        form.elements.id.value = project.id;
+        form.elements.name.value = project.name || '';
+        form.elements.description.value = project.description || '';
+        form.elements.url.value = project.url || '';
+        $('#projectModalTitle').textContent = 'Edit project';
+        setFormError('projectFormError', '');
+        openModal('projectModal');
+    }
+
+    function prepareEditShip(shipId) {
+        const form = $('#shipForm');
+        const ship = ships().find((item) => item.id === shipId);
+        if (!form || !ship) return;
+        form.reset();
+        form.elements.id.value = ship.id;
+        form.elements.title.value = ship.title || '';
+        form.elements.member.value = ship.member || '';
+        form.elements.url.value = ship.url || '';
+        form.elements.date.value = ship.date || '';
+        $('#shipModalTitle').textContent = 'Edit ship';
+        setFormError('shipFormError', '');
+        openModal('shipModal');
     }
 
     function prepareNewDispatch() {
@@ -730,6 +940,7 @@
         renderTeam();
         renderEvents();
         renderShips();
+        renderProjects();
         renderLevels();
         renderJoinLink();
         renderShop();
@@ -746,8 +957,42 @@
         return data;
     }
 
+    async function adminShipAction(trigger, body, message) {
+        const [clubKey, shipId] = String(trigger.dataset.adminShip || '').split('::');
+        if (!clubKey || !shipId) return;
+        trigger.disabled = true;
+        try {
+            await apiRequest(`/api/admin/ships/${encodeURIComponent(clubKey)}/${encodeURIComponent(shipId)}`, {
+                method: body === null ? 'DELETE' : 'PATCH',
+                body: body === null ? undefined : body,
+            });
+            showToast(message);
+            // Admin state lives outside dashboardState — reload to refresh.
+            setTimeout(() => window.location.reload(), 350);
+        } catch (error) {
+            trigger.disabled = false;
+            showToast(error.message, 'error');
+        }
+    }
+
     function setupGlobalEvents() {
         document.addEventListener('click', async (event) => {
+            const approveShip = event.target.closest('[data-approve-ship]');
+            if (approveShip) {
+                await adminShipAction(approveShip, { approved: true }, 'Ship approved.');
+                return;
+            }
+            const rejectShip = event.target.closest('[data-reject-ship]');
+            if (rejectShip) {
+                await adminShipAction(rejectShip, { approved: false }, 'Ship set to pending.');
+                return;
+            }
+            const removeShipAdmin = event.target.closest('[data-remove-ship-admin]');
+            if (removeShipAdmin) {
+                await adminShipAction(removeShipAdmin, null, 'Ship removed.');
+                return;
+            }
+
             const openTrigger = event.target.closest('[data-open-modal]');
             if (openTrigger) {
                 const modalId = openTrigger.dataset.openModal;
@@ -755,6 +1000,7 @@
                 if (modalId === 'eventModal') prepareNewEvent();
                 if (modalId === 'dispatchModal') prepareNewDispatch();
                 if (modalId === 'shipModal') prepareNewShip();
+                if (modalId === 'projectModal') prepareNewProject();
                 openModal(modalId);
                 return;
             }
@@ -805,7 +1051,18 @@
                         method: 'POST',
                         body: { itemId: addCart.dataset.addCart, quantity: 1 },
                     });
-                    showToast('Added to request cart.');
+                    showToast('Added to cart.');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+                return;
+            }
+
+            const removeItemRequest = event.target.closest('[data-remove-item-request]');
+            if (removeItemRequest) {
+                try {
+                    await apiRequest(`/api/dashboard/item-requests/${removeItemRequest.dataset.removeItemRequest}`, { method: 'DELETE' });
+                    showToast('Request removed.');
                 } catch (error) {
                     showToast(error.message, 'error');
                 }
@@ -836,6 +1093,44 @@
             if (removeCart) {
                 try {
                     await apiRequest(`/api/dashboard/cart/${removeCart.dataset.removeCart}`, { method: 'DELETE' });
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+                return;
+            }
+
+            const editShip = event.target.closest('[data-edit-ship]');
+            if (editShip) {
+                prepareEditShip(editShip.dataset.editShip);
+                return;
+            }
+
+            const editProject = event.target.closest('[data-edit-project]');
+            if (editProject) {
+                prepareEditProject(editProject.dataset.editProject);
+                return;
+            }
+
+            const projectStatus = event.target.closest('[data-project-status]');
+            if (projectStatus) {
+                try {
+                    await apiRequest(`/api/dashboard/projects/${projectStatus.dataset.projectId}`, {
+                        method: 'PATCH',
+                        body: { status: projectStatus.dataset.projectStatus },
+                    });
+                    showToast(projectStatus.dataset.projectStatus === 'Submitted'
+                        ? 'Project submitted to your club.' : 'Project moved back to draft.');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+                return;
+            }
+
+            const deleteProject = event.target.closest('[data-delete-project]');
+            if (deleteProject) {
+                try {
+                    await apiRequest(`/api/dashboard/projects/${deleteProject.dataset.deleteProject}`, { method: 'DELETE' });
+                    showToast('Project deleted.');
                 } catch (error) {
                     showToast(error.message, 'error');
                 }
@@ -950,16 +1245,51 @@
 
         $('#shipForm')?.addEventListener('submit', async (event) => {
             event.preventDefault();
+            const data = formObject(event.currentTarget);
+            const isEdit = Boolean(data.id);
             setFormError('shipFormError', '');
             try {
-                await apiRequest('/api/dashboard/ships', {
-                    method: 'POST',
-                    body: formObject(event.currentTarget),
+                await apiRequest(isEdit ? `/api/dashboard/ships/${data.id}` : '/api/dashboard/ships', {
+                    method: isEdit ? 'PATCH' : 'POST',
+                    body: data,
                 });
                 closeModal('shipModal');
-                showToast('Ship logged. 🚀');
+                showToast(isEdit ? 'Ship updated.' : 'Ship logged. 🚀');
             } catch (error) {
                 setFormError('shipFormError', error.message);
+            }
+        });
+
+        $('#projectForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const data = formObject(event.currentTarget);
+            const isEdit = Boolean(data.id);
+            setFormError('projectFormError', '');
+            try {
+                await apiRequest(isEdit ? `/api/dashboard/projects/${data.id}` : '/api/dashboard/projects', {
+                    method: isEdit ? 'PATCH' : 'POST',
+                    body: data,
+                });
+                closeModal('projectModal');
+                showToast(isEdit ? 'Project saved.' : 'Project created.');
+            } catch (error) {
+                setFormError('projectFormError', error.message);
+            }
+        });
+
+        $('#itemRequestForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.currentTarget;
+            setFormError('itemRequestFormError', '');
+            try {
+                await apiRequest('/api/dashboard/item-requests', {
+                    method: 'POST',
+                    body: formObject(form),
+                });
+                form.reset();
+                showToast('Item request submitted.');
+            } catch (error) {
+                setFormError('itemRequestFormError', error.message);
             }
         });
 
@@ -975,7 +1305,7 @@
         $('#checkoutButton')?.addEventListener('click', async () => {
             try {
                 await apiRequest('/api/dashboard/checkout', { method: 'POST' });
-                showToast('Request submitted.');
+                showToast('Order placed.');
             } catch (error) {
                 showToast(error.message, 'error');
             }
@@ -1104,6 +1434,26 @@
                 if (stateLabel) stateLabel.textContent = '';
             }
         });
+
+        $('#adminClubForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const clubKey = form.dataset.clubKey;
+            const stateLabel = $('#adminClubSaveState');
+            setFormError('adminClubFormError', '');
+            if (stateLabel) stateLabel.textContent = 'Saving...';
+            try {
+                await apiRequest(`/api/admin/clubs/${encodeURIComponent(clubKey)}`, {
+                    method: 'PATCH',
+                    body: formObject(form),
+                });
+                if (stateLabel) stateLabel.textContent = 'Saved';
+                showToast('Club updated.');
+            } catch (error) {
+                setFormError('adminClubFormError', error.message);
+                if (stateLabel) stateLabel.textContent = '';
+            }
+        });
     }
 
     // ── Reactive background ──────────────────────────────────────────────────
@@ -1215,7 +1565,17 @@
         setupForms();
         applyDarkModeDefault();
         initBackground();
+        // Club-data pages ship an empty shell; admin pages have their own data.
+        const clientDataPage = !hadEmbeddedData && page
+            && page !== 'admin' && page !== 'admin-club';
+        if (clientDataPage) {
+            // Paint instantly from the last-known state, then revalidate.
+            const cached = readCachedState();
+            if (cached) dashboardState = cached;
+        }
         renderPage();
+        initHacktime();
+        if (clientDataPage) refreshState();
     }
 
     if (document.readyState === 'loading') {

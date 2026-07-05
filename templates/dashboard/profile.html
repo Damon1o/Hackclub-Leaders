@@ -33,6 +33,15 @@
                 <textarea class="form-input" name="bio" rows="4"
                     placeholder="A line or two about you...">{{ current_user.bio or '' }}</textarea>
             </label>
+            <label class="form-group">
+                <span class="form-label">Hackatime user ID</span>
+                <input type="text" class="form-input" name="hackatimeId"
+                    value="{{ current_user.hackatimeId or '' }}" inputmode="numeric"
+                    placeholder="e.g. 1234">
+                <small class="form-hint">The number in your
+                    <a href="https://hackatime.hackclub.com" target="_blank" rel="noopener noreferrer">hackatime.hackclub.com</a>
+                    profile URL. Make your profile public to show your coding time on Projects.</small>
+            </label>
             <p class="form-error" id="profileFormError" hidden></p>
             <div class="form-actions">
                 <button type="submit" class="btn-primary">Save changes</button>

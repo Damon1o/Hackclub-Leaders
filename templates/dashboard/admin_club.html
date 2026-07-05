@@ -1,0 +1,119 @@
+{% extends "dashboard_layout.html" %}
+{% set settings = club.settings %}
+
+{% block title %}{{ settings.clubName }} - Admin{% endblock %}
+{% block page_title %}{{ settings.clubName }}{% endblock %}
+{% block page_subtitle %}Admin view — edit this club's profile and review its ships.{% endblock %}
+
+{% block header_right %}
+<a class="btn-secondary" href="{{ url_for('dashboard_admin') }}">← All clubs</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page settings-layout" data-dashboard-page="admin-club">
+    <section class="card-modern dashboard-panel settings-main">
+        <div class="panel-heading">
+            <div>
+                <h2>Club profile</h2>
+                <p>Editing on behalf of this club's leaders.</p>
+            </div>
+        </div>
+
+        <form class="settings-form" id="adminClubForm" data-club-key="{{ club_key }}">
+            <label class="form-group">
+                <span class="form-label">Club name</span>
+                <input type="text" class="form-input" name="clubName" value="{{ settings.clubName }}" required>
+            </label>
+            <label class="form-group">
+                <span class="form-label">School / location</span>
+                <input type="text" class="form-input" name="location" value="{{ settings.location }}">
+            </label>
+            <label class="form-group">
+                <span class="form-label">Club website</span>
+                <input type="url" class="form-input" name="website" value="{{ settings.website }}" placeholder="https://...">
+            </label>
+            <label class="form-group">
+                <span class="form-label">Profile image URL</span>
+                <input type="url" class="form-input" name="avatar" value="{{ settings.avatar }}" placeholder="https://...">
+            </label>
+            <label class="toggle-row">
+                <span>
+                    <strong>Public directory</strong>
+                    <small>Show the club on the Hack Club map.</small>
+                </span>
+                <span class="toggle-switch">
+                    <input type="checkbox" name="publicDirectory" {% if settings.publicDirectory %}checked{% endif %}>
+                    <span class="toggle-slider"></span>
+                </span>
+            </label>
+            <p class="form-error" id="adminClubFormError" hidden></p>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Save changes</button>
+                <span class="save-state" id="adminClubSaveState" aria-live="polite"></span>
+            </div>
+        </form>
+    </section>
+
+    <aside class="card-modern dashboard-panel settings-side">
+        <h2>Members</h2>
+        <ul class="admin-member-list">
+            {% for member in club.members %}
+            <li>
+                <span class="admin-member-name">{{ member.name }}</span>
+                <span class="badge badge-role">{{ member.role }}</span>
+            </li>
+            {% else %}
+            <li class="admin-empty-note">No members yet.</li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2>Shipped projects</h2>
+                <p>Approve to count a ship toward this club's level, or remove it.</p>
+            </div>
+        </div>
+
+        {% if club.ships %}
+        <div class="timeline-list">
+            {% for ship in club.ships %}
+            <article class="timeline-item ship-item {% if not ship.approved %}is-pending{% endif %}">
+                <div class="timeline-date">
+                    <strong>{{ ship.date }}</strong>
+                    <span>{{ ship.member }}</span>
+                </div>
+                <div class="timeline-body">
+                    <div>
+                        <h3>{{ ship.title }}</h3>
+                        {% if ship.url %}
+                        <p><a class="text-button" href="{{ ship.url }}" target="_blank" rel="noopener noreferrer">{{ ship.url }}</a></p>
+                        {% endif %}
+                    </div>
+                    <div class="timeline-actions">
+                        {% if ship.approved %}
+                        <span class="badge badge-up">Approved</span>
+                        <button class="text-button" type="button"
+                            data-reject-ship data-admin-ship="{{ club_key }}::{{ ship.id }}">Un-approve</button>
+                        {% else %}
+                        <span class="badge badge-pending">Pending</span>
+                        <button class="btn-primary small" type="button"
+                            data-approve-ship data-admin-ship="{{ club_key }}::{{ ship.id }}">Approve</button>
+                        {% endif %}
+                        <button class="text-button" type="button"
+                            data-remove-ship-admin data-admin-ship="{{ club_key }}::{{ ship.id }}">Remove</button>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>Nothing shipped yet</h3>
+            <p>This club hasn't logged any projects.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

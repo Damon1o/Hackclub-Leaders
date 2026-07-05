@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ambient-bg.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
 
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -138,7 +139,7 @@
     <section class="events-main">
 
         <div class="events-main-background">
-            <img alt="" src="{{ url_for('static', filename='images/hackclub-site/background.webp')}}"
+            <img alt="" decoding="async" loading="lazy" src="{{ url_for('static', filename='images/hackclub-site/background.webp')}}"
                 style="position: absolute; top: -60px; left: 0px; width: 100%; height: auto; transform: scaleY(-1) translate3d(var(--amb-px, 0px), var(--amb-py, 0px), 0) scale(1.04); opacity: 0.15; pointer-events: none; z-index: 0;">
             <div class="ambient-bg" aria-hidden="true">
                 <span class="ambient-blob ambient-blob-red"></span>
@@ -349,10 +350,10 @@
 
     </footer>
 
-    <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/events.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/ambient-bg.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/events.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/ambient-bg.js') }}"></script>
 
 </body>
 

@@ -102,19 +102,21 @@
 
     <section class="sign-in-main">
 
+      <div class="sign-in-stack">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="sign-in-flash {{ category }}">
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
         <div class="sign-in-hero">
 
             <div class="sign-in-copy">
-
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                {% for category, message in messages %}
-                <div class="sign-in-flash {{ category }}">
-                    <span>{{ message }}</span>
-                </div>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
 
                 <p class="sign-in-eyebrow">The Leaders Portal</p>
 
@@ -122,21 +124,8 @@
 
                 <p class="sign-in-subtitle">
                     Plan meetings, log every ship, climb club levels, and put
-                    your club on the world map. Members welcome too — sign in
-                    to RSVP and ship projects.
-                </p>
-
-                <a href="{{ url_for('hackclub_login') }}" class="sign-in-hc-btn">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path fill="white" d="M4 3h16v13l-8 5-8-5V3z" />
-                    </svg>
-                    Sign in with Hack Club
-                </a>
-
-                <p class="sign-in-footer-note">
-                    By signing in, you agree to Hack Club's
-                    <a href="https://hackclub.com/conduct" target="_blank" rel="noopener noreferrer">Code of Conduct</a>
-                    and <a href="https://hackclub.com/privacy-and-terms" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                    your club on the world map — whether you're starting a club
+                    or joining one.
                 </p>
 
             </div>
@@ -163,6 +152,60 @@
             </div>
 
         </div>
+
+        <div class="sign-in-choose">
+            <div class="sign-in-roles">
+
+                <section class="sign-in-role-card role-leader" aria-labelledby="role-leader-h">
+                    <div class="sign-in-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M4 3h16v13l-8 5-8-5V3z" />
+                        </svg>
+                    </div>
+                    <h2 id="role-leader-h">Club <span class="marker-swipe">Leaders</span></h2>
+                    <p class="role-blurb">
+                        Starting or running a club? Sign in to open your HQ —
+                        plan meetings, log ships, and climb club levels.
+                    </p>
+                    <a href="{{ url_for('hackclub_login', intent='leader') }}" class="sign-in-hc-btn role-btn">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path fill="white" d="M4 3h16v13l-8 5-8-5V3z" />
+                        </svg>
+                        Continue as a leader
+                    </a>
+                </section>
+
+                <section class="sign-in-role-card role-member" aria-labelledby="role-member-h">
+                    <div class="sign-in-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.6-9 6v2h18v-2c0-3.4-4-6-9-6Z" />
+                        </svg>
+                    </div>
+                    <h2 id="role-member-h">Club Members</h2>
+                    <p class="role-blurb">
+                        Joining a club? Enter the code your leader gave you (or
+                        skip and add it after signing in).
+                    </p>
+                    <form class="role-join-form" method="get" action="{{ url_for('hackclub_login') }}">
+                        <input type="hidden" name="intent" value="member">
+                        <label for="memberJoinCode" class="sr-only">Club join code</label>
+                        <input type="text" id="memberJoinCode" name="join" class="welcome-code-input"
+                            placeholder="Join code (optional)" autocomplete="off"
+                            autocapitalize="off" spellcheck="false">
+                        <button type="submit" class="sign-in-hc-btn role-btn role-btn-outline">Join &amp; sign in</button>
+                    </form>
+                </section>
+
+            </div>
+
+            <p class="sign-in-footer-note">
+                By signing in, you agree to Hack Club's
+                <a href="https://hackclub.com/conduct" target="_blank" rel="noopener noreferrer">Code of Conduct</a>
+                and <a href="https://hackclub.com/privacy-and-terms" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+            </p>
+        </div>
+
+      </div>
     </section>
 
     <footer class="site-footer">

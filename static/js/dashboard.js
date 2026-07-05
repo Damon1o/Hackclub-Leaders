@@ -1302,6 +1302,20 @@
             }
         });
 
+        $('#refreshJoinLink')?.addEventListener('click', async () => {
+            const ok = window.confirm(
+                'Generate a new join link? The current link will stop working, '
+                + 'so anyone you already shared it with will need the new one.');
+            if (!ok) return;
+            try {
+                // The returned state re-renders #joinLinkCode via renderJoinLink().
+                await apiRequest('/api/dashboard/settings/join-code/refresh', { method: 'POST' });
+                showToast('New join link generated. The old link is now disabled.');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+
         $('#checkoutButton')?.addEventListener('click', async () => {
             try {
                 await apiRequest('/api/dashboard/checkout', { method: 'POST' });

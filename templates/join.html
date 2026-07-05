@@ -56,14 +56,34 @@
             <a href="{{ url_for('dashboard_team') }}" class="sign-in-hc-btn">Open the Team page</a>
             {% else %}
             <h1>You're invited to a Hack Club! 🎉</h1>
+            {% if not shared_backend %}
             <p class="sign-in-subtitle">
-                A club leader shared this link with you. Ask them for meeting
-                times and details — and in the meantime, see what Hack Club is
-                all about.
+                This site is running in local demo mode, so joining by code
+                isn't available here. Ask your club leader for meeting details.
             </p>
             <a href="https://hackclub.com/" class="sign-in-hc-btn" target="_blank" rel="noopener noreferrer">
                 Explore Hack Club
             </a>
+            {% elif signed_in %}
+            <p class="sign-in-subtitle">
+                Confirm below to join this club — you'll be added to its roster
+                right away.
+            </p>
+            <a href="{{ url_for('dashboard_welcome', code=code) }}" class="sign-in-hc-btn">
+                Join this club
+            </a>
+            {% else %}
+            <p class="sign-in-subtitle">
+                Sign in with Hack Club to join. We'll add you to this club's
+                roster once you confirm.
+            </p>
+            <a href="{{ url_for('hackclub_login', join=code, intent='member') }}" class="sign-in-hc-btn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path fill="white" d="M4 3h16v13l-8 5-8-5V3z" />
+                </svg>
+                Sign in &amp; join
+            </a>
+            {% endif %}
             <p class="sign-in-footer-note">
                 Leading a club yourself? <a href="{{ url_for('sign_in') }}">Sign in to the Leaders Portal</a>.
             </p>

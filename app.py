@@ -120,6 +120,26 @@ def _item_id(prefix):
     return f'{prefix}-{secrets.token_hex(4)}'
 
 
+def generate_join_code():
+    """A shareable club join code. token_urlsafe(9) gives ~72 bits of entropy
+    — far beyond the old 24-bit token_hex(3) — while staying short enough to
+    type or read aloud. Mixed case, so join codes are matched case-sensitively
+    (never lowercased) throughout."""
+    return secrets.token_urlsafe(9)
+
+
+def unique_join_code(backend, attempts=5):
+    """A join code no other club currently uses. Under SessionStorage the
+    lookup is a no-op (find_club_by_join_code returns None), so this yields on
+    the first attempt; under Airtable it retries on the vanishingly rare
+    collision before falling back to an even longer code."""
+    for _ in range(attempts):
+        code = generate_join_code()
+        if backend.find_club_by_join_code(code) is None:
+            return code
+    return secrets.token_urlsafe(12)
+
+
 def get_csrf_token():
     token = session.get('csrf_token')
     if not token:
@@ -211,7 +231,7 @@ def default_dashboard_state():
             },
         ],
         'settings': {
-            'joinCode': secrets.token_hex(3),
+            'joinCode': generate_join_code(),
             'clubName': f"{leader_name}'s Hack Club",
             'location': '',
             'website': '',
@@ -447,35 +467,85 @@ def _welcome_csrf_ok():
 @app.route('/dashboard/welcome')
 @login_required
 def dashboard_welcome():
-    if viewer_club_lite() is not None:
+    code = clean_text(request.args.get('code'), max_len=20)
+    backend = _storage()
+    has_club = viewer_club_lite() is not None
+
+    # Resolve the code to a club so the page can confirm by name, and flag when
+    # the viewer already belongs somewhere else (a "switch clubs" confirmation).
+    target_key = backend.find_club_by_join_code(code) if code else None
+    target_name = None
+    if target_key:
+        target_lite = backend.load_lite(target_key) or {}
+        target_name = (target_lite.get('settings') or {}).get('clubName')
+
+    # Already in a club and not being pointed at a new one → nothing to do here.
+    if has_club and not target_key:
         return redirect(url_for('dashboard'))
+
+    is_switch = False
+    current_name = None
+    if has_club and target_key:
+        email = (session.get('user') or {}).get('email') or ''
+        if backend.resolve_club_key(email) != target_key:
+            is_switch = True
+            current_name = ((viewer_club_lite() or {}).get('settings') or {}).get('clubName')
+
     return flask.render_template(
         'welcome.html',
-        prefill_code=clean_text(request.args.get('code'), max_len=20),
-        shared_backend=not isinstance(_storage(), SessionStorage),
+        prefill_code=code,
+        target_name=target_name,
+        current_name=current_name,
+        is_switch=is_switch,
+        shared_backend=not isinstance(backend, SessionStorage),
     )
 
 
 @app.post('/dashboard/welcome/join')
 @login_required
 def dashboard_welcome_join():
-    if viewer_club_lite() is not None:
-        return redirect(url_for('dashboard'))
     if not _welcome_csrf_ok():
         flash('Your session expired. Please try again.', 'error')
         return redirect(url_for('dashboard_welcome'))
 
     code = clean_text(request.form.get('joinCode'), max_len=20)
     backend = _storage()
-    club_key = backend.find_club_by_join_code(code) if code else None
-    if not club_key:
+    target_key = backend.find_club_by_join_code(code) if code else None
+    if not target_key:
         flash('That join code was not found. Double-check it with your club leader.', 'error')
-        return redirect(url_for('dashboard_welcome'))
+        return redirect(url_for('dashboard_welcome', code=code))
 
     user = session.get('user') or {}
     email = (user.get('email') or '').strip().lower()
-    club_state = backend.load(club_key) or {}
-    members = club_state.setdefault('members', [])
+    has_club = viewer_club_lite() is not None
+    current_key = backend.resolve_club_key(email) if has_club else None
+
+    # Already on this club's roster — idempotent no-op.
+    if has_club and current_key == target_key:
+        flash("You're already a member of this club.", 'success')
+        return redirect(url_for('dashboard'))
+
+    # A club is keyed to its leader's email; leaders can't join another club as
+    # a member without orphaning their own. Make them hand it off first.
+    if has_club and current_key == email:
+        flash("You lead your own club, so you can't join another as a member. "
+              "Transfer or delete your club first.", 'error')
+        return redirect(url_for('dashboard'))
+
+    # A plain member switching clubs: drop them from their old roster first, so
+    # each account maps to exactly one club.
+    switching = has_club and current_key and current_key != target_key
+    if switching:
+        old_state = backend.load(current_key)
+        if old_state:
+            old_state['members'] = [
+                m for m in old_state.get('members', [])
+                if (m.get('email') or '').strip().lower() != email
+            ]
+            backend.save(current_key, old_state)
+
+    target_state = backend.load(target_key) or {}
+    members = target_state.setdefault('members', [])
     if not any((m.get('email') or '').strip().lower() == email for m in members):
         members.append({
             'id': _item_id('member'),
@@ -485,8 +555,10 @@ def dashboard_welcome_join():
             'avatar': user.get('avatar') or '',
             'status': 'Active',
         })
-        backend.save(club_key, club_state)
-    flash('Welcome to the club!', 'success')
+        backend.save(target_key, target_state)
+
+    flash("You've switched clubs — welcome to your new club!" if switching
+          else 'Welcome to the club!', 'success')
     return redirect(url_for('dashboard'))
 
 
@@ -553,15 +625,26 @@ def dashboard_newsletters():
 
 @app.route('/join/<code>')
 def join_club(code):
-    # Join links never write into the roster — they greet the visitor and
-    # point them onward; leaders see their own club when opening their link.
-    state = get_dashboard_state() if session.get('user') else {}
-    club_settings = state.get('settings') or {}
-    own_link = bool(session.get('user')) and club_settings.get('joinCode') == code
+    # Join links never write into the roster — they greet the visitor and send
+    # them into the sign-in / confirmation flow. Compare only against the
+    # viewer's SAVED club (viewer_club_lite), never a freshly defaulted state
+    # whose join code is randomised on every request.
+    own_link = False
+    club_name = None
+    if session.get('user'):
+        club = viewer_club_lite()
+        if club:
+            settings = club.get('settings') or {}
+            if settings.get('joinCode') == code:
+                own_link = True
+                club_name = settings.get('clubName')
     return flask.render_template(
         'join.html',
+        code=code,
         own_link=own_link,
-        club_name=club_settings.get('clubName') if own_link else None,
+        club_name=club_name,
+        signed_in=bool(session.get('user')),
+        shared_backend=not isinstance(_storage(), SessionStorage),
     )
 
 @app.route('/dashboard/map')
@@ -1413,6 +1496,25 @@ def api_settings_update():
     return flask.jsonify({'state': state})
 
 
+@app.post('/api/dashboard/settings/join-code/refresh')
+@login_required
+def api_join_code_refresh():
+    """Regenerate the club's join code, invalidating the old link. Leaders and
+    mentors only. Persists through the backend like any other settings change."""
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+    role_error = require_leader_api()
+    if role_error:
+        return role_error
+
+    state = get_dashboard_state()
+    new_code = unique_join_code(_storage())
+    state['settings']['joinCode'] = new_code
+    save_dashboard_state(state)
+    return flask.jsonify({'joinCode': new_code, 'state': state})
+
+
 @app.patch('/api/dashboard/profile')
 @login_required
 def api_profile_update():
@@ -1525,6 +1627,20 @@ def hackclub_login():
     state = secrets.token_urlsafe(16)
     session['oauth_state'] = state
 
+    # Carry a member's join intent through the OAuth round-trip so the callback
+    # can land them on the right confirmation. These are consumed once, in the
+    # callback, and never grant access on their own — the roster write still
+    # happens only on the CSRF-protected welcome form.
+    join_code = clean_text(request.args.get('join'), max_len=20)
+    if join_code:
+        session['pending_join_code'] = join_code
+    else:
+        session.pop('pending_join_code', None)
+    if request.args.get('intent') in {'leader', 'member'}:
+        session['pending_intent'] = request.args.get('intent')
+    else:
+        session.pop('pending_intent', None)
+
     params = {
         'client_id':     HACKCLUB_CLIENT_ID,
         'redirect_uri':  oauth_redirect_uri(),
@@ -1599,6 +1715,14 @@ def hackclub_callback():
     }
 
     flash(f'Welcome, {user_data.get("name", "leader")}!', 'success')
+
+    # Honor a join intent stashed before the OAuth redirect. We only ever
+    # redirect to an internal page here — the roster write happens on the
+    # CSRF-protected welcome form, never silently in this GET callback.
+    pending_code = session.pop('pending_join_code', None)
+    session.pop('pending_intent', None)
+    if pending_code:
+        return redirect(url_for('dashboard_welcome', code=pending_code))
     return redirect(url_for('dashboard'))
 
 

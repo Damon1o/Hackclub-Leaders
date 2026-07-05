@@ -51,18 +51,36 @@
             {% endif %}
             {% endwith %}
 
+            {% if target_name %}
+            <h1>Join {{ target_name }}?</h1>
+            {% if is_switch %}
+            <p class="sign-in-subtitle">
+                You're currently in {{ current_name or 'another club' }}. Joining
+                {{ target_name }} will move you there — an account can only
+                belong to one club at a time.
+            </p>
+            {% else %}
+            <p class="sign-in-subtitle">
+                Confirm the code below to join {{ target_name }} and appear on
+                its roster.
+            </p>
+            {% endif %}
+            {% else %}
             <h1>Hi {{ current_user.name.split(' ')[0] if current_user and current_user.name else 'there' }}, find your club</h1>
             <p class="sign-in-subtitle">
                 Your account isn't part of a club yet. Enter the join code your
                 club leader shared with you, or start a brand-new club.
             </p>
+            {% endif %}
 
             <form class="welcome-join-form" method="post" action="{{ url_for('dashboard_welcome_join') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <input type="text" class="welcome-code-input" name="joinCode"
                     value="{{ prefill_code }}" placeholder="Join code (e.g. a1b2c3)"
                     autocomplete="off" autocapitalize="off" spellcheck="false" required>
-                <button type="submit" class="sign-in-hc-btn">Join your club</button>
+                <button type="submit" class="sign-in-hc-btn">
+                    {% if is_switch %}Switch to {{ target_name }}{% elif target_name %}Join {{ target_name }}{% else %}Join your club{% endif %}
+                </button>
             </form>
 
             {% if not shared_backend %}

@@ -304,10 +304,9 @@
 }
 
 @media (max-width: 768px) {
-    /* Nav goes multi-row on mobile (grows past its 80px desktop height) —
-       the clamp() above floors out too low to clear it. */
+    /* Fixed 64px hamburger bar on mobile */
     .events-main {
-        padding-top: 210px;
+        padding-top: 96px;
     }
 
     .events-search {

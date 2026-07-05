@@ -481,7 +481,7 @@ body.dark-mode .sign-in-flash.success {
    clearance specifically for that breakpoint. */
 @media (max-width: 768px) {
     .sign-in-main {
-        padding-top: 210px;
+        padding-top: 96px;
     }
 }
 

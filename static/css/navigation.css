@@ -261,77 +261,118 @@
     fill: var(--hackclub-red);
 }
 
-@media (max-width: 768px) {
-    .navigation-bar {
-        flex-wrap: wrap;
-        height: auto;
-        min-height: 80px;
-        padding: 12px 24px;
-        row-gap: 12px;
-    }
-
-    .navigation-bar .nav-links {
-        flex: 1 1 100%;
-        order: 3;
-        margin-left: 0;
-    }
-
-    .navigation-bar .nav-links ul {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 12px 24px;
-    }
-
-    .navigation-bar .nav-links ul li a {
-        min-height: 44px;
-        padding: 4px 0;
-    }
-
-    .navigation-bar .mode-switch {
-        margin-left: 0;
-    }
-
-    .navigation-bar .apply-now-container {
-        flex: 1 1 100%;
-        order: 4;
-        justify-content: center;
-        margin-left: 0;
-        flex-wrap: wrap;
-    }
-
-    .navigation-bar .apply-now-container .apply-now-link,
-    .navigation-bar .apply-now-container .sign-in-link {
-        width: auto;
-        flex: 1 1 140px;
-        max-width: 200px;
-    }
-
-    .dropdown-menu {
-        min-width: 160px;
-        max-width: calc(100vw - 48px);
-    }
+/* ── Hamburger toggle: hidden on desktop ──────────────────── */
+.navigation-bar .nav-toggle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
 }
 
-@media (max-width: 480px) {
+.navigation-bar .nav-hamburger {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Compact single-row bar: logo + title + hamburger */
     .navigation-bar {
-        padding: 10px 16px;
-        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        height: 64px;
+        min-height: 64px;
+        padding: 0 20px;
+        column-gap: 12px;
+        row-gap: 0;
+    }
+
+    .navigation-bar .animated-nav-logo img {
+        height: 40px;
     }
 
     .navigation-bar .nav-bar-text a {
         font-size: 1.25rem;
     }
 
+    .navigation-bar .nav-hamburger {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        width: 44px;
+        height: 44px;
+        margin-left: auto;
+        order: 2;
+        cursor: pointer;
+    }
+
+    .navigation-bar .nav-hamburger span {
+        display: block;
+        width: 26px;
+        height: 3px;
+        border-radius: 2px;
+        background: var(--primary-black);
+        transition: transform 0.25s ease, opacity 0.2s ease;
+    }
+
+    /* Collapsible groups hidden until the menu is opened */
+    .navigation-bar .nav-links,
+    .navigation-bar .mode-switch,
+    .navigation-bar .apply-now-container {
+        display: none;
+        flex: 1 1 100%;
+        order: 3;
+        margin-left: 0;
+    }
+
+    /* Open state: bar expands into a white drop panel */
+    .navigation-bar:has(.nav-toggle:checked) {
+        height: auto;
+        background: var(--primary-white);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        padding-bottom: 20px;
+        row-gap: 14px;
+    }
+
+    .navigation-bar .nav-toggle:checked ~ .nav-links,
+    .navigation-bar .nav-toggle:checked ~ .mode-switch,
+    .navigation-bar .nav-toggle:checked ~ .apply-now-container {
+        display: flex;
+    }
+
+    /* Links stack vertically inside the panel */
     .navigation-bar .nav-links ul {
-        gap: 8px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        width: 100%;
+    }
+
+    .navigation-bar .nav-links ul li,
+    .navigation-bar .nav-links ul li a {
+        justify-content: flex-start;
+        width: 100%;
     }
 
     .navigation-bar .nav-links ul li a {
-        font-size: 1.1rem;
+        min-height: 44px;
+        font-size: 1.15rem;
+    }
+
+    /* Tools dropdown becomes a static indented list (no hover needed) */
+    .navigation-bar .nav-links .dropdown-menu {
+        position: static;
+        display: flex;
+        border: none;
+        box-shadow: none;
+        min-width: 0;
+        padding: 0 0 0 16px;
     }
 
     .navigation-bar .mode-switch {
-        gap: 12px;
+        justify-content: flex-start;
+        margin: 0;
     }
 
     .navigation-bar .mode-switch button {
@@ -339,10 +380,28 @@
         height: 44px;
     }
 
+    .navigation-bar .apply-now-container {
+        flex-direction: column;
+        gap: 12px;
+        margin: 0;
+    }
+
     .navigation-bar .apply-now-container .apply-now-link,
     .navigation-bar .apply-now-container .sign-in-link {
         width: 100%;
-        flex: 1 1 100%;
         max-width: none;
+    }
+
+    /* Hamburger animates to an X when open */
+    .navigation-bar:has(.nav-toggle:checked) .nav-hamburger span:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+
+    .navigation-bar:has(.nav-toggle:checked) .nav-hamburger span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .navigation-bar:has(.nav-toggle:checked) .nav-hamburger span:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
     }
 }

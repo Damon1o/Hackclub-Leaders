@@ -331,9 +331,8 @@
 
 @media (max-width: 768px) {
     .hero {
-        /* .navigation-bar is fixed and wraps to ~180-190px tall in this range
-           (logo/text/mode-switch row + nav-links row + side-by-side apply/sign-in row) */
-        padding: 210px 24px 60px;
+        /* .navigation-bar is a fixed 64px hamburger bar on mobile */
+        padding: 88px 24px 60px;
         min-height: auto;
         gap: 48px;
         align-items: stretch;
@@ -361,9 +360,7 @@
 
 @media (max-width: 480px) {
     .hero {
-        /* apply-now-container's buttons stack to full-width at this breakpoint,
-           pushing the fixed nav to ~230-240px tall */
-        padding: 270px 20px 48px;
+        padding: 80px 20px 48px;
         gap: 32px;
     }
 

@@ -486,7 +486,7 @@
     }
 
     // A project may only be submitted for review once all four are set.
-    const PROJECT_REQUIREMENTS = ['repoUrl', 'demoUrl', 'thumbnail', 'hackatimeProject'];
+    const PROJECT_REQUIREMENTS = ['repoUrl', 'demoUrl', 'hackatimeProject'];
     // Cached per session so reopening the modal doesn't refetch. `null` = not
     // loaded yet, `[]` = loaded and empty, array = loaded projects.
     let hacktimeProjectsCache = null;

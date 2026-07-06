@@ -1403,8 +1403,6 @@ def api_project_update(project_id):
                 missing.append('a repository URL')
             if not (project.get('demoUrl') or '').strip():
                 missing.append('a demo URL')
-            if not (project.get('thumbnail') or '').strip():
-                missing.append('a thumbnail')
             if not (project.get('hackatimeProject') or '').strip():
                 missing.append('a Hackatime project')
             if missing:

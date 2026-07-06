@@ -449,13 +449,14 @@ def _upload_to_blob(pathname, data, content_type):
     if not BLOB_READ_WRITE_TOKEN:
         raise StorageError('Image uploads are not configured yet '
                            '(missing BLOB_READ_WRITE_TOKEN).')
-    # Keep path separators literal (they define blob "folders"); encode the rest.
+    store_id = BLOB_READ_WRITE_TOKEN.split('_')[3]
     safe_path = requests.utils.quote(pathname, safe='/')
     try:
         response = requests.put(
             f'https://vercel.com/api/blob/?pathname={safe_path}',
             headers={
                 'x-vercel-blob-access': 'public',
+                'x-vercel-blob-store-id': store_id,
                 'authorization': f'Bearer {BLOB_READ_WRITE_TOKEN}',
                 'x-api-version': '12',
                 'x-content-type': content_type,
@@ -467,7 +468,12 @@ def _upload_to_blob(pathname, data, content_type):
     except requests.RequestException as exc:
         raise StorageError(f'Could not reach the image store: {exc}') from exc
     if response.status_code >= 400:
-        raise StorageError(f'Image upload failed ({response.status_code}).')
+        detail = ''
+        try:
+            detail = (response.json() or {}).get('error', {}).get('message', '')
+        except (ValueError, AttributeError):
+            detail = response.text[:200]
+        raise StorageError(f'Image upload failed ({response.status_code}){": " + detail if detail else ""}.')
     return (response.json() or {}).get('url', '')
 
 

@@ -453,11 +453,11 @@ def _upload_to_blob(pathname, data, content_type):
     safe_path = requests.utils.quote(pathname, safe='/')
     try:
         response = requests.put(
-            f'https://blob.vercel-storage.com/?pathname={safe_path}',
+            f'https://vercel.com/api/blob/?pathname={safe_path}',
             headers={
-                'access': 'public',
+                'x-vercel-blob-access': 'public',
                 'authorization': f'Bearer {BLOB_READ_WRITE_TOKEN}',
-                'x-api-version': '10',
+                'x-api-version': '12',
                 'x-content-type': content_type,
                 'x-add-random-suffix': '1',
             },

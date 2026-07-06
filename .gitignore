@@ -21,9 +21,21 @@ ruvector.db
 .claude/settings.local.json
 
 # Accidental shell-redirect artifacts (stray files from malformed commands)
+/$(({}))
 /$(wc
+/.modal-actions
+/.venv/
 /0.05
 /400
 /draw(0))
 /item.id
+/MAX_IMAGE_BYTES
+/MAX_STATE_COOKIE_BYTES
+/SHIPPERS_REQUIRED
 /ship.approved)
+/`token`
+/{,+
+/{,-
+
+# Ruflo / claude-flow runtime lock
+.claude/scheduled_tasks.lock

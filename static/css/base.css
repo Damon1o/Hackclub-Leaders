@@ -38,7 +38,10 @@ svg {
 
 html,
 body {
-    overflow-x: hidden;
+    /* `clip` (not `hidden`) prevents horizontal scroll WITHOUT turning the root
+       into a scroll container — `hidden` would force overflow-y to `auto` and
+       break `position: sticky` for descendants (e.g. the dashboard side rail). */
+    overflow-x: clip;
 }
 
 input,

@@ -3,7 +3,7 @@
 
 {% block title %}{{ settings.clubName }} - Admin{% endblock %}
 {% block page_title %}{{ settings.clubName }}{% endblock %}
-{% block page_subtitle %}Admin view — edit this club's profile and review its ships.{% endblock %}
+{% block page_subtitle %}Admin view — edit this club's profile and review its projects.{% endblock %}
 
 {% block header_right %}
 <a class="btn-secondary" href="{{ url_for('dashboard_admin') }}">← All clubs</a>
@@ -71,38 +71,42 @@
     <section class="card-modern dashboard-panel dashboard-panel-full">
         <div class="panel-heading">
             <div>
-                <h2>Shipped projects</h2>
-                <p>Approve to count a ship toward this club's level, or remove it.</p>
+                <h2>Projects</h2>
+                <p>Approve a submitted project to ship it (counts toward this club's level), or send it back to draft.</p>
             </div>
         </div>
 
-        {% if club.ships %}
+        {% if club.projects %}
         <div class="timeline-list">
-            {% for ship in club.ships %}
-            <article class="timeline-item ship-item {% if not ship.approved %}is-pending{% endif %}">
+            {% for project in club.projects %}
+            <article class="timeline-item ship-item {% if project.status != 'Shipped' %}is-pending{% endif %}">
                 <div class="timeline-date">
-                    <strong>{{ ship.date }}</strong>
-                    <span>{{ ship.member }}</span>
+                    <strong>{{ project.date }}</strong>
+                    <span>{{ project.ownerName or project.ownerEmail }}</span>
                 </div>
                 <div class="timeline-body">
                     <div>
-                        <h3>{{ ship.title }}</h3>
-                        {% if ship.url %}
-                        <p><a class="text-button" href="{{ ship.url }}" target="_blank" rel="noopener noreferrer">{{ ship.url }}</a></p>
-                        {% endif %}
+                        <h3>{{ project.name }}</h3>
+                        {% if project.description %}<p class="project-desc">{{ project.description }}</p>{% endif %}
+                        {% if project.repoUrl %}<p><a class="text-button" href="{{ project.repoUrl }}" target="_blank" rel="noopener noreferrer">Repo →</a></p>{% endif %}
+                        {% if project.demoUrl %}<p><a class="text-button" href="{{ project.demoUrl }}" target="_blank" rel="noopener noreferrer">Demo →</a></p>{% endif %}
                     </div>
                     <div class="timeline-actions">
-                        {% if ship.approved %}
-                        <span class="badge badge-up">Approved</span>
+                        {% if project.status == 'Shipped' %}
+                        <span class="badge badge-up">Shipped</span>
                         <button class="text-button" type="button"
-                            data-reject-ship data-admin-ship="{{ club_key }}::{{ ship.id }}">Un-approve</button>
-                        {% else %}
-                        <span class="badge badge-pending">Pending</span>
+                            data-reject-project data-admin-project="{{ club_key }}::{{ project.id }}">Un-ship</button>
+                        {% elif project.status == 'Submitted' %}
+                        <span class="badge badge-pending">Submitted</span>
                         <button class="btn-primary small" type="button"
-                            data-approve-ship data-admin-ship="{{ club_key }}::{{ ship.id }}">Approve</button>
-                        {% endif %}
+                            data-approve-project data-admin-project="{{ club_key }}::{{ project.id }}">Approve</button>
                         <button class="text-button" type="button"
-                            data-remove-ship-admin data-admin-ship="{{ club_key }}::{{ ship.id }}">Remove</button>
+                            data-reject-project data-admin-project="{{ club_key }}::{{ project.id }}">Reject</button>
+                        {% else %}
+                        <span class="badge">Draft</span>
+                        <button class="btn-primary small" type="button"
+                            data-approve-project data-admin-project="{{ club_key }}::{{ project.id }}">Approve</button>
+                        {% endif %}
                     </div>
                 </div>
             </article>
@@ -110,8 +114,8 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <h3>Nothing shipped yet</h3>
-            <p>This club hasn't logged any projects.</p>
+            <h3>No projects yet</h3>
+            <p>This club hasn't created any projects.</p>
         </div>
         {% endif %}
     </section>

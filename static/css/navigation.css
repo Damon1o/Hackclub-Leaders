@@ -360,6 +360,13 @@
         font-size: 1.15rem;
     }
 
+    /* The dropdown li is flex-row by default, which puts the submenu to the
+       RIGHT of the "Tools" link. Stack them so the submenu sits underneath. */
+    .navigation-bar .nav-links ul li.dropdown {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
     /* Tools dropdown becomes a static indented list (no hover needed) */
     .navigation-bar .nav-links .dropdown-menu {
         position: static;

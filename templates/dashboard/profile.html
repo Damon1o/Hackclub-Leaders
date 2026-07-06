@@ -33,15 +33,41 @@
                 <textarea class="form-input" name="bio" rows="4"
                     placeholder="A line or two about you...">{{ current_user.bio or '' }}</textarea>
             </label>
-            <label class="form-group">
-                <span class="form-label">Hackatime user ID</span>
-                <input type="text" class="form-input" name="hackatimeId"
-                    value="{{ current_user.hackatimeId or '' }}" inputmode="numeric"
-                    placeholder="e.g. 1234">
-                <small class="form-hint">The number in your
+            <div class="form-group">
+                <span class="form-label">Hackatime</span>
+                <div class="hackatime-connect">
+                    {% if current_user.hackatimeId %}
+                    <span class="hackatime-connected">
+                        <span class="hackatime-dot" aria-hidden="true"></span>
+                        Connected · ID {{ current_user.hackatimeId }}
+                    </span>
+                    {% if hackatime_connect_enabled %}
+                    <a class="btn-secondary small" href="{{ url_for('hackatime_login') }}">Reconnect</a>
+                    {% endif %}
+                    {% elif hackatime_connect_enabled %}
+                    <a class="btn-primary small" href="{{ url_for('hackatime_login') }}">
+                        <span class="button-icon" aria-hidden="true">⚡</span> Connect Hackatime
+                    </a>
+                    {% endif %}
+                </div>
+                <small class="form-hint">
+                    {% if hackatime_connect_enabled %}
+                    Connect once and we'll pull your user ID automatically — no need to hunt for it.
+                    Make your Hackatime profile public to show your coding time on Projects.
+                    {% else %}
+                    Enter the number from your
                     <a href="https://hackatime.hackclub.com" target="_blank" rel="noopener noreferrer">hackatime.hackclub.com</a>
-                    profile URL. Make your profile public to show your coding time on Projects.</small>
-            </label>
+                    profile URL, and make your profile public to show your coding time on Projects.
+                    {% endif %}
+                </small>
+                <input type="text" class="form-input hackatime-id-input" name="hackatimeId"
+                    value="{{ current_user.hackatimeId or '' }}" inputmode="numeric"
+                    placeholder="e.g. 1234"
+                    aria-label="Hackatime user ID">
+                <small class="form-hint hackatime-manual-hint">
+                    {% if hackatime_connect_enabled %}Prefer to set it yourself? Paste your numeric Hackatime user ID above.{% endif %}
+                </small>
+            </div>
             <p class="form-error" id="profileFormError" hidden></p>
             <div class="form-actions">
                 <button type="submit" class="btn-primary">Save changes</button>

@@ -3,6 +3,7 @@ from datetime import date
 import base64
 import json
 import os
+import re
 import secrets
 import zlib
 import requests
@@ -25,6 +26,21 @@ app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 HACKCLUB_CLIENT_ID     = os.environ.get('HACKCLUB_CLIENT_ID', '')
 HACKCLUB_CLIENT_SECRET = os.environ.get('HACKCLUB_CLIENT_SECRET', '')
 BASE_URL               = os.environ.get('BASE_URL', '')
+
+# Vercel Blob store, used for project image uploads. Auto-added as an env var
+# when you create a Blob store in the Vercel dashboard.
+BLOB_READ_WRITE_TOKEN  = os.environ.get('BLOB_READ_WRITE_TOKEN', '')
+
+# Cap request bodies so an oversized upload is rejected before it's buffered.
+# Vercel Functions cap bodies at 4.5 MB; we allow images up to 4 MB.
+MAX_IMAGE_BYTES = 4 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = MAX_IMAGE_BYTES + 512 * 1024
+
+# Separate OAuth app registered at hackatime.hackclub.com/oauth/applications.
+# Lets members connect Hackatime with one click instead of pasting a numeric
+# user ID. The 'profile' scope returns their id from /api/v1/authenticated/me.
+HACKATIME_CLIENT_ID     = os.environ.get('HACKATIME_CLIENT_ID', '')
+HACKATIME_CLIENT_SECRET = os.environ.get('HACKATIME_CLIENT_SECRET', '')
 
 # Comma-separated allowlist of admin emails. Admins see and edit every club and
 # review shipped projects. Kept in env (not the database) so there is no
@@ -148,6 +164,42 @@ def get_csrf_token():
     return token
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SHOP_JSON_PATH = os.path.join(BASE_DIR, 'shop.json')
+
+
+def _slugify(text):
+    return re.sub(r'[^a-z0-9]+', '-', (text or '').lower()).strip('-')
+
+
+def load_shop_items():
+    """Read the shop catalog from shop.json.
+
+    The file holds display fields only (name, cost, image-src, filter); a stable
+    `id` is derived from the name here so the cart/checkout can reference items.
+    """
+    try:
+        with open(SHOP_JSON_PATH, encoding='utf-8') as fh:
+            raw = json.load(fh)
+    except (OSError, ValueError):
+        return []
+    items = []
+    for entry in raw:
+        name = entry.get('name', '')
+        items.append({
+            'id': _slugify(name),
+            'name': name,
+            'cost': entry.get('cost', ''),
+            'image-src': entry.get('image-src', ''),
+            'filter': entry.get('filter', ''),
+        })
+    return items
+
+
+# Loaded once at import; edit shop.json and restart to pick up catalog changes.
+SHOP_ITEMS = load_shop_items()
+
+
 def default_dashboard_state():
     user = session.get('user') or {}
     leader_name = user.get('name') or 'Club Leader'
@@ -167,40 +219,11 @@ def default_dashboard_state():
         # New clubs start empty — events, ships, and members are added by
         # the club itself, so levels and stats reflect real activity.
         'events': [],
-        'shopItems': [
-            {
-                'id': 'stickers',
-                'name': 'Sticker Pack',
-                'description': 'A fresh batch of Hack Club laptop stickers for your members.',
-                'price': 'Free',
-                'action': 'Add to Cart',
-                'icon': 'note-sticky',
-                'accent': 'red',
-            },
-            {
-                'id': 'posters',
-                'name': 'Meeting Posters',
-                'description': 'Fill-in-the-blank posters to hang up around your school.',
-                'price': 'Free',
-                'action': 'Add to Cart',
-                'icon': 'scroll',
-                'accent': 'blue',
-            },
-            {
-                'id': 'arduino',
-                'name': 'Arduino Kit',
-                'description': 'Basic electronics kit for running a hardware workshop.',
-                'price': '$25.00',
-                'action': 'Request Grant',
-                'icon': 'microchip',
-                'accent': 'purple',
-            },
-        ],
+        'shopItems': [dict(item) for item in SHOP_ITEMS],
         'cart': [],
         'orders': [],
         'itemRequests': [],
         'projects': [],
-        'ships': [],
         'newsletters': [
             {
                 'id': 'dispatch-hardware-grants',
@@ -315,13 +338,16 @@ def get_dashboard_state():
             settings[key] = value
             changed = True
 
+    # shopItems is a static catalog from shop.json — never trust a stored copy
+    # (it may be stale from a previous shop.json, or absent). Always refresh it
+    # from source so catalog edits show up immediately on every backend.
+    state['shopItems'] = [dict(item) for item in SHOP_ITEMS]
+
     if isinstance(backend, SessionStorage):
         if changed:
             session.modified = True
     else:
-        # Shared backends don't store the static catalog or the per-visitor
-        # cart; the defaults merge above restored the catalog, the session
-        # keeps the cart.
+        # Shared backends don't store the per-visitor cart; the session does.
         state['cart'] = session.get('cart_items') or []
 
     g.dashboard_state = state
@@ -347,9 +373,13 @@ def _state_cookie_size(state):
 def save_dashboard_state(state):
     backend = _storage()
     if isinstance(backend, SessionStorage):
-        if _state_cookie_size(state) > MAX_STATE_COOKIE_BYTES:
+        # Keep the static catalog out of the cookie — it's re-injected from
+        # shop.json on load, and 30+ items would blow the ~2.8KB cookie cap.
+        persisted = {key: value for key, value in state.items()
+                     if key != 'shopItems'}
+        if _state_cookie_size(persisted) > MAX_STATE_COOKIE_BYTES:
             raise StateTooLarge()
-        backend.save(_club_key(), state)
+        backend.save(_club_key(), persisted)
     else:
         session['cart_items'] = state.get('cart') or []
         session.modified = True
@@ -392,6 +422,53 @@ def json_payload():
 
 def json_error(message, status=400):
     return flask.jsonify({'error': message}), status
+
+
+@app.errorhandler(413)
+def _payload_too_large(_error):
+    return json_error('That file is too large — images must be 4 MB or smaller.', 413)
+
+
+# Allowed image types, identified by magic bytes (never trust the extension or
+# the client-declared content type). Maps a sniffed type to (mime, extension).
+def _sniff_image(data):
+    if data[:8] == b'\x89PNG\r\n\x1a\n':
+        return 'image/png', 'png'
+    if data[:3] == b'\xff\xd8\xff':
+        return 'image/jpeg', 'jpg'
+    if data[:6] in (b'GIF87a', b'GIF89a'):
+        return 'image/gif', 'gif'
+    if data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+        return 'image/webp', 'webp'
+    return None, None
+
+
+def _upload_to_blob(pathname, data, content_type):
+    """Upload bytes to Vercel Blob and return the public URL. REST contract per
+    the @vercel/blob SDK: PUT /?pathname=… with the token + api-version headers."""
+    if not BLOB_READ_WRITE_TOKEN:
+        raise StorageError('Image uploads are not configured yet '
+                           '(missing BLOB_READ_WRITE_TOKEN).')
+    # Keep path separators literal (they define blob "folders"); encode the rest.
+    safe_path = requests.utils.quote(pathname, safe='/')
+    try:
+        response = requests.put(
+            f'https://blob.vercel-storage.com/?pathname={safe_path}',
+            headers={
+                'access': 'public',
+                'authorization': f'Bearer {BLOB_READ_WRITE_TOKEN}',
+                'x-api-version': '10',
+                'x-content-type': content_type,
+                'x-add-random-suffix': '1',
+            },
+            data=data,
+            timeout=15,
+        )
+    except requests.RequestException as exc:
+        raise StorageError(f'Could not reach the image store: {exc}') from exc
+    if response.status_code >= 400:
+        raise StorageError(f'Image upload failed ({response.status_code}).')
+    return (response.json() or {}).get('url', '')
 
 
 def find_by_id(items, item_id):
@@ -660,7 +737,9 @@ def dashboard_settings():
 @app.route('/dashboard/profile')
 @login_required
 def dashboard_profile():
-    return flask.render_template('dashboard/profile.html', dashboard_state=get_dashboard_state())
+    return flask.render_template('dashboard/profile.html',
+                                 dashboard_state=get_dashboard_state(),
+                                 hackatime_connect_enabled=bool(HACKATIME_CLIENT_ID))
 
 
 # ── Admin ─────────────────────────────────────────────────────────────────────
@@ -694,7 +773,7 @@ def dashboard_admin():
     return flask.render_template(
         'dashboard/admin.html',
         clubs=backend.list_clubs(),
-        pending_ships=backend.list_pending_ships(),
+        pending_projects=backend.list_pending_projects(),
     )
 
 
@@ -749,9 +828,14 @@ def api_admin_club_update(club_key):
     return flask.jsonify({'club': state})
 
 
-@app.patch('/api/admin/ships/<club_key>/<ship_id>')
+# Admins review submitted projects: approving marks a project "Shipped" (which
+# is what counts toward the club level); rejecting sends it back to "Draft".
+ADMIN_REVIEW_STATUSES = {'Shipped', 'Draft'}
+
+
+@app.patch('/api/admin/projects/<club_key>/<project_id>')
 @login_required
-def api_admin_ship_update(club_key, ship_id):
+def api_admin_project_review(club_key, project_id):
     admin_error = require_admin_api()
     if admin_error:
         return admin_error
@@ -763,55 +847,17 @@ def api_admin_ship_update(club_key, ship_id):
     if error:
         return error
 
-    ship = find_by_id(state.get('ships') or [], ship_id)
-    if not ship:
-        return json_error('Ship not found.', 404)
+    project = find_by_id(state.get('projects') or [], project_id)
+    if not project:
+        return json_error('Project not found.', 404)
 
     payload = json_payload()
-    # Approve / reject is the common case; admins may also fix fields.
-    if 'approved' in payload:
-        ship['approved'] = parse_bool(payload.get('approved'))
-    if 'title' in payload:
-        title = clean_text(payload.get('title'), ship.get('title', ''), max_len=120)
-        if not title:
-            return json_error('Project title is required.')
-        ship['title'] = title
-    if 'member' in payload:
-        member = clean_text(payload.get('member'), ship.get('member', ''), max_len=80)
-        if not member:
-            return json_error('Who shipped it? Add a member name.')
-        ship['member'] = member
-    if 'url' in payload:
-        url = clean_text(payload.get('url'), ship.get('url', ''))
-        if url and not url.startswith(('http://', 'https://')):
-            return json_error('Project URL must start with http:// or https://.')
-        ship['url'] = url
-
+    status = clean_text(payload.get('status')).title()
+    if status not in ADMIN_REVIEW_STATUSES:
+        return json_error('Status must be Shipped or Draft.')
+    project['status'] = status
     _persist_club(club_key, state)
-    return flask.jsonify({'ship': ship})
-
-
-@app.delete('/api/admin/ships/<club_key>/<ship_id>')
-@login_required
-def api_admin_ship_delete(club_key, ship_id):
-    admin_error = require_admin_api()
-    if admin_error:
-        return admin_error
-    csrf_error = require_dashboard_csrf()
-    if csrf_error:
-        return csrf_error
-    club_key = (club_key or '').strip().lower()
-    state, error = _load_admin_club(club_key)
-    if error:
-        return error
-
-    ships = state.get('ships') or []
-    remaining = [s for s in ships if s.get('id') != ship_id]
-    if len(remaining) == len(ships):
-        return json_error('Ship not found.', 404)
-    state['ships'] = remaining
-    _persist_club(club_key, state)
-    return flask.jsonify({'ok': True})
+    return flask.jsonify({'project': project})
 
 
 # Dashboard JSON API
@@ -924,102 +970,6 @@ def api_team_delete(member_id):
     state['members'] = [member for member in state['members'] if member.get('id') != member_id]
     if len(state['members']) == original_count:
         return json_error('Member not found.', 404)
-    save_dashboard_state(state)
-    return flask.jsonify({'state': state})
-
-
-@app.post('/api/dashboard/ships')
-@login_required
-def api_ships_add():
-    csrf_error = require_dashboard_csrf()
-    if csrf_error:
-        return csrf_error
-
-    payload = json_payload()
-    title = clean_text(payload.get('title'), max_len=120)
-    member = clean_text(payload.get('member'), max_len=80)
-    url = clean_text(payload.get('url'))
-    ship_date = clean_text(payload.get('date'), date.today().isoformat(), max_len=10)
-
-    if not title:
-        return json_error('Project title is required.')
-    if not member:
-        return json_error('Who shipped it? Add a member name.')
-    if url and not url.startswith(('http://', 'https://')):
-        return json_error('Project URL must start with http:// or https://.')
-    try:
-        date.fromisoformat(ship_date)
-    except ValueError:
-        return json_error('Choose a valid ship date.')
-
-    state = get_dashboard_state()
-    ship = {
-        'id': _item_id('ship'),
-        'title': title,
-        'member': member,
-        'url': url,
-        'date': ship_date,
-        # Ships start unapproved and only count toward the club level once an
-        # admin approves them.
-        'approved': False,
-    }
-    state['ships'].insert(0, ship)
-    save_dashboard_state(state)
-    return flask.jsonify({'ship': ship, 'state': state})
-
-
-@app.patch('/api/dashboard/ships/<ship_id>')
-@login_required
-def api_ships_update(ship_id):
-    # Members may edit shipped projects — no leader gate here.
-    csrf_error = require_dashboard_csrf()
-    if csrf_error:
-        return csrf_error
-
-    state = get_dashboard_state()
-    ship = find_by_id(state['ships'], ship_id)
-    if not ship:
-        return json_error('Ship not found.', 404)
-
-    payload = json_payload()
-    title = clean_text(payload.get('title'), ship.get('title', ''), max_len=120)
-    member = clean_text(payload.get('member'), ship.get('member', ''), max_len=80)
-    url = clean_text(payload.get('url'), ship.get('url', ''))
-    ship_date = clean_text(payload.get('date'), ship.get('date', ''), max_len=10)
-
-    if not title:
-        return json_error('Project title is required.')
-    if not member:
-        return json_error('Who shipped it? Add a member name.')
-    if url and not url.startswith(('http://', 'https://')):
-        return json_error('Project URL must start with http:// or https://.')
-    try:
-        date.fromisoformat(ship_date)
-    except ValueError:
-        return json_error('Choose a valid ship date.')
-
-    # Editing a project sends it back to the review queue.
-    ship.update({'title': title, 'member': member, 'url': url,
-                 'date': ship_date, 'approved': False})
-    save_dashboard_state(state)
-    return flask.jsonify({'ship': ship, 'state': state})
-
-
-@app.delete('/api/dashboard/ships/<ship_id>')
-@login_required
-def api_ships_delete(ship_id):
-    csrf_error = require_dashboard_csrf()
-    if csrf_error:
-        return csrf_error
-    role_error = require_leader_api()
-    if role_error:
-        return role_error
-
-    state = get_dashboard_state()
-    original_count = len(state['ships'])
-    state['ships'] = [ship for ship in state['ships'] if ship.get('id') != ship_id]
-    if len(state['ships']) == original_count:
-        return json_error('Ship not found.', 404)
     save_dashboard_state(state)
     return flask.jsonify({'state': state})
 
@@ -1287,6 +1237,15 @@ def _viewer_email():
     return ((session.get('user') or {}).get('email') or '').strip().lower()
 
 
+def _join_missing(items):
+    """'a' / 'a and b' / 'a, b, and c' — a readable list for error messages."""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f'{items[0]} and {items[1]}'
+    return ', '.join(items[:-1]) + ', and ' + items[-1]
+
+
 def _owned_project_or_error(state, project_id):
     """(project, None) if the viewer owns it, else (None, error_response)."""
     project = find_by_id(state.get('projects') or [], project_id)
@@ -1295,6 +1254,36 @@ def _owned_project_or_error(state, project_id):
     if (project.get('ownerEmail') or '').strip().lower() != _viewer_email():
         return None, json_error('You can only change your own projects.', 403)
     return project, None
+
+
+@app.post('/api/dashboard/projects/upload-image')
+@login_required
+def api_project_upload_image():
+    csrf_error = require_dashboard_csrf()
+    if csrf_error:
+        return csrf_error
+
+    file = request.files.get('image')
+    if file is None or not file.filename:
+        return json_error('Choose an image to upload.')
+    data = file.read(MAX_IMAGE_BYTES + 1)
+    if not data:
+        return json_error('That image is empty.')
+    if len(data) > MAX_IMAGE_BYTES:
+        return json_error('Image must be 4 MB or smaller.')
+
+    content_type, ext = _sniff_image(data)
+    if not content_type:
+        return json_error('Only PNG, JPEG, WebP, or GIF images are allowed.')
+
+    stem = _slugify(os.path.splitext(file.filename)[0]) or 'image'
+    try:
+        url = _upload_to_blob(f'projects/{stem}.{ext}', data, content_type)
+    except StorageError as exc:
+        return json_error(str(exc), 502)
+    if not url:
+        return json_error('Upload succeeded but no URL was returned.', 502)
+    return flask.jsonify({'url': url})
 
 
 @app.post('/api/dashboard/projects')
@@ -1308,10 +1297,24 @@ def api_project_add():
     name = clean_text(payload.get('name'), max_len=120)
     description = clean_text(payload.get('description'), max_len=500)
     url = clean_text(payload.get('url'))
+    repo_url = clean_text(payload.get('repoUrl'))
+    demo_url = clean_text(payload.get('demoUrl'))
+    thumbnail = clean_text(payload.get('thumbnail'))
+    hackatime_project = clean_text(payload.get('hackatimeProject'), max_len=120)
     if not name:
         return json_error('Project name is required.')
     if url and not url.startswith(('http://', 'https://')):
         return json_error('Project URL must start with http:// or https://.')
+    if repo_url and not repo_url.startswith(('http://', 'https://')):
+        return json_error('Repository URL must start with http:// or https://.')
+    if demo_url and not demo_url.startswith(('http://', 'https://')):
+        return json_error('Demo URL must start with http:// or https://.')
+    if thumbnail and not thumbnail.startswith(('http://', 'https://')):
+        return json_error('Thumbnail URL must start with http:// or https://.')
+
+    # A demo URL doubles as the card's primary link for back-compat.
+    if demo_url:
+        url = demo_url
 
     user = session.get('user') or {}
     state = get_dashboard_state()
@@ -1320,6 +1323,10 @@ def api_project_add():
         'name': name,
         'description': description,
         'url': url,
+        'repoUrl': repo_url,
+        'demoUrl': demo_url,
+        'thumbnail': thumbnail,
+        'hackatimeProject': hackatime_project,
         'status': 'Draft',
         'ownerEmail': _viewer_email(),
         'ownerName': user.get('name') or _viewer_email(),
@@ -1356,10 +1363,47 @@ def api_project_update(project_id):
         if url and not url.startswith(('http://', 'https://')):
             return json_error('Project URL must start with http:// or https://.')
         project['url'] = url
+    if 'repoUrl' in payload:
+        repo_url = clean_text(payload.get('repoUrl'), project.get('repoUrl', ''))
+        if repo_url and not repo_url.startswith(('http://', 'https://')):
+            return json_error('Repository URL must start with http:// or https://.')
+        project['repoUrl'] = repo_url
+    if 'demoUrl' in payload:
+        demo_url = clean_text(payload.get('demoUrl'), project.get('demoUrl', ''))
+        if demo_url and not demo_url.startswith(('http://', 'https://')):
+            return json_error('Demo URL must start with http:// or https://.')
+        project['demoUrl'] = demo_url
+        # A demo URL doubles as the card's primary link for back-compat.
+        if demo_url:
+            project['url'] = demo_url
+    if 'thumbnail' in payload:
+        thumbnail = clean_text(payload.get('thumbnail'), project.get('thumbnail', ''))
+        if thumbnail and not thumbnail.startswith(('http://', 'https://')):
+            return json_error('Thumbnail URL must start with http:// or https://.')
+        project['thumbnail'] = thumbnail
+    if 'hackatimeProject' in payload:
+        project['hackatimeProject'] = clean_text(
+            payload.get('hackatimeProject'),
+            project.get('hackatimeProject', ''), max_len=120)
     if 'status' in payload:
         status = clean_text(payload.get('status'), project.get('status', 'Draft')).title()
         if status not in {'Draft', 'Submitted'}:
             return json_error('Status must be Draft or Submitted.')
+        # Submitting requires a complete project card. Check against the state
+        # the project would have after this payload is applied (done above).
+        if status == 'Submitted':
+            missing = []
+            if not (project.get('repoUrl') or '').strip():
+                missing.append('a repository URL')
+            if not (project.get('demoUrl') or '').strip():
+                missing.append('a demo URL')
+            if not (project.get('thumbnail') or '').strip():
+                missing.append('a thumbnail')
+            if not (project.get('hackatimeProject') or '').strip():
+                missing.append('a Hackatime project')
+            if missing:
+                return json_error(
+                    'Add ' + _join_missing(missing) + ' before submitting.', 400)
         project['status'] = status
 
     save_dashboard_state(state)
@@ -1608,6 +1652,48 @@ def api_hackatime_stats():
     })
 
 
+@app.get('/api/dashboard/hackatime/projects')
+@login_required
+def api_hackatime_projects():
+    """List the viewer's Hackatime projects with hours, so a project card can be
+    linked to the coding time it represents. Same resolution/validation as
+    api_hackatime_stats."""
+    user_id = (request.args.get('userId')
+               or (session.get('user') or {}).get('hackatimeId') or '').strip()
+    if not user_id:
+        return json_error('Add your Hackatime user ID on your profile first.', 400)
+    if not user_id.isdigit():
+        return json_error('That Hackatime user ID is not valid.', 400)
+
+    try:
+        response = requests.get(
+            f'{HACKATIME_API}/users/{user_id}/stats',
+            params={'features': 'projects,languages'},
+            headers={'Accept': 'application/json'},
+            timeout=8,
+        )
+    except requests.RequestException:
+        return json_error('Could not reach Hackatime right now.', 502)
+
+    if response.status_code == 404:
+        return json_error('No public Hackatime profile for that ID.', 404)
+    if response.status_code >= 400:
+        return json_error('Hackatime returned an error.', 502)
+
+    data = (response.json() or {}).get('data') or {}
+    if not data.get('is_coding_activity_visible', True):
+        return json_error('That Hackatime profile is private.', 403)
+
+    projects = [
+        {'name': p['name'],
+         'hours': round((p.get('total_seconds') or 0) / 3600, 1),
+         'text': p.get('text') or ''}
+        for p in (data.get('projects') or []) if p.get('name')
+    ]
+    projects.sort(key=lambda p: p['hours'], reverse=True)
+    return flask.jsonify({'projects': projects[:30]})
+
+
 # ── Hack Club OAuth ───────────────────────────────────────────────────────────
 
 def oauth_redirect_uri():
@@ -1724,6 +1810,115 @@ def hackclub_callback():
     if pending_code:
         return redirect(url_for('dashboard_welcome', code=pending_code))
     return redirect(url_for('dashboard'))
+
+
+# ── Hackatime OAuth (connect coding-time account) ─────────────────────────────
+# A second, independent OAuth app (Doorkeeper) so a member can link their
+# Hackatime account with one click instead of copying a numeric ID. We only
+# read their identity (id) via the 'profile' scope and store it as hackatimeId
+# — the same value the manual field on the profile page accepts.
+
+HACKATIME_AUTHORIZE_URL = 'https://hackatime.hackclub.com/oauth/authorize'
+HACKATIME_TOKEN_URL     = 'https://hackatime.hackclub.com/oauth/token'
+HACKATIME_ME_URL        = 'https://hackatime.hackclub.com/api/v1/authenticated/me'
+
+
+def hackatime_redirect_uri():
+    """Callback URL registered with the Hackatime OAuth app — falls back to the
+    current host when BASE_URL is not configured (local development)."""
+    base = BASE_URL or request.url_root.rstrip('/')
+    return f'{base}/auth/hackatime/callback'
+
+
+@app.route('/auth/hackatime')
+@login_required
+def hackatime_login():
+    """Send a signed-in member to Hackatime to authorize reading their id."""
+    if not HACKATIME_CLIENT_ID:
+        flash('Hackatime connect is not configured yet. Enter your Hackatime '
+              'user ID manually for now.', 'error')
+        return redirect(url_for('dashboard_profile'))
+
+    state = secrets.token_urlsafe(16)
+    # Separate key from the sign-in flow's oauth_state so connecting Hackatime
+    # can never interfere with (or be confused for) the Hack Club login handshake.
+    session['hackatime_oauth_state'] = state
+    params = {
+        'client_id':     HACKATIME_CLIENT_ID,
+        'redirect_uri':  hackatime_redirect_uri(),
+        'response_type': 'code',
+        'scope':         'profile',
+        'state':         state,
+    }
+    return redirect(f'{HACKATIME_AUTHORIZE_URL}?{urlencode(params)}')
+
+
+@app.route('/auth/hackatime/callback')
+@login_required
+def hackatime_callback():
+    """Exchange the code, read the member's Hackatime id, and store it."""
+    error = request.args.get('error')
+    if error:
+        flash(f'Hackatime connection was cancelled ({error}).', 'error')
+        return redirect(url_for('dashboard_profile'))
+
+    returned_state = request.args.get('state', '')
+    expected_state = session.pop('hackatime_oauth_state', None)
+    if not expected_state or returned_state != expected_state:
+        flash('Hackatime connection expired. Please try again.', 'error')
+        return redirect(url_for('dashboard_profile'))
+
+    code = request.args.get('code')
+    if not code:
+        flash('No authorization code returned from Hackatime.', 'error')
+        return redirect(url_for('dashboard_profile'))
+
+    try:
+        token_response = requests.post(
+            HACKATIME_TOKEN_URL,
+            data={
+                'client_id':     HACKATIME_CLIENT_ID,
+                'client_secret': HACKATIME_CLIENT_SECRET,
+                'code':          code,
+                'redirect_uri':  hackatime_redirect_uri(),
+                'grant_type':    'authorization_code',
+            },
+            timeout=10,
+        )
+        token_data = token_response.json()
+    except (requests.RequestException, ValueError):
+        flash('Could not reach Hackatime to finish connecting. Please try again.', 'error')
+        return redirect(url_for('dashboard_profile'))
+
+    access_token = token_data.get('access_token')
+    if not access_token:
+        flash(f'Hackatime connection failed: {token_data.get("error", "unknown error")}', 'error')
+        return redirect(url_for('dashboard_profile'))
+
+    try:
+        me_response = requests.get(
+            HACKATIME_ME_URL,
+            headers={'Authorization': f'Bearer {access_token}'},
+            timeout=10,
+        )
+        me_data = me_response.json()
+    except (requests.RequestException, ValueError):
+        flash('Could not read your Hackatime profile. Please try again.', 'error')
+        return redirect(url_for('dashboard_profile'))
+
+    hackatime_id = me_data.get('id')
+    if not hackatime_id:
+        flash('Hackatime did not return your account id. Please try again.', 'error')
+        return redirect(url_for('dashboard_profile'))
+
+    # Persist onto the signed-in user exactly like the manual field does, so the
+    # existing Hackatime stats/projects endpoints pick it up unchanged.
+    user = dict(session.get('user') or {})
+    user['hackatimeId'] = str(hackatime_id)
+    session['user'] = user
+
+    flash('Hackatime connected — your coding time will show up on Projects.', 'success')
+    return redirect(url_for('dashboard_profile'))
 
 
 # ── Context processor ─────────────────────────────────────────────────────────

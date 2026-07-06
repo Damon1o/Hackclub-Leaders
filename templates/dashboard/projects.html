@@ -63,7 +63,7 @@
             <h2 id="projectModalTitle">New project</h2>
             <button class="icon-button" type="button" data-modal-close aria-label="Close">x</button>
         </header>
-        <form class="modal-form" id="projectForm">
+        <form class="modal-form modal-scroll-body" id="projectForm">
             <input type="hidden" name="id" value="">
             <label class="form-group">
                 <span class="form-label">Project name</span>
@@ -74,15 +74,46 @@
                 <textarea class="form-input" name="description" rows="3" placeholder="What is it? What did you build?"></textarea>
             </label>
             <label class="form-group">
-                <span class="form-label">Project URL (optional)</span>
-                <input class="form-input" type="url" name="url" placeholder="https://...">
+                <span class="form-label">Repository URL</span>
+                <input class="form-input" type="url" name="repoUrl" placeholder="https://github.com/you/project">
             </label>
-            <p class="form-error" id="projectFormError" hidden></p>
-            <div class="modal-actions">
-                <button class="btn-secondary" type="button" data-modal-close>Cancel</button>
-                <button class="btn-primary" type="submit">Save project</button>
+            <label class="form-group">
+                <span class="form-label">Playable demo URL</span>
+                <input class="form-input" type="url" name="demoUrl" placeholder="https://your-demo.example.com">
+            </label>
+            <div class="form-group">
+                <span class="form-label">Thumbnail image</span>
+                <p class="form-hint">Upload a PNG, JPEG, WebP, or GIF (max 4 MB).</p>
+                <input type="hidden" name="thumbnail" value="">
+                <label class="image-upload" id="projectThumbUpload">
+                    <input type="file" id="projectThumbFile"
+                        accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+                    <span class="image-upload-cta">Choose image…</span>
+                </label>
+                <img class="thumb-preview" id="projectThumbPreview" alt="Thumbnail preview" hidden>
+                <p class="form-error" id="projectThumbError" hidden></p>
             </div>
+            <div class="form-group">
+                <span class="form-label">Hackatime project</span>
+                <p class="form-hint">Link the project you tracked your coding time on.</p>
+                <div class="hacktime-picker" id="hackatimePicker">
+                    <p class="hacktime-picker-loading">Loading your Hackatime projects…</p>
+                </div>
+                <input type="hidden" name="hackatimeProject" value="">
+            </div>
+            <ul class="req-checklist">
+                <li class="req-item" data-req="repoUrl"><span class="req-check" aria-hidden="true"></span> Repository URL added</li>
+                <li class="req-item" data-req="demoUrl"><span class="req-check" aria-hidden="true"></span> Playable demo URL added</li>
+                <li class="req-item" data-req="thumbnail"><span class="req-check" aria-hidden="true"></span> Thumbnail image added</li>
+                <li class="req-item" data-req="hackatimeProject"><span class="req-check" aria-hidden="true"></span> Hackatime project linked</li>
+            </ul>
+            <p class="form-error" id="projectFormError" hidden></p>
         </form>
+        <div class="modal-actions">
+            <button class="btn-secondary" type="button" data-modal-close>Cancel</button>
+            <button class="btn-secondary" type="submit" form="projectForm">Save draft</button>
+            <button class="btn-primary" type="button" id="projectSubmitReview" disabled>Submit for Review</button>
+        </div>
     </section>
 </div>
 {% endblock %}

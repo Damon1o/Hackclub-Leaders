@@ -4,13 +4,6 @@
 {% block page_title %}Ships{% endblock %}
 {% block page_subtitle %}Every project your club ships levels you up.{% endblock %}
 
-{% block header_right %}
-<button class="btn-primary" type="button" data-open-modal="shipModal">
-    <span class="button-icon" aria-hidden="true">+</span>
-    Log a ship
-</button>
-{% endblock %}
-
 {% block content %}
 <div class="dashboard-page" data-dashboard-page="ships">
     <section class="dashboard-metrics">
@@ -32,49 +25,16 @@
         <div class="panel-heading">
             <div>
                 <h2>Shipped projects</h2>
-                <p>Websites, games, hardware — anything a member built and put into the world.</p>
+                <p>Approved projects your club shipped — websites, games, hardware, anything a member built.</p>
             </div>
             <a class="text-button" href="/dashboard/levels">See level perks →</a>
         </div>
         <div class="timeline-list" id="shipList"></div>
         <div class="empty-state" id="shipsEmpty" hidden>
             <h3>Nothing shipped yet</h3>
-            <p>Log your club's first shipped project — ships from 4 different members unlock Level 2.</p>
-            <button class="btn-primary" type="button" data-open-modal="shipModal">Log a ship</button>
+            <p>Ships come from approved projects. Build a project, submit it for review, and an admin approves it — ships from 4 different members unlock Level 2.</p>
+            <a class="btn-primary" href="/dashboard/projects">Go to Projects</a>
         </div>
-    </section>
-</div>
-
-<div class="modal-backdrop" id="shipModal" aria-hidden="true">
-    <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="shipModalTitle">
-        <header class="modal-header">
-            <h2 id="shipModalTitle">Log a ship</h2>
-            <button class="icon-button" type="button" data-modal-close aria-label="Close">x</button>
-        </header>
-        <form class="modal-form" id="shipForm">
-            <input type="hidden" name="id" value="">
-            <label class="form-group">
-                <span class="form-label">Project title</span>
-                <input class="form-input" type="text" name="title" placeholder="Sprig Maze Game" required>
-            </label>
-            <label class="form-group">
-                <span class="form-label">Shipped by</span>
-                <input class="form-input" type="text" name="member" placeholder="Member name" required>
-            </label>
-            <label class="form-group">
-                <span class="form-label">Project URL (optional)</span>
-                <input class="form-input" type="url" name="url" placeholder="https://...">
-            </label>
-            <label class="form-group">
-                <span class="form-label">Ship date</span>
-                <input class="form-input" type="date" name="date" required>
-            </label>
-            <p class="form-error" id="shipFormError" hidden></p>
-            <div class="modal-actions">
-                <button class="btn-secondary" type="button" data-modal-close>Cancel</button>
-                <button class="btn-primary" type="submit">Ship it!</button>
-            </div>
-        </form>
     </section>
 </div>
 {% endblock %}

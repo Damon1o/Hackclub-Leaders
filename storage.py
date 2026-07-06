@@ -21,9 +21,14 @@ The Airtable schema this module expects (table names overridable via env):
   Members      App Id*, Name, Email, Role, Status, Avatar, Club Email
   Events       App Id*, Title, Date, Time, Location, Type, RSVP, Attendees,
                Club Email
-  Ships        App Id*, Title, Member, URL, Date, Club Email
   Newsletters  App Id*, Title, Excerpt, Body, Date, Read Time, Read, Club Email
   Orders       App Id*, Date, Status, Items, Club Email
+  Projects     App Id*, Name, Description, URL, Repo URL, Demo URL, Thumbnail,
+               Hackatime Project, Status, Owner Email, Owner Name, Date,
+               Club Email
+
+A "ship" is just a Project with Status = "Shipped" (set when an admin approves a
+Submitted project) — there is no separate Ships table.
 
 (* = used as the lookup key; "Items" is JSON text. Checkbox fields: Public
 Directory, Email Notifications, Dark Mode Default, Newsletter Subscribed,
@@ -47,8 +52,6 @@ MEMBER_FIELDS = [('name', 'Name'), ('email', 'Email'), ('role', 'Role'),
 EVENT_FIELDS = [('title', 'Title'), ('date', 'Date'), ('time', 'Time'),
                 ('location', 'Location'), ('type', 'Type'), ('rsvp', 'RSVP'),
                 ('attendees', 'Attendees')]
-SHIP_FIELDS = [('title', 'Title'), ('member', 'Member'), ('url', 'URL'),
-               ('date', 'Date'), ('approved', 'Approved')]
 NEWSLETTER_FIELDS = [('title', 'Title'), ('excerpt', 'Excerpt'),
                      ('body', 'Body'), ('date', 'Date'),
                      ('readTime', 'Read Time'), ('read', 'Read')]
@@ -56,7 +59,10 @@ ORDER_FIELDS = [('date', 'Date'), ('status', 'Status')]
 ITEM_REQUEST_FIELDS = [('name', 'Name'), ('note', 'Note'), ('date', 'Date'),
                        ('status', 'Status')]
 PROJECT_FIELDS = [('name', 'Name'), ('description', 'Description'),
-                  ('url', 'URL'), ('status', 'Status'),
+                  ('url', 'URL'), ('repoUrl', 'Repo URL'),
+                  ('demoUrl', 'Demo URL'), ('thumbnail', 'Thumbnail'),
+                  ('hackatimeProject', 'Hackatime Project'),
+                  ('status', 'Status'),
                   ('ownerEmail', 'Owner Email'), ('ownerName', 'Owner Name'),
                   ('date', 'Date')]
 
@@ -68,8 +74,12 @@ SETTINGS_FIELDS = [('clubName', 'Club Name'), ('location', 'Location'),
                    ('darkModeDefault', 'Dark Mode Default'),
                    ('newsletterSubscribed', 'Newsletter Subscribed')]
 
-BOOL_KEYS = {'rsvp', 'read', 'approved', 'publicDirectory',
+BOOL_KEYS = {'rsvp', 'read', 'publicDirectory',
              'emailNotifications', 'darkModeDefault', 'newsletterSubscribed'}
+
+# A project counts as a "ship" (toward club levels) once an admin approves it.
+SHIPPED_STATUS = 'Shipped'
+SUBMITTED_STATUS = 'Submitted'
 
 
 class StorageError(Exception):
@@ -106,26 +116,28 @@ class SessionStorage:
         if not state:
             return []
         settings = state.get('settings') or {}
+        projects = state.get('projects') or []
         return [{
             'clubKey': self.resolve_club_key(
                 (self._session.get('user') or {}).get('email')),
             'clubName': settings.get('clubName') or 'Club',
             'location': settings.get('location') or '',
             'memberCount': len(state.get('members') or []),
-            'shipCount': len(state.get('ships') or []),
-            'pendingShips': sum(1 for s in state.get('ships') or []
-                                if not s.get('approved')),
+            'shipCount': sum(1 for p in projects
+                             if p.get('status') == SHIPPED_STATUS),
+            'pendingShips': sum(1 for p in projects
+                                if p.get('status') == SUBMITTED_STATUS),
         }]
 
-    def list_pending_ships(self):
+    def list_pending_projects(self):
         clubs = self.list_clubs()
         club_key = clubs[0]['clubKey'] if clubs else ''
         club_name = clubs[0]['clubName'] if clubs else ''
         state = self._session.get('dashboard_state') or {}
         return [
-            {'clubKey': club_key, 'clubName': club_name, 'ship': ship}
-            for ship in state.get('ships') or []
-            if not ship.get('approved')
+            {'clubKey': club_key, 'clubName': club_name, 'project': project}
+            for project in state.get('projects') or []
+            if project.get('status') == SUBMITTED_STATUS
         ]
 
 
@@ -140,17 +152,17 @@ class AirtableStorage:
         # (env suffix, default table name, state key, field pairs)
         ('MEMBERS', 'Members', 'members', MEMBER_FIELDS),
         ('EVENTS', 'Events', 'events', EVENT_FIELDS),
-        ('SHIPS', 'Ships', 'ships', SHIP_FIELDS),
         ('NEWSLETTERS', 'Newsletters', 'newsletters', NEWSLETTER_FIELDS),
         ('ORDERS', 'Orders', 'orders', ORDER_FIELDS),
         ('ITEM_REQUESTS', 'ItemRequests', 'itemRequests', ITEM_REQUEST_FIELDS),
         ('PROJECTS', 'Projects', 'projects', PROJECT_FIELDS),
     ]
 
-    # Tables added after the initial schema: if the base doesn't have them yet,
-    # the app degrades gracefully (that section is empty / not persisted)
-    # instead of erroring, so a live base keeps working until the table exists.
-    OPTIONAL_CHILD_KEYS = {'itemRequests', 'projects'}
+    # Tables that degrade gracefully if the base doesn't have them yet (that
+    # section is empty / not persisted instead of erroring). Projects is NOT
+    # here — it is the single source of truth for projects and ships, so the
+    # base must have a Projects table.
+    OPTIONAL_CHILD_KEYS = {'itemRequests'}
 
     def __init__(self, token=None, base_id=None):
         self.token = token or os.environ.get('AIRTABLE_TOKEN', '')
@@ -253,26 +265,32 @@ class AirtableStorage:
 
     def list_clubs(self):
         """Summary of every club, for the admin overview. Three full-table
-        scans (clubs, members, ships), run concurrently."""
+        scans (clubs, members, projects), run concurrently. "Ships" = projects
+        with Status "Shipped"; "pending" = projects awaiting review."""
         with ThreadPoolExecutor(max_workers=3) as pool:
             clubs_future = pool.submit(self._list_all, self.clubs_table)
             members_future = pool.submit(self._list_all, self.tables['members'])
-            ships_future = pool.submit(self._list_all, self.tables['ships'])
+            projects_future = pool.submit(self._list_all, self.tables['projects'])
             club_rows = clubs_future.result()
             member_rows = members_future.result()
-            ship_rows = ships_future.result()
+            try:
+                project_rows = projects_future.result()
+            except StorageError:
+                project_rows = []
 
         member_counts, ship_counts, pending_counts = {}, {}, {}
         for record in member_rows:
             key = (record['fields'].get('Club Email') or '').strip().lower()
             if key:
                 member_counts[key] = member_counts.get(key, 0) + 1
-        for record in ship_rows:
+        for record in project_rows:
             key = (record['fields'].get('Club Email') or '').strip().lower()
             if not key:
                 continue
-            ship_counts[key] = ship_counts.get(key, 0) + 1
-            if not record['fields'].get('Approved'):
+            status = record['fields'].get('Status')
+            if status == SHIPPED_STATUS:
+                ship_counts[key] = ship_counts.get(key, 0) + 1
+            elif status == SUBMITTED_STATUS:
                 pending_counts[key] = pending_counts.get(key, 0) + 1
 
         clubs = []
@@ -292,14 +310,17 @@ class AirtableStorage:
         clubs.sort(key=lambda c: c['clubName'].lower())
         return clubs
 
-    def list_pending_ships(self):
-        """Every unapproved ship across all clubs, newest first, for the
-        admin review queue. Clubs and ships scanned concurrently."""
+    def list_pending_projects(self):
+        """Every Submitted project across all clubs, newest first, for the
+        admin review queue. Clubs and projects scanned concurrently."""
         with ThreadPoolExecutor(max_workers=2) as pool:
             clubs_future = pool.submit(self._list_all, self.clubs_table)
-            ships_future = pool.submit(self._list_all, self.tables['ships'])
+            projects_future = pool.submit(self._list_all, self.tables['projects'])
             club_rows = clubs_future.result()
-            ship_rows = ships_future.result()
+            try:
+                project_rows = projects_future.result()
+            except StorageError:
+                project_rows = []
 
         club_names = {
             (r['fields'].get('Leader Email') or '').strip().lower():
@@ -307,21 +328,21 @@ class AirtableStorage:
             for r in club_rows
         }
         pending = []
-        for record in ship_rows:
+        for record in project_rows:
             fields = record['fields']
-            if fields.get('Approved'):
+            if fields.get('Status') != SUBMITTED_STATUS:
                 continue
             key = (fields.get('Club Email') or '').strip().lower()
-            ship = {'id': fields.get('App Id') or record['id']}
-            for item_key, field in SHIP_FIELDS:
+            project = {'id': fields.get('App Id') or record['id']}
+            for item_key, field in PROJECT_FIELDS:
                 value = fields.get(field)
-                ship[item_key] = bool(value) if item_key in BOOL_KEYS else (value or '')
+                project[item_key] = bool(value) if item_key in BOOL_KEYS else (value or '')
             pending.append({
                 'clubKey': key,
                 'clubName': club_names.get(key, key or 'Unknown club'),
-                'ship': ship,
+                'project': project,
             })
-        pending.sort(key=lambda p: p['ship'].get('date') or '', reverse=True)
+        pending.sort(key=lambda p: p['project'].get('date') or '', reverse=True)
         return pending
 
     def load_lite(self, club_key):

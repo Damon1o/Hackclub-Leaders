@@ -11,6 +11,7 @@
 
     let dashboardState = {};
     let selectedNewsletterId = '';
+    let shopFilter = 'All';
 
     try {
         dashboardState = JSON.parse(stateNode?.textContent || '{}') || {};
@@ -53,17 +54,14 @@
         return dashboardState.newsletters || [];
     }
 
-    function ships() {
-        return dashboardState.ships || [];
-    }
-
     function projects() {
         return dashboardState.projects || [];
     }
 
-    // Only admin-approved ships count toward the club level.
-    function approvedShips() {
-        return ships().filter((ship) => ship.approved);
+    // A "ship" is a project an admin approved (status "Shipped"); only these
+    // count toward the club level.
+    function shippedProjects() {
+        return projects().filter((project) => project.status === 'Shipped');
     }
 
     // Club levels mirror levels.md: 4 ships → Level 2, 8 → Level 3, and ships
@@ -73,15 +71,15 @@
 
     function shipperCount() {
         const unique = new Set();
-        approvedShips().forEach((ship) => {
-            const key = String(ship.member || '').trim().toLowerCase();
+        shippedProjects().forEach((project) => {
+            const key = String(project.ownerEmail || project.ownerName || '').trim().toLowerCase();
             if (key) unique.add(key);
         });
         return unique.size;
     }
 
     function clubLevel() {
-        const count = approvedShips().length;
+        const count = shippedProjects().length;
         const shippers = shipperCount();
         if (shippers >= SHIPPERS_REQUIRED && count >= LEVEL_THRESHOLDS[2]) return 3;
         if (shippers >= SHIPPERS_REQUIRED && count >= LEVEL_THRESHOLDS[1]) return 2;
@@ -89,7 +87,7 @@
     }
 
     function levelProgress() {
-        const count = approvedShips().length;
+        const count = shippedProjects().length;
         const shippers = shipperCount();
         const level = clubLevel();
         if (level === 3) {
@@ -419,36 +417,33 @@
         const list = $('#shipList');
         const empty = $('#shipsEmpty');
         const progress = levelProgress();
+        const shipped = shippedProjects();
 
-        // "Ships" tile counts everything logged; the level only credits
-        // approved ships, so surface both.
-        $('#shipTotal').textContent = ships().length;
+        // Ships are admin-approved projects; the level credits every one of them.
+        $('#shipTotal').textContent = shipped.length;
         $('#shipLevel').textContent = progress.level;
         $('#shipToNext').textContent = `${progress.shippers} / ${SHIPPERS_REQUIRED}`;
 
         if (!list) return;
-        list.innerHTML = ships().map((ship) => `
-            <article class="timeline-item ship-item ${ship.approved ? '' : 'is-pending'}">
+        list.innerHTML = shipped.map((project) => `
+            <article class="timeline-item ship-item">
                 <div class="timeline-date">
-                    <strong>${escapeHtml(formatDate(ship.date).split(',')[0])}</strong>
-                    <span>${escapeHtml(ship.member)}</span>
+                    <strong>${escapeHtml(formatDate(project.date).split(',')[0])}</strong>
+                    <span>${escapeHtml(project.ownerName || project.ownerEmail || '')}</span>
                 </div>
                 <div class="timeline-body">
                     <div>
-                        <h3>${escapeHtml(ship.title)}</h3>
-                        ${ship.url ? `<p><a class="text-button" href="${escapeHtml(ship.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(ship.url)}</a></p>` : ''}
+                        <h3>${escapeHtml(project.name)}</h3>
+                        ${project.description ? `<p class="project-desc">${escapeHtml(project.description)}</p>` : ''}
+                        ${projectLinks(project)}
                     </div>
                     <div class="timeline-actions">
-                        ${ship.approved
-                            ? '<span class="badge badge-up">Approved</span>'
-                            : '<span class="badge badge-pending" title="Waiting for admin review — not counting toward your level yet">Pending review</span>'}
-                        <button class="text-button" type="button" data-edit-ship="${escapeHtml(ship.id)}">Edit</button>
-                        ${isLeader ? `<button class="text-button" type="button" data-delete-ship="${escapeHtml(ship.id)}">Remove</button>` : ''}
+                        <span class="badge badge-up">Shipped</span>
                     </div>
                 </div>
             </article>
         `).join('');
-        empty.hidden = ships().length > 0;
+        empty.hidden = shipped.length > 0;
     }
 
     async function initHacktime() {
@@ -490,10 +485,202 @@
         }
     }
 
+    // A project may only be submitted for review once all four are set.
+    const PROJECT_REQUIREMENTS = ['repoUrl', 'demoUrl', 'thumbnail', 'hackatimeProject'];
+    // Cached per session so reopening the modal doesn't refetch. `null` = not
+    // loaded yet, `[]` = loaded and empty, array = loaded projects.
+    let hacktimeProjectsCache = null;
+
+    function updateThumbPreview(value) {
+        const url = String(value || '').trim();
+        const img = $('#projectThumbPreview');
+        if (img) {
+            if (url) {
+                img.src = url;
+                img.hidden = false;
+            } else {
+                img.removeAttribute('src');
+                img.hidden = true;
+            }
+        }
+        const cta = $('#projectThumbUpload .image-upload-cta');
+        if (cta) cta.textContent = url ? 'Change image…' : 'Choose image…';
+    }
+
+    const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+
+    // Send the picked file to the server, which stores it in Vercel Blob and
+    // returns a public URL we drop into the hidden `thumbnail` field.
+    async function uploadProjectImage(file) {
+        const body = new FormData();
+        body.append('image', file);
+        // No Content-Type header — the browser sets the multipart boundary.
+        const response = await fetch('/api/dashboard/projects/upload-image', {
+            method: 'POST',
+            headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
+            credentials: 'same-origin',
+            body,
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || 'Upload failed.');
+        return payload.url;
+    }
+
+    async function handleThumbFileChange(event) {
+        const input = event.target;
+        const file = input.files && input.files[0];
+        if (!file) return;
+        setFormError('projectThumbError', '');
+        if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+            setFormError('projectThumbError', 'Only PNG, JPEG, WebP, or GIF images are allowed.');
+            input.value = '';
+            return;
+        }
+        if (file.size > 4 * 1024 * 1024) {
+            setFormError('projectThumbError', 'Image must be 4 MB or smaller.');
+            input.value = '';
+            return;
+        }
+        const cta = $('#projectThumbUpload .image-upload-cta');
+        if (cta) cta.textContent = 'Uploading…';
+        const form = $('#projectForm');
+        try {
+            const url = await uploadProjectImage(file);
+            if (form) form.elements.thumbnail.value = url;
+            updateThumbPreview(url);
+            refreshProjectRequirements();
+        } catch (error) {
+            setFormError('projectThumbError', error.message);
+            updateThumbPreview(form ? form.elements.thumbnail.value : '');
+        } finally {
+            input.value = '';  // let the same file be re-selected after an error
+        }
+    }
+
+    function renderHacktimePicker(list, selected) {
+        const picker = $('#hackatimePicker');
+        if (!picker) return;
+        const selectedName = String(selected || '');
+        const projectsList = list || [];
+        let html = projectsList.map((proj) => {
+            const name = String(proj.name || '');
+            const hours = Number(proj.hours || 0);
+            const label = hours ? `${name} (${hours}h)` : name;
+            return `<button class="hacktime-pill ${name === selectedName ? 'is-selected' : ''}" type="button"
+                data-hacktime-name="${escapeHtml(name)}">${escapeHtml(label)}</button>`;
+        }).join('');
+        // Keep a previously-linked project visible even if it's not in the
+        // fetched list (e.g. no longer tracked), so editing doesn't drop it.
+        if (selectedName && !projectsList.some((p) => String(p.name || '') === selectedName)) {
+            html += `<button class="hacktime-pill is-selected" type="button"
+                data-hacktime-name="${escapeHtml(selectedName)}">${escapeHtml(selectedName)}</button>`;
+        }
+        picker.innerHTML = html
+            || '<p class="hacktime-picker-empty">No Hackatime projects yet. Log some coding time, then come back.</p>';
+    }
+
+    async function loadHacktimeProjects() {
+        const picker = $('#hackatimePicker');
+        const form = $('#projectForm');
+        if (!picker || !form) return;
+        const selected = form.elements.hackatimeProject?.value || '';
+        if (hacktimeProjectsCache) {
+            renderHacktimePicker(hacktimeProjectsCache, selected);
+            return;
+        }
+        picker.innerHTML = '<p class="hacktime-picker-loading">Loading your Hackatime projects…</p>';
+        try {
+            const data = await apiRequest('/api/dashboard/hackatime/projects');
+            hacktimeProjectsCache = data.projects || [];
+            // Re-read the selection in case the form changed while awaiting.
+            renderHacktimePicker(hacktimeProjectsCache, form.elements.hackatimeProject?.value || '');
+        } catch (error) {
+            // No Hackatime ID (400) or a transient failure — let them still
+            // save a draft; the hidden input keeps any existing selection.
+            picker.innerHTML = `<p class="hacktime-picker-empty">Add your Hackatime ID on your
+                <a class="text-button" href="/dashboard/profile">profile</a> to link a project.
+                You can still save a draft.</p>`;
+        }
+    }
+
+    // Toggles the live checklist and the Submit-for-Review button. Submit is
+    // enabled once all four requirements are set; the handler saves the draft
+    // (POSTing a brand-new project) before flipping status, so new projects
+    // don't need to be saved separately first.
+    function refreshProjectRequirements() {
+        const form = $('#projectForm');
+        if (!form) return;
+        const values = {
+            repoUrl: (form.elements.repoUrl?.value || '').trim(),
+            demoUrl: (form.elements.demoUrl?.value || '').trim(),
+            thumbnail: (form.elements.thumbnail?.value || '').trim(),
+            hackatimeProject: (form.elements.hackatimeProject?.value || '').trim(),
+        };
+        let allMet = true;
+        $$('.req-item', form).forEach((item) => {
+            const met = Boolean(values[item.dataset.req]);
+            item.classList.toggle('is-met', met);
+            if (!met) allMet = false;
+        });
+        const submitBtn = $('#projectSubmitReview');
+        if (submitBtn) submitBtn.disabled = !allMet;
+    }
+
+    // Which requirement fields a project is still missing, as short labels.
+    function projectMissing(project) {
+        const labels = {
+            repoUrl: 'repo',
+            demoUrl: 'demo',
+            thumbnail: 'thumbnail',
+            hackatimeProject: 'Hackatime project',
+        };
+        return PROJECT_REQUIREMENTS
+            .filter((key) => !String(project[key] || '').trim())
+            .map((key) => labels[key]);
+    }
+
+    // Repo / demo links shown on a project card. Falls back to a legacy `url`
+    // field for projects created before the submit-for-review fields existed.
+    function projectLinks(project) {
+        const links = [];
+        if (project.repoUrl) {
+            links.push(`<a class="text-button" href="${escapeHtml(project.repoUrl)}" target="_blank" rel="noopener noreferrer">Repo</a>`);
+        }
+        if (project.demoUrl) {
+            links.push(`<a class="text-button" href="${escapeHtml(project.demoUrl)}" target="_blank" rel="noopener noreferrer">Demo</a>`);
+        }
+        if (!links.length && project.url) {
+            links.push(`<a class="text-button" href="${escapeHtml(project.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(project.url)}</a>`);
+        }
+        return links.length ? `<div class="project-links">${links.join('')}</div>` : '';
+    }
+
+    // Persist just the project fields (shared by Save draft and Submit for
+    // Review). POSTs a new project or PATCHes an existing one; returns the
+    // API payload and whether it was an edit.
+    async function saveProjectFields(form) {
+        const data = formObject(form);
+        const isEdit = Boolean(data.id);
+        const response = await apiRequest(
+            isEdit ? `/api/dashboard/projects/${data.id}` : '/api/dashboard/projects',
+            {
+                method: isEdit ? 'PATCH' : 'POST',
+                body: {
+                    name: data.name,
+                    description: data.description,
+                    repoUrl: data.repoUrl,
+                    demoUrl: data.demoUrl,
+                    thumbnail: data.thumbnail,
+                    hackatimeProject: data.hackatimeProject,
+                },
+            });
+        return { response, isEdit };
+    }
+
     function projectStatusBadge(status) {
-        return status === 'Submitted'
-            ? '<span class="badge badge-up">Submitted</span>'
-            : '<span class="badge badge-pending">Draft</span>';
+        if (status === 'Shipped') return '<span class="badge badge-up">Shipped</span>';
+        if (status === 'Submitted') return '<span class="badge badge-up">Submitted</span>';
+        return '<span class="badge badge-pending">Draft</span>';
     }
 
     function renderProjects() {
@@ -505,23 +692,40 @@
         const submitted = projects().filter((p) => p.status === 'Submitted');
 
         if (mineList) {
-            mineList.innerHTML = mine.map((project) => `
+            mineList.innerHTML = mine.map((project) => {
+                const isSubmitted = project.status === 'Submitted';
+                const isShipped = project.status === 'Shipped';
+                const missing = projectMissing(project);
+                // Readiness only matters while a project is still a draft.
+                const readiness = (isSubmitted || isShipped)
+                    ? ''
+                    : (missing.length === 0
+                        ? '<p class="project-readiness is-ready">Ready to submit</p>'
+                        : `<p class="project-readiness">Needs ${escapeHtml(missing.join(', '))}</p>`);
+                let primaryAction = '';
+                if (isShipped) {
+                    primaryAction = '<span class="project-shipped-note">Shipped — counts toward your club level 🚀</span>';
+                } else if (isSubmitted) {
+                    primaryAction = `<button class="btn-secondary small" type="button" data-project-status="Draft" data-project-id="${escapeHtml(project.id)}">Unsubmit</button>`;
+                } else {
+                    primaryAction = `<button class="btn-primary small" type="button" data-submit-project="${escapeHtml(project.id)}">Submit to club</button>`;
+                }
+                return `
                 <article class="project-card">
                     <div class="project-card-head">
                         <h3>${escapeHtml(project.name)}</h3>
                         ${projectStatusBadge(project.status)}
                     </div>
                     ${project.description ? `<p class="project-desc">${escapeHtml(project.description)}</p>` : ''}
-                    ${project.url ? `<a class="text-button" href="${escapeHtml(project.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(project.url)}</a>` : ''}
+                    ${projectLinks(project)}
+                    ${readiness}
                     <div class="project-card-actions">
-                        ${project.status === 'Submitted'
-                            ? `<button class="btn-secondary small" type="button" data-project-status="Draft" data-project-id="${escapeHtml(project.id)}">Unsubmit</button>`
-                            : `<button class="btn-primary small" type="button" data-project-status="Submitted" data-project-id="${escapeHtml(project.id)}">Submit to club</button>`}
+                        ${primaryAction}
                         <button class="text-button" type="button" data-edit-project="${escapeHtml(project.id)}">Edit</button>
                         <button class="text-button" type="button" data-delete-project="${escapeHtml(project.id)}">Delete</button>
                     </div>
-                </article>
-            `).join('');
+                </article>`;
+            }).join('');
         }
         $('#projectsEmpty').hidden = mine.length > 0;
 
@@ -534,7 +738,7 @@
                     </div>
                     ${project.description ? `<p class="project-desc">${escapeHtml(project.description)}</p>` : ''}
                     <p class="project-owner">by ${escapeHtml(project.ownerName || project.ownerEmail || 'Member')}</p>
-                    ${project.url ? `<a class="text-button" href="${escapeHtml(project.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(project.url)}</a>` : ''}
+                    ${projectLinks(project)}
                 </article>
             `).join('');
         }
@@ -583,6 +787,28 @@
         if (node) node.textContent = joinLink();
     }
 
+    // Shop filters shown in the catalog. "All" is special (shows everything);
+    // the rest match a shop item's `filter` field. Each renders an image from
+    // SHOP_FILTER_IMAGE_BASE + "<filter>.png".
+    const SHOP_FILTERS = ['All', 'Experiences', 'Outpost', 'Hardware', 'Software', 'Swag', 'Grants'];
+    const SHOP_FILTER_IMAGE_BASE = '/static/images/shop/filters/';
+
+    function renderShopFilters() {
+        const bar = $('#shopFilters');
+        if (!bar) return;
+        bar.innerHTML = SHOP_FILTERS.map((filter) => {
+            const active = filter === shopFilter;
+            const src = `${SHOP_FILTER_IMAGE_BASE}${filter}.png`;
+            return `
+                <button class="shop-filter-chip${active ? ' is-active' : ''}" type="button" role="tab"
+                    aria-selected="${active}" data-shop-filter="${escapeHtml(filter)}">
+                    <img class="shop-filter-image" src="${escapeHtml(src)}" alt="" loading="lazy" onerror="this.remove()">
+                    <span>${escapeHtml(filter)}</span>
+                </button>
+            `;
+        }).join('');
+    }
+
     function renderShop() {
         if (page !== 'shop') return;
         const grid = $('#shopGrid');
@@ -596,18 +822,26 @@
             ? `${totalQuantity} ${totalQuantity === 1 ? 'item' : 'items'} in your cart.`
             : 'No items yet.';
 
+        renderShopFilters();
+
         if (grid) {
-            grid.innerHTML = shopItems().map((item) => `
+            const visibleItems = shopFilter === 'All'
+                ? shopItems()
+                : shopItems().filter((item) => item.filter === shopFilter);
+            grid.innerHTML = visibleItems.map((item) => `
                 <article class="item-card shop-card">
-                    <div class="product-mark product-${escapeHtml(item.accent || 'red')}">${escapeHtml(initials(item.name))}</div>
+                    <div class="shop-card-media">
+                        <img src="${escapeHtml(item['image-src'] || '')}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">
+                    </div>
                     <h3>${escapeHtml(item.name)}</h3>
-                    <p>${escapeHtml(item.description)}</p>
                     <div class="card-footer-line">
-                        <span class="shop-price">${escapeHtml(item.price)}</span>
-                        <button class="btn-secondary small" type="button" data-add-cart="${escapeHtml(item.id)}">${escapeHtml(item.action || 'Add')}</button>
+                        <span class="shop-price">${escapeHtml(item.cost)}</span>
+                        <button class="btn-secondary small" type="button" data-add-cart="${escapeHtml(item.id)}">Add</button>
                     </div>
                 </article>
             `).join('');
+            const shopEmpty = $('#shopEmpty');
+            if (shopEmpty) shopEmpty.hidden = visibleItems.length > 0;
         }
 
         if (list) {
@@ -617,7 +851,7 @@
                     <article class="cart-item">
                         <div>
                             <strong>${escapeHtml(item.name || entry.id)}</strong>
-                            <span>${escapeHtml(item.price || '')}</span>
+                            <span>${escapeHtml(item.cost || '')}</span>
                         </div>
                         <div class="quantity-control">
                             <button class="icon-button" type="button" data-cart-step="-1" data-cart-item="${escapeHtml(entry.id)}">-</button>
@@ -720,23 +954,18 @@
         button.textContent = dispatch.read ? 'Mark unread' : 'Mark read';
     }
 
-    function prepareNewShip() {
-        const form = $('#shipForm');
-        if (!form) return;
-        form.reset();
-        form.elements.id.value = '';
-        form.elements.date.value = new Date().toISOString().slice(0, 10);
-        $('#shipModalTitle').textContent = 'Log a ship';
-        setFormError('shipFormError', '');
-    }
-
     function prepareNewProject() {
         const form = $('#projectForm');
         if (!form) return;
         form.reset();
         form.elements.id.value = '';
+        form.elements.hackatimeProject.value = '';
         $('#projectModalTitle').textContent = 'New project';
         setFormError('projectFormError', '');
+        setFormError('projectThumbError', '');
+        updateThumbPreview('');
+        refreshProjectRequirements();
+        loadHacktimeProjects();
     }
 
     function prepareEditProject(projectId) {
@@ -747,25 +976,17 @@
         form.elements.id.value = project.id;
         form.elements.name.value = project.name || '';
         form.elements.description.value = project.description || '';
-        form.elements.url.value = project.url || '';
+        form.elements.repoUrl.value = project.repoUrl || '';
+        form.elements.demoUrl.value = project.demoUrl || '';
+        form.elements.thumbnail.value = project.thumbnail || '';
+        form.elements.hackatimeProject.value = project.hackatimeProject || '';
         $('#projectModalTitle').textContent = 'Edit project';
         setFormError('projectFormError', '');
+        setFormError('projectThumbError', '');
+        updateThumbPreview(project.thumbnail || '');
+        refreshProjectRequirements();
+        loadHacktimeProjects();
         openModal('projectModal');
-    }
-
-    function prepareEditShip(shipId) {
-        const form = $('#shipForm');
-        const ship = ships().find((item) => item.id === shipId);
-        if (!form || !ship) return;
-        form.reset();
-        form.elements.id.value = ship.id;
-        form.elements.title.value = ship.title || '';
-        form.elements.member.value = ship.member || '';
-        form.elements.url.value = ship.url || '';
-        form.elements.date.value = ship.date || '';
-        $('#shipModalTitle').textContent = 'Edit ship';
-        setFormError('shipFormError', '');
-        openModal('shipModal');
     }
 
     function prepareNewDispatch() {
@@ -835,7 +1056,7 @@
         $('#homeEventTotal').textContent = upcoming.length;
         $('#homeRsvpTotal').textContent = upcoming.filter((event) => event.rsvp).length;
         $('#homeOrderTotal').textContent = orders().length;
-        $('#homeShipTotal').textContent = ships().length;
+        $('#homeShipTotal').textContent = shippedProjects().length;
 
         const progress = levelProgress();
         $('#homeLevelName').textContent = `Level ${progress.level}`;
@@ -957,17 +1178,17 @@
         return data;
     }
 
-    async function adminShipAction(trigger, body, message) {
-        const [clubKey, shipId] = String(trigger.dataset.adminShip || '').split('::');
-        if (!clubKey || !shipId) return;
+    async function adminProjectAction(trigger, status, message) {
+        const [clubKey, projectId] = String(trigger.dataset.adminProject || '').split('::');
+        if (!clubKey || !projectId) return;
         trigger.disabled = true;
         try {
-            await apiRequest(`/api/admin/ships/${encodeURIComponent(clubKey)}/${encodeURIComponent(shipId)}`, {
-                method: body === null ? 'DELETE' : 'PATCH',
-                body: body === null ? undefined : body,
+            await apiRequest(`/api/admin/projects/${encodeURIComponent(clubKey)}/${encodeURIComponent(projectId)}`, {
+                method: 'PATCH',
+                body: { status },
             });
             showToast(message);
-            // Admin state lives outside dashboardState — reload to refresh.
+            // Admin pages are server-rendered outside dashboardState — reload.
             setTimeout(() => window.location.reload(), 350);
         } catch (error) {
             trigger.disabled = false;
@@ -977,19 +1198,14 @@
 
     function setupGlobalEvents() {
         document.addEventListener('click', async (event) => {
-            const approveShip = event.target.closest('[data-approve-ship]');
-            if (approveShip) {
-                await adminShipAction(approveShip, { approved: true }, 'Ship approved.');
+            const approveProject = event.target.closest('[data-approve-project]');
+            if (approveProject) {
+                await adminProjectAction(approveProject, 'Shipped', 'Project approved — shipped! 🚀');
                 return;
             }
-            const rejectShip = event.target.closest('[data-reject-ship]');
-            if (rejectShip) {
-                await adminShipAction(rejectShip, { approved: false }, 'Ship set to pending.');
-                return;
-            }
-            const removeShipAdmin = event.target.closest('[data-remove-ship-admin]');
-            if (removeShipAdmin) {
-                await adminShipAction(removeShipAdmin, null, 'Ship removed.');
+            const rejectProject = event.target.closest('[data-reject-project]');
+            if (rejectProject) {
+                await adminProjectAction(rejectProject, 'Draft', 'Project sent back to draft.');
                 return;
             }
 
@@ -999,7 +1215,6 @@
                 if (modalId === 'memberModal') prepareNewMember();
                 if (modalId === 'eventModal') prepareNewEvent();
                 if (modalId === 'dispatchModal') prepareNewDispatch();
-                if (modalId === 'shipModal') prepareNewShip();
                 if (modalId === 'projectModal') prepareNewProject();
                 openModal(modalId);
                 return;
@@ -1041,6 +1256,13 @@
                 } catch (error) {
                     showToast(error.message, 'error');
                 }
+                return;
+            }
+
+            const shopFilterChip = event.target.closest('[data-shop-filter]');
+            if (shopFilterChip) {
+                shopFilter = shopFilterChip.dataset.shopFilter;
+                renderShop();
                 return;
             }
 
@@ -1099,15 +1321,32 @@
                 return;
             }
 
-            const editShip = event.target.closest('[data-edit-ship]');
-            if (editShip) {
-                prepareEditShip(editShip.dataset.editShip);
+            const hacktimePill = event.target.closest('.hacktime-pill');
+            if (hacktimePill) {
+                const form = $('#projectForm');
+                if (!form) return;
+                const name = hacktimePill.dataset.hacktimeName || '';
+                // Toggle off if the selected pill is clicked again.
+                const clearing = form.elements.hackatimeProject.value === name;
+                form.elements.hackatimeProject.value = clearing ? '' : name;
+                $$('.hacktime-pill', form).forEach((pill) => {
+                    pill.classList.toggle('is-selected', !clearing && pill === hacktimePill);
+                });
+                refreshProjectRequirements();
                 return;
             }
 
             const editProject = event.target.closest('[data-edit-project]');
             if (editProject) {
                 prepareEditProject(editProject.dataset.editProject);
+                return;
+            }
+
+            // Card "Submit to club" opens the modal so the member can complete
+            // (and see) the requirements before actually submitting.
+            const submitProject = event.target.closest('[data-submit-project]');
+            if (submitProject) {
+                prepareEditProject(submitProject.dataset.submitProject);
                 return;
             }
 
@@ -1131,17 +1370,6 @@
                 try {
                     await apiRequest(`/api/dashboard/projects/${deleteProject.dataset.deleteProject}`, { method: 'DELETE' });
                     showToast('Project deleted.');
-                } catch (error) {
-                    showToast(error.message, 'error');
-                }
-                return;
-            }
-
-            const deleteShip = event.target.closest('[data-delete-ship]');
-            if (deleteShip) {
-                try {
-                    await apiRequest(`/api/dashboard/ships/${deleteShip.dataset.deleteShip}`, { method: 'DELETE' });
-                    showToast('Ship removed.');
                 } catch (error) {
                     showToast(error.message, 'error');
                 }
@@ -1243,37 +1471,54 @@
             }
         });
 
-        $('#shipForm')?.addEventListener('submit', async (event) => {
+        // Recompute the checklist / submit-button state as fields change.
+        $('#projectForm')?.addEventListener('input', () => {
+            refreshProjectRequirements();
+        });
+
+        // Upload the picked thumbnail file, then fill the hidden thumbnail URL.
+        $('#projectThumbFile')?.addEventListener('change', handleThumbFileChange);
+
+        // "Save draft" — persist the fields; the draft transition is never gated.
+        $('#projectForm')?.addEventListener('submit', async (event) => {
             event.preventDefault();
-            const data = formObject(event.currentTarget);
-            const isEdit = Boolean(data.id);
-            setFormError('shipFormError', '');
+            const form = event.currentTarget;
+            setFormError('projectFormError', '');
             try {
-                await apiRequest(isEdit ? `/api/dashboard/ships/${data.id}` : '/api/dashboard/ships', {
-                    method: isEdit ? 'PATCH' : 'POST',
-                    body: data,
-                });
-                closeModal('shipModal');
-                showToast(isEdit ? 'Ship updated.' : 'Ship logged. 🚀');
+                const { isEdit } = await saveProjectFields(form);
+                closeModal('projectModal');
+                showToast(isEdit ? 'Draft saved.' : 'Draft created.');
             } catch (error) {
-                setFormError('shipFormError', error.message);
+                setFormError('projectFormError', error.message);
             }
         });
 
-        $('#projectForm')?.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const data = formObject(event.currentTarget);
-            const isEdit = Boolean(data.id);
+        // "Submit for Review" — save the fields first (POST if new), then flip
+        // status. A gated 400 from the status PATCH is surfaced inline.
+        $('#projectSubmitReview')?.addEventListener('click', async () => {
+            const form = $('#projectForm');
+            const button = $('#projectSubmitReview');
+            if (!form) return;
             setFormError('projectFormError', '');
+            button.disabled = true;
             try {
-                await apiRequest(isEdit ? `/api/dashboard/projects/${data.id}` : '/api/dashboard/projects', {
-                    method: isEdit ? 'PATCH' : 'POST',
-                    body: data,
+                const { response } = await saveProjectFields(form);
+                const projectId = form.elements.id.value
+                    || response.project?.id
+                    || response.projectId;
+                if (!projectId) throw new Error('Could not find the saved project.');
+                // Persist the resolved id so a later status error leaves the
+                // form editing the now-saved project rather than a phantom new one.
+                form.elements.id.value = projectId;
+                await apiRequest(`/api/dashboard/projects/${projectId}`, {
+                    method: 'PATCH',
+                    body: { status: 'Submitted' },
                 });
                 closeModal('projectModal');
-                showToast(isEdit ? 'Project saved.' : 'Project created.');
+                showToast('Submitted for review.');
             } catch (error) {
                 setFormError('projectFormError', error.message);
+                refreshProjectRequirements();
             }
         });
 

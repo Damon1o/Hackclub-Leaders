@@ -1019,6 +1019,54 @@ body.dark-mode .badge-up {
 
 /* ── Item cards (team / shop) ─────────────────────────────────────────────── */
 
+.shop-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.shop-filter-chip {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--dash-border);
+    background: var(--dash-fill);
+    color: var(--dash-slate);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.shop-filter-image {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.shop-filter-chip:hover {
+    border-color: #ec3750;
+    color: #ec3750;
+    transform: translateY(-1px);
+}
+
+.shop-filter-chip.is-active {
+    background: var(--dash-red-gradient);
+    border-color: transparent;
+    color: #ffffff;
+}
+
+.shop-filter-chip:focus-visible {
+    outline: 2px solid #ec3750;
+    outline-offset: 2px;
+}
+
 .item-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -1040,6 +1088,22 @@ body.dark-mode .badge-up {
 .item-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--dash-shadow-lg);
+}
+
+.shop-card-media {
+    height: 140px;
+    border-radius: 10px;
+    background: var(--dash-fill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.shop-card-media img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .item-card h3 {
@@ -1485,6 +1549,38 @@ body.dark-mode .shop-price {
     color: var(--dash-muted);
 }
 
+/* ── Hackatime connect (profile) ──────────────────────────────────────────── */
+
+.hackatime-connect {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.hackatime-connected {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #188362;
+}
+
+.hackatime-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #33d6a6;
+    flex: 0 0 9px;
+}
+
+/* When connect is available, the manual ID field is a quiet fallback. */
+.hackatime-manual-hint:empty {
+    display: none;
+}
+
 /* ── Projects ─────────────────────────────────────────────────────────────── */
 
 .project-grid {
@@ -1554,8 +1650,13 @@ body.dark-mode .shop-price {
 
 .request-item-fields {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.request-item-reason .form-input {
+    min-height: 84px;
+    resize: vertical;
 }
 
 .request-item-form {
@@ -1563,7 +1664,7 @@ body.dark-mode .shop-price {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    align-items: flex-start;
+    align-items: stretch;
 }
 
 .request-item-list {
@@ -1605,12 +1706,6 @@ body.dark-mode .shop-price {
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
-}
-
-@media (max-width: 640px) {
-    .request-item-fields {
-        grid-template-columns: 1fr;
-    }
 }
 
 /* ── Newsletters ──────────────────────────────────────────────────────────── */
@@ -2115,6 +2210,198 @@ input:checked + .toggle-slider:before {
     margin-right: auto;
 }
 
+/* ── Tall / scrollable modal + project-form components ────────────────────────
+   The project modal packs in many fields (Hackatime picker, requirements
+   checklist, thumbnail preview) and grows tall. Turn the modal into a flex
+   column so the header and footer stay pinned while a middle region scrolls.
+   All rules here are additive: short modals that use plain `.modal-form` keep
+   working — only modals containing `.modal-scroll-body` opt into the layout. */
+
+.dashboard-modal {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Widen only the big modal; simple confirm/edit modals keep their 560px. */
+.dashboard-modal:has(.modal-scroll-body) {
+    width: min(640px, 100%);
+}
+
+.dashboard-modal .modal-header {
+    flex: 0 0 auto;
+}
+
+/* The one scrolling region. `min-height: 0` lets this flex child shrink below
+   its content height so it — not the whole modal — owns the scrollbar. */
+.modal-scroll-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 22px;
+    display: grid;
+    gap: 16px;
+}
+
+/* Pinned footer. Scoped to a direct child so it only styles the new modal's
+   detached actions bar, never a `.modal-actions` nested inside `.modal-form`. */
+.dashboard-modal > .modal-actions {
+    flex: 0 0 auto;
+    padding: 16px 22px;
+    border-top: 1px solid var(--dash-border);
+    background: var(--dash-card);
+    border-radius: 0 0 16px 16px;
+}
+
+/* Requirements checklist — unmet items read muted with a hollow circle; met
+   items turn green with a filled check, giving a clear at-a-glance diff. */
+.req-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.req-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.35;
+    color: var(--dash-muted);
+    transition: color 0.15s ease;
+}
+
+.req-check {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--dash-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    line-height: 1;
+    color: transparent;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.req-item.is-met {
+    color: #188362;
+}
+
+.req-item.is-met .req-check {
+    background: #188362;
+    border-color: #188362;
+    color: #fff;
+}
+
+.req-item.is-met .req-check::before {
+    content: "\2713";
+}
+
+body.dark-mode .req-item.is-met {
+    color: #33d6a6;
+}
+
+body.dark-mode .req-item.is-met .req-check {
+    background: #33d6a6;
+    border-color: #33d6a6;
+    color: #121217;
+}
+
+/* Hackatime picker — a wrap of pill buttons; the selected one fills red. */
+.hacktime-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hacktime-pill {
+    font: inherit;
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--dash-border);
+    background: var(--dash-fill);
+    color: var(--dash-slate);
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.15s ease,
+        border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hacktime-pill:hover {
+    border-color: var(--hackclub-red);
+    transform: translateY(-1px);
+}
+
+.hacktime-pill.is-selected {
+    background: var(--dash-red-gradient);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(236, 55, 80, 0.3);
+}
+
+.hacktime-pill:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Shown when no Hackatime projects are available to pick. */
+.hacktime-empty {
+    font-size: 13px;
+    font-style: italic;
+    color: var(--dash-muted);
+}
+
+/* Thumbnail preview — hides itself until JS gives it a real src. */
+.image-upload {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    margin-top: 6px;
+    border: 1.5px dashed var(--dash-border);
+    border-radius: 12px;
+    background: var(--dash-fill);
+    color: var(--dash-slate);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.image-upload:hover {
+    border-color: #ec3750;
+    color: #ec3750;
+}
+
+.thumb-preview {
+    display: block;
+    max-width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid var(--dash-border);
+    margin-top: 8px;
+}
+
+img.thumb-preview:not([src]),
+img.thumb-preview[src=""] {
+    display: none;
+}
+
+/* Gated submit button — `.btn-primary:disabled` (defined above) already dims
+   and blocks it; mirror that for any control marked with [disabled] so the
+   Submit-for-Review button reads as inert until the checklist is satisfied. */
+.modal-scroll-body ~ .modal-actions .btn-primary[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* ── Flash & toast ────────────────────────────────────────────────────────── */
 
 .flash-container {
@@ -2396,6 +2683,20 @@ input:checked + .toggle-slider:before {
     .modal-backdrop {
         align-items: flex-end;
         padding: 12px;
+    }
+
+    /* Bottom-sheet on mobile: the tall modal takes full width and its scroll
+       body / footer tighten up so the whole thing fits within 92vh. */
+    .dashboard-modal:has(.modal-scroll-body) {
+        width: 100%;
+    }
+
+    .modal-scroll-body {
+        padding: 18px;
+    }
+
+    .dashboard-modal > .modal-actions {
+        padding: 14px 18px;
     }
 
     .level-band {

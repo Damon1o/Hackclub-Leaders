@@ -18,30 +18,11 @@
                 <p>Add items to your cart and check out for your club.</p>
             </div>
         </div>
+        <div class="shop-filters" id="shopFilters" role="tablist" aria-label="Filter shop items"></div>
         <div class="item-grid" id="shopGrid"></div>
-
-        <div class="request-item-block">
-            <div class="panel-heading compact">
-                <div>
-                    <h2>Can't find it? Request an item</h2>
-                    <p>Suggest something you'd like added to the shop.</p>
-                </div>
-            </div>
-            <form class="request-item-form" id="itemRequestForm">
-                <div class="request-item-fields">
-                    <label class="form-group">
-                        <span class="form-label">Item name</span>
-                        <input class="form-input" type="text" name="name" placeholder="e.g. Soldering iron kit" required>
-                    </label>
-                    <label class="form-group">
-                        <span class="form-label">Why do you need it? (optional)</span>
-                        <input class="form-input" type="text" name="note" placeholder="A quick note for the team">
-                    </label>
-                </div>
-                <p class="form-error" id="itemRequestFormError" hidden></p>
-                <button class="btn-secondary" type="submit">Submit request</button>
-            </form>
-            <div class="request-item-list" id="itemRequestList"></div>
+        <div class="empty-state tight" id="shopEmpty" hidden>
+            <h3>Nothing here yet</h3>
+            <p>No items in this category right now.</p>
         </div>
     </section>
 
@@ -59,6 +40,30 @@
         </div>
         <button class="btn-primary full-width" type="button" id="checkoutButton">Place order</button>
         <div class="order-history" id="orderHistory"></div>
+
+        <div class="request-item-block">
+            <div class="panel-heading compact">
+                <div>
+                    <h2>Can't find it? Request an item</h2>
+                    <p>Suggest something you'd like added to the shop.</p>
+                </div>
+            </div>
+            <form class="request-item-form" id="itemRequestForm">
+                <div class="request-item-fields">
+                    <label class="form-group">
+                        <span class="form-label">Item name</span>
+                        <input class="form-input" type="text" name="name" placeholder="e.g. Soldering iron kit" required>
+                    </label>
+                    <label class="form-group request-item-reason">
+                        <span class="form-label">Why do you need it? (optional)</span>
+                        <textarea class="form-input" name="note" rows="3" placeholder="A quick note on how this would help your club."></textarea>
+                    </label>
+                </div>
+                <p class="form-error" id="itemRequestFormError" hidden></p>
+                <button class="btn-secondary full-width" type="submit">Submit request</button>
+            </form>
+            <div class="request-item-list" id="itemRequestList"></div>
+        </div>
     </aside>
 </div>
 {% endblock %}

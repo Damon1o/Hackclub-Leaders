@@ -12,8 +12,8 @@
             <strong>{{ clubs | length }}</strong>
         </article>
         <article class="metric-tile">
-            <span class="metric-label">Ships pending review</span>
-            <strong>{{ pending_ships | length }}</strong>
+            <span class="metric-label">Projects pending review</span>
+            <strong>{{ pending_projects | length }}</strong>
         </article>
         <article class="metric-tile">
             <span class="metric-label">Total members</span>
@@ -24,30 +24,34 @@
     <section class="card-modern dashboard-panel dashboard-panel-full">
         <div class="panel-heading">
             <div>
-                <h2>Ship review queue</h2>
-                <p>Ships only count toward a club's level once you approve them.</p>
+                <h2>Project review queue</h2>
+                <p>Submitted projects only count toward a club's level once you approve them.</p>
             </div>
         </div>
 
-        {% if pending_ships %}
+        {% if pending_projects %}
         <div class="admin-review-list">
-            {% for item in pending_ships %}
+            {% for item in pending_projects %}
             <article class="admin-review-item">
                 <div class="admin-review-main">
-                    <h3>{{ item.ship.title }}</h3>
+                    <h3>{{ item.project.name }}</h3>
                     <p class="admin-review-meta">
                         <a href="{{ url_for('dashboard_admin_club', club_key=item.clubKey) }}">{{ item.clubName }}</a>
-                        · {{ item.ship.member }} · {{ item.ship.date }}
+                        · {{ item.project.ownerName or item.project.ownerEmail }} · {{ item.project.date }}
                     </p>
-                    {% if item.ship.url %}
-                    <a class="text-button" href="{{ item.ship.url }}" target="_blank" rel="noopener noreferrer">{{ item.ship.url }}</a>
+                    {% if item.project.description %}<p class="admin-review-desc">{{ item.project.description }}</p>{% endif %}
+                    {% if item.project.repoUrl %}
+                    <a class="text-button" href="{{ item.project.repoUrl }}" target="_blank" rel="noopener noreferrer">Repo →</a>
+                    {% endif %}
+                    {% if item.project.demoUrl %}
+                    <a class="text-button" href="{{ item.project.demoUrl }}" target="_blank" rel="noopener noreferrer">Demo →</a>
                     {% endif %}
                 </div>
                 <div class="admin-review-actions">
                     <button class="btn-primary small" type="button"
-                        data-approve-ship data-admin-ship="{{ item.clubKey }}::{{ item.ship.id }}">Approve</button>
+                        data-approve-project data-admin-project="{{ item.clubKey }}::{{ item.project.id }}">Approve</button>
                     <button class="btn-secondary small" type="button"
-                        data-remove-ship-admin data-admin-ship="{{ item.clubKey }}::{{ item.ship.id }}">Reject</button>
+                        data-reject-project data-admin-project="{{ item.clubKey }}::{{ item.project.id }}">Reject</button>
                 </div>
             </article>
             {% endfor %}
@@ -55,7 +59,7 @@
         {% else %}
         <div class="empty-state">
             <h3>Nothing to review</h3>
-            <p>Every shipped project has been reviewed. New submissions will appear here.</p>
+            <p>Every submitted project has been reviewed. New submissions will appear here.</p>
         </div>
         {% endif %}
     </section>

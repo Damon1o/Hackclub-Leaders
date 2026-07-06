@@ -24,7 +24,6 @@ ruvector.db
 /$(({}))
 /$(wc
 /.modal-actions
-/.venv/
 /0.05
 /400
 /draw(0))

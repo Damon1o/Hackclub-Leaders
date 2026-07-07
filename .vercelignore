@@ -2,3 +2,12 @@
 __pycache__
 everything-claude-code
 .git
+scripts
+.claude
+.claude-flow
+.swarm
+CLAUDE.md
+YSWS_FEATURES.md
+ruvector.db
+*.pyc
+*.lock

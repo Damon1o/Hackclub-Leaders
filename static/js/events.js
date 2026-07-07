@@ -661,6 +661,15 @@
             <circle cx="12" cy="10" r="3"></circle>
         </svg>`;
 
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     function createCard(event) {
         const card = document.createElement('a');
         card.href = event.url;
@@ -677,34 +686,34 @@
         }
 
         const visualContent = event.logo !== 'N/A'
-            ? `<img src="${event.logo}" alt="${event.title} logo" class="event-card-logo">`
-            : (event.image === 'N/A' ? `<span class="event-card-fallback">${event.title}</span>` : '');
+            ? `<img src="${escapeHtml(event.logo)}" alt="${escapeHtml(event.title)} logo" class="event-card-logo">`
+            : (event.image === 'N/A' ? `<span class="event-card-fallback">${escapeHtml(event.title)}</span>` : '');
 
         card.innerHTML = `
             <div class="event-card-visual" ${style}>
                 ${visualContent}
             </div>
             <div class="event-card-body">
-                <div class="event-card-type">${event.type}</div>
-                <h3 class="event-card-title">${event.title}</h3>
-                <p class="event-card-description">${event.description}</p>
+                <div class="event-card-type">${escapeHtml(event.type)}</div>
+                <h3 class="event-card-title">${escapeHtml(event.title)}</h3>
+                <p class="event-card-description">${escapeHtml(event.description)}</p>
                 <div class="event-card-meta">
                     <div class="event-card-meta-item">
                         ${clockIcon}
-                        <span>${event.duration}</span>
+                        <span>${escapeHtml(event.duration)}</span>
                     </div>
                     <div class="event-card-meta-item">
                         ${calendarIcon}
-                        <span>${event.timeline}</span>
+                        <span>${escapeHtml(event.timeline)}</span>
                     </div>
                     <div class="event-card-meta-item">
                         ${locationIcon}
-                        <span>${event.where}</span>
+                        <span>${escapeHtml(event.where)}</span>
                     </div>
                 </div>
             </div>
             <div class="event-card-footer">
-                <span class="event-card-register">${event.cta}</span>
+                <span class="event-card-register">${escapeHtml(event.cta)}</span>
             </div>
         `;
         return card;
@@ -714,8 +723,8 @@
         let visibleCount = 0;
         cards.forEach(card => {
             const tags = card.dataset.tags.split(',');
-            const title = card.querySelector('.event-card-title').textContent.toLowerCase();
-            const desc = card.querySelector('.event-card-description').textContent.toLowerCase();
+            const title = (card.querySelector('.event-card-title')?.textContent ?? '').toLowerCase();
+            const desc = (card.querySelector('.event-card-description')?.textContent ?? '').toLowerCase();
 
             const matchesFilter = activeFilter === 'all' || tags.includes(activeFilter);
             const matchesSearch = !searchQuery || title.includes(searchQuery) || desc.includes(searchQuery);

@@ -1,6 +1,6 @@
 // Club Map — renders every active Hack Club from the official directory
 // (same API the hackclub.github.io/map site uses).
-(function () {
+(async function () {
     const el = document.getElementById('clubMap');
     if (!el || typeof L === 'undefined') return;
 
@@ -19,7 +19,6 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    // One shared canvas renderer keeps ~1,400 markers fast.
     const renderer = L.canvas({ padding: 0.4 });
 
     function escapeHtml(value) {
@@ -40,46 +39,42 @@
         }
     }
 
-    fetch('https://clubapi.hackclub.com/clubs/map')
-        .then((response) => {
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return response.json();
-        })
-        .then((clubs) => {
-            let plotted = 0;
-            clubs.forEach((club) => {
-                const fields = club.fields || {};
-                if (fields.club_status !== 'Active') return;
-                const lat = Number(fields.venue_lat_fuzz);
-                const lng = Number(fields.venue_lng_fuzz);
-                // A few directory rows carry malformed packed coordinates
-                // (e.g. 423510.19) — skip anything outside real degrees.
-                if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-                if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return;
+    try {
+        const response = await fetch('https://clubapi.hackclub.com/clubs/map');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const clubs = await response.json();
 
-                const marker = L.circleMarker([lat, lng], {
-                    renderer,
-                    radius: 5,
-                    weight: 1.5,
-                    color: '#ffffff',
-                    fillColor: '#ec3750',
-                    fillOpacity: 0.9,
-                });
-                const website = safeUrl(fields.club_website);
-                marker.bindPopup(`
-                    <strong>${escapeHtml(fields.club_name || 'Hack Club')}</strong>
-                    ${website ? `<br><a href="${website}" target="_blank" rel="noopener noreferrer">View website</a>` : ''}
-                `);
-                marker.addTo(map);
-                plotted += 1;
+        let plotted = 0;
+        clubs.forEach((club) => {
+            const fields = club.fields || {};
+            if (fields.club_status !== 'Active') return;
+            const lat = Number(fields.venue_lat_fuzz);
+            const lng = Number(fields.venue_lng_fuzz);
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+            if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return;
+
+            const marker = L.circleMarker([lat, lng], {
+                renderer,
+                radius: 5,
+                weight: 1.5,
+                color: '#ffffff',
+                fillColor: '#ec3750',
+                fillOpacity: 0.9,
             });
-            if (countLabel) {
-                countLabel.textContent = `${plotted.toLocaleString()} active clubs around the world.`;
-            }
-        })
-        .catch(() => {
-            if (countLabel) countLabel.textContent = '';
-            if (errorPanel) errorPanel.hidden = false;
-            el.hidden = true;
+            const website = safeUrl(fields.club_website);
+            marker.bindPopup(`
+                <strong>${escapeHtml(fields.club_name || 'Hack Club')}</strong>
+                ${website ? `<br><a href="${website}" target="_blank" rel="noopener noreferrer">View website</a>` : ''}
+            `);
+            marker.addTo(map);
+            plotted += 1;
         });
-}());
+        if (countLabel) {
+            countLabel.textContent = `${plotted.toLocaleString()} active clubs around the world.`;
+        }
+    } catch (error) {
+        if (countLabel) countLabel.textContent = '';
+        if (errorPanel) errorPanel.hidden = false;
+        el.hidden = true;
+    }
+})();

@@ -43,15 +43,18 @@
     });
 })();
 
-// Email "Join!" CTAs — hand the visitor to the sign-in page to continue with
-// Hack Club Auth. The email just personalizes the hand-off.
 (function () {
     function wireJoin(inputSelector, buttonSelector) {
         const input = document.querySelector(inputSelector);
         const button = document.querySelector(buttonSelector);
         if (!input || !button) return;
 
-        function join() {
+        function redirectWithEmail(email) {
+            const query = email ? `?email=${encodeURIComponent(email)}` : '';
+            window.location.href = `/sign-in${query}`;
+        }
+
+        async function join() {
             const email = input.value.trim();
             if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 input.setCustomValidity('Enter a valid email like orpheus@hackclub.com');
@@ -59,8 +62,21 @@
                 return;
             }
             input.setCustomValidity('');
-            const query = email ? `?email=${encodeURIComponent(email)}` : '';
-            window.location.href = `/sign-in${query}`;
+            if (!email) { redirectWithEmail(''); return; }
+
+            button.disabled = true;
+            button.textContent = 'Checking…';
+            try {
+                const response = await fetch(`/api/check-email?email=${encodeURIComponent(email)}`);
+                const data = await response.json().catch(() => ({}));
+                if (data.found) {
+                    window.location.href = `/auth/hackclub?intent=leader&login_hint=${encodeURIComponent(email)}`;
+                } else {
+                    redirectWithEmail(email);
+                }
+            } catch (error) {
+                redirectWithEmail(email);
+            }
         }
 
         button.addEventListener('click', event => {

@@ -192,6 +192,7 @@
         dashboardState = nextState || dashboardState;
         cacheState(dashboardState);
         renderPage();
+        initAvatarUploads();
     }
 
     async function refreshState() {
@@ -235,6 +236,7 @@
         const toast = document.createElement('div');
         toast.className = `toast toast-${tone}`;
         toast.textContent = message;
+        toast.setAttribute('role', 'alert');
         region.appendChild(toast);
         window.setTimeout(() => {
             toast.classList.add('toast-leaving');
@@ -557,6 +559,89 @@
         }
     }
 
+    function initAvatarUploads() {
+        $$('input[name="avatar"]').forEach(function (input) {
+            const formGroup = input.closest('.form-group');
+            if (!formGroup) return;
+            if (formGroup.querySelector('.avatar-upload-btn')) return;
+
+            const row = document.createElement('div');
+            row.className = 'avatar-upload-row';
+
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/png,image/jpeg,image/webp,image/gif';
+            fileInput.hidden = true;
+
+            const uploadBtn = document.createElement('button');
+            uploadBtn.type = 'button';
+            uploadBtn.className = 'btn-secondary small avatar-upload-btn';
+            uploadBtn.textContent = 'Upload photo';
+
+            const statusText = document.createElement('span');
+            statusText.className = 'avatar-upload-status';
+
+            uploadBtn.addEventListener('click', function () { fileInput.click(); });
+
+            fileInput.addEventListener('change', async function () {
+                const file = fileInput.files && fileInput.files[0];
+                if (!file) return;
+                if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+                    statusText.textContent = 'Only PNG, JPEG, WebP, or GIF.';
+                    fileInput.value = '';
+                    return;
+                }
+                if (file.size > 4 * 1024 * 1024) {
+                    statusText.textContent = 'Max 4 MB.';
+                    fileInput.value = '';
+                    return;
+                }
+                uploadBtn.disabled = true;
+                statusText.textContent = 'Uploading...';
+                try {
+                    const body = new FormData();
+                    body.append('image', file);
+                    const response = await fetch('/api/dashboard/upload-image', {
+                        method: 'POST',
+                        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
+                        credentials: 'same-origin',
+                        body,
+                    });
+                    const payload = await response.json().catch(() => ({}));
+                    if (!response.ok) throw new Error(payload.error || 'Upload failed.');
+                    input.value = payload.url;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    statusText.textContent = 'Uploaded.';
+                    updateNearbyAvatarPreview(input);
+                } catch (error) {
+                    statusText.textContent = error.message;
+                } finally {
+                    uploadBtn.disabled = false;
+                    fileInput.value = '';
+                }
+            });
+
+            row.appendChild(uploadBtn);
+            row.appendChild(fileInput);
+            row.appendChild(statusText);
+            formGroup.appendChild(row);
+        });
+    }
+
+    function updateNearbyAvatarPreview(input) {
+        const url = String(input.value || '').trim();
+        const page = document.querySelector('[data-dashboard-page]')?.dataset.dashboardPage;
+        const img =
+            $('#profilePreviewAvatar') ||
+            $('#clubPreviewAvatar') ||
+            document.querySelector('.club-preview-avatar');
+        if (!img) return;
+        img.textContent = url ? '' : 'H';
+        const safeUrl = url.replace(/\\/g, '%5C').replace(/"/g, '%22');
+        img.style.backgroundImage = safeUrl ? `url("${safeUrl}")` : '';
+        img.classList.toggle('has-image', Boolean(url));
+    }
+
     function renderHacktimePicker(list, selected) {
         const picker = $('#hackatimePicker');
         if (!picker) return;
@@ -704,7 +789,7 @@
                         : `<p class="project-readiness">Needs ${escapeHtml(missing.join(', '))}</p>`);
                 let primaryAction = '';
                 if (isShipped) {
-                    primaryAction = '<span class="project-shipped-note">Shipped — counts toward your club level 🚀</span>';
+                    primaryAction = '<span class="project-shipped-note"><i class="fa-solid fa-rocket"></i> Shipped — counts toward your club level</span>';
                 } else if (isSubmitted) {
                     primaryAction = `<button class="btn-secondary small" type="button" data-project-status="Draft" data-project-id="${escapeHtml(project.id)}">Unsubmit</button>`;
                 } else {
@@ -1200,7 +1285,7 @@
         document.addEventListener('click', async (event) => {
             const approveProject = event.target.closest('[data-approve-project]');
             if (approveProject) {
-                await adminProjectAction(approveProject, 'Shipped', 'Project approved — shipped! 🚀');
+                await adminProjectAction(approveProject, 'Shipped', 'Project approved — shipped!');
                 return;
             }
             const rejectProject = event.target.closest('[data-reject-project]');
@@ -1834,6 +1919,7 @@
         }
         renderPage();
         initHacktime();
+        initAvatarUploads();
         if (clientDataPage) refreshState();
     }
 

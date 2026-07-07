@@ -1,0 +1,54 @@
+[project]
+name = "hackclub-leaders"
+version = "0.1.0"
+description = "Hack Club Leaders Portal — club management dashboard"
+requires-python = ">=3.10"
+dependencies = [
+    "flask>=3.1",
+    "requests>=2.32",
+    "python-dotenv>=1.1",
+    "werkzeug>=3.1",
+    "urllib3>=2.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0",
+    "ruff>=0.3",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort (import ordering)
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long (handled by line-length)
+    "N802",  # function name should be lowercase (Flask views are caps)
+    "N803",  # argument name should be lowercase
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "ANN"]
+"scripts/*" = ["D"]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]

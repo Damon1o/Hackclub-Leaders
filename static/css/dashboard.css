@@ -1905,6 +1905,18 @@ body.dark-mode .form-error {
     color: var(--dash-muted);
 }
 
+.avatar-upload-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.avatar-upload-status {
+    font-size: 12px;
+    color: var(--dash-muted);
+}
+
 /* ── Profile (self settings) ──────────────────────────────────────────────── */
 
 .profile-role-line {

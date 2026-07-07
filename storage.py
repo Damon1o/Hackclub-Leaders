@@ -110,6 +110,9 @@ class SessionStorage:
         # Cookie state is per-browser, so there is no other club to find.
         return None
 
+    def find_club_by_member_email(self, email):
+        return None
+
     def list_clubs(self):
         # Only this browser's own club exists in session mode.
         state = self._session.get('dashboard_state')
@@ -261,6 +264,22 @@ class AirtableStorage:
             leader = (record['fields'].get('Leader Email') or '').strip().lower()
             if leader:
                 return leader
+        return None
+
+    def find_club_by_member_email(self, email):
+        """Check whether any club roster includes this email. Returns the
+        first matching club key or None."""
+        email = (email or '').strip().lower()
+        if not email:
+            return None
+        try:
+            records = self._list(self.tables['members'], 'Email', email)
+        except StorageError:
+            return None
+        for record in records:
+            club_key = (record['fields'].get('Club Email') or '').strip().lower()
+            if club_key:
+                return club_key
         return None
 
     def list_clubs(self):

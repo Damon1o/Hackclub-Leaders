@@ -167,7 +167,7 @@
                         Starting or running a club? Sign in to open your HQ —
                         plan meetings, log ships, and climb club levels.
                     </p>
-                    <a href="{{ url_for('hackclub_login', intent='leader') }}" class="sign-in-hc-btn role-btn">
+                    <a href="{{ url_for('hackclub_login', intent='leader') }}{% if hint_email %}&login_hint={{ hint_email | urlencode }}{% endif %}" class="sign-in-hc-btn role-btn">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <path fill="white" d="M4 3h16v13l-8 5-8-5V3z" />
                         </svg>
@@ -188,6 +188,7 @@
                     </p>
                     <form class="role-join-form" method="get" action="{{ url_for('hackclub_login') }}">
                         <input type="hidden" name="intent" value="member">
+                        {% if hint_email %}<input type="hidden" name="login_hint" value="{{ hint_email }}">{% endif %}
                         <label for="memberJoinCode" class="sr-only">Club join code</label>
                         <input type="text" id="memberJoinCode" name="join" class="welcome-code-input"
                             placeholder="Join code (optional)" autocomplete="off"

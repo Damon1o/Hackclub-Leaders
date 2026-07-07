@@ -1,6 +1,7 @@
 __pycache__/
 .env
 .env.*
+!.env.example
 .agent/
 .idea/
 .vscode/
@@ -33,8 +34,6 @@ ruvector.db
 /SHIPPERS_REQUIRED
 /ship.approved)
 /`token`
-/{,+
-/{,-
 
 # Ruflo / claude-flow runtime lock
 .claude/scheduled_tasks.lock

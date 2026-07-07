@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    var targets = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+    const targets = Array.from(document.querySelectorAll('.reveal'));
     if (!targets.length) return;
 
     if (!('IntersectionObserver' in window) ||
@@ -10,7 +10,7 @@
         return;
     }
 
-    var observer = new IntersectionObserver(function (entries) {
+    const observer = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');

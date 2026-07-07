@@ -12,6 +12,11 @@ venv/
 .venv/
 everything-claude-code/
 
+# Untracked local tool config dirs (graph-extraction excludes live in .graphifyignore;
+# .claude/ is intentionally NOT ignored here — its skills/agents/commands are tracked)
+.opencode/
+.agents/
+
 # Vercel CLI artifacts
 .vercel/
 

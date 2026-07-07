@@ -1,0 +1,317 @@
+{
+  "communities": {
+    "0": [
+      "helpers",
+      "helpers_admin_required",
+      "helpers_clean_text",
+      "helpers_event_from_payload",
+      "helpers_find_by_id",
+      "helpers_find_club_by_project",
+      "helpers_generate_join_code",
+      "helpers_item_id",
+      "helpers_join_missing",
+      "helpers_json_error",
+      "helpers_json_payload",
+      "helpers_load_admin_club",
+      "helpers_load_shop_items",
+      "helpers_login_required",
+      "helpers_owned_project_or_error",
+      "helpers_parse_bool",
+      "helpers_persist_club",
+      "helpers_require_admin_api",
+      "helpers_require_dashboard_csrf",
+      "helpers_require_leader_api",
+      "helpers_slugify",
+      "helpers_sniff_image",
+      "helpers_unique_join_code",
+      "helpers_upload_to_blob",
+      "helpers_viewer_email",
+      "routes_admin",
+      "routes_admin_register",
+      "routes_api",
+      "routes_api_register",
+      "routes_auth",
+      "routes_auth_register",
+      "routes_club",
+      "routes_club_register"
+    ],
+    "1": [
+      "scripts_cleanup_test_data",
+      "scripts_cleanup_test_data_main",
+      "scripts_cleanup_test_data_rationale_1",
+      "storage_airtablestorage",
+      "storage_airtablestorage_batch",
+      "storage_airtablestorage_escape_formula_value",
+      "storage_airtablestorage_field_changed",
+      "storage_airtablestorage_find_club_by_join_code",
+      "storage_airtablestorage_find_club_by_member_email",
+      "storage_airtablestorage_item_fields",
+      "storage_airtablestorage_list",
+      "storage_airtablestorage_list_all",
+      "storage_airtablestorage_list_pending_projects",
+      "storage_airtablestorage_load",
+      "storage_airtablestorage_load_lite",
+      "storage_airtablestorage_paged",
+      "storage_airtablestorage_request",
+      "storage_airtablestorage_resolve_club_key",
+      "storage_airtablestorage_save",
+      "storage_airtablestorage_save_club",
+      "storage_airtablestorage_sync_children",
+      "storage_rationale_148",
+      "storage_rationale_212",
+      "storage_rationale_218",
+      "storage_rationale_233",
+      "storage_rationale_245",
+      "storage_rationale_258",
+      "storage_rationale_270",
+      "storage_rationale_333",
+      "storage_rationale_368",
+      "storage_sessionstorage_list_clubs"
+    ],
+    "2": [
+      "storage",
+      "storage_airtablestorage_list_clubs",
+      "storage_make_storage",
+      "storage_rationale_1",
+      "storage_rationale_286",
+      "storage_rationale_544",
+      "storage_rationale_90",
+      "storage_sessionstorage",
+      "storage_sessionstorage_find_club_by_join_code",
+      "storage_sessionstorage_find_club_by_member_email",
+      "storage_sessionstorage_init",
+      "storage_sessionstorage_list_pending_projects",
+      "storage_sessionstorage_load",
+      "storage_sessionstorage_load_lite",
+      "storage_sessionstorage_resolve_club_key",
+      "storage_sessionstorage_save"
+    ],
+    "3": [
+      "app",
+      "app_handle_state_too_large",
+      "app_handle_storage_error",
+      "app_inject_user",
+      "app_payload_too_large",
+      "helpers_get_csrf_token",
+      "helpers_is_admin",
+      "helpers_viewer_is_leader",
+      "helpers_viewer_role",
+      "tests_conftest",
+      "tests_conftest_admin_client",
+      "tests_conftest_auth_client",
+      "tests_conftest_client",
+      "tests_conftest_test_config"
+    ],
+    "4": [
+      "exception",
+      "helpers_statetoolarge",
+      "storage_airtablestorage_init",
+      "storage_rationale_86",
+      "storage_storageerror",
+      "tests_test_api",
+      "tests_test_api_test_api_endpoints_require_auth",
+      "tests_test_api_test_csrf_required_for_mutations",
+      "tests_test_api_test_error_handlers",
+      "tests_test_api_test_hackatime_endpoints_require_auth",
+      "tests_test_api_test_json_payload_rejects_bad_image",
+      "tests_test_api_test_state_endpoint_no_club_returns_403",
+      "tests_test_api_test_state_endpoint_requires_login"
+    ],
+    "5": [
+      "tests_test_public",
+      "tests_test_public_test_dashboard_redirects_to_welcome_when_no_club",
+      "tests_test_public_test_dashboard_redirects_unauthenticated",
+      "tests_test_public_test_dashboard_subpages_redirect_to_welcome_when_no_club",
+      "tests_test_public_test_dashboard_subpages_require_login",
+      "tests_test_public_test_events_page",
+      "tests_test_public_test_index",
+      "tests_test_public_test_join_code_page",
+      "tests_test_public_test_join_code_page_has_code",
+      "tests_test_public_test_sign_in_page",
+      "tests_test_public_test_sign_in_redirects_if_logged_in",
+      "tests_test_public_test_sign_out_clears_session",
+      "tests_test_public_test_welcome_page_shows_for_user_without_club"
+    ],
+    "6": [
+      "helpers_club_key",
+      "helpers_default_dashboard_state",
+      "helpers_get_dashboard_state",
+      "helpers_leader_required",
+      "helpers_save_dashboard_state",
+      "helpers_state_cookie_size",
+      "helpers_storage",
+      "helpers_viewer_club_lite",
+      "helpers_viewer_club_state",
+      "routes_web",
+      "routes_web_register"
+    ],
+    "7": [
+      "tests_test_auth",
+      "tests_test_auth_test_admin_can_access_admin_panel",
+      "tests_test_auth_test_admin_club_requires_auth",
+      "tests_test_auth_test_admin_requires_auth",
+      "tests_test_auth_test_callback_rejects_error",
+      "tests_test_auth_test_callback_rejects_missing_state",
+      "tests_test_auth_test_hackatime_oauth_requires_login",
+      "tests_test_auth_test_hackatime_oauth_when_logged_in",
+      "tests_test_auth_test_hackclub_oauth_redirect",
+      "tests_test_auth_test_normal_user_cannot_access_admin"
+    ],
+    "8": [
+      "env_var_claude_flow_hooks_enabled",
+      "env_var_claude_flow_max_agents",
+      "env_var_claude_flow_memory_backend",
+      "env_var_claude_flow_mode",
+      "env_var_claude_flow_topology",
+      "env_var_npm_config_update_notifier",
+      "mcp",
+      "mcp_command_cmd",
+      "mcp_mcp_server_claude_flow"
+    ],
+    "9": [
+      "scripts_check_airtable",
+      "scripts_check_airtable_fail",
+      "scripts_check_airtable_main",
+      "scripts_check_airtable_rationale_1"
+    ],
+    "10": [
+      "vercel",
+      "vercel_builds",
+      "vercel_routes"
+    ],
+    "11": [
+      "pkg_hackclub_leaders"
+    ],
+    "12": [
+      "tests_init"
+    ]
+  },
+  "cohesion": {
+    "0": 0.21401515151515152,
+    "1": 0.0967741935483871,
+    "2": 0.13333333333333333,
+    "3": 0.1978021978021978,
+    "4": 0.1794871794871795,
+    "5": 0.15384615384615385,
+    "6": 0.41818181818181815,
+    "7": 0.2,
+    "8": 0.2222222222222222,
+    "9": 0.6666666666666666,
+    "10": 0.6666666666666666,
+    "11": 1.0,
+    "12": 1.0
+  },
+  "gods": [
+    {
+      "id": "storage_airtablestorage",
+      "label": "AirtableStorage",
+      "degree": 24
+    },
+    {
+      "id": "routes_api_register",
+      "label": "register()",
+      "degree": 19
+    },
+    {
+      "id": "storage_sessionstorage",
+      "label": "SessionStorage",
+      "degree": 18
+    },
+    {
+      "id": "routes_club_register",
+      "label": "register()",
+      "degree": 14
+    },
+    {
+      "id": "helpers_storage",
+      "label": "_storage()",
+      "degree": 13
+    },
+    {
+      "id": "helpers_json_error",
+      "label": "json_error()",
+      "degree": 13
+    },
+    {
+      "id": "routes_admin_register",
+      "label": "register()",
+      "degree": 13
+    },
+    {
+      "id": "helpers_save_dashboard_state",
+      "label": "save_dashboard_state()",
+      "degree": 12
+    },
+    {
+      "id": "helpers_clean_text",
+      "label": "clean_text()",
+      "degree": 12
+    },
+    {
+      "id": "helpers_get_dashboard_state",
+      "label": "get_dashboard_state()",
+      "degree": 11
+    }
+  ],
+  "surprises": [
+    {
+      "source": "_payload_too_large()",
+      "target": "json_error()",
+      "source_files": [
+        "app.py",
+        "helpers.py"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; bridges separate communities; peripheral node `_payload_too_large()` unexpectedly reaches hub `json_error()`"
+    },
+    {
+      "source": "get_dashboard_state()",
+      "target": "SessionStorage",
+      "source_files": [
+        "helpers.py",
+        "storage.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "indirect_call",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "StateTooLarge",
+      "target": "SessionStorage",
+      "source_files": [
+        "helpers.py",
+        "storage.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "save_dashboard_state()",
+      "target": "SessionStorage",
+      "source_files": [
+        "helpers.py",
+        "storage.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "indirect_call",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "_persist_club()",
+      "target": "SessionStorage",
+      "source_files": [
+        "helpers.py",
+        "storage.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "indirect_call",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

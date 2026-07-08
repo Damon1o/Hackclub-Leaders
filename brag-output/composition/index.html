@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px; height: 1080px; overflow: hidden; background: #000;
+      }
+      :root {
+        --red: #ec3750;
+        --orange: #ff8c37;
+        --yellow: #f1c40f;
+        --green: #33d6a6;
+        --blue: #338eda;
+        --purple: #a633d6;
+        --dark: #1f1f27;
+        --ink: #17171d;
+        --muted: #8492a6;
+        --sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      }
+      #root { position: relative; font-family: var(--sans); color: var(--ink); }
+
+      /* ---- scene shells (full-bleed children, never the root) ---- */
+      .scene {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        overflow: hidden;
+      }
+      .scene-light { background: #ffffff; }
+
+      /* ---------- Scene 1 : hook ---------- */
+      #s1 { background: radial-gradient(120% 120% at 50% 120%, rgba(236,55,80,.42) 0%, rgba(236,55,80,.06) 45%, #1a1a20 78%), #17171d; }
+      .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55; }
+      .blob-red { width: 640px; height: 640px; background: var(--red); left: 8%; top: 40%; }
+      .blob-orange { width: 560px; height: 560px; background: var(--orange); right: 6%; top: 12%; opacity: .45; }
+      .blob-blue { width: 600px; height: 600px; background: var(--blue); left: 42%; bottom: -18%; opacity: .4; }
+      #s1-head {
+        position: relative; z-index: 2; text-align: center;
+        font-weight: 800; font-size: 138px; line-height: 1.02; letter-spacing: -3px;
+        color: #ffffff; max-width: 1500px;
+        text-shadow: 0 14px 60px rgba(0,0,0,.35);
+      }
+      #s1-lead {
+        display: inline-block;
+        background: linear-gradient(90deg, #ec3750 0%, #ff8c37 30%, #f1c40f 50%, #33d6a6 70%, #338eda 100%);
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+      }
+
+      /* ---------- Scene 2 : sign in -> dashboard ---------- */
+      #s2-stage { position: relative; width: 1100px; height: 640px; }
+      #s2-card {
+        position: absolute; inset: 0; margin: auto; width: 620px; height: 360px;
+        background: #fff; border-radius: 28px; border: 1px solid #eef0f4;
+        box-shadow: 0 40px 90px rgba(23,23,29,.14);
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px;
+        padding: 40px; opacity: 0;
+      }
+      #s2-card h3 { font-size: 34px; font-weight: 800; letter-spacing: -.5px; }
+      #s2-card p { font-size: 20px; color: var(--muted); }
+      #s2-btn {
+        display: inline-flex; align-items: center; gap: 12px;
+        background: var(--red); color: #fff; font-weight: 700; font-size: 24px;
+        padding: 20px 34px; border-radius: 16px; box-shadow: 0 14px 30px rgba(236,55,80,.35);
+      }
+      #s2-cursor { position: absolute; left: 0; top: 0; z-index: 20; width: 42px; height: 42px; }
+      #s2-dash {
+        position: absolute; inset: 0; margin: auto; width: 1040px; height: 560px;
+        background: #fff; border-radius: 26px; border: 1px solid #eef0f4;
+        box-shadow: 0 48px 110px rgba(23,23,29,.18);
+        display: grid; grid-template-columns: 96px 1fr; overflow: hidden; opacity: 0;
+      }
+      .dash-rail { background: #fafbfc; border-right: 1px solid #eef0f4; display: flex; flex-direction: column; align-items: center; gap: 22px; padding-top: 30px; }
+      .rail-dot { width: 40px; height: 40px; border-radius: 12px; }
+      .dash-body { padding: 40px 46px; }
+      .dash-eyebrow { color: #d1243c; font-weight: 800; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; }
+      .dash-title { font-size: 62px; font-weight: 800; letter-spacing: -1.5px; margin-top: 8px; }
+      .dash-title mark { background: linear-gradient(180deg, transparent 55%, rgba(241,196,15,.55) 55%); color: inherit; padding: 0 6px; }
+      .dash-meta { color: var(--muted); font-size: 24px; margin-top: 14px; }
+      #s2-cap { position: absolute; bottom: 70px; left: 0; right: 0; text-align: center; font-size: 34px; font-weight: 700; letter-spacing: -.4px; }
+
+      /* ---------- Scene 3 : stat stickers ---------- */
+      #s3 { gap: 54px; padding: 90px; }
+      #s3-head { text-align: center; }
+      #s3-head .eyebrow { color: #d1243c; font-weight: 800; font-size: 20px; letter-spacing: 3px; text-transform: uppercase; }
+      #s3-head h2 { font-size: 74px; font-weight: 800; letter-spacing: -1.5px; margin-top: 6px; }
+      #s3-head h2 mark { background: linear-gradient(180deg, transparent 55%, rgba(241,196,15,.6) 55%); color: inherit; padding: 0 8px; }
+      #s3-head .meta { color: var(--muted); font-size: 26px; margin-top: 14px; }
+      .sticker-row { display: flex; gap: 34px; }
+      .sticker {
+        width: 300px; height: 300px; border-radius: 30px; padding: 34px;
+        display: flex; flex-direction: column; justify-content: space-between;
+        color: #fff; box-shadow: 0 26px 55px rgba(23,23,29,.16);
+      }
+      .sticker .num { font-size: 116px; font-weight: 800; line-height: 1; letter-spacing: -3px; text-shadow: 0 3px 16px rgba(0,0,0,.18); }
+      .sticker .lbl { font-size: 27px; font-weight: 700; opacity: .98; text-shadow: 0 1px 8px rgba(0,0,0,.16); }
+      .stk-orange { background: linear-gradient(150deg, #ff9d4d, #e86a12); transform: rotate(-3deg); }
+      .stk-blue   { background: linear-gradient(150deg, #4a97dd, #1f72c0); transform: rotate(2.4deg); }
+      .stk-green  { background: linear-gradient(150deg, #2bc79a, #0a8f6b); transform: rotate(-2deg); }
+      .stk-purple { background: linear-gradient(150deg, #b24ede, #8f1fc4); transform: rotate(3deg); }
+
+      /* ---------- Scene 4 : level ---------- */
+      #s4 { gap: 40px; padding: 120px; }
+      #s4-head { text-align: center; }
+      #s4-head .eyebrow { color: var(--blue); font-weight: 800; font-size: 20px; letter-spacing: 3px; text-transform: uppercase; }
+      #s4-head h2 { font-size: 96px; font-weight: 800; letter-spacing: -2px; margin-top: 6px; }
+      .level-wrap { width: 1100px; }
+      .lvl-track { position: relative; width: 100%; height: 34px; background: #eef0f4; border-radius: 20px; overflow: hidden; }
+      #lvl-fill { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: left center; border-radius: 20px;
+        background: linear-gradient(90deg, #ec3750, #ff8c37 55%, #f1c40f); }
+      .lvl-caption { display: flex; justify-content: space-between; margin-top: 18px; font-size: 24px; color: var(--muted); font-weight: 600; }
+      .roster { width: 1100px; }
+      .roster-title { font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 14px; }
+      .roster-bar { display: flex; width: 100%; height: 30px; border-radius: 16px; overflow: hidden; gap: 6px; }
+      .seg { height: 100%; transform-origin: left center; border-radius: 8px; }
+      .seg-l { background: var(--red); }
+      .seg-m { background: var(--blue); }
+      .seg-t { background: var(--purple); }
+
+      /* ---------- Scene 5 : outro ---------- */
+      #s5 { background: linear-gradient(135deg, #ec3750 0%, #ff6a45 55%, #ff8c37 100%); }
+      #s5-logo { text-align: center; color: #fff; }
+      #s5-flag { font-size: 96px; line-height: 1; }
+      #s5-logo h1 { font-size: 120px; font-weight: 800; letter-spacing: -3px; margin-top: 6px; text-shadow: 0 14px 50px rgba(0,0,0,.25); }
+      #s5-tag { margin-top: 22px; color: #fff; font-size: 42px; font-weight: 700; text-align: center; text-shadow: 0 2px 16px rgba(0,0,0,.32); }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="20.4"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- ===================== SCENE 1 : HOOK ===================== -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="3.6" data-track-index="1">
+        <span class="blob blob-red"></span>
+        <span class="blob blob-orange"></span>
+        <span class="blob blob-blue"></span>
+        <h1 id="s1-head">Where <span id="s1-lead">leaders</span><br />build the future!</h1>
+      </section>
+
+      <!-- ================ SCENE 2 : SIGN IN -> DASHBOARD ================ -->
+      <section id="s2" class="scene scene-light clip" data-start="3.2" data-duration="3.9" data-track-index="2">
+        <div id="s2-stage">
+          <div id="s2-card">
+            <h3>Leaders Portal</h3>
+            <p>One account runs your whole club.</p>
+            <div id="s2-btn">🚩 Sign in with Hack Club</div>
+          </div>
+          <div id="s2-dash">
+            <div class="dash-rail">
+              <span class="rail-dot" style="background:var(--red)"></span>
+              <span class="rail-dot" style="background:var(--orange)"></span>
+              <span class="rail-dot" style="background:var(--green)"></span>
+              <span class="rail-dot" style="background:var(--blue)"></span>
+            </div>
+            <div class="dash-body">
+              <div class="dash-eyebrow">Club HQ</div>
+              <div class="dash-title"><mark>Your Club</mark></div>
+              <div class="dash-meta"><strong>24</strong> members strong</div>
+            </div>
+          </div>
+          <svg id="s2-cursor" viewBox="0 0 24 24" fill="#17171d" stroke="#fff" stroke-width="1.4">
+            <path d="M4 2 L4 20 L9 15 L12.5 22 L15 21 L11.5 14 L18 14 Z" />
+          </svg>
+        </div>
+        <div id="s2-cap">One sign-in. Your whole club.</div>
+      </section>
+
+      <!-- ================= SCENE 3 : STAT STICKERS ================= -->
+      <section id="s3" class="scene scene-light clip" data-start="6.7" data-duration="5.2" data-track-index="1">
+        <div id="s3-head">
+          <div class="eyebrow">Club HQ</div>
+          <h2><mark>Your Club</mark></h2>
+          <div class="meta"><strong>24</strong> members strong</div>
+        </div>
+        <div class="sticker-row">
+          <div class="sticker stk-orange" id="stk-1"><div class="num" id="num-1">0</div><div class="lbl">events planned</div></div>
+          <div class="sticker stk-blue" id="stk-2"><div class="num" id="num-2">0</div><div class="lbl">RSVPs in</div></div>
+          <div class="sticker stk-green" id="stk-3"><div class="num" id="num-3">0</div><div class="lbl">projects shipped</div></div>
+          <div class="sticker stk-purple" id="stk-4"><div class="num" id="num-4">0</div><div class="lbl">shop requests</div></div>
+        </div>
+      </section>
+
+      <!-- =================== SCENE 4 : CLUB LEVEL =================== -->
+      <section id="s4" class="scene scene-light clip" data-start="11.5" data-duration="4.3" data-track-index="2">
+        <div id="s4-head">
+          <div class="eyebrow">Club level</div>
+          <h2>Level 3</h2>
+        </div>
+        <div class="level-wrap">
+          <div class="lvl-track"><div id="lvl-fill"></div></div>
+          <div class="lvl-caption"><span id="lvl-xp">0 XP</span><span>Level 4 &nbsp;·&nbsp; 1,650 XP</span></div>
+        </div>
+        <div class="roster">
+          <div class="roster-title">Club members</div>
+          <div class="roster-bar">
+            <span class="seg seg-l" id="seg-l" style="width:22%"></span>
+            <span class="seg seg-m" id="seg-m" style="width:62%"></span>
+            <span class="seg seg-t" id="seg-t" style="width:16%"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== SCENE 5 : OUTRO ===================== -->
+      <section id="s5" class="scene clip" data-start="15.5" data-duration="4.9" data-track-index="1">
+        <div id="s5-logo">
+          <div id="s5-flag">🚩</div>
+          <h1>Hack Club Leaders</h1>
+        </div>
+        <div id="s5-tag">Everything you need to run your club.</div>
+      </section>
+
+      <!-- ===================== AUDIO (direct root children) ===================== -->
+      <audio id="bgm" src="assets/music/happy-beats-business-moves-vol-1-by-ende-dot-app.mp3"
+             data-start="0" data-duration="20.4" data-track-index="0" data-volume="0.62"></audio>
+
+      <audio id="sfx-click"  src="assets/sfx/click_002.ogg"        data-start="4.44" data-duration="0.2" data-track-index="30" data-volume="0.55"></audio>
+      <audio id="sfx-whoosh" src="assets/sfx/drop_001.ogg"         data-start="4.8"  data-duration="0.4" data-track-index="31" data-volume="0.55"></audio>
+      <audio id="sfx-pop1"   src="assets/sfx/select_008.ogg"       data-start="7.02" data-duration="0.3" data-track-index="32" data-volume="0.5"></audio>
+      <audio id="sfx-pop2"   src="assets/sfx/select_008.ogg"       data-start="8.02" data-duration="0.3" data-track-index="33" data-volume="0.5"></audio>
+      <audio id="sfx-pop3"   src="assets/sfx/select_008.ogg"       data-start="9.02" data-duration="0.3" data-track-index="34" data-volume="0.5"></audio>
+      <audio id="sfx-pop4"   src="assets/sfx/select_008.ogg"       data-start="10.02" data-duration="0.3" data-track-index="35" data-volume="0.5"></audio>
+      <audio id="sfx-settle" src="assets/sfx/switch_002.ogg"       data-start="12.9" data-duration="0.4" data-track-index="36" data-volume="0.5"></audio>
+      <audio id="sfx-logo"   src="assets/sfx/impactSoft_heavy_001.ogg" data-start="16.02" data-duration="0.6" data-track-index="37" data-volume="0.6"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // count-up helper (deterministic: driven by timeline progress)
+      function countUp(id, to, start, dur) {
+        const o = { v: 0 };
+        tl.to(o, {
+          v: to, duration: dur, ease: "power2.out",
+          onUpdate() {
+            const e = document.getElementById(id);
+            if (e) e.textContent = Math.round(o.v).toLocaleString();
+          }
+        }, start);
+      }
+
+      /* ---------- Scene 1 : hook (0 - 3.6) ---------- */
+      tl.set("#s1", { opacity: 0 }, 0);
+      tl.to("#s1", { opacity: 1, duration: 0.4, ease: "power1.out" }, 0);
+      tl.set("#s1-head", { opacity: 0, y: 54 }, 0);
+      tl.to("#s1-head", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.22);
+      tl.to("#s1-lead", { scale: 1.05, duration: 1.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, 1.0);
+      tl.to("#s1", { opacity: 0, duration: 0.4, ease: "power1.in" }, 3.2);
+
+      /* ---------- Scene 2 : sign in -> dashboard (3.2 - 7.1) ---------- */
+      tl.set("#s2", { opacity: 0 }, 3.2);
+      tl.to("#s2", { opacity: 1, duration: 0.4 }, 3.2);
+      tl.set("#s2-dash", { opacity: 0, y: 150, scale: 0.97 }, 3.2);
+      tl.set("#s2-cap", { opacity: 0, y: 22 }, 3.2);
+      tl.set("#s2-card", { opacity: 0, y: 34, scale: 0.95 }, 3.2);
+      tl.to("#s2-card", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 3.45);
+      // cursor glides to the button and presses it
+      tl.set("#s2-cursor", { opacity: 0, x: 300, y: 250 }, 3.2);
+      tl.to("#s2-cursor", { opacity: 1, duration: 0.2 }, 3.7);
+      tl.to("#s2-cursor", { x: 78, y: 92, duration: 0.7, ease: "power2.inOut" }, 3.75);
+      tl.to("#s2-btn", { scale: 0.94, duration: 0.09, yoyo: true, repeat: 1, ease: "power1.inOut" }, 4.44); // click
+      tl.to("#s2-cursor", { opacity: 0, duration: 0.25 }, 4.7);
+      // card gives way to the dashboard swooping up  // beat feel: whoosh at 4.8
+      tl.to("#s2-card", { opacity: 0, y: -26, duration: 0.4, ease: "power2.in" }, 4.62);
+      tl.to("#s2-dash", { opacity: 1, y: 0, scale: 1, duration: 0.62, ease: "power3.out" }, 4.8);
+      tl.to("#s2-cap", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 5.5);
+      tl.to("#s2", { opacity: 0, duration: 0.4, ease: "power1.in" }, 6.7);
+
+      /* ---------- Scene 3 : stat stickers (6.7 - 11.9) ---------- */
+      tl.set("#s3", { opacity: 0 }, 6.7);
+      tl.to("#s3", { opacity: 1, duration: 0.4 }, 6.7);
+      tl.set("#s3-head", { opacity: 0, y: 26 }, 6.7);
+      tl.to("#s3-head", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 6.85);
+      // stickers pop one-by-one, count up // beat-grid: 7.02, 8.02, 9.02, 10.02 (every other beat @120bpm)
+      const stk = [
+        { s: "#stk-1", n: "num-1", to: 8,  t: 7.02 },
+        { s: "#stk-2", n: "num-2", to: 63, t: 8.02 },
+        { s: "#stk-3", n: "num-3", to: 12, t: 9.02 },
+        { s: "#stk-4", n: "num-4", to: 5,  t: 10.02 },
+      ];
+      stk.forEach((k) => {
+        tl.set(k.s, { opacity: 0, scale: 0.5, y: 26 }, k.t);
+        tl.to(k.s, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.7)" }, k.t);
+        countUp(k.n, k.to, k.t + 0.05, 0.8);
+      });
+      tl.to("#s3", { opacity: 0, duration: 0.4, ease: "power1.in" }, 11.5);
+
+      /* ---------- Scene 4 : club level (11.5 - 15.8) ---------- */
+      tl.set("#s4", { opacity: 0 }, 11.5);
+      tl.to("#s4", { opacity: 1, duration: 0.4 }, 11.5);
+      tl.set("#s4-head", { opacity: 0, y: 30 }, 11.5);
+      tl.to("#s4-head", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 11.65);
+      tl.set("#lvl-fill", { scaleX: 0 }, 11.5);
+      tl.set(".level-wrap", { opacity: 0, y: 20 }, 11.5);
+      tl.to(".level-wrap", { opacity: 1, y: 0, duration: 0.45 }, 11.7);
+      tl.to("#lvl-fill", { scaleX: 0.75, duration: 1.0, ease: "power2.out" }, 11.9); // fill sweep, settle sfx @12.9
+      countUp("lvl-xp", 1240, 11.9, 1.0);
+      // roster segments grow in
+      tl.set(".roster", { opacity: 0, y: 20 }, 11.5);
+      tl.to(".roster", { opacity: 1, y: 0, duration: 0.4 }, 12.7);
+      tl.set(["#seg-l", "#seg-m", "#seg-t"], { scaleX: 0 }, 11.5);
+      tl.to("#seg-l", { scaleX: 1, duration: 0.4, ease: "power2.out" }, 12.9);
+      tl.to("#seg-m", { scaleX: 1, duration: 0.4, ease: "power2.out" }, 13.05);
+      tl.to("#seg-t", { scaleX: 1, duration: 0.4, ease: "power2.out" }, 13.2);
+      tl.to("#s4", { opacity: 0, duration: 0.4, ease: "power1.in" }, 15.4);
+
+      /* ---------- Scene 5 : outro (15.5 - 20.4) ---------- */
+      tl.set("#s5", { opacity: 0 }, 15.5);
+      tl.to("#s5", { opacity: 1, duration: 0.4 }, 15.5);
+      tl.set("#s5-logo", { opacity: 0, scale: 1.18 }, 15.5);
+      tl.set("#s5-tag", { opacity: 0, y: 18 }, 15.5);
+      tl.to("#s5-logo", { opacity: 1, scale: 1, duration: 0.5, ease: "power4.out" }, 16.02); // beat-locked: 16.02 (strong cue)
+      tl.to("#s5-tag", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 16.5);
+
+      /* ---------- music fade-out ---------- */
+      tl.to("#bgm", { volume: 0, duration: 0.8, ease: "power2.in" }, 19.6);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

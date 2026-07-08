@@ -42,3 +42,23 @@ ruvector.db
 
 # Ruflo / claude-flow runtime lock
 .claude/scheduled_tasks.lock
+
+# Obsidian workspace data (local only)
+.obsidian/
+
+# Graphify knowledge graph output (regenerated locally)
+graphify-out/
+
+# Ruff cache
+.ruff_cache/
+
+# ECC (Elliptic Curve Cryptography) certs and keys
+*.ecc
+*.pem
+*.key
+*.crt
+
+# Misc generated / stray files
+*.log
+.DS_Store
+Thumbs.db

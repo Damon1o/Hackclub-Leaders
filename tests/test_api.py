@@ -56,3 +56,38 @@ def test_json_payload_rejects_bad_image(client):
     response = client.post('/api/dashboard/projects/upload-image',
                            data={'not_an_image': 'value'})
     assert response.status_code in (301, 302, 403)
+
+
+def _save_settings(auth_client, monkeypatch, **overrides):
+    # Use the cookie-backed store so the seeded club below is what the API sees.
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['csrf_token'] = 'test-csrf-token'
+        # Seed a club so the membership gate lets settings mutations through.
+        sess.setdefault('dashboard_state', {
+            'settings': {'clubName': 'Test Club', 'location': 'Testville'},
+            'members': [],
+        })
+    payload = {'clubName': 'Test Club', 'location': 'Testville'}
+    payload.update(overrides)
+    return auth_client.patch('/api/dashboard/settings', json=payload,
+                             headers={'X-CSRF-Token': 'test-csrf-token'})
+
+
+def test_default_state_has_language(auth_client, monkeypatch):
+    response = _save_settings(auth_client, monkeypatch)
+    assert response.status_code == 200
+    assert response.get_json()['state']['settings']['language'] == 'en'
+
+
+def test_settings_persists_supported_language(auth_client, monkeypatch):
+    response = _save_settings(auth_client, monkeypatch, language='ja')
+    assert response.status_code == 200
+    assert response.get_json()['state']['settings']['language'] == 'ja'
+
+
+def test_settings_rejects_unsupported_language(auth_client, monkeypatch):
+    response = _save_settings(auth_client, monkeypatch, language='klingon')
+    assert response.status_code == 200
+    # Unsupported codes fall back to English rather than being stored raw.
+    assert response.get_json()['state']['settings']['language'] == 'en'

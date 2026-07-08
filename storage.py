@@ -72,7 +72,8 @@ SETTINGS_FIELDS = [('clubName', 'Club Name'), ('location', 'Location'),
                    ('publicDirectory', 'Public Directory'),
                    ('emailNotifications', 'Email Notifications'),
                    ('darkModeDefault', 'Dark Mode Default'),
-                   ('newsletterSubscribed', 'Newsletter Subscribed')]
+                   ('newsletterSubscribed', 'Newsletter Subscribed'),
+                   ('language', 'Language')]
 
 BOOL_KEYS = {'rsvp', 'read', 'publicDirectory',
              'emailNotifications', 'darkModeDefault', 'newsletterSubscribed'}

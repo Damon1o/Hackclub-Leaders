@@ -223,6 +223,7 @@ def default_dashboard_state():
             'emailNotifications': True,
             'darkModeDefault': False,
             'newsletterSubscribed': True,
+            'language': DEFAULT_LANGUAGE,
         },
     }
 
@@ -406,6 +407,33 @@ def parse_bool(value):
     if isinstance(value, bool):
         return value
     return str(value).lower() in {'1', 'true', 'yes', 'on'}
+
+
+# Keep this list in sync with LANGUAGES in static/js/i18n-data.js.
+# Ordered (code, native label) so the <select> can be rendered server-side —
+# the control then works even if JavaScript is slow or blocked.
+DASHBOARD_LANGUAGES = [
+    ('en', 'English'),
+    ('es', 'Español'),
+    ('fr', 'Français'),
+    ('de', 'Deutsch'),
+    ('pt', 'Português'),
+    ('it', 'Italiano'),
+    ('ru', 'Русский'),
+    ('hi', 'हिन्दी'),
+    ('zh', '中文'),
+    ('ja', '日本語'),
+    ('ko', '한국어'),
+    ('ar', 'العربية'),
+]
+SUPPORTED_LANGUAGES = {code for code, _label in DASHBOARD_LANGUAGES}
+DEFAULT_LANGUAGE = 'en'
+
+
+def parse_language(value):
+    """Return a supported language code, defaulting to English for anything else."""
+    code = str(value or '').strip().lower()
+    return code if code in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
 
 
 # ── Event construction ─────────────────────────────────────────────────────────

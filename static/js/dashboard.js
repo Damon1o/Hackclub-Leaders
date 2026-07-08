@@ -1728,6 +1728,9 @@
                 localStorage.setItem('mode', wantsDark ? 'dark' : 'light');
                 document.body.classList.toggle('dark-mode', wantsDark);
                 $('#toggleBtn')?.classList.toggle('active', wantsDark);
+                if (data.language && window.i18n) {
+                    window.i18n.setLanguage(data.language);
+                }
                 if (stateLabel) stateLabel.textContent = 'Saved';
                 showToast('Settings saved.');
             } catch (error) {
@@ -1904,10 +1907,21 @@
         }
     }
 
+    function applyLanguageDefault() {
+        // i18n.js only knows localStorage; when the visitor has not picked a
+        // language yet, fall back to the club's saved default.
+        if (localStorage.getItem('lang') !== null || !window.i18n) return;
+        const pref = settings().language;
+        if (pref && window.i18n.isSupported(pref)) {
+            window.i18n.apply(pref);
+        }
+    }
+
     function init() {
         setupGlobalEvents();
         setupForms();
         applyDarkModeDefault();
+        applyLanguageDefault();
         initBackground();
         // Club-data pages ship an empty shell; admin pages have their own data.
         const clientDataPage = !hadEmbeddedData && page

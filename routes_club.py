@@ -14,6 +14,7 @@ from helpers import (
     json_payload,
     login_required,
     parse_bool,
+    parse_language,
     require_dashboard_csrf,
     require_leader_api,
     save_dashboard_state,
@@ -131,6 +132,7 @@ def register(app, HACKATIME_CLIENT_ID):
             'emailNotifications': parse_bool(payload.get('emailNotifications')),
             'darkModeDefault': parse_bool(payload.get('darkModeDefault')),
             'newsletterSubscribed': parse_bool(payload.get('newsletterSubscribed')),
+            'language': parse_language(payload.get('language')),
         })
         save_dashboard_state(state)
         return flask.jsonify({'state': state})

@@ -7,6 +7,7 @@ from flask import Flask, flash, redirect, request, session, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from helpers import (
+    DASHBOARD_LANGUAGES,
     StateTooLarge,
     get_csrf_token,
     is_admin,
@@ -72,6 +73,7 @@ def inject_user():
         viewer_role=viewer_role() if signed_in else '',
         is_leader=viewer_is_leader() if signed_in else False,
         is_admin=is_admin() if signed_in else False,
+        dashboard_languages=DASHBOARD_LANGUAGES,
     )
 
 

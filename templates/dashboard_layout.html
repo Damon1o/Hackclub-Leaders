@@ -19,7 +19,7 @@
 </head>
 
 <body class="dashboard-layout" data-viewer-role="{{ viewer_role }}" data-viewer-email="{{ (current_user.email if current_user else '') | lower }}">
-    <a class="skip-link" href="#dashboardMain">Skip to dashboard</a>
+    <a class="skip-link" href="#dashboardMain" data-i18n="common.skipLink">Skip to dashboard</a>
 
     <section class="navigation-bar">
         <div class="animated-nav-logo">
@@ -31,19 +31,19 @@
         <div class="nav-links">
             <ul>
                 <li class="nav-link">
-                    <a href="/events">Events</a>
+                    <a href="/events" data-i18n="nav.events">Events</a>
                 </li>
                 <li class="nav-link dropdown">
-                    <a href="#">Tools
+                    <a href="#"><span data-i18n="nav.tools">Tools</span>
                         <img class="dropdown-icon"
                             src="{{ url_for('static', filename='images/hackclub-site/dropdown-icon.svg') }}" alt="">
                     </a>
                     <div class="dropdown-menu">
-                        <a href="https://apply.hackclub.com/">Start a Club</a>
-                        <a href="https://ysws.hackclub.com/">All YSWS Programs</a>
-                        <a href="https://guide.leaders.hackclub.com/">Club Leaders Guide</a>
-                        <a href="https://hackclub.github.io/map/">Club Map</a>
-                        <a href="https://leaders.hackclub.com/posters/">Club Posters</a>
+                        <a href="https://apply.hackclub.com/" data-i18n="nav.startClub">Start a Club</a>
+                        <a href="https://ysws.hackclub.com/" data-i18n="nav.allYsws">All YSWS Programs</a>
+                        <a href="https://guide.leaders.hackclub.com/" data-i18n="nav.leadersGuide">Club Leaders Guide</a>
+                        <a href="https://hackclub.github.io/map/" data-i18n="nav.clubMap">Club Map</a>
+                        <a href="https://leaders.hackclub.com/posters/" data-i18n="nav.posters">Club Posters</a>
                     </div>
                 </li>
             </ul>
@@ -72,10 +72,10 @@
         </div>
         <div class="apply-now-container">
             <a href="{{ url_for('dashboard') }}" class="apply-now-link">
-                <p class="apply-now-text">Dashboard</p>
+                <p class="apply-now-text" data-i18n="nav.dashboard">Dashboard</p>
             </a>
             <a href="{{ url_for('sign_out') }}" class="sign-in-link">
-                <p class="sign-in-text">Sign out</p>
+                <p class="sign-in-text" data-i18n="nav.signOut">Sign out</p>
             </a>
         </div>
     </section>
@@ -86,14 +86,14 @@
         <aside class="dashboard-sidebar">
             <nav class="dashboard-sidebar-nav" aria-label="Dashboard">
                 {% set current_path = request.path %}
-                <a href="/dashboard" class="dashboard-sidebar-link {% if current_path == '/dashboard' %}active{% endif %}" title="Home" aria-label="Home">
+                <a href="/dashboard" class="dashboard-sidebar-link {% if current_path == '/dashboard' %}active{% endif %}" title="Home" aria-label="Home" data-i18n-attr="title:side.home;aria-label:side.home">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                         <polyline points="9 22 9 12 15 12 15 22" />
                     </svg>
                 </a>
-                <a href="/dashboard/team" class="dashboard-sidebar-link {% if current_path == '/dashboard/team' %}active{% endif %}" title="Team" aria-label="Team">
+                <a href="/dashboard/team" class="dashboard-sidebar-link {% if current_path == '/dashboard/team' %}active{% endif %}" title="Team" aria-label="Team" data-i18n-attr="title:side.team;aria-label:side.team">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -102,7 +102,7 @@
                         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
                 </a>
-                <a href="/dashboard/events" class="dashboard-sidebar-link {% if current_path == '/dashboard/events' %}active{% endif %}" title="Events" aria-label="Events">
+                <a href="/dashboard/events" class="dashboard-sidebar-link {% if current_path == '/dashboard/events' %}active{% endif %}" title="Events" aria-label="Events" data-i18n-attr="title:side.events;aria-label:side.events">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
@@ -114,7 +114,7 @@
                         <path d="M16 14h.01" />
                     </svg>
                 </a>
-                <a href="/dashboard/ships" class="dashboard-sidebar-link {% if current_path == '/dashboard/ships' %}active{% endif %}" title="Ships" aria-label="Ships">
+                <a href="/dashboard/ships" class="dashboard-sidebar-link {% if current_path == '/dashboard/ships' %}active{% endif %}" title="Ships" aria-label="Ships" data-i18n-attr="title:side.ships;aria-label:side.ships">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
@@ -123,14 +123,14 @@
                         <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
                     </svg>
                 </a>
-                <a href="/dashboard/projects" class="dashboard-sidebar-link {% if current_path == '/dashboard/projects' %}active{% endif %}" title="Projects" aria-label="Projects">
+                <a href="/dashboard/projects" class="dashboard-sidebar-link {% if current_path == '/dashboard/projects' %}active{% endif %}" title="Projects" aria-label="Projects" data-i18n-attr="title:side.projects;aria-label:side.projects">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="M2 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z" />
                         <path d="M8 13h8" />
                     </svg>
                 </a>
-                <a href="/dashboard/levels" class="dashboard-sidebar-link {% if current_path == '/dashboard/levels' %}active{% endif %}" title="Levels" aria-label="Levels">
+                <a href="/dashboard/levels" class="dashboard-sidebar-link {% if current_path == '/dashboard/levels' %}active{% endif %}" title="Levels" aria-label="Levels" data-i18n-attr="title:side.levels;aria-label:side.levels">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <circle cx="12" cy="8" r="6" />
@@ -138,7 +138,7 @@
                     </svg>
                 </a>
                 {% if is_leader %}
-                <a href="/dashboard/shop" class="dashboard-sidebar-link {% if current_path == '/dashboard/shop' %}active{% endif %}" title="Shop" aria-label="Shop">
+                <a href="/dashboard/shop" class="dashboard-sidebar-link {% if current_path == '/dashboard/shop' %}active{% endif %}" title="Shop" aria-label="Shop" data-i18n-attr="title:side.shop;aria-label:side.shop">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
@@ -147,7 +147,7 @@
                     </svg>
                 </a>
                 {% endif %}
-                <a href="/dashboard/newsletters" class="dashboard-sidebar-link {% if current_path == '/dashboard/newsletters' %}active{% endif %}" title="Newsletters" aria-label="Newsletters">
+                <a href="/dashboard/newsletters" class="dashboard-sidebar-link {% if current_path == '/dashboard/newsletters' %}active{% endif %}" title="Newsletters" aria-label="Newsletters" data-i18n-attr="title:side.newsletters;aria-label:side.newsletters">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <rect width="20" height="16" x="2" y="4" rx="2" />
@@ -156,7 +156,7 @@
                 </a>
             </nav>
             <nav class="dashboard-sidebar-nav dashboard-sidebar-bottom" aria-label="Dashboard utilities">
-                <a href="/dashboard/map" class="dashboard-sidebar-link {% if current_path == '/dashboard/map' %}active{% endif %}" title="Club Map" aria-label="Club Map">
+                <a href="/dashboard/map" class="dashboard-sidebar-link {% if current_path == '/dashboard/map' %}active{% endif %}" title="Club Map" aria-label="Club Map" data-i18n-attr="title:side.map;aria-label:side.map">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" />
@@ -165,13 +165,13 @@
                     </svg>
                 </a>
                 {% if is_leader %}
-                <a href="/dashboard/tools" class="dashboard-sidebar-link {% if current_path == '/dashboard/tools' %}active{% endif %}" title="Tools" aria-label="Tools">
+                <a href="/dashboard/tools" class="dashboard-sidebar-link {% if current_path == '/dashboard/tools' %}active{% endif %}" title="Tools" aria-label="Tools" data-i18n-attr="title:side.tools;aria-label:side.tools">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
                     </svg>
                 </a>
-                <a href="/dashboard/settings" class="dashboard-sidebar-link {% if current_path == '/dashboard/settings' %}active{% endif %}" title="Club Settings" aria-label="Club Settings">
+                <a href="/dashboard/settings" class="dashboard-sidebar-link {% if current_path == '/dashboard/settings' %}active{% endif %}" title="Club Settings" aria-label="Club Settings" data-i18n-attr="title:side.settings;aria-label:side.settings">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
@@ -180,7 +180,7 @@
                 </a>
                 {% endif %}
                 {% if is_admin %}
-                <a href="/dashboard/admin" class="dashboard-sidebar-link sidebar-admin-link {% if current_path.startswith('/dashboard/admin') %}active{% endif %}" title="Admin" aria-label="Admin">
+                <a href="/dashboard/admin" class="dashboard-sidebar-link sidebar-admin-link {% if current_path.startswith('/dashboard/admin') %}active{% endif %}" title="Admin" aria-label="Admin" data-i18n-attr="title:side.admin;aria-label:side.admin">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -190,7 +190,7 @@
                 {% endif %}
                 <a href="/dashboard/profile" id="sidebarProfile"
                     class="sidebar-profile {% if current_path == '/dashboard/profile' %}active{% endif %}"
-                    title="Your profile" aria-label="Your profile">
+                    title="Your profile" aria-label="Your profile" data-i18n-attr="title:side.profile;aria-label:side.profile">
                     {% if current_user and current_user.avatar %}
                     <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
                     {% else %}
@@ -234,7 +234,7 @@
 
     <footer class="dashboard-footer">
         <a href="/">Hack Club Leaders</a>
-        <a href="https://guide.leaders.hackclub.com/">Leader Guide</a>
+        <a href="https://guide.leaders.hackclub.com/" data-i18n="footer.leaderGuide">Leader Guide</a>
         <a href="https://hackclub.com/slack/">Slack</a>
         <span>2026 Hack Club</span>
     </footer>
@@ -243,6 +243,8 @@
     <script id="dashboard-state" type="application/json">{{ dashboard_state | default({}) | tojson }}</script>
     <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 

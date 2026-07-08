@@ -43,16 +43,24 @@
     position: relative;
     z-index: 1;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    gap: clamp(40px, 7vw, 110px);
+    gap: clamp(40px, 6vw, 96px);
     width: 100%;
-    max-width: 1080px;
+    max-width: 1120px;
+}
+
+/* Left column: the copy and the two login cards stacked beneath it. */
+.sign-in-left {
+    flex: 1 1 560px;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
 }
 
 .sign-in-copy {
-    flex: 1 1 480px;
-    max-width: 540px;
+    max-width: 100%;
 }
 
 /* ── Copy ── */
@@ -89,7 +97,7 @@
 }
 
 .sign-in-subtitle {
-    margin: 0 0 32px;
+    margin: 0 0 4px;
     font-family: var(--hackclub-body-font);
     font-size: 1.05rem;
     line-height: 1.6;
@@ -314,24 +322,53 @@ body.dark-mode .welcome-create-btn {
 
 .sign-in-choose {
     width: 100%;
-    max-width: 940px;
+    max-width: 100%;
 }
 
 .sign-in-roles {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: clamp(16px, 3vw, 28px);
+    gap: 14px;
 }
 
 .sign-in-role-card {
     background: var(--primary-white);
     border: 1.5px solid #e8e8e8;
     border-top: 4px solid var(--role-color, var(--hackclub-red));
-    border-radius: 20px;
-    padding: 32px 32px 30px;
+    border-radius: 16px;
+    padding: 20px 20px 18px;
     display: flex;
     flex-direction: column;
     box-shadow: 0 4px 40px rgba(0, 0, 0, 0.07), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Compact the role cards now that they live in the narrower left column. */
+.sign-in-role-card .sign-in-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    margin-bottom: 12px;
+}
+
+.sign-in-role-card .sign-in-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.sign-in-role-card .role-btn {
+    padding: 11px 16px;
+    font-size: 0.9rem;
+    gap: 8px;
+}
+
+.sign-in-role-card .role-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.sign-in-role-card .welcome-code-input {
+    padding: 10px 13px;
+    font-size: 0.9rem;
 }
 
 .role-leader { --role-color: var(--hackclub-red); }
@@ -341,19 +378,19 @@ body.dark-mode .welcome-create-btn {
 
 .sign-in-role-card h2 {
     font-family: var(--hackclub-title-font);
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: bold;
     color: var(--primary-black);
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     line-height: 1.15;
 }
 
 .role-blurb {
     font-family: var(--hackclub-body-font);
-    font-size: 0.95rem;
-    line-height: 1.55;
+    font-size: 0.85rem;
+    line-height: 1.5;
     color: var(--hackclub-muted);
-    margin: 0 0 22px;
+    margin: 0 0 16px;
 }
 
 .role-join-form {
@@ -439,8 +476,9 @@ body.dark-mode .role-btn-outline {
 
 .sign-in-stickers {
     position: relative;
-    flex: 0 0 380px;
-    height: 460px;
+    flex: 0 0 clamp(380px, 42%, 460px);
+    height: 540px;
+    align-self: center;
 }
 
 .pile-sticker {
@@ -454,7 +492,7 @@ body.dark-mode .role-btn-outline {
     border-radius: 12px;
     box-shadow: 0 3px 0 var(--pile-color, var(--hackclub-red));
     font-family: var(--hackclub-body-font);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: bold;
     white-space: nowrap;
     color: var(--pile-color, var(--hackclub-red));
@@ -484,7 +522,7 @@ body.dark-mode .role-btn-outline {
 .pile-flag {
     top: 0;
     left: 26px;
-    width: 132px;
+    width: 168px;
     padding: 0;
     background: none;
     border: none;
@@ -495,7 +533,7 @@ body.dark-mode .role-btn-outline {
 }
 
 .pile-red {
-    top: 74px;
+    top: 96px;
     right: 8px;
     --pile-color: var(--hackclub-red);
     --pile-tilt: 5deg;
@@ -503,7 +541,7 @@ body.dark-mode .role-btn-outline {
 }
 
 .pile-blue {
-    top: 168px;
+    top: 196px;
     left: 0;
     --pile-color: var(--hackclub-blue);
     --pile-tilt: -4deg;
@@ -511,7 +549,7 @@ body.dark-mode .role-btn-outline {
 }
 
 .pile-orange {
-    top: 252px;
+    top: 296px;
     right: 30px;
     --pile-color: var(--hackclub-orange);
     --pile-tilt: 2.5deg;
@@ -519,7 +557,7 @@ body.dark-mode .role-btn-outline {
 }
 
 .pile-green {
-    top: 344px;
+    top: 404px;
     left: 34px;
     --pile-color: #27a37e;
     --pile-tilt: -5deg;

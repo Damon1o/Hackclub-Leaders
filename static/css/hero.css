@@ -209,8 +209,18 @@
     outline: none;
 }
 
+/* Keep the field transparent when the browser autofills it (defeats the
+   pale blue/yellow autofill highlight Chrome/Edge paint on filled inputs). */
+.hero .hero-text .sign-up-cta .sign-up-input:-webkit-autofill,
+.hero .hero-text .sign-up-cta .sign-up-input:-webkit-autofill:hover,
+.hero .hero-text .sign-up-cta .sign-up-input:-webkit-autofill:focus,
+.hero .hero-text .sign-up-cta .sign-up-input:-webkit-autofill:active {
+    -webkit-text-fill-color: inherit;
+    transition: background-color 9999s ease-in-out 0s;
+}
+
 .hero .hero-text .sign-up-cta .sign-up-button {
-    flex: 0;
+    flex-shrink: 0;
     padding: 12px 24px;
     border-radius: 2rem;
     border: none;
@@ -218,6 +228,7 @@
     color: var(--primary-white);
     font-size: 1.2rem;
     cursor: pointer;
+    white-space: nowrap;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     font-family: var(--hackclub-body-font);
 }

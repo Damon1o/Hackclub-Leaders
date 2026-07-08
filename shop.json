@@ -19,49 +19,49 @@
     },
     {
         "name": "Orpheus Pico V2",
-        "cost": "$5",
+        "cost": "$5.00",
         "image-src": "/static/images/shop/orpheus-pico-v2.png",
         "filter": "Hardware"
     },
     {
         "name": "Picoaducky",
-        "cost": "$10",
+        "cost": "$10.00",
         "image-src": "/static/images/shop/picoaducky.png",
         "filter": "Hardware"
     },
     {
         "name": "Starting Plushie",
-        "cost": "$10",
+        "cost": "$10.00",
         "image-src": "/static/images/shop/starting-plushie.png",
         "filter": "Swag"
     },
     {
         "name": "Hot Chocolate!",
-        "cost": "$0",
+        "cost": "$3.00",
         "image-src": "/static/images/shop/hot-chocolate.png",
         "filter": "Swag"
     },
     {
         "name": "Open Sauce Transit Pass",
-        "cost": "$0",
+        "cost": "$20.00",
         "image-src": "/static/images/shop/open-sauce-transit-pass.png",
         "filter": "Swag"
     },
     {
         "name": "Raspberry Pi Zero 2 W",
-        "cost": "$10",
+        "cost": "$10.00",
         "image-src": "/static/images/shop/raspberry-pi-zero-2-w.png",
         "filter": "Hardware"
     },
     {
         "name": "Startcreen T-Shirt",
-        "cost": "$20",
+        "cost": "$20.00",
         "image-src": "/static/images/shop/startcreen-t-shirt.png",
-        "filter": "Apparel"
+        "filter": "Swag"
     },
     {
         "name": "Google Play License",
-        "cost": "$0",
+        "cost": "$10.00",
         "image-src": "/static/images/shop/google-play-license.png",
         "filter": "Digital"
     },
@@ -69,113 +69,113 @@
         "name": "Posthuman Cowboy Hat",
         "cost": "$25",
         "image-src": "/static/images/shop/posthuman-cowboy-hat.png",
-        "filter": "Apparel"
+        "filter": "Swag"
     },
     {
         "name": "Hack Club CamoTee T-Shirt (X-Large)",
-        "cost": "$20",
+        "cost": "$20.00",
         "image-src": "/static/images/shop/hack-club-camotee-xl.png",
-        "filter": "Apparel"
+        "filter": "Swag"
     },
     {
         "name": "Hack Club CamoTee T-Shirt (Large)",
-        "cost": "$20",
+        "cost": "$20.00",
         "image-src": "/static/images/shop/hack-club-camotee-large.png",
-        "filter": "Apparel"
+        "filter": "Swag"
     },
     {
         "name": "Hack Club CamoTee T-Shirt (Medium)",
-        "cost": "$20",
+        "cost": "$20.00",
         "image-src": "/static/images/shop/hack-club-camotee-medium.png",
-        "filter": "Apparel"
+        "filter": "Swag"
     },
     {
         "name": "Hack Club CamoTee T-Shirt (Small)",
-        "cost": "$20",
+        "cost": "$20.00",
         "image-src": "/static/images/shop/hack-club-camotee-small.png",
-        "filter": "Apparel"
+        "filter": "Swag"
     },
     {
         "name": "GitHub Frisbee",
-        "cost": "$25",
+        "cost": "$25.00",
         "image-src": "/static/images/shop/github-frisbee.png",
         "filter": "Swag"
     },
     {
         "name": "Hack Club Pin",
-        "cost": "$5",
+        "cost": "$5.00",
         "image-src": "/static/images/shop/hack-club-pin.png",
         "filter": "Swag"
     },
     {
         "name": "USB Drive",
-        "cost": "$10",
+        "cost": "$10.00",
         "image-src": "/static/images/shop/usb-drive.png",
         "filter": "Hardware"
     },
     {
         "name": "GitHub Inventocat Pin",
-        "cost": "$11",
+        "cost": "$11.00",
         "image-src": "/static/images/shop/github-inventocat-pin.png",
         "filter": "Swag"
     },
     {
         "name": "ESP32 ICE",
-        "cost": "$12",
+        "cost": "$12.00",
         "image-src": "/static/images/shop/esp32-ice.png",
         "filter": "Hardware"
     },
     {
         "name": "Celeste",
-        "cost": "$20",
+        "cost": "$20.00",
         "image-src": "/static/images/shop/celeste.png",
         "filter": "Digital"
     },
     {
         "name": "This is Water by David Foster-Wallace",
-        "cost": "$25",
+        "cost": "$25.00",
         "image-src": "/static/images/shop/this-is-water.png",
         "filter": "Books"
     },
     {
         "name": "KandCard",
-        "cost": "$25",
+        "cost": "$25.00",
         "image-src": "/static/images/shop/kandcard.png",
         "filter": "Hardware"
     },
     {
         "name": "Object from Amber's Desk",
-        "cost": "$25",
+        "cost": "$25.00",
         "image-src": "/static/images/shop/object-from-ambers-desk.png",
         "filter": "Mystery"
     },
     {
         "name": "Retro Computer Magazine",
-        "cost": "$5",
+        "cost": "$5.00",
         "image-src": "/static/images/shop/retro-computer-magazine.png",
         "filter": "Books"
     },
     {
         "name": "Campfire Flagship Laptop Bag",
-        "cost": "$47",
+        "cost": "$47.00",
         "image-src": "/static/images/shop/campfire-flagship-laptop-bag.png",
         "filter": "Swag"
     },
     {
         "name": "Flantime",
-        "cost": "$100",
+        "cost": "$100.00",
         "image-src": "/static/images/shop/flantime.png",
         "filter": "Hardware"
     },
     {
         "name": "Hacktastical",
-        "cost": "$10",
+        "cost": "$10.00",
         "image-src": "/static/images/shop/hacktastical.png",
         "filter": "Books"
     },
     {
         "name": "Hack Your CPU by Julia Evans",
-        "cost": "$31",
+        "cost": "$31.00",
         "image-src": "/static/images/shop/hack-your-cpu.png",
         "filter": "Books"
     }

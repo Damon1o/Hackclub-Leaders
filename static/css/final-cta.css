@@ -62,6 +62,16 @@
     opacity: 0.5;
 }
 
+/* Keep the field transparent when the browser autofills it (defeats the
+   pale blue/yellow autofill highlight Chrome/Edge paint on filled inputs). */
+.final-cta-input:-webkit-autofill,
+.final-cta-input:-webkit-autofill:hover,
+.final-cta-input:-webkit-autofill:focus,
+.final-cta-input:-webkit-autofill:active {
+    -webkit-text-fill-color: inherit;
+    transition: background-color 9999s ease-in-out 0s;
+}
+
 .final-cta-join-button {
     position: absolute;
     top: 50%;
@@ -80,6 +90,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    white-space: nowrap;
     transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease-in-out;
     text-decoration: none;
 }

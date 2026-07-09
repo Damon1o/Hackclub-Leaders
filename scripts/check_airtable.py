@@ -28,29 +28,26 @@ REQUIRED_FIELDS = {
                 'Club Email'],
     'Events': ['App Id', 'Title', 'Date', 'Time', 'Location', 'Type', 'Repeat',
                'RSVP', 'Attendees', 'Club Email'],
-    'Ships': ['App Id', 'Title', 'Member', 'URL', 'Date', 'Club Email'],
+    'Projects': ['App Id', 'Name', 'Description', 'URL', 'Repo URL',
+                 'Demo URL', 'Thumbnail', 'Hackatime Project', 'Status',
+                 'Owner Email', 'Owner Name', 'Date', 'Club Email'],
     'Newsletters': ['App Id', 'Title', 'Excerpt', 'Body', 'Date', 'Read Time',
                     'Read', 'Club Email'],
     'Orders': ['App Id', 'Date', 'Status', 'Items', 'Club Email'],
 }
 
-# Added after the initial schema; the app runs fine without them (that feature
-# just won't persist until the table exists), so they warn instead of failing.
 OPTIONAL_FIELDS = {
     'ItemRequests': ['App Id', 'Name', 'Note', 'Date', 'Status', 'Club Email'],
-    'Projects': ['App Id', 'Name', 'Description', 'URL', 'Status',
-                 'Owner Email', 'Owner Name', 'Date', 'Club Email'],
 }
 
 ENV_TABLE_OVERRIDES = {
     'Clubs': 'AIRTABLE_TABLE_CLUBS',
     'Members': 'AIRTABLE_TABLE_MEMBERS',
     'Events': 'AIRTABLE_TABLE_EVENTS',
-    'Ships': 'AIRTABLE_TABLE_SHIPS',
+    'Projects': 'AIRTABLE_TABLE_PROJECTS',
     'Newsletters': 'AIRTABLE_TABLE_NEWSLETTERS',
     'Orders': 'AIRTABLE_TABLE_ORDERS',
     'ItemRequests': 'AIRTABLE_TABLE_ITEM_REQUESTS',
-    'Projects': 'AIRTABLE_TABLE_PROJECTS',
 }
 
 

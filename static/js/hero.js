@@ -7,6 +7,8 @@
     const closeBtn = document.getElementById('videoClose');
     const preview = document.getElementById('heroVideoPreview');
 
+    if (!modal || !preview || !closeBtn) return;
+
     function openModal() {
         iframe.src = EMBED_SRC;
         modal.classList.add('is-open');

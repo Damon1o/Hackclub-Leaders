@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const modeSwitch = document.getElementById('toggleBtn');
+    if (!modeSwitch) return;
+
     const savedMode = localStorage.getItem('mode');
     const isDark = savedMode === 'dark';
     document.body.classList.toggle('dark-mode', isDark);

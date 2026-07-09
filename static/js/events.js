@@ -631,6 +631,8 @@
     const filterTags = document.querySelectorAll('.filter-tag');
     const list = document.getElementById('events-list');
 
+    if (!list || !searchInput) return;
+
     let cards = [];
     let activeFilter = 'all';
     let searchQuery = '';

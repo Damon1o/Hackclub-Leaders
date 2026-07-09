@@ -684,3 +684,59 @@ body.dark-mode .sign-in-flash.success {
         animation: none;
     }
 }
+
+/* ── Playtest buttons ──────────────────────────────────────── */
+
+.playtest-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode .playtest-buttons {
+    border-top-color: rgba(255, 255, 255, 0.10);
+}
+
+.playtest-label {
+    font-family: var(--hackclub-body-font), system-ui, sans-serif;
+    font-size: 14px;
+    color: var(--hackclub-muted);
+    margin: 0;
+}
+
+.playtest-form {
+    display: flex;
+    gap: 8px;
+}
+
+.playtest-btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 7px 16px;
+    border: 1.5px dashed #c0ccda;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--hackclub-muted);
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.playtest-btn:hover {
+    border-color: var(--hackclub-red);
+    color: var(--hackclub-red);
+    background: rgba(236, 55, 80, 0.06);
+}
+
+body.dark-mode .playtest-btn {
+    border-color: #4a4a5a;
+    color: #8492a6;
+}
+
+body.dark-mode .playtest-btn:hover {
+    border-color: var(--hackclub-red);
+    color: var(--hackclub-red);
+}

@@ -41,7 +41,6 @@
 
             var size = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
             img.style.width = size + 'px';
-            img.style.height = size + 'px';
 
             var left = 20 + Math.random() * (vw - size - 40);
             var top = 80 + Math.random() * (vh - size - 100);

@@ -81,6 +81,9 @@ def test_dashboard_subpages_redirect_to_welcome_when_no_club(auth_client):
         '/dashboard/levels',
         '/dashboard/newsletters',
         '/dashboard/map',
+        '/dashboard/tools',
+        '/dashboard/shop',
+        '/dashboard/settings',
         '/dashboard/profile',
     ]
     for path in pages:

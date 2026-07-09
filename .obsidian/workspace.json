@@ -178,6 +178,8 @@
   },
   "active": "a5aef00cbd411798",
   "lastOpenFiles": [
+    "scripts/test_playtest.py",
+    "scripts/fix_i18n.py",
     "everything-claude-code/README.md"
   ]
 }

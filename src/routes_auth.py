@@ -1,10 +1,11 @@
+import os
 import secrets
 from urllib.parse import urlencode
 
 import requests
 from flask import flash, redirect, request, session, url_for
 
-from .helpers import clean_text, login_required
+from .helpers import clean_text, login_required, playtest_state
 
 
 def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
@@ -123,6 +124,47 @@ def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
 
         session['hackatime_auto_target'] = target
         return redirect(url_for('hackatime_login', auto='1'))
+
+    # ── Playtest login (dev only) ──────────────────────────────────────────
+
+    @app.route('/auth/playtest', methods=['POST'])
+    def playtest_login():
+        if os.environ.get('PLAYTEST_ENABLED', '').lower() != 'true':
+            flash('Playtest mode is not enabled.', 'error')
+            return redirect(url_for('sign_in'))
+
+        role = clean_text(request.form.get('role'), max_len=10)
+        if role not in ('leader', 'member'):
+            flash('Invalid playtest role.', 'error')
+            return redirect(url_for('sign_in'))
+
+        state = playtest_state()
+        if role == 'leader':
+            session['user'] = {
+                'id': 'playtest-leader',
+                'name': 'Test Leader',
+                'email': 'playtest.leader@hackclub.com',
+                'avatar': '',
+                'provider': 'playtest',
+                'hackatimeId': 'playtest',
+            }
+            session['dashboard_state'] = state
+            flash('Signed in as a playtest leader!', 'success')
+            return redirect(url_for('dashboard'))
+
+        session['user'] = {
+            'id': 'playtest-member',
+            'name': 'Test Member',
+            'email': 'playtest.member@hackclub.com',
+            'avatar': '',
+            'provider': 'playtest',
+            'hackatimeId': 'playtest',
+        }
+        session['dashboard_state'] = state
+        session['pending_join_code'] = 'PLAYTEST'
+        session['pending_intent'] = 'member'
+        flash('Signed in as a playtest member!', 'success')
+        return redirect(url_for('dashboard'))
 
     # ── Hackatime OAuth ─────────────────────────────────────────────────────
 

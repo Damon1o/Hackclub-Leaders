@@ -351,7 +351,7 @@
                 </div>
             </article>
         `).join('');
-        empty.hidden = people.length > 0;
+        if (empty) empty.hidden = people.length > 0;
     }
 
     function prepareNewEvent() {
@@ -488,7 +488,7 @@
             </article>
             `;
         }).join('');
-        empty.hidden = upcoming.length > 0;
+        if (empty) empty.hidden = upcoming.length > 0;
     }
 
     function renderShips() {
@@ -523,7 +523,7 @@
                 </div>
             </article>
         `).join('');
-        empty.hidden = shipped.length > 0;
+        if (empty) empty.hidden = shipped.length > 0;
     }
 
     async function initHacktime() {
@@ -891,7 +891,8 @@
                 </article>`;
             }).join('');
         }
-        $('#projectsEmpty').hidden = mine.length > 0;
+        var projectsEmpty = $('#projectsEmpty');
+        if (projectsEmpty) projectsEmpty.hidden = mine.length > 0;
 
         if (submittedList) {
             submittedList.innerHTML = submitted.map((project, index) => `
@@ -906,7 +907,8 @@
                 </article>
             `).join('');
         }
-        $('#projectSubmittedEmpty').hidden = submitted.length > 0;
+        var projectSubmittedEmpty = $('#projectSubmittedEmpty');
+        if (projectSubmittedEmpty) projectSubmittedEmpty.hidden = submitted.length > 0;
     }
 
     function renderLevels() {
@@ -1030,8 +1032,8 @@
             }).join('');
         }
 
-        empty.hidden = cart().length > 0;
-        checkoutButton.disabled = cart().length === 0;
+        if (empty) empty.hidden = cart().length > 0;
+        if (checkoutButton) checkoutButton.disabled = cart().length === 0;
         renderOrders();
         renderItemRequests();
     }
@@ -1117,8 +1119,10 @@
         $('#newsletterTitle').textContent = dispatch.title || 'Untitled dispatch';
         $('#newsletterDate').textContent = formatDate(dispatch.date);
         $('#newsletterBody').textContent = dispatch.body || dispatch.excerpt || '';
-        button.hidden = false;
-        button.textContent = dispatch.read ? 'Mark unread' : 'Mark read';
+        if (button) {
+            button.hidden = false;
+            button.textContent = dispatch.read ? 'Mark unread' : 'Mark read';
+        }
     }
 
     function prepareNewProject() {

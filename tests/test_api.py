@@ -55,7 +55,8 @@ def test_error_handlers(client):
 def test_json_payload_rejects_bad_image(client):
     response = client.post('/api/dashboard/projects/upload-image',
                            data={'not_an_image': 'value'})
-    assert response.status_code in (301, 302, 403)
+    assert response.status_code in (301, 302), \
+        f'Expected redirect for unauthenticated upload, got {response.status_code}'
 
 
 def _save_settings(auth_client, monkeypatch, **overrides):

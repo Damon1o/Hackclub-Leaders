@@ -21,7 +21,7 @@ from .helpers import (
     login_required,
     require_dashboard_csrf,
     require_leader_api,
-    save_dashboard_state,
+    viewer_is_leader,
 )
 from .storage import StorageError
 
@@ -170,7 +170,6 @@ def register(app, MAX_IMAGE_BYTES):
             return csrf_error
 
         payload = json_payload()
-        from .helpers import viewer_is_leader
         if not viewer_is_leader() and set(payload.keys()) - {'rsvp'}:
             return flask.jsonify({'error': 'Only leaders and mentors can edit events.'}), 403
 

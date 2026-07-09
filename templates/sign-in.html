@@ -178,6 +178,17 @@
 
             </div>
 
+            {% if playtest_enabled %}
+            <div class="playtest-buttons">
+                <p class="playtest-label" data-i18n="signin.playtestLabel">Quick playtest:</p>
+                <form method="post" action="{{ url_for('playtest_login') }}" class="playtest-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" name="role" value="leader" class="playtest-btn" data-i18n="signin.playtestLeader">Leader</button>
+                    <button type="submit" name="role" value="member" class="playtest-btn" data-i18n="signin.playtestMember">Member</button>
+                </form>
+            </div>
+            {% endif %}
+
             <p class="sign-in-footer-note">
                 <span data-i18n="signin.terms">By signing in, you agree to Hack Club's
                 <a href="https://hackclub.com/conduct" target="_blank" rel="noopener noreferrer">Code of Conduct</a>

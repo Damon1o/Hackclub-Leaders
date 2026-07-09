@@ -31,9 +31,8 @@ def auth_client(client):
 
 
 @pytest.fixture
-def admin_client(client):
-    import os
-    os.environ['ADMIN_EMAILS'] = 'admin@test.com'
+def admin_client(client, monkeypatch):
+    monkeypatch.setenv('ADMIN_EMAILS', 'admin@test.com')
     from src.helpers import ADMIN_EMAILS
     ADMIN_EMAILS.clear()
     ADMIN_EMAILS.add('admin@test.com')

@@ -12,6 +12,7 @@ from src.helpers import (
     DASHBOARD_LANGUAGES,
     StateTooLarge,
     get_csrf_token,
+    get_dashboard_state,
     get_sticker_files,
     is_admin,
     json_error,
@@ -75,7 +76,9 @@ def inject_user():
         is_leader=viewer_is_leader() if signed_in else False,
         is_admin=is_admin() if signed_in else False,
         dashboard_languages=DASHBOARD_LANGUAGES,
+        dashboard_state=get_dashboard_state() if signed_in else None,
         sticker_files=get_sticker_files(),
+        playtest_enabled=os.environ.get('PLAYTEST_ENABLED', '').lower() == 'true',
     )
 
 

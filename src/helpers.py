@@ -342,6 +342,103 @@ def default_dashboard_state():
     }
 
 
+def playtest_state():
+    today = date.today().isoformat()
+    leader_email = 'playtest.leader@hackclub.com'
+    member_email = 'playtest.member@hackclub.com'
+    return {
+        'settings': {
+            'joinCode': 'PLAYTEST',
+            'clubName': 'Playtest Hack Club',
+            'location': 'Burlington, VT',
+            'website': 'https://hackclub.com',
+            'avatar': '',
+            'publicDirectory': True,
+            'emailNotifications': True,
+            'darkModeDefault': False,
+            'newsletterSubscribed': True,
+            'language': 'en',
+        },
+        'members': [
+            {
+                'id': 'playtest-leader',
+                'name': 'Test Leader',
+                'email': leader_email,
+                'role': 'Leader',
+                'avatar': '',
+                'status': 'Active',
+            },
+            {
+                'id': 'playtest-member',
+                'name': 'Test Member',
+                'email': member_email,
+                'role': 'Member',
+                'avatar': '',
+                'status': 'Active',
+            },
+        ],
+        'events': [
+            {
+                'id': 'playtest-event-1',
+                'title': 'First Club Meeting',
+                'date': today,
+                'time': '15:30',
+                'location': 'Room 101',
+                'repeat': '',
+                'type': 'Workshop',
+                'attendees': 8,
+                'rsvp': True,
+            },
+            {
+                'id': 'playtest-event-2',
+                'title': 'Build Night',
+                'date': today,
+                'time': '18:00',
+                'location': 'Library Makerspace',
+                'repeat': '',
+                'type': 'Hackathon',
+                'attendees': 12,
+                'rsvp': False,
+            },
+        ],
+        'projects': [
+            {
+                'id': 'playtest-proj-1',
+                'name': 'LED Blinker',
+                'description': 'My first Arduino project — a blinking LED circuit.',
+                'url': '',
+                'repoUrl': '',
+                'demoUrl': '',
+                'thumbnail': '',
+                'hackatimeProject': '',
+                'ownerEmail': leader_email,
+                'ownerName': 'Test Leader',
+                'status': 'Shipped',
+                'date': today,
+            },
+            {
+                'id': 'playtest-proj-2',
+                'name': 'Club Website',
+                'description': 'A simple React site for club announcements.',
+                'url': 'https://example.com',
+                'repoUrl': 'https://github.com/playtest/club-site',
+                'demoUrl': '',
+                'thumbnail': '',
+                'hackatimeProject': '',
+                'ownerEmail': member_email,
+                'ownerName': 'Test Member',
+                'status': 'Submitted',
+                'date': today,
+            },
+        ],
+        'shopItems': [dict(item) for item in SHOP_ITEMS],
+        'cart': [],
+        'orders': [],
+        'itemRequests': [],
+        'newsletters': default_dashboard_state()['newsletters'],
+    }
+
+
 # ── Storage layer ──────────────────────────────────────────────────────────────
 
 def _storage():

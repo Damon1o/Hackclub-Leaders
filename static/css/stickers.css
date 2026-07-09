@@ -16,6 +16,7 @@
     cursor: grab;
     user-select: none;
     -webkit-user-drag: none;
+    object-fit: contain;
     filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.18));
     transition: transform 0.15s ease, filter 0.15s ease;
     will-change: transform, left, top;

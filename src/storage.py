@@ -586,6 +586,8 @@ class AirtableStorage:
 
 def make_storage(session):
     """Build the backend named by STORAGE_BACKEND (default: session)."""
+    if (session.get('user') or {}).get('provider') == 'playtest':
+        return SessionStorage(session)
     backend = os.environ.get('STORAGE_BACKEND', 'session').strip().lower()
     if backend == 'airtable':
         return AirtableStorage()

@@ -96,9 +96,21 @@
     animation-play-state: paused;
 }
 
+.carousel-track { animation-name: carousel-scroll; }
+
 @keyframes carousel-scroll {
     from { transform: translateX(0); }
     to   { transform: translateX(-4650px); }
+}
+
+@keyframes carousel-scroll-md {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-4200px); }
+}
+
+@keyframes carousel-scroll-sm {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-3900px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -658,11 +670,7 @@ body.dark-mode .supporters-logos img:hover {
     .carousel-viewport { margin-bottom: 16px; }
 
     .carousel-card { width: 260px; }
-
-    @keyframes carousel-scroll {
-        from { transform: translateX(0); }
-        to   { transform: translateX(-4200px); } /* 15 cards × 280px */
-    }
+    .carousel-track { animation-name: carousel-scroll-md; }
 
     .carousel-card-visual { height: 170px; }
 
@@ -682,11 +690,7 @@ body.dark-mode .supporters-logos img:hover {
 
 @media (max-width: 480px) {
     .carousel-card { width: 240px; }
-
-    @keyframes carousel-scroll {
-        from { transform: translateX(0); }
-        to   { transform: translateX(-3900px); } /* 15 cards × 260px */
-    }
+    .carousel-track { animation-name: carousel-scroll-sm; }
 
     .carousel-card-visual { height: 150px; }
 

@@ -42,3 +42,152 @@
         transition: none;
     }
 }
+
+/* ── Sticker control panel ───────────────────────────────────
+   Injected by stickers.js. Lets you toggle stickers on/off and
+   tune how many appear and how big they are. Prefs persist in
+   localStorage under 'stickerPrefs'. */
+
+.sticker-controls {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.sticker-controls-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: #ec3750;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.22);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sticker-controls-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+}
+
+.sticker-controls-btn:focus-visible {
+    outline: 2px solid #338eda;
+    outline-offset: 2px;
+}
+
+.sticker-controls-panel {
+    width: 210px;
+    padding: 14px;
+    border-radius: 12px;
+    background: #fff;
+    color: #1f2d3d;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 0.85rem;
+}
+
+.sticker-controls-panel[hidden] {
+    display: none;
+}
+
+.sticker-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sticker-controls-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.sticker-controls-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    color: #5a6a7a;
+}
+
+.sticker-controls-field input[type="range"] {
+    width: 100%;
+    accent-color: #ec3750;
+    cursor: pointer;
+}
+
+.sticker-controls-field input[type="range"]:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Toggle switch */
+.sticker-switch {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+}
+
+.sticker-switch input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sticker-switch-track {
+    width: 40px;
+    height: 22px;
+    border-radius: 22px;
+    background: #cdd6e0;
+    transition: background 0.15s ease;
+    position: relative;
+}
+
+.sticker-switch-track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s ease;
+}
+
+.sticker-switch input:checked + .sticker-switch-track {
+    background: #ec3750;
+}
+
+.sticker-switch input:checked + .sticker-switch-track::after {
+    transform: translateX(18px);
+}
+
+.sticker-switch input:focus-visible + .sticker-switch-track {
+    outline: 2px solid #338eda;
+    outline-offset: 2px;
+}
+
+body.dark-mode .sticker-controls-panel {
+    background: #1c2431;
+    color: #e6ebf1;
+}
+
+body.dark-mode .sticker-controls-field {
+    color: #9fb0c0;
+}
+
+body.dark-mode .sticker-switch-track {
+    background: #3a475a;
+}

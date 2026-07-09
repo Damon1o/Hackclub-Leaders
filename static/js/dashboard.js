@@ -1274,6 +1274,35 @@
                 : 'Invite your first member from the Team page.';
         }
 
+        // Legend <-> donut segment sync
+        const segs = ['.seg-leaders', '.seg-members', '.seg-mentors'];
+        const allSegs = document.querySelectorAll('.home-team .donut-seg');
+        const legendItems = document.querySelectorAll('.home-team .legend-item');
+
+        function spotlightSeg(i) {
+            allSegs.forEach(function (s) { s.classList.add('is-ghost'); });
+            var seg = document.querySelector('.home-team ' + segs[i]);
+            if (seg) { seg.classList.remove('is-ghost'); seg.classList.add('is-spotlit'); }
+            legendItems.forEach(function (l, j) { if (j !== i) l.classList.add('is-muted'); });
+        }
+        function clearSegs() {
+            allSegs.forEach(function (s) { s.classList.remove('is-ghost', 'is-spotlit'); });
+            legendItems.forEach(function (l) { l.classList.remove('is-muted'); });
+        }
+
+        legendItems.forEach(function (item, i) {
+            item.addEventListener('mouseenter', function () { spotlightSeg(i); });
+            item.addEventListener('mouseleave', clearSegs);
+        });
+
+        if (!window._donutSegListenersSet) {
+            window._donutSegListenersSet = true;
+            allSegs.forEach(function (seg, i) {
+                seg.addEventListener('mouseenter', function () { spotlightSeg(i); });
+                seg.addEventListener('mouseleave', clearSegs);
+            });
+        }
+
         const list = $('#homeUpcomingEvents');
         const empty = $('#homeEventsEmpty');
         if (list) {
@@ -1337,6 +1366,235 @@
         }
     }
 
+    // ── Chat ─────────────────────────────────────────────────────────────────
+    // Channels + messages. All members read/post; leaders manage channels.
+    // Live-ish via a 4s poll that pauses when the tab is hidden. Unread state
+    // is per-device, kept in localStorage (not shared server state).
+
+    const CHAT_READS_KEY = 'hcl:chatReads';
+    const CHAT_POLL_MS = 4000;
+    let chatChannels = [];
+    let chatActiveId = null;
+    let chatLastFetch = null;   // newest message createdAt seen in active channel
+    let chatPollTimer = null;
+    let chatVisibilityBound = false;
+
+    function chatReads() {
+        try {
+            return JSON.parse(localStorage.getItem(CHAT_READS_KEY) || '{}') || {};
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function markChannelRead(id, iso) {
+        const reads = chatReads();
+        reads[id] = iso || new Date().toISOString();
+        try {
+            localStorage.setItem(CHAT_READS_KEY, JSON.stringify(reads));
+        } catch (error) {
+            /* storage unavailable — non-fatal */
+        }
+    }
+
+    function channelUnread(channel) {
+        if (!channel.lastMessageAt || channel.id === chatActiveId) return false;
+        const seen = chatReads()[channel.id];
+        return !seen || channel.lastMessageAt > seen;
+    }
+
+    function chatTime(iso) {
+        if (!iso) return '';
+        const date = new Date(iso);
+        if (Number.isNaN(date.getTime())) return '';
+        return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
+    }
+
+    function renderChat() {
+        if (page !== 'chat') return;
+        removeSkeletons('chat');
+        if (Array.isArray(dashboardState.channels)) chatChannels = dashboardState.channels;
+        renderChannelList();
+
+        if (chatActiveId && !chatChannels.some((channel) => channel.id === chatActiveId)) {
+            chatActiveId = null;
+            closeChatThread();
+        }
+        if (!chatActiveId && chatChannels.length) {
+            selectChannel(chatChannels[0].id);
+        }
+        startChatPolling();
+        bindChatVisibility();
+    }
+
+    function renderChannelList() {
+        const list = document.getElementById('chatChannelList');
+        const emptyBox = document.getElementById('chatChannelsEmpty');
+        if (!list) return;
+        if (!chatChannels.length) {
+            list.innerHTML = '';
+            if (emptyBox) emptyBox.hidden = false;
+            return;
+        }
+        if (emptyBox) emptyBox.hidden = true;
+        list.innerHTML = chatChannels.map((channel) => {
+            const active = channel.id === chatActiveId ? ' is-active' : '';
+            const unread = channelUnread(channel)
+                ? '<span class="chat-unread-dot" aria-label="Unread messages"></span>' : '';
+            return `<button class="chat-channel${active}" type="button" data-channel="${escapeHtml(channel.id)}">
+                <span class="chat-channel-name">#&nbsp;${escapeHtml(channel.name)}</span>${unread}
+            </button>`;
+        }).join('');
+    }
+
+    function selectChannel(id) {
+        if (id === chatActiveId) return;
+        chatActiveId = id;
+        chatLastFetch = null;
+        const channel = chatChannels.find((item) => item.id === id);
+        const msgs = document.getElementById('chatMessages');
+        const head = document.getElementById('chatThreadHead');
+        const composer = document.getElementById('chatComposer');
+        const empty = document.getElementById('chatEmpty');
+        if (empty) empty.hidden = true;
+        if (head) head.hidden = false;
+        if (msgs) { msgs.hidden = false; msgs.innerHTML = ''; }
+        if (composer) composer.hidden = false;
+        const nameEl = document.getElementById('chatThreadName');
+        const descEl = document.getElementById('chatThreadDesc');
+        if (nameEl) nameEl.textContent = '# ' + (channel?.name || '');
+        if (descEl) descEl.textContent = channel?.description || '';
+        renderChannelList();
+        fetchMessages(id, true);
+    }
+
+    function closeChatThread() {
+        const msgs = document.getElementById('chatMessages');
+        const head = document.getElementById('chatThreadHead');
+        const composer = document.getElementById('chatComposer');
+        const empty = document.getElementById('chatEmpty');
+        if (head) head.hidden = true;
+        if (msgs) { msgs.hidden = true; msgs.innerHTML = ''; }
+        if (composer) composer.hidden = true;
+        if (empty) empty.hidden = false;
+        chatLastFetch = null;
+    }
+
+    function scrollChatToBottom() {
+        const box = document.getElementById('chatMessages');
+        if (box) box.scrollTop = box.scrollHeight;
+    }
+
+    function appendMessage(message) {
+        const box = document.getElementById('chatMessages');
+        if (!box) return;
+        const person = { name: message.authorName, avatar: message.authorAvatar };
+        const mine = (message.authorEmail || '').toLowerCase() === viewerEmail ? ' is-mine' : '';
+        const row = document.createElement('div');
+        row.className = 'chat-message' + mine;
+        row.innerHTML = `
+            ${avatarMarkup(person, 'avatar-sm')}
+            <div class="chat-message-body">
+                <div class="chat-message-meta">
+                    <span class="chat-message-author">${escapeHtml(message.authorName || message.authorEmail || 'Member')}</span>
+                    <span class="chat-message-time">${escapeHtml(chatTime(message.createdAt))}</span>
+                </div>
+                <p class="chat-message-text">${escapeHtml(message.body)}</p>
+            </div>`;
+        box.appendChild(row);
+    }
+
+    async function fetchMessages(id, initial) {
+        try {
+            const query = chatLastFetch ? `?since=${encodeURIComponent(chatLastFetch)}` : '';
+            const payload = await apiRequest(
+                `/api/dashboard/chat/channels/${encodeURIComponent(id)}/messages${query}`);
+            if (id !== chatActiveId) return;   // user switched channels mid-flight
+            const incoming = payload.messages || [];
+            if (!incoming.length) return;
+            const box = document.getElementById('chatMessages');
+            const nearBottom = box
+                ? (box.scrollHeight - box.scrollTop - box.clientHeight < 80) : true;
+            incoming.forEach(appendMessage);
+            chatLastFetch = incoming[incoming.length - 1].createdAt || chatLastFetch;
+            if (initial || nearBottom) scrollChatToBottom();
+            markChannelRead(id, chatLastFetch);
+            const channel = chatChannels.find((item) => item.id === id);
+            if (channel) channel.lastMessageAt = chatLastFetch;
+            renderChannelList();
+        } catch (error) {
+            /* keep showing what we have; the next poll retries */
+        }
+    }
+
+    async function refreshChannels() {
+        try {
+            const payload = await apiRequest('/api/dashboard/chat/channels');
+            chatChannels = payload.channels || chatChannels;
+            renderChannelList();
+            if (chatActiveId && !chatChannels.some((channel) => channel.id === chatActiveId)) {
+                chatActiveId = null;
+                closeChatThread();
+                if (chatChannels.length) selectChannel(chatChannels[0].id);
+            }
+        } catch (error) {
+            /* transient — retry next tick */
+        }
+    }
+
+    async function chatPoll() {
+        if (document.hidden || page !== 'chat') return;
+        await refreshChannels();
+        if (chatActiveId) await fetchMessages(chatActiveId);
+    }
+
+    function startChatPolling() {
+        if (chatPollTimer || page !== 'chat') return;
+        chatPollTimer = window.setInterval(chatPoll, CHAT_POLL_MS);
+    }
+
+    function stopChatPolling() {
+        if (chatPollTimer) {
+            window.clearInterval(chatPollTimer);
+            chatPollTimer = null;
+        }
+    }
+
+    function bindChatVisibility() {
+        if (chatVisibilityBound) return;
+        chatVisibilityBound = true;
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopChatPolling();
+            } else if (page === 'chat') {
+                startChatPolling();
+                chatPoll();
+            }
+        });
+    }
+
+    function prepareNewChannel() {
+        const form = $('#channelForm');
+        if (!form) return;
+        form.reset();
+        form.elements.id.value = '';
+        $('#channelModalTitle').textContent = 'New channel';
+        $('#deleteChannelButton').hidden = true;
+        setFormError('channelFormError', '');
+    }
+
+    function prepareEditChannel(id) {
+        const channel = chatChannels.find((item) => item.id === id);
+        const form = $('#channelForm');
+        if (!channel || !form) return;
+        form.elements.id.value = channel.id;
+        form.elements.name.value = channel.name || '';
+        form.elements.description.value = channel.description || '';
+        $('#channelModalTitle').textContent = 'Edit channel';
+        $('#deleteChannelButton').hidden = false;
+        setFormError('channelFormError', '');
+    }
+
     function renderPage() {
         renderHome();
         renderTeam();
@@ -1347,6 +1605,7 @@
         renderJoinLink();
         renderShop();
         renderNewsletters();
+        renderChat();
         renderSettings();
     }
 
@@ -1467,6 +1726,7 @@
                 if (modalId === 'eventModal') prepareNewEvent();
                 if (modalId === 'dispatchModal') prepareNewDispatch();
                 if (modalId === 'projectModal') prepareNewProject();
+                if (modalId === 'channelModal') prepareNewChannel();
                 openModal(modalId);
                 return;
             }
@@ -1479,6 +1739,20 @@
 
             if (event.target.classList.contains('modal-backdrop')) {
                 closeModal(event.target);
+                return;
+            }
+
+            const channelBtn = event.target.closest('[data-channel]');
+            if (channelBtn) {
+                selectChannel(channelBtn.dataset.channel);
+                return;
+            }
+
+            const editChannel = event.target.closest('#chatEditChannel');
+            if (editChannel) {
+                if (!chatActiveId) return;
+                prepareEditChannel(chatActiveId);
+                openModal('channelModal');
                 return;
             }
 
@@ -1670,6 +1944,70 @@
     }
 
     function setupForms() {
+        $('#chatComposer')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const input = event.currentTarget.elements.body;
+            const body = (input.value || '').trim();
+            if (!body || !chatActiveId) return;
+            input.value = '';
+            try {
+                await apiRequest(`/api/dashboard/chat/channels/${encodeURIComponent(chatActiveId)}/messages`, {
+                    method: 'POST',
+                    body: { body },
+                });
+                await fetchMessages(chatActiveId);
+                scrollChatToBottom();
+            } catch (error) {
+                input.value = body;   // restore so the user doesn't lose their text
+                showToast(error.message, 'error');
+            }
+        });
+
+        $('#channelForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const id = form.elements.id.value;
+            const body = {
+                name: form.elements.name.value,
+                description: form.elements.description.value,
+            };
+            setFormError('channelFormError', '');
+            try {
+                if (id) {
+                    await apiRequest(`/api/dashboard/chat/channels/${encodeURIComponent(id)}`, {
+                        method: 'PATCH', body,
+                    });
+                } else {
+                    const payload = await apiRequest('/api/dashboard/chat/channels', {
+                        method: 'POST', body,
+                    });
+                    if (payload.channel) selectChannel(payload.channel.id);
+                }
+                closeModal('channelModal');
+                showToast('Channel saved.');
+            } catch (error) {
+                setFormError('channelFormError', error.message);
+            }
+        });
+
+        $('#deleteChannelButton')?.addEventListener('click', async () => {
+            const id = $('#channelForm')?.elements.id.value;
+            if (!id) return;
+            try {
+                await apiRequest(`/api/dashboard/chat/channels/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                });
+                if (chatActiveId === id) {
+                    chatActiveId = null;
+                    closeChatThread();
+                }
+                closeModal('channelModal');
+                showToast('Channel deleted.');
+            } catch (error) {
+                setFormError('channelFormError', error.message);
+            }
+        });
+
         $('#memberForm')?.addEventListener('submit', async (event) => {
             event.preventDefault();
             const form = event.currentTarget;
@@ -2063,6 +2401,19 @@
                 ctx.fillStyle = `rgba(${color}, ${alpha})`;
                 ctx.fill();
             }
+
+            if (pointer.x > 0 && pointer.y > 0) {
+                const glowRadius = 50;
+                const gradient = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, glowRadius);
+                const glowColor = dark ? '255, 255, 255' : '236, 55, 80';
+                gradient.addColorStop(0, `rgba(${glowColor}, 0.06)`);
+                gradient.addColorStop(0.5, `rgba(${glowColor}, 0.02)`);
+                gradient.addColorStop(1, `rgba(${glowColor}, 0)`);
+                ctx.beginPath();
+                ctx.arc(pointer.x, pointer.y, glowRadius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            }
         }
 
         function loop(time) {
@@ -2092,6 +2443,36 @@
         }
     }
 
+    function initHeroSpotlight() {
+        const hero = document.querySelector('.home-hero');
+        if (!hero) return;
+
+        let raf = 0;
+        let targetX = 0, targetY = 0;
+        let currentX = 0, currentY = 0;
+
+        hero.addEventListener('mousemove', function (e) {
+            const rect = hero.getBoundingClientRect();
+            targetX = ((e.clientX - rect.left) / rect.width) * 100;
+            targetY = ((e.clientY - rect.top) / rect.height) * 100;
+        });
+
+        hero.addEventListener('mouseleave', function () {
+            hero.style.removeProperty('--spot-x');
+            hero.style.removeProperty('--spot-y');
+        });
+
+        function frame() {
+            currentX += (targetX - currentX) * 0.1;
+            currentY += (targetY - currentY) * 0.1;
+            hero.style.setProperty('--spot-x', currentX.toFixed(1) + '%');
+            hero.style.setProperty('--spot-y', currentY.toFixed(1) + '%');
+            raf = requestAnimationFrame(frame);
+        }
+
+        raf = requestAnimationFrame(frame);
+    }
+
     function applyDarkModeDefault() {
         // dark-mode.js only knows localStorage; when the visitor has no saved
         // preference yet, fall back to the club's saved setting.
@@ -2117,6 +2498,7 @@
         applyDarkModeDefault();
         applyLanguageDefault();
         initBackground();
+        initHeroSpotlight();
         // Club-data pages ship an empty shell; admin pages have their own data.
         const clientDataPage = !hadEmbeddedData && page
             && page !== 'admin' && page !== 'admin-club';

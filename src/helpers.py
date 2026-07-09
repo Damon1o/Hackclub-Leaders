@@ -298,6 +298,8 @@ def default_dashboard_state():
         'orders': [],
         'itemRequests': [],
         'projects': [],
+        'channels': [],
+        'messages': [],
         'newsletters': [
             {
                 'id': 'dispatch-hardware-grants',
@@ -509,6 +511,10 @@ def get_dashboard_state():
 
 MAX_STATE_COOKIE_BYTES = 2800
 
+# In session (cookie) mode, keep only this many recent chat messages so a busy
+# channel can't overrun the cookie. Airtable mode keeps the full history.
+MAX_SESSION_MESSAGES = 30
+
 
 class StateTooLarge(Exception):  # noqa: N818
     pass
@@ -524,6 +530,11 @@ def save_dashboard_state(state):
     if isinstance(backend, SessionStorage):
         persisted = {key: value for key, value in state.items()
                      if key != 'shopItems'}
+        # Chat messages can grow without bound; the session cookie can't. Keep
+        # only the most recent few so a busy channel doesn't blow the cookie
+        # budget (Airtable mode has no cap and keeps everything).
+        if persisted.get('messages'):
+            persisted['messages'] = persisted['messages'][-MAX_SESSION_MESSAGES:]
         if _state_cookie_size(persisted) > MAX_STATE_COOKIE_BYTES:
             raise StateTooLarge()
         backend.save(_club_key(), persisted)
@@ -717,6 +728,23 @@ def _owned_project_or_error(state, project_id):
     if (project.get('ownerEmail') or '').strip().lower() != _viewer_email():
         return None, json_error('You can only change your own projects.', 403)
     return project, None
+
+
+# ── Chat helpers ───────────────────────────────────────────────────────────────
+
+MAX_MESSAGE_LEN = 500
+
+
+def channel_from_payload(payload, existing=None):
+    """Validate a channel create/edit payload. Returns (fields, error)."""
+    existing = existing or {}
+    name = clean_text(payload.get('name'), existing.get('name', ''),
+                      max_len=60).lstrip('#').strip()
+    description = clean_text(payload.get('description'),
+                            existing.get('description', ''), max_len=140)
+    if not name:
+        return None, 'Channel name is required.'
+    return {'name': name, 'description': description}, None
 
 
 # ── Admin helpers ──────────────────────────────────────────────────────────────

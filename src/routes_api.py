@@ -21,6 +21,7 @@ from .helpers import (
     login_required,
     require_dashboard_csrf,
     require_leader_api,
+    save_dashboard_state,
     viewer_is_leader,
 )
 from .storage import StorageError

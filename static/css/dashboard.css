@@ -205,12 +205,14 @@ body.dark-mode .dashboard-sidebar {
     overflow: hidden;
     cursor: pointer;
     border: 2px solid transparent;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     flex-shrink: 0;
 }
 
 .sidebar-profile:hover {
     border-color: var(--hackclub-red);
+    box-shadow: 0 0 0 3px rgba(236, 55, 80, 0.18);
+    transform: scale(1.06);
 }
 
 /* Avatar doubles as the "self settings" entry */
@@ -262,6 +264,12 @@ body.dark-mode .dashboard-sidebar {
     color: var(--dash-ink);
     margin: 0;
     line-height: 1;
+    transition: letter-spacing 0.4s ease, color 0.3s ease;
+}
+
+.dashboard-title:hover {
+    letter-spacing: 0.01em;
+    color: var(--hackclub-red);
 }
 
 .dashboard-subtitle {
@@ -372,6 +380,20 @@ body.dark-mode .dashboard-sidebar {
     flex-direction: column;
     justify-content: space-between;
     gap: 8px;
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+    cursor: default;
+}
+
+.metric-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--dash-shadow-lg);
+    border-color: var(--dash-accent, var(--hackclub-red));
+}
+
+.metric-tile:hover strong {
+    color: var(--dash-accent, var(--hackclub-red));
 }
 
 .metric-label {
@@ -387,6 +409,7 @@ body.dark-mode .dashboard-sidebar {
     font-family: var(--hackclub-title-font);
     font-size: 36px;
     line-height: 1;
+    transition: color 0.2s ease;
     font-variant-numeric: tabular-nums;
 }
 
@@ -611,6 +634,23 @@ body.dark-mode .badge-up {
     overflow: hidden;
 }
 
+/* Mouse-follow spotlight */
+.home-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle 280px at var(--spot-x, 50%) var(--spot-y, 50%),
+                rgba(236, 55, 80, 0.07) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.home-hero:hover::before {
+    opacity: 1;
+}
+
 /* Orpheus flag pinned to the corner like a sticker on a laptop lid */
 .home-hero::after {
     content: "";
@@ -714,7 +754,9 @@ body.dark-mode .badge-up {
 }
 
 .sticker:hover {
-    transform: rotate(0deg) translateY(-3px);
+    transform: rotate(0deg) translateY(-4px);
+    box-shadow: 0 3px 0 var(--sticker-color, var(--hackclub-red)),
+                0 8px 22px color-mix(in srgb, var(--sticker-color, var(--hackclub-red)) 35%, transparent);
 }
 
 .sticker-orange { --sticker-color: var(--hackclub-orange); }
@@ -751,6 +793,19 @@ body.dark-mode .badge-up {
     width: 100%;
     height: auto;
     transform: rotate(-90deg);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 0.3s ease;
+}
+
+.donut-svg:hover {
+    animation: rainbow-hue 1.5s linear infinite;
+    transform: rotate(-90deg) scale(1.06);
+    cursor: pointer;
+}
+
+@keyframes rainbow-hue {
+    0%   { filter: drop-shadow(0 0 14px rgba(236,55,80,0.35)) hue-rotate(0deg); }
+    100% { filter: drop-shadow(0 0 14px rgba(236,55,80,0.35)) hue-rotate(360deg); }
 }
 
 .donut-track {
@@ -786,6 +841,20 @@ body.dark-mode .badge-up {
     font-weight: bold;
     color: var(--dash-slate);
     white-space: nowrap;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.legend-item:hover {
+    transform: scale(1.05);
+}
+
+.legend-item:hover .legend-dot {
+    transform: scale(1.3);
+}
+
+.legend-item.is-muted {
+    opacity: 0.4;
 }
 
 .legend-dot {
@@ -793,6 +862,15 @@ body.dark-mode .badge-up {
     height: 9px;
     border-radius: 50%;
     flex-shrink: 0;
+    transition: transform 0.15s ease;
+}
+
+.donut-seg.is-ghost {
+    opacity: 0.25;
+}
+
+.donut-seg.is-spotlit {
+    filter: drop-shadow(0 0 6px currentColor) brightness(1.3);
 }
 
 .dot-red    { background: var(--hackclub-red); }
@@ -811,6 +889,21 @@ body.dark-mode .badge-up {
     background: var(--dash-band-gradient);
     color: #fff;
     box-shadow: 0 14px 36px rgba(236, 55, 80, 0.28);
+    transition: box-shadow 0.4s ease, filter 0.3s ease;
+}
+
+.level-band:hover {
+    box-shadow: 0 20px 48px rgba(236, 55, 80, 0.42);
+    filter: brightness(1.05);
+}
+
+.level-band:hover .level-progress-fill {
+    animation: progress-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes progress-shimmer {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(1.3); }
 }
 
 .level-band-info {
@@ -1005,12 +1098,13 @@ body.dark-mode .badge-up {
     border: 1px solid var(--dash-border);
     border-radius: 12px;
     background: var(--dash-fill);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .timeline-item:hover {
     transform: translateY(-2px);
     box-shadow: var(--dash-shadow-sm);
+    border-color: var(--dash-accent, var(--hackclub-blue));
 }
 
 .timeline-item.is-rsvped {
@@ -1588,6 +1682,12 @@ body.dark-mode .shop-price {
     font-size: 12px;
     font-weight: bold;
     color: var(--dash-slate);
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.hacktime-lang:hover {
+    transform: translateY(-2px) scale(1.05);
+    border-color: var(--dash-accent, var(--hackclub-red));
 }
 
 .hacktime-loading,
@@ -1646,6 +1746,13 @@ body.dark-mode .shop-price {
     border: 1px solid var(--dash-border);
     border-radius: 14px;
     box-shadow: var(--dash-shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--dash-shadow-lg);
+    border-color: var(--dash-accent, var(--hackclub-cyan));
 }
 
 .project-card.is-readonly {
@@ -1777,7 +1884,7 @@ body.dark-mode .shop-price {
     align-items: center;
     padding: 14px;
     text-align: left;
-    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .newsletter-row:hover,
@@ -1785,6 +1892,7 @@ body.dark-mode .shop-price {
     border-color: rgba(236, 55, 80, 0.45);
     background: var(--dash-card);
     transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(236, 55, 80, 0.08);
 }
 
 .newsletter-row strong {
@@ -2155,9 +2263,14 @@ body.dark-mode .form-error {
     left: 4px;
     bottom: 4px;
     background-color: #fff;
-    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.2s ease;
     border-radius: 50%;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch:hover .toggle-slider:before {
+    box-shadow: 0 2px 8px rgba(236, 55, 80, 0.35);
 }
 
 input:checked + .toggle-slider {
@@ -3058,4 +3171,245 @@ body.dark-mode .dashboard-wrapper {
         color-mix(in srgb, var(--dash-accent) 5%, transparent),
         transparent 60%
     );
+}
+
+/* ── Chat ─────────────────────────────────────────────────────────────────── */
+
+.chat-layout {
+    display: flex;
+    gap: 16px;
+    height: calc(100vh - 240px);
+    min-height: 440px;
+}
+
+.chat-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: 16px;
+    box-shadow: var(--dash-shadow-sm);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--dash-border);
+}
+
+.chat-sidebar-head h2 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--dash-ink);
+}
+
+.chat-channel-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.chat-channel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    color: var(--dash-slate);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.chat-channel:hover {
+    background: var(--dash-fill);
+}
+
+.chat-channel.is-active {
+    background: var(--dash-fill);
+    color: var(--dash-ink);
+    font-weight: 600;
+}
+
+.chat-channel-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-unread-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--hackclub-red);
+    flex-shrink: 0;
+}
+
+.chat-channels-empty {
+    padding: 18px 16px;
+    text-align: center;
+    color: var(--dash-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.chat-main {
+    flex: 1;
+    min-width: 0;
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: 16px;
+    box-shadow: var(--dash-shadow-sm);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dash-muted);
+    padding: 24px;
+    text-align: center;
+}
+
+.chat-thread-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--dash-border);
+}
+
+.chat-thread-head h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--dash-ink);
+}
+
+.chat-muted {
+    color: var(--dash-muted);
+    font-size: 0.85rem;
+    margin: 2px 0 0;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.chat-message {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.chat-message .avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--dash-fill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.chat-message .avatar-sm.avatar-fallback {
+    font-size: 14px;
+}
+
+.chat-message-body {
+    min-width: 0;
+}
+
+.chat-message-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.chat-message-author {
+    font-weight: 600;
+    color: var(--dash-ink);
+    font-size: 0.9rem;
+}
+
+.chat-message.is-mine .chat-message-author::after {
+    content: " (you)";
+    color: var(--dash-muted);
+    font-weight: 400;
+    font-size: 0.78rem;
+}
+
+.chat-message-time {
+    color: var(--dash-muted);
+    font-size: 0.75rem;
+}
+
+.chat-message-text {
+    margin: 2px 0 0;
+    color: var(--dash-slate);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.chat-composer {
+    display: flex;
+    gap: 10px;
+    padding: 14px 18px;
+    border-top: 1px solid var(--dash-border);
+}
+
+.chat-composer-input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--dash-border);
+    background: var(--dash-bg);
+    color: var(--dash-ink);
+    font: inherit;
+}
+
+.chat-composer-input:focus {
+    outline: 2px solid var(--hackclub-red);
+    outline-offset: 1px;
+}
+
+@media (max-width: 768px) {
+    .chat-layout {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .chat-sidebar {
+        width: 100%;
+        max-height: 220px;
+    }
+
+    .chat-main {
+        min-height: 440px;
+    }
 }

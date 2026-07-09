@@ -65,6 +65,13 @@ PROJECT_FIELDS = [('name', 'Name'), ('description', 'Description'),
                   ('status', 'Status'),
                   ('ownerEmail', 'Owner Email'), ('ownerName', 'Owner Name'),
                   ('date', 'Date')]
+CHANNEL_FIELDS = [('name', 'Name'), ('description', 'Description'),
+                  ('createdBy', 'Created By'),
+                  ('lastMessageAt', 'Last Message At')]
+MESSAGE_FIELDS = [('channelId', 'Channel Id'), ('authorEmail', 'Author Email'),
+                  ('authorName', 'Author Name'),
+                  ('authorAvatar', 'Author Avatar'), ('body', 'Body'),
+                  ('createdAt', 'Created At')]
 
 SETTINGS_FIELDS = [('clubName', 'Club Name'), ('location', 'Location'),
                    ('website', 'Website'), ('avatar', 'Avatar'),
@@ -169,13 +176,16 @@ class AirtableStorage:
         ('ORDERS', 'Orders', 'orders', ORDER_FIELDS),
         ('ITEM_REQUESTS', 'ItemRequests', 'itemRequests', ITEM_REQUEST_FIELDS),
         ('PROJECTS', 'Projects', 'projects', PROJECT_FIELDS),
+        ('CHANNELS', 'Channels', 'channels', CHANNEL_FIELDS),
+        ('MESSAGES', 'Messages', 'messages', MESSAGE_FIELDS),
     ]
 
     # Tables that degrade gracefully if the base doesn't have them yet (that
     # section is empty / not persisted instead of erroring). Projects is NOT
     # here — it is the single source of truth for projects and ships, so the
-    # base must have a Projects table.
-    OPTIONAL_CHILD_KEYS = {'itemRequests'}
+    # base must have a Projects table. Chat tables are optional so existing
+    # bases keep working until the club adds the Channels/Messages tables.
+    OPTIONAL_CHILD_KEYS = {'itemRequests', 'channels', 'messages'}
 
     def __init__(self, token=None, base_id=None):
         self.token = token or os.environ.get('AIRTABLE_TOKEN', '')

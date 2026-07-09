@@ -1,0 +1,98 @@
+{% extends "dashboard_layout.html" %}
+
+{% block page_title %}<span data-i18n="side.chat">Chat</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="chat.subtitle">Talk with your club in shared channels.</span>{% endblock %}
+
+{% block content %}
+<div class="dashboard-page" data-dashboard-page="chat">
+    <div class="skeleton-block" data-skeleton="chat" style="padding:20px;">
+        <div style="display:flex; gap:16px;">
+            <div style="width:220px; display:flex; flex-direction:column; gap:10px;">
+                <div class="skeleton skeleton-card" style="height:34px;"></div>
+                <div class="skeleton skeleton-card" style="height:34px;"></div>
+                <div class="skeleton skeleton-card" style="height:34px;"></div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:12px;">
+                <div class="skeleton skeleton-card" style="height:48px;"></div>
+                <div class="skeleton skeleton-card" style="height:48px;"></div>
+                <div class="skeleton skeleton-card" style="height:48px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-layout">
+        <aside class="chat-sidebar">
+            <div class="chat-sidebar-head">
+                <h2 data-i18n="chat.channels">Channels</h2>
+                {% if is_leader %}
+                <button class="icon-button" type="button" data-open-modal="channelModal"
+                    title="New channel" aria-label="New channel" data-i18n-attr="title:chat.newChannel;aria-label:chat.newChannel">
+                    <span aria-hidden="true">+</span>
+                </button>
+                {% endif %}
+            </div>
+            <div class="chat-channel-list" id="chatChannelList"></div>
+            <div class="chat-channels-empty" id="chatChannelsEmpty" hidden>
+                <p data-i18n="chat.noChannels">No channels yet.</p>
+                {% if is_leader %}
+                <button class="btn-primary small" type="button" data-open-modal="channelModal" data-i18n="chat.createFirst">Create the first channel</button>
+                {% else %}
+                <p class="chat-muted" data-i18n="chat.askLeader">Ask a club leader to create one.</p>
+                {% endif %}
+            </div>
+        </aside>
+
+        <main class="chat-main">
+            <div class="chat-empty" id="chatEmpty">
+                <p data-i18n="chat.pickChannel">Select a channel to start chatting.</p>
+            </div>
+
+            <header class="chat-thread-head" id="chatThreadHead" hidden>
+                <div>
+                    <h2 id="chatThreadName">#</h2>
+                    <p class="chat-muted" id="chatThreadDesc"></p>
+                </div>
+                {% if is_leader %}
+                <button class="text-button" type="button" id="chatEditChannel" data-i18n="chat.editChannel">Edit</button>
+                {% endif %}
+            </header>
+
+            <div class="chat-messages" id="chatMessages" hidden aria-live="polite"></div>
+
+            <form class="chat-composer" id="chatComposer" hidden autocomplete="off">
+                <input class="chat-composer-input" type="text" name="body" maxlength="500"
+                    data-i18n-attr="placeholder:chat.messagePlaceholder" placeholder="Type a message…" aria-label="Message">
+                <button class="btn-primary" type="submit" data-i18n="chat.send">Send</button>
+            </form>
+        </main>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="channelModal" aria-hidden="true">
+    <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="channelModalTitle">
+        <header class="modal-header">
+            <h2 id="channelModalTitle" data-i18n="chat.newChannel">New channel</h2>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close" data-i18n-attr="aria-label:common.close"><span aria-hidden="true" data-i18n="common.closeX">×</span></button>
+        </header>
+        <form class="modal-form" id="channelForm">
+            <input type="hidden" name="id">
+            <label class="form-group">
+                <span class="form-label" data-i18n="chat.channelName">Channel name</span>
+                <input class="form-input" type="text" name="name" maxlength="60" required
+                    data-i18n-attr="placeholder:chat.channelNamePlaceholder" placeholder="general">
+            </label>
+            <label class="form-group">
+                <span class="form-label" data-i18n="chat.channelDesc">Description</span>
+                <input class="form-input" type="text" name="description" maxlength="140"
+                    data-i18n-attr="placeholder:chat.channelDescPlaceholder" placeholder="What's this channel for?">
+            </label>
+            <p class="form-error" id="channelFormError" hidden></p>
+            <div class="modal-actions">
+                <button class="btn-secondary" type="button" id="deleteChannelButton" hidden data-i18n="chat.deleteChannel">Delete</button>
+                <button class="btn-secondary" type="button" data-modal-close data-i18n="chat.cancel">Cancel</button>
+                <button class="btn-primary" type="submit" data-i18n="chat.saveChannel">Save channel</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

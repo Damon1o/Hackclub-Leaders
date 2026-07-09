@@ -239,6 +239,11 @@ def register(app, HACKATIME_CLIENT_ID):
     def dashboard_shop():
         return flask.render_template('dashboard/shop.html')
 
+    @app.route('/dashboard/chat')
+    @login_required
+    def dashboard_chat():
+        return flask.render_template('dashboard/chat.html')
+
     @app.route('/dashboard/newsletters')
     @login_required
     def dashboard_newsletters():

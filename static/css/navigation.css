@@ -44,11 +44,13 @@
 
 .navigation-bar .animated-nav-logo img {
     height: 48px;
-    transition: transform 0.2s ease-in-out;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 0.3s ease;
 }
 
 .navigation-bar .animated-nav-logo img:hover {
-    transform: scale(1.05);
+    transform: scale(1.08) rotate(2deg);
+    filter: drop-shadow(0 0 8px rgba(236, 55, 80, 0.4));
 }
 
 .navigation-bar .nav-links {
@@ -144,6 +146,19 @@
 
 .navigation-bar .mode-switch button.active .icon-second {
     display: inline-block;
+}
+
+.navigation-bar .mode-switch button svg {
+    transition: transform 0.3s ease;
+}
+
+.navigation-bar .mode-switch button:hover svg {
+    animation: mode-icon-spin 0.6s ease;
+}
+
+@keyframes mode-icon-spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .navigation-bar .apply-now-container {

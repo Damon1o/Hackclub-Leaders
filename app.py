@@ -87,12 +87,14 @@ def inject_user():
 from src.routes_admin import register as register_admin  # noqa: E402
 from src.routes_api import register as register_api  # noqa: E402
 from src.routes_auth import register as register_auth  # noqa: E402
+from src.routes_chat import register as register_chat  # noqa: E402
 from src.routes_club import register as register_club  # noqa: E402
 from src.routes_web import register as register_web  # noqa: E402
 
 register_web(app, HACKATIME_CLIENT_ID)
 register_admin(app)
 register_api(app, MAX_IMAGE_BYTES)
+register_chat(app)
 register_club(app, HACKATIME_CLIENT_ID)
 register_auth(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
               HACKATIME_CLIENT_ID, HACKATIME_CLIENT_SECRET)

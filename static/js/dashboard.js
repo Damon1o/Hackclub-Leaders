@@ -317,8 +317,14 @@
         openModal('memberModal');
     }
 
+    function removeSkeletons(pageName) {
+        const sk = document.querySelector(`[data-skeleton="${pageName}"]`);
+        if (sk) sk.classList.add('skeleton-hidden');
+    }
+
     function renderTeam() {
         if (page !== 'team') return;
+        removeSkeletons('team');
         const roster = $('#teamRoster');
         const empty = $('#teamEmpty');
         const people = members();
@@ -331,8 +337,8 @@
         $('#memberCountLabel').textContent = `${people.length} ${people.length === 1 ? 'person' : 'people'}`;
 
         if (!roster) return;
-        roster.innerHTML = people.map((member) => `
-            <article class="item-card member-card">
+        roster.innerHTML = people.map((member, index) => `
+            <article class="item-card member-card" style="--card-index: ${index}">
                 <div class="member-card-top">
                     ${avatarMarkup(member)}
                     <span class="badge-role ${roleClass(member.role)}">${escapeHtml(member.role)}</span>
@@ -355,6 +361,7 @@
         form.elements.id.value = '';
         form.elements.type.value = 'Workshop';
         form.elements.attendees.value = '12';
+        form.elements.repeat.value = '';
         form.elements.rsvp.checked = false;
         $('#eventModalTitle').textContent = 'New event';
         $('#deleteEventButton').hidden = true;
@@ -372,6 +379,7 @@
         form.elements.location.value = event.location || '';
         form.elements.type.value = event.type || '';
         form.elements.attendees.value = event.attendees || 0;
+        form.elements.repeat.value = event.repeat || '';
         form.elements.rsvp.checked = Boolean(event.rsvp);
         $('#eventModalTitle').textContent = 'Edit event';
         $('#deleteEventButton').hidden = false;
@@ -379,8 +387,48 @@
         openModal('eventModal');
     }
 
+    const REPEAT_LABELS = {
+        daily: 'Daily',
+        weekdays: 'Weekdays',
+        weekly: 'Weekly',
+        biweekly: 'Every 2 weeks',
+        monthly: 'Monthly',
+    };
+
+    function isoDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Roll a repeating event forward to its first occurrence on/after `today`, so
+    // a weekly meeting always shows its next date instead of drifting into the
+    // past. Non-repeating (or future) events keep their stored date.
+    function nextOccurrenceISO(event, today) {
+        if (!event.date) return '';
+        const date = new Date(event.date + 'T00:00:00');
+        if (Number.isNaN(date.getTime())) return event.date;
+        const repeat = REPEAT_LABELS[event.repeat] ? event.repeat : '';
+        if (!repeat || date >= today) return isoDate(date);
+        let guard = 0;
+        while (date < today && guard < 1000) {
+            guard += 1;
+            if (repeat === 'daily') date.setDate(date.getDate() + 1);
+            else if (repeat === 'weekly') date.setDate(date.getDate() + 7);
+            else if (repeat === 'biweekly') date.setDate(date.getDate() + 14);
+            else if (repeat === 'monthly') date.setMonth(date.getMonth() + 1);
+            else if (repeat === 'weekdays') {
+                do { date.setDate(date.getDate() + 1); }
+                while (date.getDay() === 0 || date.getDay() === 6);
+            }
+        }
+        return isoDate(date);
+    }
+
     function renderEvents() {
         if (page !== 'events') return;
+        removeSkeletons('events');
         const list = $('#eventList');
         const empty = $('#eventsEmpty');
         const upcoming = events();
@@ -391,11 +439,38 @@
         $('#rsvpTotal').textContent = rsvps;
         $('#attendeeTotal').textContent = attendees;
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        function eventStatusClass(dateStr) {
+            if (!dateStr) return 'is-upcoming';
+            const eventDate = new Date(dateStr + 'T00:00:00');
+            eventDate.setHours(0, 0, 0, 0);
+            const diff = Math.round((eventDate - today) / 86400000);
+            if (diff < 0) return 'is-past';
+            if (diff === 0) return 'is-today';
+            if (diff <= 7) return 'is-soon';
+            return 'is-upcoming';
+        }
         if (!list) return;
-        list.innerHTML = upcoming.map((event, index) => `
-            <article class="timeline-item ${event.rsvp ? 'is-rsvped' : ''}">
+
+        // Sort by the *effective* (next-occurrence) date so a rolled-forward
+        // repeating event lands in its true position on the timeline.
+        const ordered = upcoming
+            .map((event) => ({ event, effDate: nextOccurrenceISO(event, today) }))
+            .sort((a, b) => (a.effDate + (a.event.time || '')).localeCompare(b.effDate + (b.event.time || '')));
+
+        list.innerHTML = ordered.map(({ event, effDate }, index) => {
+            const statusClass = eventStatusClass(effDate);
+            const repeatBadge = REPEAT_LABELS[event.repeat]
+                ? `<span class="badge badge-repeat">↻ ${escapeHtml(REPEAT_LABELS[event.repeat])}</span>`
+                : '';
+            const badge = index === 0
+                ? `<span class="badge badge-up">Next up</span>`
+                : (statusClass === 'is-today' ? `<span class="badge badge-pending">Today</span>` : '');
+            return `
+            <article class="timeline-item ${event.rsvp ? 'is-rsvped' : ''} ${statusClass}" style="--card-index: ${index}">
                 <div class="timeline-date">
-                    <strong>${escapeHtml(formatDate(event.date).split(',')[0])}</strong>
+                    <strong>${escapeHtml(formatDate(effDate).split(',')[0])}</strong>
                     <span>${escapeHtml(formatTime(event.time))}</span>
                 </div>
                 <div class="timeline-body">
@@ -404,18 +479,21 @@
                         <p>${escapeHtml(event.location)} · ${escapeHtml(event.type || 'Event')} · ${Number(event.attendees || 0)} expected</p>
                     </div>
                     <div class="timeline-actions">
-                        ${index === 0 ? '<span class="badge badge-up">Next up</span>' : ''}
+                        ${repeatBadge}
+                        ${badge}
                         <button class="btn-secondary small" type="button" data-toggle-rsvp="${escapeHtml(event.id)}">${event.rsvp ? 'RSVPed' : 'RSVP'}</button>
                         ${isLeader ? `<button class="text-button" type="button" data-edit-event="${escapeHtml(event.id)}">Edit</button>` : ''}
                     </div>
                 </div>
             </article>
-        `).join('');
+            `;
+        }).join('');
         empty.hidden = upcoming.length > 0;
     }
 
     function renderShips() {
         if (page !== 'ships') return;
+        removeSkeletons('ships');
         const list = $('#shipList');
         const empty = $('#shipsEmpty');
         const progress = levelProgress();
@@ -427,8 +505,8 @@
         $('#shipToNext').textContent = `${progress.shippers} / ${SHIPPERS_REQUIRED}`;
 
         if (!list) return;
-        list.innerHTML = shipped.map((project) => `
-            <article class="timeline-item ship-item">
+        list.innerHTML = shipped.map((project, index) => `
+            <article class="timeline-item ship-item" style="--card-index: ${index}">
                 <div class="timeline-date">
                     <strong>${escapeHtml(formatDate(project.date).split(',')[0])}</strong>
                     <span>${escapeHtml(project.ownerName || project.ownerEmail || '')}</span>
@@ -770,6 +848,7 @@
 
     function renderProjects() {
         if (page !== 'projects') return;
+        removeSkeletons('projects');
         const mineList = $('#projectMineList');
         const submittedList = $('#projectSubmittedList');
         const mine = projects().filter(
@@ -777,7 +856,7 @@
         const submitted = projects().filter((p) => p.status === 'Submitted');
 
         if (mineList) {
-            mineList.innerHTML = mine.map((project) => {
+            mineList.innerHTML = mine.map((project, index) => {
                 const isSubmitted = project.status === 'Submitted';
                 const isShipped = project.status === 'Shipped';
                 const missing = projectMissing(project);
@@ -796,7 +875,7 @@
                     primaryAction = `<button class="btn-primary small" type="button" data-submit-project="${escapeHtml(project.id)}">Submit to club</button>`;
                 }
                 return `
-                <article class="project-card">
+                <article class="project-card" style="--card-index: ${index}">
                     <div class="project-card-head">
                         <h3>${escapeHtml(project.name)}</h3>
                         ${projectStatusBadge(project.status)}
@@ -815,8 +894,8 @@
         $('#projectsEmpty').hidden = mine.length > 0;
 
         if (submittedList) {
-            submittedList.innerHTML = submitted.map((project) => `
-                <article class="project-card is-readonly">
+            submittedList.innerHTML = submitted.map((project, index) => `
+                <article class="project-card is-readonly" style="--card-index: ${index}">
                     <div class="project-card-head">
                         <h3>${escapeHtml(project.name)}</h3>
                         <span class="badge badge-up">Submitted</span>
@@ -832,6 +911,7 @@
 
     function renderLevels() {
         if (page !== 'levels') return;
+        removeSkeletons('levels');
         const progress = levelProgress();
 
         $('#levelCurrentName').textContent = `Level ${progress.level}`;
@@ -875,7 +955,7 @@
     // Shop filters shown in the catalog. "All" is special (shows everything);
     // the rest match a shop item's `filter` field. Each renders an image from
     // SHOP_FILTER_IMAGE_BASE + "<filter>.png".
-    const SHOP_FILTERS = ['All', 'Experiences', 'Outpost', 'Hardware', 'Software', 'Swag', 'Grants'];
+    const SHOP_FILTERS = ['All', 'Hardware', 'Swag', 'Digital'];
     const SHOP_FILTER_IMAGE_BASE = '/static/images/shop/filters/';
 
     function renderShopFilters() {
@@ -896,6 +976,7 @@
 
     function renderShop() {
         if (page !== 'shop') return;
+        removeSkeletons('shop');
         const grid = $('#shopGrid');
         const list = $('#cartList');
         const empty = $('#cartEmpty');
@@ -913,8 +994,8 @@
             const visibleItems = shopFilter === 'All'
                 ? shopItems()
                 : shopItems().filter((item) => item.filter === shopFilter);
-            grid.innerHTML = visibleItems.map((item) => `
-                <article class="item-card shop-card">
+            grid.innerHTML = visibleItems.map((item, index) => `
+                <article class="item-card shop-card" style="--card-index: ${index}">
                     <div class="shop-card-media">
                         <img src="${escapeHtml(item['image-src'] || '')}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">
                     </div>
@@ -1004,6 +1085,7 @@
 
     function renderNewsletters() {
         if (page !== 'newsletters') return;
+        removeSkeletons('newsletters');
         const list = $('#newsletterList');
         const archive = newsletters();
         const prefs = settings();
@@ -1013,8 +1095,8 @@
         $('#newsletterSubscribe').checked = Boolean(prefs.newsletterSubscribed);
 
         if (list) {
-            list.innerHTML = archive.map((dispatch) => `
-                <button class="newsletter-row ${dispatch.id === selectedNewsletterId ? 'active' : ''}" type="button" data-open-dispatch="${escapeHtml(dispatch.id)}">
+            list.innerHTML = archive.map((dispatch, index) => `
+                <button class="newsletter-row ${dispatch.id === selectedNewsletterId ? 'active' : ''}" type="button" data-open-dispatch="${escapeHtml(dispatch.id)}" style="--card-index: ${index}">
                     <span class="read-dot ${dispatch.read ? 'read' : ''}" aria-hidden="true"></span>
                     <span>
                         <strong>${escapeHtml(dispatch.title)}</strong>
@@ -1131,6 +1213,7 @@
 
     function renderHome() {
         if (page !== 'home') return;
+        removeSkeletons('home');
         const prefs = settings();
         const people = members();
         const upcoming = events();
@@ -1155,16 +1238,25 @@
         const mentors = people.filter((member) => member.role === 'Mentor').length;
         const plain = people.length - leaders - mentors;
 
-        const bar = $('#homeTeamBar');
-        if (bar) {
-            const total = people.length;
-            const setSegment = (selector, count) => {
-                const segment = $(selector, bar);
-                if (segment) segment.style.width = total ? `${(count / total) * 100}%` : '0%';
+        const donut = $('#homeTeamDonut');
+        if (donut) {
+            const total = people.length || 1;
+            const circum = 2 * Math.PI * 38;
+            let offset = 0;
+            const setSlice = (selector, count) => {
+                const slice = $(selector, donut);
+                if (!slice || !count) {
+                    if (slice) slice.setAttribute('stroke-dasharray', '0 999');
+                    return;
+                }
+                const dash = (count / total) * circum;
+                slice.setAttribute('stroke-dasharray', `${dash} ${circum - dash}`);
+                slice.setAttribute('stroke-dashoffset', String(-offset));
+                offset += dash;
             };
-            setSegment('.seg-leaders', leaders);
-            setSegment('.seg-members', plain);
-            setSegment('.seg-mentors', mentors);
+            setSlice('.seg-leaders', leaders);
+            setSlice('.seg-members', plain);
+            setSlice('.seg-mentors', mentors);
         }
 
         const breakdown = $('#homeRosterBreakdown');
@@ -1281,6 +1373,65 @@
         }
     }
 
+    // ── Admin: item requests ─────────────────────────────────────────────────
+    // The admin page is server-rendered outside dashboardState, so this panel
+    // fetches its own data and paints the pending requests from every club.
+
+    async function renderAdminItemRequests() {
+        const list = $('#adminItemRequestList');
+        if (!list) return;
+        try {
+            const payload = await apiRequest('/api/admin/item-requests');
+            const pending = (payload.itemRequests || []).filter(
+                (entry) => (entry.request?.status || 'Submitted') === 'Submitted');
+            if (!pending.length) {
+                list.innerHTML = `<div class="empty-state"><p>${
+                    escapeHtml(list.dataset.emptyText || 'No pending item requests.')}</p></div>`;
+                return;
+            }
+            list.innerHTML = pending.map((entry) => {
+                const req = entry.request || {};
+                const key = `${entry.clubKey}::${req.id}`;
+                const note = req.note ? ` — ${escapeHtml(req.note)}` : '';
+                const when = req.date ? ` · ${escapeHtml(req.date)}` : '';
+                return `
+                <article class="admin-review-item">
+                    <div class="admin-review-main">
+                        <h3>${escapeHtml(req.name || 'Item')}</h3>
+                        <p class="admin-review-meta">
+                            <strong>${escapeHtml(entry.clubName || 'Club')}</strong>${note}${when}
+                        </p>
+                    </div>
+                    <div class="admin-review-actions">
+                        <button class="btn-primary small" type="button"
+                            data-approve-item-request data-admin-item-request="${escapeHtml(key)}">Approve</button>
+                        <button class="btn-secondary small" type="button"
+                            data-reject-item-request data-admin-item-request="${escapeHtml(key)}">Reject</button>
+                    </div>
+                </article>`;
+            }).join('');
+        } catch (error) {
+            list.innerHTML = `<div class="empty-state"><p>${escapeHtml(error.message)}</p></div>`;
+        }
+    }
+
+    async function adminItemRequestAction(trigger, status, message) {
+        const [clubKey, requestId] = String(trigger.dataset.adminItemRequest || '').split('::');
+        if (!clubKey || !requestId) return;
+        trigger.disabled = true;
+        try {
+            await apiRequest(`/api/admin/item-requests/${encodeURIComponent(clubKey)}/${encodeURIComponent(requestId)}`, {
+                method: 'PATCH',
+                body: { status },
+            });
+            showToast(message);
+            renderAdminItemRequests();
+        } catch (error) {
+            trigger.disabled = false;
+            showToast(error.message, 'error');
+        }
+    }
+
     function setupGlobalEvents() {
         document.addEventListener('click', async (event) => {
             const approveProject = event.target.closest('[data-approve-project]');
@@ -1291,6 +1442,17 @@
             const rejectProject = event.target.closest('[data-reject-project]');
             if (rejectProject) {
                 await adminProjectAction(rejectProject, 'Draft', 'Project sent back to draft.');
+                return;
+            }
+
+            const approveItemRequest = event.target.closest('[data-approve-item-request]');
+            if (approveItemRequest) {
+                await adminItemRequestAction(approveItemRequest, 'approved', 'Item approved — added to the shop.');
+                return;
+            }
+            const rejectItemRequest = event.target.closest('[data-reject-item-request]');
+            if (rejectItemRequest) {
+                await adminItemRequestAction(rejectItemRequest, 'rejected', 'Item request rejected.');
                 return;
             }
 
@@ -1465,9 +1627,17 @@
             if (checkToggle) {
                 const saved = checklistState();
                 const id = checkToggle.dataset.checkItem;
+                const wasDone = saved[id];
                 saved[id] = !saved[id];
                 localStorage.setItem('leadersChecklist', JSON.stringify(saved));
                 renderChecklist();
+                if (!wasDone) {
+                    const row = document.querySelector(`.activity-item [data-check-item="${id}"]`)?.closest('.activity-item');
+                    if (row) {
+                        row.classList.add('celebrated');
+                        row.addEventListener('animationend', () => row.classList.remove('celebrated'), { once: true });
+                    }
+                }
                 return;
             }
 
@@ -1801,6 +1971,26 @@
                 if (stateLabel) stateLabel.textContent = '';
             }
         });
+
+        $('#adminShopItemForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const stateLabel = $('#adminShopItemSaveState');
+            setFormError('adminShopItemFormError', '');
+            if (stateLabel) stateLabel.textContent = 'Adding...';
+            try {
+                const { shopItem } = await apiRequest('/api/admin/shop-items', {
+                    method: 'POST',
+                    body: formObject(form),
+                });
+                if (stateLabel) stateLabel.textContent = 'Added';
+                showToast(`${shopItem.name} added to the shop.`);
+                form.reset();
+            } catch (error) {
+                setFormError('adminShopItemFormError', error.message);
+                if (stateLabel) stateLabel.textContent = '';
+            }
+        });
     }
 
     // ── Reactive background ──────────────────────────────────────────────────
@@ -1935,6 +2125,7 @@
         initHacktime();
         initAvatarUploads();
         if (clientDataPage) refreshState();
+        if (page === 'admin') renderAdminItemRequests();
     }
 
     if (document.readyState === 'loading') {

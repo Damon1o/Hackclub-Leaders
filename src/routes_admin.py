@@ -1,18 +1,20 @@
 import flask
 from flask import flash, redirect, url_for
 
-from helpers import (
+from .helpers import (
     ADMIN_REVIEW_STATUSES,
     _find_club_by_project,
     _load_admin_club,
     _persist_club,
     _storage,
+    add_shop_item,
     admin_required,
     clean_text,
     find_by_id,
     json_error,
     json_payload,
     parse_bool,
+    remove_shop_item,
     require_admin_api,
     require_dashboard_csrf,
 )
@@ -109,3 +111,90 @@ def register(app):
         project['status'] = status
         _persist_club(backend, club_key, state)
         return flask.jsonify({'project': project})
+
+    # ── Item requests ─────────────────────────────────────────────────────────
+
+    @app.get('/api/admin/item-requests')
+    def api_admin_item_requests():
+        admin_error = require_admin_api()
+        if admin_error:
+            return admin_error
+        return flask.jsonify(
+            {'itemRequests': _storage().list_item_requests()})
+
+    @app.patch('/api/admin/item-requests/<club_key>/<request_id>')
+    def api_admin_item_request_review(club_key, request_id):
+        admin_error = require_admin_api()
+        if admin_error:
+            return admin_error
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+        club_key = (club_key or '').strip().lower()
+        backend = _storage()
+        state, error = _load_admin_club(backend, club_key)
+        if error:
+            return error
+
+        requests_list = state.get('itemRequests') or []
+        item_request = find_by_id(requests_list, request_id)
+        if not item_request:
+            return json_error('Item request not found.', 404)
+
+        decision = clean_text(json_payload().get('status')).lower()
+        if decision == 'approved':
+            item_request['status'] = 'Approved'
+            # Auto-create a shop entry the admin can price/edit later. A
+            # duplicate name just means it's already in the shop — approval
+            # still stands, so swallow that.
+            shop_item = None
+            try:
+                shop_item = add_shop_item(item_request.get('name'),
+                                          'TBD', '', 'Swag')
+            except ValueError:
+                pass
+            _persist_club(backend, club_key, state)
+            return flask.jsonify({'request': item_request, 'shopItem': shop_item})
+        if decision == 'rejected':
+            state['itemRequests'] = [r for r in requests_list
+                                     if r.get('id') != request_id]
+            _persist_club(backend, club_key, state)
+            return flask.jsonify(
+                {'request': {'id': request_id, 'status': 'Rejected'}})
+        return json_error('Status must be approved or rejected.')
+
+    # ── Shop catalog ──────────────────────────────────────────────────────────
+
+    @app.post('/api/admin/shop-items')
+    def api_admin_shop_item_add():
+        admin_error = require_admin_api()
+        if admin_error:
+            return admin_error
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+        payload = json_payload()
+        name = clean_text(payload.get('name'), max_len=120)
+        cost = clean_text(payload.get('cost'), max_len=20)
+        item_filter = clean_text(payload.get('filter'), max_len=20)
+        image = clean_text(payload.get('image'), max_len=500)
+        if image and not image.startswith(('http://', 'https://', '/static/')):
+            return json_error(
+                'Image URL must start with http://, https://, or /static/.')
+        try:
+            item = add_shop_item(name, cost, image, item_filter)
+        except ValueError as exc:
+            return json_error(str(exc))
+        return flask.jsonify({'shopItem': item})
+
+    @app.delete('/api/admin/shop-items/<slug>')
+    def api_admin_shop_item_delete(slug):
+        admin_error = require_admin_api()
+        if admin_error:
+            return admin_error
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+        if not remove_shop_item(slug):
+            return json_error('Shop item not found.', 404)
+        return flask.jsonify({'removed': (slug or '').strip()})

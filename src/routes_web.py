@@ -3,7 +3,7 @@ import secrets
 import flask
 from flask import flash, redirect, request, session, url_for
 
-from helpers import (
+from .helpers import (
     _item_id,
     _storage,
     clean_text,
@@ -16,7 +16,7 @@ from helpers import (
     save_dashboard_state,
     viewer_club_lite,
 )
-from storage import SessionStorage
+from .storage import SessionStorage
 
 
 def register(app, HACKATIME_CLIENT_ID):

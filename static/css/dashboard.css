@@ -48,6 +48,35 @@ body.dark-mode.dashboard-layout {
     display: none !important;
 }
 
+/* ── Nav language switcher ───────────────────────────────────────────────── */
+
+.lang-switch-nav {
+    display: flex;
+    align-items: center;
+    margin-right: 4px;
+}
+
+.lang-switcher-nav-select {
+    background: transparent;
+    border: 1px solid var(--dash-border);
+    color: var(--dash-slate);
+    font-size: 13px;
+    padding: 4px 24px 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238492a6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    min-width: 48px;
+    text-align: center;
+}
+
+body.dark-mode.dashboard-layout .lang-switcher-nav-select {
+    color: var(--dash-slate);
+    border-color: var(--dash-border);
+}
+
 /* ── Shell ────────────────────────────────────────────────────────────────── */
 
 .dashboard-bg {
@@ -549,6 +578,12 @@ body.dark-mode .badge-up {
     color: var(--hackclub-purple);
 }
 
+/* Recurring-event badge — tinted with the current page accent (blue on events). */
+.badge-repeat {
+    background: color-mix(in srgb, var(--dash-accent) 14%, transparent);
+    color: var(--dash-accent);
+}
+
 .status-chip {
     display: inline-flex;
     align-items: center;
@@ -704,24 +739,37 @@ body.dark-mode .badge-up {
     font-variant-numeric: tabular-nums;
 }
 
-.team-bar {
-    display: flex;
-    height: 14px;
-    margin-top: 18px;
-    border-radius: 999px;
-    background: var(--dash-fill);
-    overflow: hidden;
+/* ── Team donut chart ─────────────────────────────────────────────────────── */
+
+.team-donut {
+    position: relative;
+    width: min(180px, 46%);
+    margin: 14px auto 0;
 }
 
-.team-bar-seg {
-    height: 100%;
-    width: 0;
-    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+.donut-svg {
+    width: 100%;
+    height: auto;
+    transform: rotate(-90deg);
 }
 
-.seg-leaders { background: var(--hackclub-red); }
-.seg-members { background: var(--hackclub-orange); }
-.seg-mentors { background: var(--hackclub-purple); }
+.donut-track {
+    fill: none;
+    stroke: var(--dash-border);
+    stroke-width: 12;
+}
+
+.donut-seg {
+    fill: none;
+    stroke-width: 12;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                stroke-dashoffset 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.donut-seg.seg-leaders { stroke: var(--hackclub-red); }
+.donut-seg.seg-members { stroke: var(--hackclub-orange); }
+.donut-seg.seg-mentors { stroke: var(--hackclub-purple); }
 
 .team-legend {
     display: flex;
@@ -1986,6 +2034,22 @@ body.dark-mode .form-error {
     flex-shrink: 0;
 }
 
+.admin-shop-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+}
+
+.admin-shop-form .form-actions {
+    margin-top: 16px;
+}
+
+@media (max-width: 640px) {
+    .admin-shop-fields {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 .admin-table-scroll {
     overflow-x: auto;
 }
@@ -2735,4 +2799,263 @@ img.thumb-preview[src=""] {
     .sticker:nth-child(even) {
         transform: none;
     }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PER-PAGE ACCENT OVERHAUL (CSS-only)
+   Each dashboard page carries a --dash-accent, hoisted to .dashboard-wrapper so
+   it reaches BOTH the sidebar and the page content (data-dashboard-page lives
+   deep inside .dashboard-main, so a plain attribute selector couldn't reach the
+   sibling sidebar). Soft tints/glows derive from the accent via color-mix, so a
+   single hue per page drives everything. Dark mode rides along automatically:
+   the mixes fold into --dash-card, which already flips per theme.
+───────────────────────────────────────────────────────────────────────────── */
+
+.dashboard-layout {
+    --dash-accent: var(--hackclub-red);
+}
+
+.dashboard-wrapper:has([data-dashboard-page="events"])   { --dash-accent: var(--hackclub-blue); }
+.dashboard-wrapper:has([data-dashboard-page="team"])     { --dash-accent: var(--hackclub-orange); }
+.dashboard-wrapper:has([data-dashboard-page="shop"])     { --dash-accent: var(--hackclub-purple); }
+.dashboard-wrapper:has([data-dashboard-page="ships"])    { --dash-accent: var(--hackclub-green); }
+.dashboard-wrapper:has([data-dashboard-page="projects"]) { --dash-accent: var(--hackclub-cyan); }
+.dashboard-wrapper:has([data-dashboard-page="home"]),
+.dashboard-wrapper:has([data-dashboard-page="levels"])   { --dash-accent: var(--hackclub-red); }
+
+/* Heading underline — a short accent bar under the page title. */
+.dashboard-main .dashboard-title::after {
+    content: "";
+    display: block;
+    width: 46px;
+    height: 4px;
+    margin-top: 12px;
+    border-radius: 999px;
+    background: var(--dash-accent);
+}
+
+/* Panel heading border — accent tick to the left of each section heading. */
+.dashboard-main .panel-heading h2 {
+    padding-left: 12px;
+    border-left: 4px solid var(--dash-accent);
+}
+
+/* Active sidebar link + level status figure pick up the page accent. */
+.dashboard-sidebar-link.active {
+    background: var(--dash-accent);
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--dash-accent) 40%, transparent);
+}
+
+.level-status-value {
+    color: var(--dash-accent);
+}
+
+/* In-page text links follow the accent. */
+.dashboard-main .text-button {
+    color: var(--dash-accent);
+}
+
+/* Focus rings adopt the accent across the whole wrapper (sidebar + content). */
+.dashboard-wrapper :focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--dash-accent) 55%, transparent);
+    outline-offset: 2px;
+}
+
+.form-input:focus {
+    border-color: var(--dash-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--dash-accent) 15%, transparent);
+    background: var(--dash-card);
+}
+
+/* ── 2. Gradient metric tiles (home) ──────────────────────────────────────── */
+
+.dashboard-metrics .metric-tile {
+    border-top: 3px solid var(--tile-color, var(--dash-accent));
+    background: linear-gradient(180deg,
+            color-mix(in srgb, var(--tile-color, var(--dash-accent)) 8%, var(--dash-card)) 0%,
+            var(--dash-card) 62%);
+}
+
+.dashboard-metrics .metric-tile:nth-child(1) { --tile-color: var(--hackclub-orange); }
+.dashboard-metrics .metric-tile:nth-child(2) { --tile-color: var(--hackclub-blue); }
+.dashboard-metrics .metric-tile:nth-child(3) { --tile-color: var(--hackclub-green); }
+
+/* ── 3. Sidebar icon colour-on-hover ──────────────────────────────────────── */
+
+/* :not(.active) so the current page's white-on-accent icon stays legible. */
+.dashboard-sidebar-link:not(.active)[href="/dashboard"]:hover            { color: var(--hackclub-red); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/team"]:hover       { color: var(--hackclub-orange); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/events"]:hover     { color: var(--hackclub-blue); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/ships"]:hover      { color: var(--hackclub-green); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/projects"]:hover   { color: var(--hackclub-cyan); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/levels"]:hover     { color: var(--hackclub-red); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/shop"]:hover       { color: var(--hackclub-purple); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/newsletters"]:hover { color: var(--hackclub-yellow); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/map"]:hover        { color: var(--hackclub-cyan); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/tools"]:hover      { color: var(--hackclub-orange); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/settings"]:hover   { color: var(--hackclub-blue); }
+
+/* currentColor = the per-link hue above, so the glow matches the icon. */
+.dashboard-sidebar-link:not(.active):hover .sidebar-icon {
+    filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* ── 4. Colored progress bars (context variants) ──────────────────────────── */
+
+[data-dashboard-page="events"] .level-progress-fill {
+    background: linear-gradient(90deg, var(--hackclub-blue), var(--hackclub-cyan));
+}
+
+[data-dashboard-page="ships"] .level-progress-fill {
+    /* no --hackclub-teal token exists; #17b8a1 is a green→teal endpoint */
+    background: linear-gradient(90deg, var(--hackclub-green), #17b8a1);
+}
+
+/* ── 5. Animated gradient shop-card borders ───────────────────────────────── */
+
+@property --shop-border-angle {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+}
+
+/* Masked conic-gradient ring drawn on ::before; fades in on hover. Where
+   @property is unsupported the angle simply stays fixed, so the ring still
+   appears as a static gradient border — graceful fallback. */
+[data-dashboard-page="shop"] .item-card {
+    position: relative;
+}
+
+[data-dashboard-page="shop"] .item-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(from var(--shop-border-angle),
+            var(--hackclub-purple), var(--hackclub-blue),
+            var(--hackclub-cyan), var(--hackclub-purple));
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+[data-dashboard-page="shop"] .item-card:hover::before {
+    opacity: 1;
+    animation: shop-border-spin 3s linear infinite;
+}
+
+@keyframes shop-border-spin {
+    to { --shop-border-angle: 360deg; }
+}
+
+/* The global reduced-motion block above already halts shop-border-spin; the
+   ring still shows (opacity 1), just without rotation. */
+
+/* ── 6. Event status timeline rings ────────────────────────────────────────── */
+
+.timeline-item.is-today      { border-left: 4px solid var(--hackclub-orange); padding-left: 15px; }
+.timeline-item.is-soon       { border-left: 4px solid var(--hackclub-blue);   padding-left: 15px; }
+.timeline-item.is-upcoming   { border-left: 4px solid var(--hackclub-cyan);   padding-left: 15px; }
+.timeline-item.is-past       { border-left: 4px solid var(--dash-border);     padding-left: 15px; }
+
+.timeline-item.is-today::after {
+    content: "";
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--hackclub-orange);
+    animation: today-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes today-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.35; transform: scale(1.45); }
+}
+
+body.dark-mode .timeline-item.is-past { border-left-color: #2a2a30; }
+
+/* ── 8. Staggered card entrance animations ─────────────────────────────────── */
+
+@keyframes card-enter {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.timeline-item,
+.item-card,
+.card-modern,
+.metric-tile,
+.tool-card,
+.project-card,
+.newsletter-row {
+    animation: card-enter 0.4s ease both;
+    animation-delay: calc(var(--card-index, 0) * 70ms);
+}
+
+/* Static cards / metric tiles get a row-based stagger via nth-child. */
+.home-grid .card-modern:nth-child(n+1) { --card-index: 0; }
+.home-grid .card-modern:nth-child(n+2) { --card-index: 1; }
+.home-grid .card-modern:nth-child(n+3) { --card-index: 2; }
+.home-grid .card-modern:nth-child(n+4) { --card-index: 3; }
+
+.dashboard-metrics .metric-tile:nth-child(1) { --card-index: 0; }
+.dashboard-metrics .metric-tile:nth-child(2) { --card-index: 1; }
+.dashboard-metrics .metric-tile:nth-child(3) { --card-index: 2; }
+
+/* Skeleton blocks suppress the entrance animation so the placeholder never fades in. */
+.skeleton-block {
+    animation: none;
+}
+
+/* Reduced-motion already disables ALL animations globally earlier in the file. */
+
+/* ── 9. Checklist completion celebration ───────────────────────────────────── */
+
+.activity-item.celebrated {
+    animation: checklist-celebrate 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+    border-radius: 12px;
+}
+
+@keyframes checklist-celebrate {
+    0%   { box-shadow: 0 0 0 0 rgba(51, 214, 166, 0.55); transform: scale(1); }
+    25%  { box-shadow: 0 0 0 8px rgba(51, 214, 166, 0); transform: scale(1.025); }
+    50%  { box-shadow: none; transform: scale(1); }
+    100% { box-shadow: none; transform: scale(1); }
+}
+
+/* ── 10. Dynamic ambient background tints ─────────────────────────────────── */
+
+.dashboard-wrapper {
+    background: radial-gradient(
+        ellipse 60% 50% at 30% 15%,
+        color-mix(in srgb, var(--dash-accent) 6%, transparent),
+        transparent 65%
+    ),
+    radial-gradient(
+        ellipse 50% 40% at 75% 80%,
+        color-mix(in srgb, var(--dash-accent) 4%, transparent),
+        transparent 60%
+    );
+}
+
+body.dark-mode .dashboard-wrapper {
+    background: radial-gradient(
+        ellipse 60% 50% at 30% 15%,
+        color-mix(in srgb, var(--dash-accent) 8%, transparent),
+        transparent 65%
+    ),
+    radial-gradient(
+        ellipse 50% 40% at 75% 80%,
+        color-mix(in srgb, var(--dash-accent) 5%, transparent),
+        transparent 60%
+    );
 }

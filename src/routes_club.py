@@ -4,7 +4,7 @@ import flask
 import requests
 from flask import request, session
 
-from helpers import (
+from .helpers import (
     _item_id,
     _storage,
     clean_text,

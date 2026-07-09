@@ -3,6 +3,8 @@ import json
 import os
 import re
 import secrets
+import tempfile
+import threading
 import zlib
 from datetime import date
 from functools import wraps
@@ -10,7 +12,7 @@ from functools import wraps
 import requests
 from flask import flash, g, jsonify, redirect, request, session, url_for
 
-from storage import SessionStorage, StorageError, make_storage
+from .storage import SessionStorage, StorageError, make_storage
 
 # ── Config constants (derived from env) ────────────────────────────────────────
 
@@ -131,7 +133,8 @@ def require_dashboard_csrf():
 # ── Shop catalog ───────────────────────────────────────────────────────────────
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SHOP_JSON_PATH = os.path.join(BASE_DIR, 'shop.json')
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+SHOP_JSON_PATH = os.path.join(PROJECT_ROOT, 'static', 'data', 'shop.json')
 
 
 def _slugify(text):
@@ -140,7 +143,7 @@ def _slugify(text):
 
 def load_shop_items():
     try:
-        with open(SHOP_JSON_PATH, encoding='utf-8') as fh:
+        with open(SHOP_JSON_PATH, encoding='utf-8-sig') as fh:
             raw = json.load(fh)
     except (OSError, ValueError):
         return []
@@ -158,6 +161,117 @@ def load_shop_items():
 
 
 SHOP_ITEMS = load_shop_items()
+_STICKER_FILES = None
+
+# Serializes shop.json reads/writes so two admins editing at once can't
+# clobber each other (the app is a single process, so a lock is enough).
+_SHOP_LOCK = threading.Lock()
+SHOP_FILTERS = {'Hardware', 'Swag', 'Digital'}
+
+
+def get_sticker_files():
+    global _STICKER_FILES
+    if _STICKER_FILES is None:
+        sticker_dir = os.path.join(PROJECT_ROOT, 'static', 'images', 'Stickers')
+        try:
+            _STICKER_FILES = sorted(
+                f for f in os.listdir(sticker_dir)
+                if os.path.splitext(f)[1].lower()
+                in ('.png', '.svg', '.gif', '.webp', '.jpg', '.jpeg')
+            )
+        except OSError:
+            _STICKER_FILES = []
+    return _STICKER_FILES
+
+
+def _read_shop_raw():
+    try:
+        with open(SHOP_JSON_PATH, encoding='utf-8') as fh:
+            raw = json.load(fh)
+    except (OSError, ValueError):
+        return []
+    return raw if isinstance(raw, list) else []
+
+
+def _write_shop_raw(raw):
+    # Write to a sibling temp file, then os.replace — atomic on Windows and
+    # POSIX, so a crash mid-write never leaves shop.json truncated.
+    directory = os.path.dirname(SHOP_JSON_PATH)
+    fd, tmp = tempfile.mkstemp(dir=directory, suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as fh:
+            json.dump(raw, fh, indent=2, ensure_ascii=False)
+            fh.write('\n')
+        os.replace(tmp, SHOP_JSON_PATH)
+    except BaseException:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        raise
+
+
+def _normalize_cost(cost):
+    """'$5', '5', '5.00' → '$5.00'; non-numeric labels ('Free', 'TBD') pass through."""
+    text = (cost or '').strip()
+    match = re.fullmatch(r'\$?([0-9]+(?:\.[0-9]{1,2})?)', text)
+    return f'${float(match.group(1)):.2f}' if match else text
+
+
+def _shop_hours(cost):
+    """The 'hours' price is 1.5x the dollar cost; word labels mirror the cost."""
+    match = re.fullmatch(r'\$([0-9]+(?:\.[0-9]{1,2})?)', cost or '')
+    return f'${float(match.group(1)) * 1.5:.2f}' if match else (cost or '')
+
+
+def add_shop_item(name, cost, image_src, item_filter):
+    """Append an item to shop.json and refresh the in-memory catalog.
+
+    Returns the catalog-shaped item dict. Raises ValueError for a blank name
+    or a duplicate (same slug)."""
+    global SHOP_ITEMS
+    name = (name or '').strip()
+    if not name:
+        raise ValueError('Item name is required.')
+    slug = _slugify(name)
+    item_filter = item_filter if item_filter in SHOP_FILTERS else 'Swag'
+    cost = _normalize_cost(cost) or 'TBD'
+    entry = {
+        'name': name,
+        'cost': cost,
+        'hours': _shop_hours(cost),
+        'image-src': (image_src or '').strip(),
+        'filter': item_filter,
+    }
+    with _SHOP_LOCK:
+        raw = _read_shop_raw()
+        if any(_slugify(e.get('name', '')) == slug for e in raw):
+            raise ValueError('An item with that name already exists.')
+        raw.append(entry)
+        _write_shop_raw(raw)
+        SHOP_ITEMS = load_shop_items()
+    return {
+        'id': slug,
+        'name': name,
+        'cost': cost,
+        'image-src': entry['image-src'],
+        'filter': item_filter,
+    }
+
+
+def remove_shop_item(slug):
+    """Drop the item whose slug matches and refresh the catalog. Returns
+    True if something was removed, False if no such item existed."""
+    global SHOP_ITEMS
+    slug = (slug or '').strip()
+    with _SHOP_LOCK:
+        raw = _read_shop_raw()
+        remaining = [e for e in raw if _slugify(e.get('name', '')) != slug]
+        if len(remaining) == len(raw):
+            return False
+        _write_shop_raw(remaining)
+        SHOP_ITEMS = load_shop_items()
+    return True
 
 
 # ── Default state ──────────────────────────────────────────────────────────────
@@ -438,6 +552,16 @@ def parse_language(value):
 
 # ── Event construction ─────────────────────────────────────────────────────────
 
+# Allowed recurrence cadences for events; '' means the event does not repeat.
+EVENT_REPEAT_OPTIONS = {'', 'daily', 'weekly', 'biweekly', 'monthly', 'weekdays'}
+
+
+def parse_repeat(value, fallback=''):
+    """Return a supported repeat cadence, or the fallback for anything else."""
+    code = str(value or '').strip().lower()
+    return code if code in EVENT_REPEAT_OPTIONS else fallback
+
+
 def event_from_payload(payload, existing=None):
     existing = existing or {}
     title = clean_text(payload.get('title'), existing.get('title', ''))
@@ -445,6 +569,7 @@ def event_from_payload(payload, existing=None):
     event_time = clean_text(payload.get('time'), existing.get('time', ''))
     location = clean_text(payload.get('location'), existing.get('location', ''))
     event_type = clean_text(payload.get('type'), existing.get('type', 'Workshop'))
+    repeat = parse_repeat(payload.get('repeat'), existing.get('repeat', ''))
     attendees = payload.get('attendees', existing.get('attendees', 0))
 
     if not title:
@@ -468,6 +593,7 @@ def event_from_payload(payload, existing=None):
         'time': event_time,
         'location': location,
         'type': event_type,
+        'repeat': repeat,
         'rsvp': parse_bool(payload.get('rsvp', existing.get('rsvp', False))),
         'attendees': attendees,
     }, None

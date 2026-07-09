@@ -1,0 +1,43 @@
+/* ── Draggable page stickers ────────────────────────────────
+   Randomly chosen from /static/images/Stickers/.
+   pointer-events: none on the container keeps stickers from
+   blocking clicks on page content unless you grab one. */
+   
+.sticker-field {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    pointer-events: none;
+}
+
+.draggable-sticker {
+    position: absolute;
+    pointer-events: auto;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
+    filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.18));
+    transition: transform 0.15s ease, filter 0.15s ease;
+    will-change: transform, left, top;
+}
+
+.draggable-sticker:active {
+    cursor: grabbing;
+}
+
+.draggable-sticker:hover {
+    transform: scale(1.12);
+    filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.28));
+    z-index: 101;
+}
+
+.draggable-sticker.is-dragging {
+    transition: none;
+    z-index: 200;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .draggable-sticker {
+        transition: none;
+    }
+}

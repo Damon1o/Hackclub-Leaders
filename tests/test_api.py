@@ -45,7 +45,7 @@ def test_hackatime_endpoints_require_auth(client):
 
 def test_error_handlers(client):
     with client.application.app_context():
-        from helpers import StateTooLarge
+        from src.helpers import StateTooLarge
         with client.application.test_request_context('/api/test'):
             response = client.application.handle_user_exception(
                 StateTooLarge())

@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 import requests
 from flask import flash, redirect, request, session, url_for
 
-from helpers import clean_text, login_required
+from .helpers import clean_text, login_required
 
 
 def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,

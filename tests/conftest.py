@@ -34,7 +34,7 @@ def auth_client(client):
 def admin_client(client):
     import os
     os.environ['ADMIN_EMAILS'] = 'admin@test.com'
-    from helpers import ADMIN_EMAILS
+    from src.helpers import ADMIN_EMAILS
     ADMIN_EMAILS.clear()
     ADMIN_EMAILS.add('admin@test.com')
     with client.session_transaction() as sess:

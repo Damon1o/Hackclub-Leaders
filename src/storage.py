@@ -50,8 +50,8 @@ AIRTABLE_API = 'https://api.airtable.com/v0'
 MEMBER_FIELDS = [('name', 'Name'), ('email', 'Email'), ('role', 'Role'),
                  ('status', 'Status'), ('avatar', 'Avatar')]
 EVENT_FIELDS = [('title', 'Title'), ('date', 'Date'), ('time', 'Time'),
-                ('location', 'Location'), ('type', 'Type'), ('rsvp', 'RSVP'),
-                ('attendees', 'Attendees')]
+                ('location', 'Location'), ('type', 'Type'), ('repeat', 'Repeat'),
+                ('rsvp', 'RSVP'), ('attendees', 'Attendees')]
 NEWSLETTER_FIELDS = [('title', 'Title'), ('excerpt', 'Excerpt'),
                      ('body', 'Body'), ('date', 'Date'),
                      ('readTime', 'Read Time'), ('read', 'Read')]
@@ -72,8 +72,7 @@ SETTINGS_FIELDS = [('clubName', 'Club Name'), ('location', 'Location'),
                    ('publicDirectory', 'Public Directory'),
                    ('emailNotifications', 'Email Notifications'),
                    ('darkModeDefault', 'Dark Mode Default'),
-                   ('newsletterSubscribed', 'Newsletter Subscribed'),
-                   ('language', 'Language')]
+                   ('newsletterSubscribed', 'Newsletter Subscribed')]
 
 BOOL_KEYS = {'rsvp', 'read', 'publicDirectory',
              'emailNotifications', 'darkModeDefault', 'newsletterSubscribed'}
@@ -142,6 +141,16 @@ class SessionStorage:
             {'clubKey': club_key, 'clubName': club_name, 'project': project}
             for project in state.get('projects') or []
             if project.get('status') == SUBMITTED_STATUS
+        ]
+
+    def list_item_requests(self):
+        clubs = self.list_clubs()
+        club_key = clubs[0]['clubKey'] if clubs else ''
+        club_name = clubs[0]['clubName'] if clubs else ''
+        state = self._session.get('dashboard_state') or {}
+        return [
+            {'clubKey': club_key, 'clubName': club_name, 'request': request}
+            for request in state.get('itemRequests') or []
         ]
 
 
@@ -364,6 +373,40 @@ class AirtableStorage:
             })
         pending.sort(key=lambda p: p['project'].get('date') or '', reverse=True)
         return pending
+
+    def list_item_requests(self):
+        """Every item request across all clubs, newest first, for the admin
+        panel. Degrades to an empty list if the (optional) ItemRequests table
+        isn't in the base yet."""
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            clubs_future = pool.submit(self._list_all, self.clubs_table)
+            requests_future = pool.submit(
+                self._list_all, self.tables['itemRequests'])
+            club_rows = clubs_future.result()
+            try:
+                request_rows = requests_future.result()
+            except StorageError:
+                request_rows = []
+
+        club_names = {
+            (r['fields'].get('Leader Email') or '').strip().lower():
+                r['fields'].get('Club Name') or 'Club'
+            for r in club_rows
+        }
+        result = []
+        for record in request_rows:
+            fields = record['fields']
+            key = (fields.get('Club Email') or '').strip().lower()
+            request = {'id': fields.get('App Id') or record['id']}
+            for item_key, field in ITEM_REQUEST_FIELDS:
+                request[item_key] = fields.get(field) or ''
+            result.append({
+                'clubKey': key,
+                'clubName': club_names.get(key, key or 'Unknown club'),
+                'request': request,
+            })
+        result.sort(key=lambda r: r['request'].get('date') or '', reverse=True)
+        return result
 
     def load_lite(self, club_key):
         """Just the club settings + members — enough for the membership gate

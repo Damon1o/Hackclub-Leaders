@@ -12,7 +12,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/skeleton.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stickers.css') }}">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
@@ -23,10 +25,10 @@
 
     <section class="navigation-bar">
         <div class="animated-nav-logo">
-            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" alt="Hack Club">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" alt="Hack Club" data-i18n-attr="alt:pub.navLogo">
         </div>
         <div class="nav-bar-text">
-            <a href="/">Hack Club Leaders</a>
+            <a href="/"><span data-i18n="pub.navBrand">Hack Club Leaders</span></a>
         </div>
         <div class="nav-links">
             <ul>
@@ -49,7 +51,7 @@
             </ul>
         </div>
         <div class="mode-switch">
-            <button class="mode-switch-button" id="toggleBtn" type="button" aria-label="Toggle dark mode">
+            <button class="mode-switch-button" id="toggleBtn" type="button" aria-label="Toggle dark mode" data-i18n-attr="aria-label:pub.toggleDarkMode">
                 <svg class="icon icon-first" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
                     stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" aria-label="moon" viewBox="0 0 32 32"
                     preserveAspectRatio="xMidYMid meet" fill="currentColor" width="16" height="16">
@@ -84,7 +86,7 @@
 
     <div class="dashboard-wrapper">
         <aside class="dashboard-sidebar">
-            <nav class="dashboard-sidebar-nav" aria-label="Dashboard">
+            <nav class="dashboard-sidebar-nav" aria-label="Dashboard" data-i18n-attr="aria-label:side.navLabel">
                 {% set current_path = request.path %}
                 <a href="/dashboard" class="dashboard-sidebar-link {% if current_path == '/dashboard' %}active{% endif %}" title="Home" aria-label="Home" data-i18n-attr="title:side.home;aria-label:side.home">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -155,7 +157,7 @@
                     </svg>
                 </a>
             </nav>
-            <nav class="dashboard-sidebar-nav dashboard-sidebar-bottom" aria-label="Dashboard utilities">
+            <nav class="dashboard-sidebar-nav dashboard-sidebar-bottom" aria-label="Dashboard utilities" data-i18n-attr="aria-label:side.utilLabel">
                 <a href="/dashboard/map" class="dashboard-sidebar-link {% if current_path == '/dashboard/map' %}active{% endif %}" title="Club Map" aria-label="Club Map" data-i18n-attr="title:side.map;aria-label:side.map">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-icon">
@@ -205,8 +207,8 @@
         <main class="dashboard-main" id="dashboardMain">
             <header class="dashboard-header">
                 <div class="dashboard-header-left">
-                    <h1 class="dashboard-title">{% block page_title %}Dashboard{% endblock %}</h1>
-                    <p class="dashboard-subtitle">{% block page_subtitle %}Welcome back, <strong>{{ current_user.name if current_user else 'User' }}</strong>.{% endblock %}</p>
+                    <h1 class="dashboard-title">{% block page_title %}<span data-i18n="side.home">Dashboard</span>{% endblock %}</h1>
+                    <p class="dashboard-subtitle">{% block page_subtitle %}<span data-i18n="home.welcomeBack">Welcome back, </span><strong>{{ current_user.name if current_user else 'User' }}</strong><span data-i18n="home.welcomeDot">.</span>{% endblock %}</p>
                 </div>
                 {% block header_right %}{% endblock %}
             </header>
@@ -218,7 +220,7 @@
                 <div class="flash flash--{{ category }}">
                     <span class="flash-status-dot" aria-hidden="true"></span>
                     <span>{{ message }}</span>
-                    <button class="flash-close" type="button" onclick="this.parentElement.remove()" aria-label="Dismiss">
+                    <button class="flash-close" type="button" onclick="this.parentElement.remove()" aria-label="Dismiss" data-i18n-attr="aria-label:common.dismiss">
                         <span aria-hidden="true">x</span>
                     </button>
                 </div>
@@ -233,10 +235,10 @@
     </div>
 
     <footer class="dashboard-footer">
-        <a href="/">Hack Club Leaders</a>
+        <a href="/"><span data-i18n="pub.navBrand">Hack Club Leaders</span></a>
         <a href="https://guide.leaders.hackclub.com/" data-i18n="footer.leaderGuide">Leader Guide</a>
-        <a href="https://hackclub.com/slack/">Slack</a>
-        <span>2026 Hack Club</span>
+        <a href="https://hackclub.com/slack/"><span data-i18n="footer.slack">Slack</span></a>
+        <span data-i18n="footer.copyright">2026 Hack Club</span>
     </footer>
 
     <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
@@ -246,6 +248,9 @@
     <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script id="stickerData" type="application/json">{{ sticker_files | tojson }}</script>
+    <div class="sticker-field" id="stickerField" data-sticker-count="3" aria-hidden="true"></div>
+    <script defer src="{{ url_for('static', filename='js/stickers.js') }}"></script>
 </body>
 
 </html>

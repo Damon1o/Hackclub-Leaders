@@ -1,54 +1,72 @@
 {% extends "dashboard_layout.html" %}
 
-{% block page_title %}Home{% endblock %}
-{% block page_subtitle %}Welcome back, <strong>{{ current_user.name if current_user else 'User' }}</strong>! Here's
-what's happening at your club.{% endblock %}
+{% block page_title %}<span data-i18n="side.home">Home</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="home.subtitle">Welcome back, <strong>{{ current_user.name if current_user else 'User' }}</strong>! Here's what's happening at your club.</span>{% endblock %}
 
 {% block content %}
 <div class="dashboard-page home-grid" data-dashboard-page="home">
 
+    <div class="skeleton-block" data-skeleton="home" style="padding:20px;">
+      <div class="skeleton skeleton-heading"></div>
+      <div class="skeleton skeleton-text short"></div>
+      <div style="display:flex; gap:12px; margin:16px 0;">
+        <div class="skeleton skeleton-metric"></div>
+        <div class="skeleton skeleton-metric"></div>
+        <div class="skeleton skeleton-metric"></div>
+        <div class="skeleton skeleton-metric"></div>
+      </div>
+      <div class="skeleton skeleton-progress" style="margin:16px 0;"></div>
+      <div style="display:flex; gap:12px;">
+        <div class="skeleton skeleton-card" style="flex:1;"></div>
+        <div class="skeleton skeleton-card" style="flex:1;"></div>
+      </div>
+    </div>
+
     <section class="card-modern home-hero">
-        <p class="home-eyebrow">Club HQ</p>
-        <h2 class="home-hero-title"><span class="marker-highlight" id="homeClubName">Your club</span></h2>
-        <p class="home-hero-meta"><strong id="homeMemberTotal">0</strong> <span id="homeClubMeta">members strong</span>
+        <p class="home-eyebrow" data-i18n="home.eyebrow">Club HQ</p>
+        <h2 class="home-hero-title"><span class="marker-highlight" id="homeClubName" data-i18n="home.yourClub">Your club</span></h2>
+        <p class="home-hero-meta"><strong id="homeMemberTotal">0</strong> <span id="homeClubMeta" data-i18n="home.membersStrong">members strong</span>
         </p>
         <div class="sticker-row">
             <div class="sticker sticker-orange">
                 <strong id="homeEventTotal">0</strong>
-                <span>events planned</span>
+                <span data-i18n="home.eventsPlanned">events planned</span>
             </div>
             <div class="sticker sticker-blue">
                 <strong id="homeRsvpTotal">0</strong>
-                <span>RSVPs in</span>
+                <span data-i18n="home.rsvpsIn">RSVPs in</span>
             </div>
             <div class="sticker sticker-green">
                 <strong id="homeShipTotal">0</strong>
-                <span>projects shipped</span>
+                <span data-i18n="home.projectsShipped">projects shipped</span>
             </div>
             <div class="sticker sticker-purple">
                 <strong id="homeOrderTotal">0</strong>
-                <span>shop requests</span>
+                <span data-i18n="home.shopRequests">shop requests</span>
             </div>
         </div>
     </section>
 
     <section class="card-modern home-team">
         <div class="card-title">
-            Club members
-            <a class="text-button" href="/dashboard/team">Manage</a>
+            <span data-i18n="home.clubMembers">Club members</span>
+            <a class="text-button" href="/dashboard/team" data-i18n="home.manage">Manage</a>
         </div>
         <p class="home-team-total" id="homeRosterTotal">0</p>
-        <div class="team-bar" id="homeTeamBar" aria-hidden="true">
-            <span class="team-bar-seg seg-leaders"></span>
-            <span class="team-bar-seg seg-members"></span>
-            <span class="team-bar-seg seg-mentors"></span>
+        <div class="team-donut" id="homeTeamDonut" aria-hidden="true">
+            <svg viewBox="0 0 100 100" class="donut-svg">
+                <circle class="donut-track" cx="50" cy="50" r="38" />
+                <circle class="donut-seg seg-leaders" cx="50" cy="50" r="38" />
+                <circle class="donut-seg seg-members" cx="50" cy="50" r="38" />
+                <circle class="donut-seg seg-mentors" cx="50" cy="50" r="38" />
+            </svg>
         </div>
         <p class="card-meta team-legend" id="homeRosterBreakdown"></p>
     </section>
 
     <section class="level-band">
         <div class="level-band-info">
-            <span class="level-band-eyebrow">Club level</span>
+            <span class="level-band-eyebrow" data-i18n="home.clubLevel">Club level</span>
             <strong class="level-band-value" id="homeLevelName">Level 1</strong>
         </div>
         <div class="level-band-progress">
@@ -57,14 +75,14 @@ what's happening at your club.{% endblock %}
             </div>
             <span class="level-band-text" id="homeLevelText"></span>
         </div>
-        <a class="btn-ghost-light" href="/dashboard/levels">View perks</a>
+        <a class="btn-ghost-light" href="/dashboard/levels" data-i18n="home.viewPerks">View perks</a>
     </section>
 
     {% if is_leader %}
     <section class="card-modern home-checklist">
         <div class="card-title">
-            Getting started
-            <span class="badge badge-up" id="homeChecklistCount">0 / 4 Done</span>
+            <span data-i18n="home.gettingStarted">Getting started</span>
+            <span class="badge badge-up" id="homeChecklistCount" data-i18n="home.checklistDone">0 / 4 Done</span>
         </div>
         <div class="activity-list" id="homeChecklist"></div>
     </section>
@@ -72,13 +90,13 @@ what's happening at your club.{% endblock %}
 
     <section class="card-modern home-events {% if not is_leader %}home-events-wide{% endif %}">
         <div class="card-title">
-            Upcoming events
-            <a class="text-button" href="/dashboard/events">View all</a>
+            <span data-i18n="home.upcomingEvents">Upcoming events</span>
+            <a class="text-button" href="/dashboard/events" data-i18n="home.viewAll">View all</a>
         </div>
         <div class="activity-list" id="homeUpcomingEvents"></div>
         <div class="empty-state tight" id="homeEventsEmpty" hidden>
-            <h3>Nothing scheduled</h3>
-            <p>Plan your next meeting from the Events page.</p>
+            <h3 data-i18n="home.nothingScheduled">Nothing scheduled</h3>
+            <p data-i18n="home.nothingScheduledDesc">Plan your next meeting from the Events page.</p>
         </div>
     </section>
 </div>

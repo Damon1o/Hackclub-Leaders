@@ -1,22 +1,22 @@
 {% extends "dashboard_layout.html" %}
 
 {% block title %}Admin{% endblock %}
-{% block page_title %}Admin{% endblock %}
-{% block page_subtitle %}Every club, and the shipped projects waiting on your review.{% endblock %}
+{% block page_title %}<span data-i18n="admin.title">Admin</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="admin.subtitle">Every club, and the shipped projects waiting on your review.</span>{% endblock %}
 
 {% block content %}
 <div class="dashboard-page" data-dashboard-page="admin">
     <section class="dashboard-metrics">
         <article class="metric-tile">
-            <span class="metric-label">Clubs</span>
+            <span class="metric-label" data-i18n="admin.clubs">Clubs</span>
             <strong>{{ clubs | length }}</strong>
         </article>
         <article class="metric-tile">
-            <span class="metric-label">Projects pending review</span>
+            <span class="metric-label" data-i18n="admin.projectsPending">Projects pending review</span>
             <strong>{{ pending_projects | length }}</strong>
         </article>
         <article class="metric-tile">
-            <span class="metric-label">Total members</span>
+            <span class="metric-label" data-i18n="admin.totalMembers">Total members</span>
             <strong>{{ clubs | sum(attribute='memberCount') }}</strong>
         </article>
     </section>
@@ -24,8 +24,8 @@
     <section class="card-modern dashboard-panel dashboard-panel-full">
         <div class="panel-heading">
             <div>
-                <h2>Project review queue</h2>
-                <p>Submitted projects only count toward a club's level once you approve them.</p>
+                <h2 data-i18n="admin.reviewQueue">Project review queue</h2>
+                <p data-i18n="admin.reviewQueueDesc">Submitted projects only count toward a club's level once you approve them.</p>
             </div>
         </div>
 
@@ -41,16 +41,16 @@
                     </p>
                     {% if item.project.description %}<p class="admin-review-desc">{{ item.project.description }}</p>{% endif %}
                     {% if item.project.repoUrl %}
-                    <a class="text-button" href="{{ item.project.repoUrl }}" target="_blank" rel="noopener noreferrer">Repo →</a>
+                    <a class="text-button" href="{{ item.project.repoUrl }}" target="_blank" rel="noopener noreferrer"><span data-i18n="admin.repo">Repo →</span></a>
                     {% endif %}
                     {% if item.project.demoUrl %}
-                    <a class="text-button" href="{{ item.project.demoUrl }}" target="_blank" rel="noopener noreferrer">Demo →</a>
+                    <a class="text-button" href="{{ item.project.demoUrl }}" target="_blank" rel="noopener noreferrer"><span data-i18n="admin.demo">Demo →</span></a>
                     {% endif %}
                 </div>
                 <div class="admin-review-actions">
-                    <button class="btn-primary small" type="button"
+                    <button class="btn-primary small" type="button" data-i18n="admin.approve"
                         data-approve-project data-admin-project="{{ item.clubKey }}::{{ item.project.id }}">Approve</button>
-                    <button class="btn-secondary small" type="button"
+                    <button class="btn-secondary small" type="button" data-i18n="admin.reject"
                         data-reject-project data-admin-project="{{ item.clubKey }}::{{ item.project.id }}">Reject</button>
                 </div>
             </article>
@@ -58,8 +58,8 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <h3>Nothing to review</h3>
-            <p>Every submitted project has been reviewed. New submissions will appear here.</p>
+            <h3 data-i18n="admin.nothingToReview">Nothing to review</h3>
+            <p data-i18n="admin.nothingToReviewDesc">Every submitted project has been reviewed. New submissions will appear here.</p>
         </div>
         {% endif %}
     </section>
@@ -67,8 +67,60 @@
     <section class="card-modern dashboard-panel dashboard-panel-full">
         <div class="panel-heading">
             <div>
-                <h2>All clubs</h2>
-                <p>Open a club to edit its profile or manage its shipped projects.</p>
+                <h2 data-i18n="admin.itemRequests">Item requests</h2>
+                <p data-i18n="admin.itemRequestsDesc">Approve a request to add it to the shop, or reject it to clear it out.</p>
+            </div>
+        </div>
+        <div class="admin-review-list" id="adminItemRequestList"
+            data-empty-text="No pending item requests."
+            data-loading-text="Loading item requests…">
+            <div class="empty-state"><p data-i18n="admin.itemRequestsLoading">Loading item requests…</p></div>
+        </div>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2 data-i18n="admin.addItem">Add an item to the shop</h2>
+                <p data-i18n="admin.addItemDesc">New items show up in every club's shop right away.</p>
+            </div>
+        </div>
+        <form class="settings-form admin-shop-form" id="adminShopItemForm" autocomplete="off">
+            <div class="admin-shop-fields">
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.itemName">Item name</span>
+                    <input type="text" class="form-input" name="name" maxlength="120" required>
+                </label>
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.itemCost">Cost ($)</span>
+                    <input type="text" class="form-input" name="cost" maxlength="20" placeholder="$10.00">
+                </label>
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.itemFilter">Category</span>
+                    <select class="form-input" name="filter">
+                        <option value="Swag" data-i18n="admin.filterSwag">Swag</option>
+                        <option value="Hardware" data-i18n="admin.filterHardware">Hardware</option>
+                        <option value="Digital" data-i18n="admin.filterDigital">Digital</option>
+                    </select>
+                </label>
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.itemImage">Image URL</span>
+                    <input type="text" class="form-input" name="image" maxlength="500" placeholder="/static/images/shop/...">
+                </label>
+            </div>
+            <p class="form-error" id="adminShopItemFormError" hidden></p>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary" data-i18n="admin.addItemSubmit">Add to shop</button>
+                <span class="save-state" id="adminShopItemSaveState" aria-live="polite"></span>
+            </div>
+        </form>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2 data-i18n="admin.allClubs">All clubs</h2>
+                <p data-i18n="admin.allClubsDesc">Open a club to edit its profile or manage its shipped projects.</p>
             </div>
         </div>
 
@@ -77,11 +129,11 @@
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>Club</th>
-                        <th>Location</th>
-                        <th>Members</th>
-                        <th>Ships</th>
-                        <th>Pending</th>
+                        <th data-i18n="admin.colClub">Club</th>
+                        <th data-i18n="admin.colLocation">Location</th>
+                        <th data-i18n="admin.colMembers">Members</th>
+                        <th data-i18n="admin.colShips">Ships</th>
+                        <th data-i18n="admin.colPending">Pending</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -98,7 +150,7 @@
                             {% else %}—{% endif %}
                         </td>
                         <td class="admin-table-action">
-                            <a class="btn-secondary small" href="{{ url_for('dashboard_admin_club', club_key=club.clubKey) }}">Manage</a>
+                            <a class="btn-secondary small" href="{{ url_for('dashboard_admin_club', club_key=club.clubKey) }}" data-i18n="admin.manage">Manage</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -107,8 +159,8 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <h3>No clubs yet</h3>
-            <p>Once leaders start clubs, they'll show up here.</p>
+            <h3 data-i18n="admin.noClubs">No clubs yet</h3>
+            <p data-i18n="admin.noClubsDesc">Once leaders start clubs, they'll show up here.</p>
         </div>
         {% endif %}
     </section>

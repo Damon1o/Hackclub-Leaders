@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join a Hack Club - Hack Club Leaders</title>
+    <title data-i18n="join.title">Join a Hack Club - Hack Club Leaders</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/borders.css') }}">
@@ -19,21 +19,21 @@
     <section class="navigation-bar">
 
         <input type="checkbox" id="nav-toggle" class="nav-toggle">
-        <label for="nav-toggle" class="nav-hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></label>
+        <label for="nav-toggle" class="nav-hamburger" data-i18n-attr="aria-label:pub.toggleMenu"><span></span><span></span><span></span></label>
         <div class="animated-nav-logo">
-            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" alt="Hack Club">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" data-i18n-attr="alt:pub.navLogo" alt="Hack Club">
         </div>
         <div class="nav-bar-text">
-            <a href="/">Hack Club Leaders</a>
+            <a href="/" data-i18n="pub.navBrand">Hack Club Leaders</a>
         </div>
         <div class="apply-now-container">
             {% if current_user %}
             <a href="{{ url_for('dashboard') }}" class="apply-now-link">
-                <p class="apply-now-text">Dashboard</p>
+                    <p class="apply-now-text" data-i18n="nav.dashboard">Dashboard</p>
             </a>
             {% else %}
             <a href="{{ url_for('sign_in') }}" class="sign-in-link">
-                <p class="sign-in-text">Sign in</p>
+                <p class="sign-in-text" data-i18n="pub.signIn">Sign in</p>
             </a>
             {% endif %}
         </div>
@@ -48,32 +48,32 @@
             </div>
 
             {% if own_link %}
-            <h1>This is {{ club_name or 'your club' }}'s invite link</h1>
-            <p class="sign-in-subtitle">
+            <h1><span>{{ club_name or 'your club' }}</span><span data-i18n="join.leaderTitle">'s invite link</span></h1>
+            <p class="sign-in-subtitle" data-i18n="join.leaderText">
                 Share it with members so they know where to find your club.
                 Keep your roster current from the Team page.
             </p>
-            <a href="{{ url_for('dashboard_team') }}" class="sign-in-hc-btn">Open the Team page</a>
+            <a href="{{ url_for('dashboard_team') }}" class="sign-in-hc-btn" data-i18n="join.openTeam">Open the Team page</a>
             {% else %}
-            <h1><i class="fa-solid fa-party-horn" aria-hidden="true"></i> You're invited to a Hack Club!</h1>
+            <h1><i class="fa-solid fa-party-horn" aria-hidden="true"></i> <span data-i18n="join.invitedHeading">You're invited to a Hack Club!</span></h1>
             {% if not shared_backend %}
-            <p class="sign-in-subtitle">
+            <p class="sign-in-subtitle" data-i18n="join.demoText">
                 This site is running in local demo mode, so joining by code
                 isn't available here. Ask your club leader for meeting details.
             </p>
-            <a href="https://hackclub.com/" class="sign-in-hc-btn" target="_blank" rel="noopener noreferrer">
+            <a href="https://hackclub.com/" class="sign-in-hc-btn" target="_blank" rel="noopener noreferrer" data-i18n="join.exploreHC">
                 Explore Hack Club
             </a>
             {% elif signed_in %}
-            <p class="sign-in-subtitle">
-                Confirm below to join this club — you'll be added to its roster
+            <p class="sign-in-subtitle" data-i18n="join.confirmJoin">
+                Confirm below to join this club &mdash; you'll be added to its roster
                 right away.
             </p>
-            <a href="{{ url_for('dashboard_welcome', code=code) }}" class="sign-in-hc-btn">
+            <a href="{{ url_for('dashboard_welcome', code=code) }}" class="sign-in-hc-btn" data-i18n="join.joinClub">
                 Join this club
             </a>
             {% else %}
-            <p class="sign-in-subtitle">
+            <p class="sign-in-subtitle" data-i18n="join.signInToJoin">
                 Sign in with Hack Club to join. We'll add you to this club's
                 roster once you confirm.
             </p>
@@ -81,11 +81,11 @@
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path fill="white" d="M4 3h16v13l-8 5-8-5V3z" />
                 </svg>
-                Sign in &amp; join
+                <span data-i18n="join.signInJoinBtn">Sign in &amp; join</span>
             </a>
             {% endif %}
             <p class="sign-in-footer-note">
-                Leading a club yourself? <a href="{{ url_for('sign_in') }}">Sign in to the Leaders Portal</a>.
+                <span data-i18n="join.leadingYourself">Leading a club yourself? <a href="{{ url_for('sign_in') }}">Sign in to the Leaders Portal</a>.</span>
             </p>
             {% endif %}
         </div>
@@ -93,6 +93,12 @@
 
     <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+
+    <div class="lang-switcher-wrap">
+        <select data-lang-switcher data-i18n-attr="aria-label:pub.language"></select>
+    </div>
 
 </body>
 

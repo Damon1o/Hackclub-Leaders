@@ -8,7 +8,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Leaders - Hack Club</title>
+    <title data-i18n="pub.title">Leaders - Hack Club</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/borders.css') }}">
@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/showcase.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/final-cta.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stickers.css') }}">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
 
@@ -44,17 +45,17 @@
     <section class="navigation-bar">
 
         <input type="checkbox" id="nav-toggle" class="nav-toggle">
-        <label for="nav-toggle" class="nav-hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></label>
+        <label for="nav-toggle" class="nav-hamburger" data-i18n-attr="aria-label:pub.toggleMenu"><span></span><span></span><span></span></label>
 
         <div class="animated-nav-logo">
 
-            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" data-i18n-attr="alt:pub.navLogo" alt="Hack Club">
 
         </div>
 
         <div class="nav-bar-text">
 
-            <a href="/">Hack Club Leaders</a>
+            <a href="/" data-i18n="pub.navBrand">Hack Club Leaders</a>
 
         </div>
 
@@ -64,21 +65,21 @@
 
                 <li class="nav-link">
 
-                    <a href="/events">Events</a>
+                    <a href="/events" data-i18n="nav.events">Events</a>
 
                 </li>
 
                 <li class="nav-link dropdown">
-                    <a href="#">Tools
+                    <a href="#"><span data-i18n="nav.tools">Tools</span>
                         <img class="dropdown-icon"
                             src="{{ url_for('static', filename='images/hackclub-site/dropdown-icon.svg') }}">
                     </a>
                     <div class="dropdown-menu">
-                        <a href="https://apply.hackclub.com/">Start a Club</a>
-                        <a href="https://ysws.hackclub.com/">All YSWS Programs</a>
-                        <a href="https://guide.leaders.hackclub.com/">Club Leaders Guide</a>
-                        <a href="https://hackclub.github.io/map/">Club Map</a>
-                        <a href="https://leaders.hackclub.com/posters/">Club Posters</a>
+                        <a href="https://apply.hackclub.com/" data-i18n="nav.startClub">Start a Club</a>
+                        <a href="https://ysws.hackclub.com/" data-i18n="nav.allYsws">All YSWS Programs</a>
+                        <a href="https://guide.leaders.hackclub.com/" data-i18n="nav.leadersGuide">Club Leaders Guide</a>
+                        <a href="https://hackclub.github.io/map/" data-i18n="nav.clubMap">Club Map</a>
+                        <a href="https://leaders.hackclub.com/posters/" data-i18n="nav.posters">Club Posters</a>
                     </div>
                 </li>
 
@@ -91,14 +92,14 @@
             <button class="mode-switch-button" id="toggleBtn">
 
                 <svg class="icon icon-first" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
-                    stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" aria-label="moon" viewBox="0 0 32 32"
+                    stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" data-i18n-attr="aria-label:pub.moonIcon" viewBox="0 0 32 32"
                     preserveAspectRatio="xMidYMid meet" fill="currentColor" width="16" height="16">
                     <path
                         d="M22.5317 23.4697C22.5313 23.4697 22.5308 23.4697 22.5303 23.4697C14.7983 23.4697 8.53027 17.2017 8.53027 9.46974C8.53027 9.46925 8.53027 9.46876 8.53027 9.46827C7.2733 11.1407 6.53027 13.2183 6.53027 15.4697C6.53027 20.9926 11.0074 25.4697 16.5303 25.4697C18.7817 25.4697 20.8593 24.7267 22.5317 23.4697ZM24.9529 21.2251C25.8563 21.0399 26.6747 21.9485 26.1197 22.6849C23.9298 25.591 20.4494 27.4697 16.5303 27.4697C9.90286 27.4697 4.53027 22.0972 4.53027 15.4697C4.53027 11.5506 6.40906 8.07026 9.3151 5.88028C10.0515 5.32532 10.9601 6.14376 10.7749 7.04709C10.6145 7.82957 10.5303 8.63981 10.5303 9.46974C10.5303 16.0972 15.9029 21.4697 22.5303 21.4697C23.3602 21.4697 24.1704 21.3855 24.9529 21.2251Z" />
                 </svg>
 
                 <svg class="icon icon-second" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
-                    stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" aria-label="sun" viewBox="0 0 32 32"
+                    stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" data-i18n-attr="aria-label:pub.sunIcon" viewBox="0 0 32 32"
                     preserveAspectRatio="xMidYMid meet" fill="currentColor" width="16" height="16">
                     <path
                         d="M15.001 5C15.001 4.448 15.449 4 16.001 4C16.553 4 17.001 4.448 17.001 5V7C17.001 7.552 16.553 8 16.001 8C15.449 8 15.001 7.552 15.001 7V5ZM9.12203 7.707C8.73203 7.317 8.09903 7.317 7.70803 7.707C7.31803 8.098 7.31803 8.731 7.70803 9.121L9.12203 10.536C9.51303 10.926 10.146 10.926 10.537 10.536C10.927 10.145 10.927 9.512 10.537 9.121L9.12203 7.707ZM24.536 7.707C24.146 7.317 23.513 7.317 23.122 7.707L21.708 9.121C21.318 9.512 21.318 10.145 21.708 10.536C22.099 10.926 22.732 10.926 23.122 10.536L24.537 9.121C24.927 8.731 24.926 8.098 24.536 7.707Z" />
@@ -119,21 +120,21 @@
 
             {% if current_user %}
             <a href="{{ url_for('dashboard') }}" class="apply-now-link">
-                <p class="apply-now-text">Dashboard</p>
+                    <p class="apply-now-text" data-i18n="nav.dashboard">Dashboard</p>
             </a>
             {% else %}
             <a href="https://apply.hackclub.com" class="apply-now-link">
-                <p class="apply-now-text">Apply now</p>
+                <p class="apply-now-text" data-i18n="pub.applyNow">Apply now</p>
             </a>
             {% endif %}
 
             {% if current_user %}
             <a href="{{ url_for('sign_out') }}" class="sign-in-link">
-                <p class="sign-in-text">Sign out</p>
+                    <p class="sign-in-text" data-i18n="nav.signOut">Sign out</p>
             </a>
             {% else %}
             <a href="{{ url_for('sign_in') }}" class="sign-in-link">
-                <p class="sign-in-text">Sign in</p>
+                <p class="sign-in-text" data-i18n="pub.signIn">Sign in</p>
             </a>
             {% endif %}
 
@@ -143,7 +144,7 @@
 
     <div class="video-modal-overlay" id="videoModal" aria-hidden="true">
         <div class="video-inner-container">
-            <button class="video-close-btn" id="videoClose" aria-label="Close video"><i class="fa-solid fa-xmark"></i></button>
+            <button class="video-close-btn" id="videoClose" data-i18n-attr="aria-label:pub.closeVideo"><i class="fa-solid fa-xmark"></i></button>
             <iframe id="videoIframe" src="" allow="autoplay; encrypted-media" allowfullscreen>
             </iframe>
         </div>
@@ -162,7 +163,7 @@
 
             <div class="header-text">
 
-                <p class="header-text">
+                <p class="header-text" data-i18n="pub.heroHeading">
                     Where <span class="animated-text-gradient">leaders</span>
                     build the future!
                 </p>
@@ -171,29 +172,30 @@
 
             <div class="minor-text">
 
-                <p>Browse events, track your club's progress, and find everything you need to run your Hack Club.</p>
+                <p data-i18n="pub.heroSubtext">Browse events, track your club's progress, and find everything you need to run your Hack Club.</p>
 
             </div>
 
             <div class="sign-up-cta">
 
-                <input class="sign-up-input" type="email" placeholder="orpheus@email.com">
+                <input class="sign-up-input" type="email" data-i18n-attr="placeholder:pub.emailPlaceholder" placeholder="orpheus@email.com">
 
-                <button class="sign-up-button" type="submit">Get Started</button>
+                <button class="sign-up-button" type="submit" data-i18n="pub.getStarted">Get Started</button>
 
             </div>
 
             <div class="join-terms-text">
 
-                <p>For all teens aged 13–18. By continuing, you agree to our <a
-                        href="https://hackclub.com/privacy-and-terms">terms.</a></p>
+                <p><span data-i18n="pub.termsText">For all teens aged 13–18. By continuing, you agree to our <a
+                        href="https://hackclub.com/privacy-and-terms">terms.</a></span></p>
 
             </div>
 
         </div>
 
-        <div class="hero-video-preview" id="heroVideoPreview" role="button" tabindex="0" aria-label="Play video">
-            <img src="https://img.youtube.com/vi/vvdoW2gh9YU/maxresdefault.jpg" alt="Watch the Hack Club Leaders video"
+        <div class="hero-video-preview" id="heroVideoPreview" role="button" tabindex="0" data-i18n-attr="aria-label:pub.playVideo">
+            <img src="https://img.youtube.com/vi/vvdoW2gh9YU/maxresdefault.jpg" data-i18n-attr="alt:pub.videoAlt"
+                alt="Watch the Hack Club Leaders video"
                 class="hero-video-thumb">
             <div class="hero-video-play">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
@@ -243,79 +245,66 @@
 
         <div class="showcase-inner">
 
-            <h2 class="showcase-heading reveal">Imagine a world where <span class="animated-text-gradient">you</span>
+            <h2 class="showcase-heading reveal" data-i18n="pub.showcaseHeading">Imagine a world where <span class="animated-text-gradient">you</span>
                 made this:</h2>
 
-            <p class="showcase-subtext reveal">100,000 teens started exactly where you are. We're here to help you
+            <p class="showcase-subtext reveal" data-i18n="pub.showcaseSubtext">100,000 teens started exactly where you are. We're here to help you
                 build your first crazy thing.</p>
 
-            <div class="showcase-grid">
+            <div class="carousel-viewport">
+                <div class="carousel-fade-left" aria-hidden="true"></div>
+                <div class="carousel-fade-right" aria-hidden="true"></div>
+                <div class="carousel-track">
+                    {% set projects = [
+                        {'name':'Specter',  'maker':'Yessa',       'age':18, 'country':'Philippines', 'program':'Milkyway',  'url':'https://shaaarkai.itch.io/specter',                       'repo':'https://github.com/coalpoweredcatgirl/specter'},
+                        {'name':'Brew75',   'maker':'Alexander',   'age':16, 'country':'US',          'program':'Blueprint',  'url':'https://blueprint.hackclub.com/projects/52',             'repo':''},
+                        {'name':'Starbird', 'maker':'Deltea',      'age':16, 'country':'US',          'program':'Milkyway',   'url':'https://deltea.itch.io/starbird',                        'repo':''},
+                        {'name':'AngstromIO','maker':'Clément',    'age':17, 'country':'France',      'program':'Blueprint',  'url':'https://github.com/Dieu-de-l-elec/AngstromIO-devboard',  'repo':'https://github.com/Dieu-de-l-elec/AngstromIO-devboard'},
+                        {'name':'Kamikamace','maker':'Andromeda, Nihaal &amp; Rimma','age':'', 'country':'UK &amp; US', 'program':'Daydream',   'url':'https://thatotherandrew.itch.io/kamikamace',             'repo':''},
+                    ] %}
+                    {% for _ in range(9) %}
+                    {% for project in projects %}
+                    <article class="carousel-card">
+                        <div class="carousel-card-visual">
+                            <img src="{{ url_for('static', filename='images/hackclub-site/showcase/' + project.name|lower + '.webp') }}"
+                                alt="{{ project.name }}" loading="lazy">
+                        </div>
+                        <div class="carousel-card-body">
+                            <p>
+                                <strong>{{ project.maker }}</strong>{% if project.age %} ({{ project.age }}){% endif %} from {{ project.country }} made
+                                <strong>{{ project.name }}</strong> for Hack Club {{ project.program }}.
+                            </p>
+                            <div class="carousel-card-footer">
+                                <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="carousel-card-cta">
+                                    Try it out <span class="cta-arrow">&rarr;</span>
+                                </a>
+                                {% if project.repo %}
+                                <a href="{{ project.repo }}" target="_blank" rel="noopener noreferrer" aria-label="View source code for {{ project.name }}" class="carousel-card-repo">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
 
-                <a class="showcase-card reveal" href="https://shaaarkai.itch.io/specter" target="_blank"
-                    rel="noopener noreferrer">
-                    <div class="showcase-card-visual">
-                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/specter.webp') }}"
-                            alt="Specter" loading="lazy">
-                    </div>
-                    <div class="showcase-card-body">
-                        <span class="showcase-card-program">Milkyway</span>
-                        <h3 class="showcase-card-title">Specter</h3>
-                        <p class="showcase-card-byline">by Yessa, 18, Philippines</p>
-                    </div>
+            <div class="carousel-footer">
+                <label class="carousel-pause-btn" aria-label="Pause auto-scrolling projects carousel">
+                    <input type="checkbox" class="carousel-pause-toggle" id="carouselPause" data-i18n-attr="aria-label:pub.pauseCarousel">
+                    <svg class="pause-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                        <line x1="8" y1="6" x2="8" y2="18" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+                        <line x1="16" y1="6" x2="16" y2="18" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="play-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                        <path d="M8 6 Q8 5 9 5 L16.5 9.9 Q17.8 10.8 17.8 12 Q17.8 13.2 16.5 14.1 L9 19 Q8 19 8 18 Z" fill="currentColor"/>
+                    </svg>
+                </label>
+                <a href="https://hackclub.com/projects" target="_blank" rel="noopener noreferrer" class="carousel-cta">
+                    See more projects <span>&rarr;</span>
                 </a>
-
-                <a class="showcase-card reveal" href="https://blueprint.hackclub.com/projects/52" target="_blank"
-                    rel="noopener noreferrer">
-                    <div class="showcase-card-visual">
-                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/brew75.webp') }}"
-                            alt="Brew75" loading="lazy">
-                    </div>
-                    <div class="showcase-card-body">
-                        <span class="showcase-card-program">Blueprint</span>
-                        <h3 class="showcase-card-title">Brew75</h3>
-                        <p class="showcase-card-byline">by Alexander, 16, US</p>
-                    </div>
-                </a>
-
-                <a class="showcase-card reveal" href="https://deltea.itch.io/starbird" target="_blank"
-                    rel="noopener noreferrer">
-                    <div class="showcase-card-visual">
-                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/starbird.webp') }}"
-                            alt="Starbird" loading="lazy">
-                    </div>
-                    <div class="showcase-card-body">
-                        <span class="showcase-card-program">Milkyway</span>
-                        <h3 class="showcase-card-title">Starbird</h3>
-                        <p class="showcase-card-byline">by Deltea, 16, US</p>
-                    </div>
-                </a>
-
-                <a class="showcase-card reveal" href="https://github.com/Dieu-de-l-elec/AngstromIO-devboard"
-                    target="_blank" rel="noopener noreferrer">
-                    <div class="showcase-card-visual">
-                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/angstromio.webp') }}"
-                            alt="AngstromIO" loading="lazy">
-                    </div>
-                    <div class="showcase-card-body">
-                        <span class="showcase-card-program">Blueprint</span>
-                        <h3 class="showcase-card-title">AngstromIO</h3>
-                        <p class="showcase-card-byline">by Clément, 17, France</p>
-                    </div>
-                </a>
-
-                <a class="showcase-card reveal" href="https://thatotherandrew.itch.io/kamikamace" target="_blank"
-                    rel="noopener noreferrer">
-                    <div class="showcase-card-visual">
-                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/kamikamace.webp') }}"
-                            alt="Kamikamace" loading="lazy">
-                    </div>
-                    <div class="showcase-card-body">
-                        <span class="showcase-card-program">Daydream</span>
-                        <h3 class="showcase-card-title">Kamikamace</h3>
-                        <p class="showcase-card-byline">by Andromeda, Nihaal &amp; Rimma, UK &amp; US</p>
-                    </div>
-                </a>
-
             </div>
 
         </div>
@@ -326,10 +315,10 @@
 
         <div class="happening-inner">
 
-            <h2 class="happening-heading reveal">Imagine a world where you were <span
+            <h2 class="happening-heading reveal" data-i18n="pub.eventHeading">Imagine a world where you were <span
                     class="animated-text-gradient">here</span>:</h2>
 
-            <p class="happening-subtext reveal">Every event below is free, open to any teen, and happening right now.
+            <p class="happening-subtext reveal" data-i18n="pub.eventSubtext">Every event below is free, open to any teen, and happening right now.
                 Yes, you can go.</p>
 
             <div class="happening-grid">
@@ -339,13 +328,13 @@
                     <div class="happening-card-visual">
                         <img src="{{ url_for('static', filename='images/hackclub-site/showcase/stardance.webp') }}"
                             alt="Stardance" loading="lazy">
-                        <span class="happening-card-date">Ends 30 Sept</span>
+                        <span class="happening-card-date" data-i18n="event.stardanceDate">Ends 30 Sept</span>
                     </div>
                     <div class="happening-card-body">
-                        <h3 class="happening-card-title">Stardance</h3>
-                        <p class="happening-card-description">The largest STEM event of the summer: make anything you
+                        <h3 class="happening-card-title" data-i18n="event.stardance">Stardance</h3>
+                        <p class="happening-card-description" data-i18n="event.stardanceDesc">The largest STEM event of the summer: make anything you
                             want and earn free prizes.</p>
-                        <span class="happening-card-cta">Join Stardance →</span>
+                        <span class="happening-card-cta" data-i18n="event.joinStardance">Join Stardance &rarr;</span>
                     </div>
                 </a>
 
@@ -354,13 +343,13 @@
                     <div class="happening-card-visual">
                         <img src="{{ url_for('static', filename='images/hackclub-site/showcase/macondo.webp') }}"
                             alt="Macondo" loading="lazy">
-                        <span class="happening-card-date">14–16 Aug</span>
+                        <span class="happening-card-date" data-i18n="event.macondoDate">14&ndash;16 Aug</span>
                     </div>
                     <div class="happening-card-body">
-                        <h3 class="happening-card-title">Macondo</h3>
-                        <p class="happening-card-description">Get up to $1,000 for hardware projects or make software
+                        <h3 class="happening-card-title" data-i18n="event.macondo">Macondo</h3>
+                        <p class="happening-card-description" data-i18n="event.macondoDesc">Get up to $1,000 for hardware projects or make software
                             projects to earn fruits for prizes.</p>
-                        <span class="happening-card-cta">Join Macondo →</span>
+                        <span class="happening-card-cta" data-i18n="event.joinMacondo">Join Macondo &rarr;</span>
                     </div>
                 </a>
 
@@ -369,12 +358,12 @@
                     <div class="happening-card-visual">
                         <img src="{{ url_for('static', filename='images/hackclub-site/showcase/horizons.webp') }}"
                             alt="Horizons" loading="lazy">
-                        <span class="happening-card-date">Ends 15 Aug</span>
+                        <span class="happening-card-date" data-i18n="event.horizonsDate">Ends 15 Aug</span>
                     </div>
                     <div class="happening-card-body">
-                        <h3 class="happening-card-title">Horizons</h3>
-                        <p class="happening-card-description">7 hackathons. 7 countries. You're invited — for free!</p>
-                        <span class="happening-card-cta">Join Horizons →</span>
+                        <h3 class="happening-card-title" data-i18n="event.horizons">Horizons</h3>
+                        <p class="happening-card-description" data-i18n="event.horizonsDesc">7 hackathons. 7 countries. You're invited &mdash; for free!</p>
+                        <span class="happening-card-cta" data-i18n="event.joinHorizons">Join Horizons &rarr;</span>
                     </div>
                 </a>
 
@@ -383,20 +372,20 @@
                     <div class="happening-card-visual">
                         <img src="{{ url_for('static', filename='images/hackclub-site/showcase/stack.webp') }}"
                             alt="Stack" loading="lazy">
-                        <span class="happening-card-date">Ends 4 Jul</span>
+                        <span class="happening-card-date" data-i18n="event.stackDate">Ends 4 Jul</span>
                     </div>
                     <div class="happening-card-body">
-                        <h3 class="happening-card-title">Stack</h3>
-                        <p class="happening-card-description">Build a fun or completely unhinged project, and we'll
+                        <h3 class="happening-card-title" data-i18n="event.stack">Stack</h3>
+                        <p class="happening-card-description" data-i18n="event.stackDesc">Build a fun or completely unhinged project, and we'll
                             send you FREE LEGO sets.</p>
-                        <span class="happening-card-cta">Join Stack →</span>
+                        <span class="happening-card-cta" data-i18n="event.joinStack">Join Stack &rarr;</span>
                     </div>
                 </a>
 
             </div>
 
             <div class="happening-more reveal">
-                <a href="/events">See all events
+                <a href="/events"><span data-i18n="pub.seeAllEvents">See all events</span>
                     <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
                         <path d="M3 8H13M13 8L8.5 3.5M13 8L8.5 12.5" stroke="currentColor" stroke-width="1.8"
@@ -417,20 +406,20 @@
             <span class="ambient-cursor-glow"></span>
         </div>
 
+        <div class="supporters-gradient" aria-hidden="true"></div>
+
         <div class="supporters-inner">
 
-            <h2 class="supporters-heading reveal">Hack Club is free for every teenager, forever.</h2>
+            <h2 class="supporters-heading reveal" data-i18n="pub.supportersHeading">Supported by people who believe in teens.</h2>
 
-            <p class="supporters-subtext reveal">Made possible by supporters like the Musk Foundation, Michael Dell
-                (CEO of Dell), Dr.&nbsp;Lisa Su (CEO of AMD), Tobi Lutke (CEO of Shopify), and Tom Preston-Werner
-                (co-founder of GitHub).</p>
+            <p class="supporters-subtext reveal" data-i18n="pub.supportersFree">Hack Club is free for every teenager, forever.</p>
 
-            <div class="supporters-logos reveal">
-                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/github.webp') }}" alt="GitHub"
+            <div class="supporters-logos">
+                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/github.webp') }}" data-i18n-attr="alt:pub.supporter.github" alt="GitHub"
                     loading="lazy">
-                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/amd.webp') }}" alt="AMD"
+                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/amd.webp') }}" data-i18n-attr="alt:pub.supporter.amd" alt="AMD"
                     loading="lazy">
-                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/mit.webp') }}" alt="MIT"
+                <img src="{{ url_for('static', filename='images/hackclub-site/supporters/mit.webp') }}" data-i18n-attr="alt:pub.supporter.mit" alt="MIT"
                     loading="lazy">
                 <img src="{{ url_for('static', filename='images/hackclub-site/supporters/donor-masked.webp') }}" alt=""
                     loading="lazy">
@@ -438,10 +427,37 @@
                     loading="lazy">
             </div>
 
-            <p class="supporters-note reveal">Hack Club is a 501(c)(3) nonprofit. Our finances are fully open — anyone
-                can see exactly how money is spent. <a href="https://hackclub.com/philanthropy" target="_blank"
-                    rel="noopener noreferrer">Learn more</a>.</p>
+            <div class="supporters-pills">
+                <span class="supporter-pill">Musk Foundation</span>
+                <span class="supporter-pill">Michael Dell <span data-i18n="pub.donor.dell">(CEO of Dell)</span></span>
+                <span class="supporter-pill"><span data-i18n="pub.donor.lisa">Dr. Lisa Su</span> <span data-i18n="pub.donor.lisaTitle">(CEO of AMD)</span></span>
+                <span class="supporter-pill">Tobi Lutke <span data-i18n="pub.donor.lutke">(CEO of Shopify)</span></span>
+                <span class="supporter-pill">Tom Preston-Werner <span data-i18n="pub.donor.tom">(Co-founder of GitHub)</span></span>
+            </div>
 
+            <div class="supporters-transparency">
+                <p data-i18n="pub.supportersTransparency">Hack Club is a 501(c)(3) nonprofit. Our finances are fully open &mdash; anyone can
+                    <a href="https://hcb.hackclub.com/hq" target="_blank" rel="noopener noreferrer" data-i18n="pub.supportersSeeSpending">see exactly how money is spent.</a>
+                </p>
+                <p><span data-i18n="pub.supportersBelieve">If you believe in what we're building,</span>
+                    <a href="https://hackclub.com/philanthropy" target="_blank" rel="noopener noreferrer" data-i18n="pub.supportersLoveSupport">we'd love your support.</a>
+                </p>
+            </div>
+
+            <a href="https://hackclub.com/philanthropy" target="_blank" rel="noopener noreferrer" class="supporters-cta">
+                <span data-i18n="pub.supportersCta">Learn more &amp; donate</span>
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8H13M13 8L8.5 3.5M13 8L8.5 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+
+        </div>
+
+        <div class="supporters-wave" aria-hidden="true">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none" class="supporters-wave-svg">
+                <path d="M0 60 C240 20, 480 100, 720 60 C960 20, 1200 100, 1440 60 L1440 120 L0 120 Z" class="supporters-wave-fill"/>
+                <path d="M0 60 C240 20, 480 100, 720 60 C960 20, 1200 100, 1440 60" fill="none" class="supporters-wave-stroke" stroke-width="2"/>
+            </svg>
         </div>
 
     </section>
@@ -456,17 +472,17 @@
 
         <div class="final-cta-inner">
 
-            <h2 class="final-cta-heading">Ready?</h2>
+            <h2 class="final-cta-heading" data-i18n="pub.ctaHeading">Ready?</h2>
 
             <div class="final-cta-form-wrap">
-                <input id="ready-email-input" type="email" class="final-cta-input" placeholder="orpheus@email.com">
-                <button type="submit" class="final-cta-join-button">Get Started</button>
+                <input id="ready-email-input" type="email" class="final-cta-input" data-i18n-attr="placeholder:pub.emailPlaceholder" placeholder="orpheus@email.com">
+                <button type="submit" class="final-cta-join-button" data-i18n="pub.getStarted">Get Started</button>
             </div>
 
-            <p class="final-cta-subtext">Get started with building something real.</p>
+            <p class="final-cta-subtext" data-i18n="pub.ctaText">Get started with building something real.</p>
 
             <a href="https://hackclub.com/programs" class="final-cta-explore-button">
-                Explore current programs
+                <span data-i18n="pub.explorePrograms">Explore current programs</span>
                 <span class="final-cta-btn-arrow">
                     <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
@@ -477,8 +493,8 @@
             </a>
 
             <p class="final-cta-terms">
-                For all teens aged 13&ndash;18. By continuing, you agree to our
-                <a href="https://hackclub.com/privacy-and-terms" class="final-cta-terms-link">terms.</a>
+                <span data-i18n="pub.termsText">For all teens aged 13&ndash;18. By continuing, you agree to our
+                <a href="https://hackclub.com/privacy-and-terms" class="final-cta-terms-link">terms.</a></span>
             </p>
 
         </div>
@@ -494,19 +510,18 @@
 
             <div class="site-footer-left">
 
-                <div class="site-footer-logo-container"><a href="/"><img alt="Hack Club" loading="lazy" width="200"
+                <div class="site-footer-logo-container"><a href="/"><img data-i18n-attr="alt:pub.navLogo" alt="Hack Club" loading="lazy" width="200"
                             height="70" decoding="async" data-nimg="1" class="site-footer-logo"
                             src="{{ url_for('static', filename='images/hackclub-site/white-hack-club-banner.svg') }}" /></a>
                 </div>
 
-                <p class="site-footer-tagline">For teens, by teens.</p>
+                <p class="site-footer-tagline" data-i18n="pub.footerTagline">For teens, by teens.</p>
 
-                <a href="tel:18556254225" aria-label="Call Hack Club toll-free at 1-855-625-4225"
-                    class="site-footer-phone">1-855-625-HACK (call toll-free)</a>
+                <a href="tel:18556254225" class="site-footer-phone" data-i18n="pub.footerPhone">1-855-625-HACK (call toll-free)</a>
 
                 <div class="site-footer-socials">
 
-                    <a href="https://github.com/hackclub" target="_blank" rel="noopener noreferrer" aria-label="GitHub"
+                    <a href="https://github.com/hackclub" target="_blank" rel="noopener noreferrer" data-i18n-attr="aria-label:pub.footerGithub"
                         class="footer-social-link"><svg fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
                             stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" aria-label="github"
                             viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet" fill="currentColor" width="48"
@@ -525,7 +540,7 @@
                     </a>
 
                     <a href="https://www.youtube.com/c/HackClubHQ" target="_blank" rel="noopener noreferrer"
-                        aria-label="YouTube" class="footer-social-link"><svg fill-rule="evenodd" clip-rule="evenodd"
+                        data-i18n-attr="aria-label:pub.footerYoutube" class="footer-social-link"><svg fill-rule="evenodd" clip-rule="evenodd"
                             stroke-linejoin="round" stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg"
                             aria-label="youtube" viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet"
                             fill="currentColor" width="48" height="48">
@@ -542,7 +557,7 @@
                     </a>
 
                     <a href="https://www.instagram.com/starthackclub" target="_blank" rel="noopener noreferrer"
-                        aria-label="Instagram" class="footer-social-link"><svg fill-rule="evenodd" clip-rule="evenodd"
+                        data-i18n-attr="aria-label:pub.footerInstagram" class="footer-social-link"><svg fill-rule="evenodd" clip-rule="evenodd"
                             stroke-linejoin="round" stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg"
                             aria-label="instagram" viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet"
                             fill="currentColor" width="48" height="48">
@@ -559,7 +574,7 @@
 
                     </a>
 
-                    <a href="mailto:team@hackclub.com" aria-label="Email" class="footer-social-link"><svg
+                    <a href="mailto:team@hackclub.com" data-i18n-attr="aria-label:pub.footerEmail" class="footer-social-link"><svg
                             fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414"
                             xmlns="http://www.w3.org/2000/svg" aria-label="email" viewBox="0 0 32 32"
                             preserveAspectRatio="xMidYMid meet" fill="currentColor" width="48" height="48">
@@ -580,23 +595,23 @@
 
                 <div>
 
-                    <p class="site-footer-heading">
+                    <p class="site-footer-heading" data-i18n="pub.footerHackClub">
                         Hack Club</p>
                     <ul class="site-footer-list">
 
-                        <li><a class="footer-link" href="https://hackclub.com/philosophy" target="_blank" rel="noopener noreferrer">Philosophy</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/philosophy" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerPhilosophy">Philosophy</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/team" target="_blank" rel="noopener noreferrer">Our Team &amp; Board</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/team" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerTeam">Our Team &amp; Board</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/jobs" target="_blank" rel="noopener noreferrer">Jobs</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/jobs" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerJobs">Jobs</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/brand" target="_blank" rel="noopener noreferrer">Branding</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/brand" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerBranding">Branding</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/press" target="_blank" rel="noopener noreferrer">Press Inquiries</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/press" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerPress">Press Inquiries</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/philanthropy" target="_blank" rel="noopener noreferrer">Donate</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/philanthropy" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerDonate">Donate</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/imprint" target="_blank" rel="noopener noreferrer">Imprint</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/imprint" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerImprint">Imprint</a></li>
 
                     </ul>
 
@@ -604,29 +619,29 @@
 
                 <div class="site-footer-column">
 
-                    <p class="site-footer-heading">
+                    <p class="site-footer-heading" data-i18n="pub.footerResources">
                         Resources</p>
                     <ul class="site-footer-list">
 
-                        <li><a class="footer-link" href="https://hackclub.com/programs" target="_blank" rel="noopener noreferrer">Programs</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/programs" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerPrograms">Programs</a></li>
 
                         <li><a href="https://events.hackclub.com/" target="_blank" rel="noopener noreferrer"
-                                class="footer-link">Community
+                                class="footer-link" data-i18n="pub.footerEvents">Community
                                 Events</a></li>
 
                         <li><a href="https://toolbox.hackclub.com/" target="_blank" rel="noopener noreferrer"
-                                class="footer-link">Toolbox</a>
+                                class="footer-link" data-i18n="pub.footerToolbox">Toolbox</a>
                         </li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/clubs" target="_blank" rel="noopener noreferrer">Clubs</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/clubs" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerClubs">Clubs</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/fiscal-sponsorship" target="_blank" rel="noopener noreferrer">HCB</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/fiscal-sponsorship" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerHCB">HCB</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/conduct" target="_blank" rel="noopener noreferrer">Code of Conduct</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/conduct" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerCodeOfConduct">Code of Conduct</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/safeguarding" target="_blank" rel="noopener noreferrer">Safeguarding Policy</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/safeguarding" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerSafeguarding">Safeguarding Policy</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/privacy-and-terms" target="_blank" rel="noopener noreferrer">Privacy &amp; Terms</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/privacy-and-terms" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerPrivacy">Privacy &amp; Terms</a></li>
 
                     </ul>
 
@@ -638,13 +653,13 @@
 
         <div class="site-footer-bottom">
 
-            <p class="site-footer-bottom-text">©
+            <p class="site-footer-bottom-text"><span data-i18n="pub.footerCopyright">&copy;
 
                 <!-- -->2026<!-- --> Hack Club. Registered under<!-- --> <a href="https://the.hackfoundation.org/"
                     target="_blank" rel="noopener noreferrer" class="site-footer-bottom-link">The Hack Foundation</a>, a
                 501(c)(3) nonprofit (EIN: 81-2908499).<!-- --> Commit 0defb6<!-- -->, open source at<!-- --> <a
                     href="https://github.com/hackclub/site" target="_blank" rel="noopener noreferrer"
-                    class="site-footer-bottom-link">hackclub/site</a>
+                    class="site-footer-bottom-link">hackclub/site</a></span>
 
                 <i class="fa-regular fa-lightbulb"></i>
             </p>
@@ -658,6 +673,15 @@
     <script defer src="{{ url_for('static', filename='js/hero.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/ambient-bg.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/showcase.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    <script id="stickerData" type="application/json">{{ sticker_files | tojson }}</script>
+    <div class="sticker-field" id="stickerField" data-sticker-count="6" aria-hidden="true"></div>
+    <script defer src="{{ url_for('static', filename='js/stickers.js') }}"></script>
+
+    <div class="lang-switcher-wrap">
+        <select data-lang-switcher data-i18n-attr="aria-label:pub.language"></select>
+    </div>
 
 </body>
 

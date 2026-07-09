@@ -1,58 +1,65 @@
 {% extends "dashboard_layout.html" %}
 
-{% block title %}Projects{% endblock %}
-{% block page_title %}Projects{% endblock %}
-{% block page_subtitle %}Create your own projects and submit them to your club.{% endblock %}
+{% block title %}<span data-i18n="side.projects">Projects</span>{% endblock %}
+{% block page_title %}<span data-i18n="side.projects">Projects</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="projects.subtitle">Create your own projects and submit them to your club.</span>{% endblock %}
 
 {% block header_right %}
 <button class="btn-primary" type="button" data-open-modal="projectModal">
     <span class="button-icon" aria-hidden="true">+</span>
-    New project
+    <span data-i18n="projects.newProject">New project</span>
 </button>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-page" data-dashboard-page="projects"
      data-hackatime-id="{{ current_user.hackatimeId or '' }}">
+    <div class="skeleton-block" data-skeleton="projects" style="padding:20px;">
+      <div class="skeleton skeleton-heading"></div>
+      <div class="skeleton skeleton-text short"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-heading" style="margin-top:20px;"></div>
+      <div class="skeleton skeleton-card"></div>
+    </div>
     <section class="card-modern dashboard-panel dashboard-panel-full hacktime-card" id="hacktimeCard" hidden>
         <div class="panel-heading">
             <div>
-                <h2>Your coding time</h2>
-                <p>Pulled live from HackTime.</p>
+                <h2 data-i18n="projects.yourCodingTime">Your coding time</h2>
+                <p data-i18n="projects.codingTimeDesc">Pulled live from HackTime.</p>
             </div>
-            <a class="text-button" href="https://hackatime.hackclub.com" target="_blank" rel="noopener noreferrer">Open HackTime →</a>
+            <a class="text-button" href="https://hackatime.hackclub.com" target="_blank" rel="noopener noreferrer" data-i18n="projects.openHackTime">Open HackTime →</a>
         </div>
         <div id="hacktimeBody" class="hacktime-body">
-            <p class="hacktime-loading">Loading your coding time…</p>
+            <p class="hacktime-loading" data-i18n="projects.loadingCodingTime">Loading your coding time…</p>
         </div>
     </section>
 
     <section class="card-modern dashboard-panel dashboard-panel-full">
         <div class="panel-heading">
             <div>
-                <h2>Your projects</h2>
-                <p>These are linked to your account — only you can edit them.</p>
+                <h2 data-i18n="projects.yourProjects">Your projects</h2>
+                <p data-i18n="projects.yourProjectsDesc">These are linked to your account — only you can edit them.</p>
             </div>
         </div>
         <div class="project-grid" id="projectMineList"></div>
         <div class="empty-state" id="projectsEmpty" hidden>
-            <h3>No projects yet</h3>
-            <p>Start a project, then submit it to your club when it's ready.</p>
-            <button class="btn-primary" type="button" data-open-modal="projectModal">New project</button>
+            <h3 data-i18n="projects.emptyTitle">No projects yet</h3>
+            <p data-i18n="projects.emptyDesc">Start a project, then submit it to your club when it's ready.</p>
+            <button class="btn-primary" type="button" data-open-modal="projectModal" data-i18n="projects.newProject">New project</button>
         </div>
     </section>
 
     <section class="card-modern dashboard-panel dashboard-panel-full">
         <div class="panel-heading">
             <div>
-                <h2>Submitted to your club</h2>
-                <p>Projects members have submitted, newest first.</p>
+                <h2 data-i18n="projects.submittedToClub">Submitted to your club</h2>
+                <p data-i18n="projects.submittedToClubDesc">Projects members have submitted, newest first.</p>
             </div>
         </div>
         <div class="project-grid" id="projectSubmittedList"></div>
         <div class="empty-state" id="projectSubmittedEmpty" hidden>
-            <h3>Nothing submitted yet</h3>
-            <p>Submitted projects from your club will show up here.</p>
+            <h3 data-i18n="projects.nothingSubmittedTitle">Nothing submitted yet</h3>
+            <p data-i18n="projects.nothingSubmittedDesc">Submitted projects from your club will show up here.</p>
         </div>
     </section>
 </div>
@@ -60,59 +67,59 @@
 <div class="modal-backdrop" id="projectModal" aria-hidden="true">
     <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
         <header class="modal-header">
-            <h2 id="projectModalTitle">New project</h2>
-            <button class="icon-button" type="button" data-modal-close aria-label="Close">x</button>
+            <h2 id="projectModalTitle" data-i18n="projects.newProject">New project</h2>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close" data-i18n-attr="aria-label:common.close"><span aria-hidden="true" data-i18n="common.closeX">×</span></button>
         </header>
         <form class="modal-form modal-scroll-body" id="projectForm">
             <input type="hidden" name="id" value="">
             <label class="form-group">
-                <span class="form-label">Project name</span>
-                <input class="form-input" type="text" name="name" placeholder="Weather dashboard" required>
+                <span class="form-label" data-i18n="projects.projectName">Project name</span>
+                <input class="form-input" type="text" name="name" data-i18n-attr="placeholder:projects.projectNamePlaceholder" placeholder="Weather dashboard" required>
             </label>
             <label class="form-group">
-                <span class="form-label">Description</span>
-                <textarea class="form-input" name="description" rows="3" placeholder="What is it? What did you build?"></textarea>
+                <span class="form-label" data-i18n="projects.description">Description</span>
+                <textarea class="form-input" name="description" rows="3" data-i18n-attr="placeholder:projects.descriptionPlaceholder" placeholder="What is it? What did you build?"></textarea>
             </label>
             <label class="form-group">
-                <span class="form-label">Repository URL</span>
-                <input class="form-input" type="url" name="repoUrl" placeholder="https://github.com/you/project">
+                <span class="form-label" data-i18n="projects.repoUrl">Repository URL</span>
+                <input class="form-input" type="url" name="repoUrl" data-i18n-attr="placeholder:projects.repoUrlPlaceholder" placeholder="https://github.com/you/project">
             </label>
             <label class="form-group">
-                <span class="form-label">Playable demo URL</span>
-                <input class="form-input" type="url" name="demoUrl" placeholder="https://your-demo.example.com">
+                <span class="form-label" data-i18n="projects.demoUrl">Playable demo URL</span>
+                <input class="form-input" type="url" name="demoUrl" data-i18n-attr="placeholder:projects.demoUrlPlaceholder" placeholder="https://your-demo.example.com">
             </label>
             <div class="form-group">
-                <span class="form-label">Thumbnail image</span>
-                <p class="form-hint">Upload a PNG, JPEG, WebP, or GIF (max 4 MB).</p>
+                <span class="form-label" data-i18n="projects.thumbnail">Thumbnail image</span>
+                <p class="form-hint" data-i18n="projects.thumbnailHint">Upload a PNG, JPEG, WebP, or GIF (max 4 MB).</p>
                 <input type="hidden" name="thumbnail" value="">
                 <label class="image-upload" id="projectThumbUpload">
                     <input type="file" id="projectThumbFile"
                         accept="image/png,image/jpeg,image/webp,image/gif" hidden>
-                    <span class="image-upload-cta">Choose image…</span>
+                    <span class="image-upload-cta" data-i18n="projects.chooseImage">Choose image…</span>
                 </label>
-                <img class="thumb-preview" id="projectThumbPreview" alt="Thumbnail preview" hidden>
+                <img class="thumb-preview" id="projectThumbPreview" alt="Thumbnail preview" data-i18n-attr="alt:projects.thumbnailAlt" hidden>
                 <p class="form-error" id="projectThumbError" hidden></p>
             </div>
             <div class="form-group">
-                <span class="form-label">Hackatime project</span>
-                <p class="form-hint">Link the project you tracked your coding time on.</p>
+                <span class="form-label" data-i18n="projects.hackatimeProject">Hackatime project</span>
+                <p class="form-hint" data-i18n="projects.hackatimeProjectHint">Link the project you tracked your coding time on.</p>
                 <div class="hacktime-picker" id="hackatimePicker">
-                    <p class="hacktime-picker-loading">Loading your Hackatime projects…</p>
+                    <p class="hacktime-picker-loading" data-i18n="projects.loadingHackatimeProjects">Loading your Hackatime projects…</p>
                 </div>
                 <input type="hidden" name="hackatimeProject" value="">
             </div>
             <ul class="req-checklist">
-                <li class="req-item" data-req="repoUrl"><span class="req-check" aria-hidden="true"></span> Repository URL added</li>
-                <li class="req-item" data-req="demoUrl"><span class="req-check" aria-hidden="true"></span> Playable demo URL added</li>
+                <li class="req-item" data-req="repoUrl"><span class="req-check" aria-hidden="true"></span> <span data-i18n="projects.reqRepoUrl">Repository URL added</span></li>
+                <li class="req-item" data-req="demoUrl"><span class="req-check" aria-hidden="true"></span> <span data-i18n="projects.reqDemoUrl">Playable demo URL added</span></li>
 
-                <li class="req-item" data-req="hackatimeProject"><span class="req-check" aria-hidden="true"></span> Hackatime project linked</li>
+                <li class="req-item" data-req="hackatimeProject"><span class="req-check" aria-hidden="true"></span> <span data-i18n="projects.reqHackatimeProject">Hackatime project linked</span></li>
             </ul>
             <p class="form-error" id="projectFormError" hidden></p>
         </form>
         <div class="modal-actions">
-            <button class="btn-secondary" type="button" data-modal-close>Cancel</button>
-            <button class="btn-secondary" type="submit" form="projectForm">Save draft</button>
-            <button class="btn-primary" type="button" id="projectSubmitReview" disabled>Submit for Review</button>
+            <button class="btn-secondary" type="button" data-modal-close data-i18n="projects.cancel">Cancel</button>
+            <button class="btn-secondary" type="submit" form="projectForm" data-i18n="projects.saveDraft">Save draft</button>
+            <button class="btn-primary" type="button" id="projectSubmitReview" disabled data-i18n="projects.submitForReview">Submit for Review</button>
         </div>
     </section>
 </div>

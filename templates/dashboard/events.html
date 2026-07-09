@@ -1,30 +1,40 @@
 {% extends "dashboard_layout.html" %}
 
-{% block page_title %}Events{% endblock %}
-{% block page_subtitle %}Plan meetings, workshops, and demo days.{% endblock %}
+{% block page_title %}<span data-i18n="side.events">Events</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="events.subtitle">Plan meetings, workshops, and demo days.</span>{% endblock %}
 
 {% block header_right %}
 {% if is_leader %}
 <button class="btn-primary" type="button" data-open-modal="eventModal">
     <span class="button-icon" aria-hidden="true">+</span>
-    New event
+    <span data-i18n="events.newEvent">New event</span>
 </button>
 {% endif %}
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-page" data-dashboard-page="events">
+    <div class="skeleton-block" data-skeleton="events" style="padding:20px;">
+      <div class="skeleton skeleton-heading"></div>
+      <div style="display:flex; gap:12px; margin:16px 0;">
+        <div class="skeleton skeleton-metric"></div>
+        <div class="skeleton skeleton-metric"></div>
+        <div class="skeleton skeleton-metric"></div>
+      </div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card" style="margin-top:12px;"></div>
+    </div>
     <section class="dashboard-metrics">
         <article class="metric-tile">
-            <span class="metric-label">Upcoming</span>
+            <span class="metric-label" data-i18n="events.upcoming">Upcoming</span>
             <strong id="eventTotal">0</strong>
         </article>
         <article class="metric-tile">
-            <span class="metric-label">RSVPs</span>
+            <span class="metric-label" data-i18n="events.rsvps">RSVPs</span>
             <strong id="rsvpTotal">0</strong>
         </article>
         <article class="metric-tile">
-            <span class="metric-label">Expected</span>
+            <span class="metric-label" data-i18n="events.expected">Expected</span>
             <strong id="attendeeTotal">0</strong>
         </article>
     </section>
@@ -32,16 +42,16 @@
     <section class="card-modern dashboard-panel dashboard-panel-full">
         <div class="panel-heading">
             <div>
-                <h2>Upcoming schedule</h2>
-                <p>Track what is happening next and who plans to attend.</p>
+                <h2 data-i18n="events.upcomingSchedule">Upcoming schedule</h2>
+                <p data-i18n="events.scheduleDesc">Track what is happening next and who plans to attend.</p>
             </div>
         </div>
         <div class="timeline-list" id="eventList"></div>
         <div class="empty-state" id="eventsEmpty" hidden>
-            <h3>No events scheduled</h3>
-            <p>Create a workshop, meeting, or demo day for your club.</p>
+            <h3 data-i18n="events.emptyTitle">No events scheduled</h3>
+            <p data-i18n="events.emptyDesc">Create a workshop, meeting, or demo day for your club.</p>
             {% if is_leader %}
-            <button class="btn-primary" type="button" data-open-modal="eventModal">New event</button>
+            <button class="btn-primary" type="button" data-open-modal="eventModal" data-i18n="events.newEvent">New event</button>
             {% endif %}
         </div>
     </section>
@@ -50,43 +60,54 @@
 <div class="modal-backdrop" id="eventModal" aria-hidden="true">
     <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
         <header class="modal-header">
-            <h2 id="eventModalTitle">New event</h2>
-            <button class="icon-button" type="button" data-modal-close aria-label="Close">x</button>
+            <h2 id="eventModalTitle" data-i18n="events.newEvent">New event</h2>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close" data-i18n-attr="aria-label:common.close"><span aria-hidden="true" data-i18n="common.closeX">×</span></button>
         </header>
         <form class="modal-form" id="eventForm">
             <input type="hidden" name="id">
             <label class="form-group">
-                <span class="form-label">Title</span>
+                <span class="form-label" data-i18n="events.title">Title</span>
                 <input class="form-input" type="text" name="title" required>
             </label>
             <div class="form-row">
                 <label class="form-group">
-                    <span class="form-label">Date</span>
+                    <span class="form-label" data-i18n="events.date">Date</span>
                     <input class="form-input" type="date" name="date" required>
                 </label>
                 <label class="form-group">
-                    <span class="form-label">Time</span>
+                    <span class="form-label" data-i18n="events.time">Time</span>
                     <input class="form-input" type="time" name="time" required>
                 </label>
             </div>
             <label class="form-group">
-                <span class="form-label">Location</span>
+                <span class="form-label" data-i18n="events.location">Location</span>
                 <input class="form-input" type="text" name="location" required>
             </label>
             <div class="form-row">
                 <label class="form-group">
-                    <span class="form-label">Type</span>
-                    <input class="form-input" type="text" name="type" value="Workshop">
+                    <span class="form-label" data-i18n="events.type">Type</span>
+                    <input class="form-input" type="text" name="type" value="Workshop" data-i18n-attr="value:events.workshop">
                 </label>
                 <label class="form-group">
-                    <span class="form-label">Expected</span>
+                    <span class="form-label" data-i18n="events.expected">Expected</span>
                     <input class="form-input" type="number" name="attendees" min="0" value="12">
                 </label>
             </div>
+            <label class="form-group">
+                <span class="form-label" data-i18n="events.repeats">Repeats</span>
+                <select class="form-input" name="repeat">
+                    <option value="" data-i18n="events.repeatNever">Does not repeat</option>
+                    <option value="daily" data-i18n="events.repeatDaily">Daily</option>
+                    <option value="weekdays" data-i18n="events.repeatWeekdays">Every weekday (Mon–Fri)</option>
+                    <option value="weekly" data-i18n="events.repeatWeekly">Weekly</option>
+                    <option value="biweekly" data-i18n="events.repeatBiweekly">Every 2 weeks</option>
+                    <option value="monthly" data-i18n="events.repeatMonthly">Monthly</option>
+                </select>
+            </label>
             <label class="toggle-row">
                 <span>
-                    <strong>RSVP as attending</strong>
-                    <small>Show this event in your committed list.</small>
+                    <strong data-i18n="events.rsvpToggle">RSVP as attending</strong>
+                    <small data-i18n="events.rsvpToggleDesc">Show this event in your committed list.</small>
                 </span>
                 <span class="toggle-switch">
                     <input type="checkbox" name="rsvp">
@@ -95,9 +116,9 @@
             </label>
             <p class="form-error" id="eventFormError" hidden></p>
             <div class="modal-actions">
-                <button class="btn-secondary" type="button" id="deleteEventButton" hidden>Delete</button>
-                <button class="btn-secondary" type="button" data-modal-close>Cancel</button>
-                <button class="btn-primary" type="submit">Save event</button>
+                <button class="btn-secondary" type="button" id="deleteEventButton" hidden data-i18n="events.delete">Delete</button>
+                <button class="btn-secondary" type="button" data-modal-close data-i18n="events.cancel">Cancel</button>
+                <button class="btn-primary" type="submit" data-i18n="events.saveEvent">Save event</button>
             </div>
         </form>
     </section>

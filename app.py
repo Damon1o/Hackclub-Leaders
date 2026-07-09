@@ -3,21 +3,22 @@ import secrets
 
 import flask
 from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, flash, redirect, request, session, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from helpers import (
+from src.helpers import (
     DASHBOARD_LANGUAGES,
     StateTooLarge,
     get_csrf_token,
+    get_sticker_files,
     is_admin,
     json_error,
     viewer_is_leader,
     viewer_role,
 )
-from storage import StorageError
-
-load_dotenv()
+from src.storage import StorageError
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
@@ -74,16 +75,17 @@ def inject_user():
         is_leader=viewer_is_leader() if signed_in else False,
         is_admin=is_admin() if signed_in else False,
         dashboard_languages=DASHBOARD_LANGUAGES,
+        sticker_files=get_sticker_files(),
     )
 
 
 # ── Route registration (imported at bottom to avoid circular deps) ───────────
 
-from routes_admin import register as register_admin  # noqa: E402
-from routes_api import register as register_api  # noqa: E402
-from routes_auth import register as register_auth  # noqa: E402
-from routes_club import register as register_club  # noqa: E402
-from routes_web import register as register_web  # noqa: E402
+from src.routes_admin import register as register_admin  # noqa: E402
+from src.routes_api import register as register_api  # noqa: E402
+from src.routes_auth import register as register_auth  # noqa: E402
+from src.routes_club import register as register_club  # noqa: E402
+from src.routes_web import register as register_web  # noqa: E402
 
 register_web(app, HACKATIME_CLIENT_ID)
 register_admin(app)

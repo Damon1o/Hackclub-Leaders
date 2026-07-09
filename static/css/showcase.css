@@ -1,7 +1,7 @@
 /* ── Home page sections adapted from hackclub.com ───────────
-   "Imagine a world where you made this:" project showcase,
-   "Imagine a world where you were here:" events strip, and
-   the supporters section. */
+   "Imagine a world where you made this:" auto-scrolling
+   project carousel, "Imagine a world where you were here:"
+   events strip, and the supporters section. */
 
 .showcase-section,
 .happening-section,
@@ -46,79 +46,206 @@
     max-width: 640px;
 }
 
-/* ── Project showcase ── */
+/* ── Project carousel ────────────────────────────────────────
+   Pure CSS auto-scroll. Paused on :hover or via a checkbox
+   toggle (:has). 5 unique projects × 9 repetitions = 45 cards
+   per cycle; the keyframe scrolls 15 card-slots (4650 px) so
+   the snap-back lands on the identical set of projects. */
 
-.showcase-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 24px;
+.carousel-viewport {
+    position: relative;
+    z-index: 5;
+    margin-bottom: 24px;
+    overflow: hidden;
 }
 
-.showcase-card {
-    background: var(--primary-white);
-    border: 2px solid #e8e8e8;
+.carousel-fade-left,
+.carousel-fade-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 120px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.carousel-fade-left {
+    left: 0;
+    background: linear-gradient(90deg, var(--background) 0%, transparent 100%);
+}
+
+.carousel-fade-right {
+    right: 0;
+    background: linear-gradient(270deg, var(--background) 0%, transparent 100%);
+}
+
+.carousel-track {
+    display: flex;
+    gap: 20px;
+    width: max-content;
+    padding-top: 8px;
+    padding-bottom: 16px;
+    animation: carousel-scroll 60s linear infinite;
+}
+
+.carousel-track:hover {
+    animation-play-state: paused;
+}
+
+.showcase-section:has(.carousel-pause-toggle:checked) .carousel-track {
+    animation-play-state: paused;
+}
+
+@keyframes carousel-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-4650px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .carousel-track { animation: none !important; }
+}
+
+/* ── Carousel cards ────────────────────────────────────────── */
+
+.carousel-card {
+    flex-shrink: 0;
+    width: 290px;
     border-radius: 16px;
     overflow: hidden;
+    background: var(--primary-white);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.10);
     display: flex;
     flex-direction: column;
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.showcase-card:hover {
-    transform: translateY(-4px) rotate(-0.5deg);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-}
-
-.showcase-card-visual {
-    height: 160px;
+.carousel-card-visual {
+    width: 100%;
+    height: 200px;
     overflow: hidden;
+    flex-shrink: 0;
     background: #17171d;
 }
 
-.showcase-card-visual img {
+.carousel-card-visual img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
-    transition: transform 0.3s ease;
 }
 
-.showcase-card:hover .showcase-card-visual img {
-    transform: scale(1.05);
-}
-
-.showcase-card-body {
-    padding: 16px 20px 20px;
+.carousel-card-body {
+    padding: 16px 18px 18px;
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 12px;
 }
 
-.showcase-card-title {
-    font-family: var(--hackclub-title-font);
-    font-size: 1.25rem;
-    font-weight: bold;
+.carousel-card-body p {
+    font-family: var(--hackclub-body-font);
+    font-size: 20px;
     color: var(--primary-black);
     margin: 0;
+    line-height: 1.2;
+    flex: 1;
 }
 
-.showcase-card-byline {
-    font-family: var(--hackclub-body-font);
-    font-size: 0.9rem;
-    color: var(--hackclub-muted);
-    margin: 0;
-    line-height: 1.4;
+.carousel-card-footer {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
 }
 
-.showcase-card-program {
-    font-family: var(--hackclub-body-font);
-    font-size: 0.75rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+.carousel-card-cta {
+    font-size: 20px;
     color: var(--hackclub-red);
+    text-decoration: none;
+    font-family: var(--hackclub-body-font);
+    font-weight: 600;
+}
+
+.carousel-card-cta .cta-arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.carousel-card-cta:hover .cta-arrow {
+    transform: translateX(4px);
+}
+
+.carousel-card-repo {
+    color: var(--primary-black);
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.carousel-card-repo:hover {
+    opacity: 1;
+}
+
+/* ── Pause / play button ───────────────────────────────────── */
+
+.carousel-footer {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.carousel-pause-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: var(--hackclub-muted);
+    background: transparent;
+    border: 3px solid var(--hackclub-muted);
+    border-radius: 999px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.carousel-pause-toggle {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.carousel-pause-btn .play-icon { display: none; }
+
+.carousel-pause-toggle:checked ~ .pause-icon { display: none; }
+.carousel-pause-toggle:checked ~ .play-icon  { display: block; }
+
+.carousel-pause-toggle:focus-visible {
+    outline: 3px solid var(--hackclub-orange);
+    outline-offset: 6px;
+}
+
+.carousel-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: var(--primary-black);
+    color: var(--primary-white);
+    border-radius: 999px;
+    font-family: var(--hackclub-body-font);
+    font-size: 1rem;
+    text-decoration: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.carousel-cta:hover {
+    background: var(--hackclub-red);
+    transform: translateY(-1px);
 }
 
 /* ── Happening now (events strip) ── */
@@ -242,6 +369,23 @@
 
 .supporters-section {
     text-align: center;
+    padding-bottom: 160px;
+    overflow: visible;
+}
+
+.supporters-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    background: linear-gradient(0deg, rgba(236, 55, 80, 0.40) 0%, rgba(236, 55, 80, 0.04) 75%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.dark-mode .supporters-gradient {
+    background: linear-gradient(0deg, rgba(236, 55, 80, 0.25) 0%, rgba(236, 55, 80, 0.02) 75%, transparent 100%);
 }
 
 .supporters-heading {
@@ -252,7 +396,7 @@
 .supporters-subtext {
     margin-left: auto;
     margin-right: auto;
-    max-width: 720px;
+    max-width: 560px;
 }
 
 .supporters-logos {
@@ -278,19 +422,135 @@
     transform: translateY(-2px);
 }
 
-.supporters-note {
-    font-family: var(--hackclub-body-font);
-    font-size: 0.95rem;
-    color: var(--hackclub-muted);
-    max-width: 640px;
-    margin: 0 auto;
-    line-height: 1.5;
+/* ── Named donor pills ─────────────────────────────────────── */
+
+.supporters-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 48px;
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.supporters-note a {
+.supporter-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f1f3;
+    border-radius: 9999px;
+    min-height: 40px;
+    padding: 0 20px;
+    font-family: var(--hackclub-body-font);
+    font-size: 16px;
+    color: var(--primary-black);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+body.dark-mode .supporter-pill {
+    background: #2d2d38;
+    color: var(--primary-white);
+}
+
+/* ── Transparency text ─────────────────────────────────────── */
+
+.supporters-transparency {
+    font-family: var(--hackclub-body-font);
+    font-size: 20px;
+    color: var(--primary-black);
+    margin: 0 auto 36px;
+    max-width: 720px;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.supporters-transparency p {
+    margin: 0;
+}
+
+.supporters-transparency p + p {
+    margin-top: 0.75em;
+}
+
+.supporters-transparency a {
     color: var(--hackclub-red);
     text-decoration: underline;
     text-underline-offset: 2px;
+}
+
+body.dark-mode .supporters-transparency {
+    color: var(--primary-white);
+}
+
+/* ── CTA button ────────────────────────────────────────────── */
+
+.supporters-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--primary-black);
+    color: var(--primary-white);
+    border-radius: 41px;
+    height: 48px;
+    padding: 0 32px;
+    font-family: var(--hackclub-body-font);
+    font-size: 20px;
+    font-weight: normal;
+    text-decoration: none;
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 80px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.supporters-cta:hover {
+    background: var(--hackclub-red);
+    transform: translateY(-1px);
+}
+
+body.dark-mode .supporters-cta {
+    background: var(--hackclub-light);
+    color: var(--hackclub-dark);
+}
+
+body.dark-mode .supporters-cta:hover {
+    background: var(--hackclub-red);
+    color: var(--primary-white);
+}
+
+/* ── Wave separator ────────────────────────────────────────── */
+
+.supporters-wave {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.supporters-wave-svg {
+    display: block;
+    width: 100%;
+    height: 120px;
+}
+
+.supporters-wave-fill {
+    fill: var(--background);
+}
+
+body.dark-mode .supporters-wave-fill {
+    fill: var(--hackclub-dark);
+}
+
+.supporters-wave-stroke {
+    stroke: rgba(236, 55, 80, 0.25);
 }
 
 /* ── Scroll reveal ── */
@@ -331,18 +591,27 @@ body.dark-mode .supporters-heading {
     color: var(--primary-white);
 }
 
-body.dark-mode .showcase-card,
+body.dark-mode .carousel-card {
+    background: #2d2d38;
+}
+
+body.dark-mode .carousel-card-body p {
+    color: var(--primary-white);
+}
+
+body.dark-mode .carousel-card-repo {
+    color: var(--primary-white);
+}
+
 body.dark-mode .happening-card {
     background: #2d2d38;
     border-color: #3d3d4d;
 }
 
-body.dark-mode .showcase-card:hover,
 body.dark-mode .happening-card:hover {
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
-body.dark-mode .showcase-card-title,
 body.dark-mode .happening-card-title {
     color: var(--primary-white);
 }
@@ -357,6 +626,24 @@ body.dark-mode .happening-more a:hover {
     color: var(--primary-white);
 }
 
+body.dark-mode .carousel-cta {
+    background: var(--hackclub-light);
+    color: var(--hackclub-dark);
+}
+
+body.dark-mode .carousel-cta:hover {
+    background: var(--hackclub-red);
+    color: var(--primary-white);
+}
+
+body.dark-mode .carousel-fade-left {
+    background: linear-gradient(90deg, var(--hackclub-dark) 0%, transparent 100%);
+}
+
+body.dark-mode .carousel-fade-right {
+    background: linear-gradient(270deg, var(--hackclub-dark) 0%, transparent 100%);
+}
+
 body.dark-mode .supporters-logos img {
     filter: grayscale(1) invert(1);
 }
@@ -368,28 +655,42 @@ body.dark-mode .supporters-logos img:hover {
 /* ── Mobile responsiveness ─────────────────────────────────── */
 
 @media (max-width: 768px) {
+    .carousel-viewport { margin-bottom: 16px; }
 
-    .showcase-grid,
-    .happening-grid {
-        gap: 16px;
+    .carousel-card { width: 260px; }
+
+    @keyframes carousel-scroll {
+        from { transform: translateX(0); }
+        to   { transform: translateX(-4200px); } /* 15 cards × 280px */
     }
 
-    .showcase-subtext,
-    .happening-subtext {
-        font-size: 1.05rem;
-    }
+    .carousel-card-visual { height: 170px; }
+
+    .carousel-card-body p { font-size: 18px; }
+
+    .carousel-card-cta { font-size: 18px; }
+
+    .happening-grid { gap: 16px; }
+
+    .carousel-cta { font-size: 0.95rem; }
+}
+
+@media (max-width: 640px) {
+    .carousel-fade-left,
+    .carousel-fade-right { display: none !important; }
 }
 
 @media (max-width: 480px) {
-    .showcase-card-visual {
-        height: 140px;
+    .carousel-card { width: 240px; }
+
+    @keyframes carousel-scroll {
+        from { transform: translateX(0); }
+        to   { transform: translateX(-3900px); } /* 15 cards × 260px */
     }
 
-    .happening-card-visual {
-        height: 130px;
-    }
+    .carousel-card-visual { height: 150px; }
 
-    .supporters-logos {
-        gap: 24px;
-    }
+    .happening-card-visual { height: 130px; }
+
+    .supporters-logos { gap: 24px; }
 }

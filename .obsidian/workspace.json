@@ -1,14 +1,14 @@
 {
   "main": {
-    "id": "6c4f0d0d078799a2",
+    "id": "af997cec7d7e80c8",
     "type": "split",
     "children": [
       {
-        "id": "73873afe11f7a0bb",
+        "id": "25aee94875989e2f",
         "type": "tabs",
         "children": [
           {
-            "id": "57afae7f0e8e29d8",
+            "id": "a5aef00cbd411798",
             "type": "leaf",
             "state": {
               "type": "graph",
@@ -23,15 +23,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "74429f6f4e0ad142",
+    "id": "81c6e3d686b7220d",
     "type": "split",
     "children": [
       {
-        "id": "fd5de888c4b839d3",
+        "id": "6919ded4e95c56a2",
         "type": "tabs",
         "children": [
           {
-            "id": "991198b951ada3a5",
+            "id": "0bbf5a5f05958bc0",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -44,7 +44,7 @@
             }
           },
           {
-            "id": "3ad42afd82c8cb34",
+            "id": "96df41f66fb94a96",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -61,7 +61,7 @@
             }
           },
           {
-            "id": "4c21534eb2e6251d",
+            "id": "e5e130f165407d7c",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -77,20 +77,19 @@
     "width": 300
   },
   "right": {
-    "id": "c8a173f5de96f540",
+    "id": "ba1efcaab182e122",
     "type": "split",
     "children": [
       {
-        "id": "576b0d6dad355eee",
+        "id": "6375a06dca5b6b05",
         "type": "tabs",
         "children": [
           {
-            "id": "ada84e602bc04db0",
+            "id": "5f45832ac06bd5b6",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -100,25 +99,24 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for README"
+              "title": "Backlinks"
             }
           },
           {
-            "id": "5939c71aecf8736e",
+            "id": "0ef383a909cfdfb9",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from README"
+              "title": "Outgoing links"
             }
           },
           {
-            "id": "ff401be4334e4823",
+            "id": "dd8f27092f523924",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -133,7 +131,7 @@
             }
           },
           {
-            "id": "e4068bcaabff761c",
+            "id": "f7364d1ac3dae4bc",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -147,18 +145,17 @@
             }
           },
           {
-            "id": "1a45c22a294c7d73",
+            "id": "db11fbc67fc20056",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "README.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of README"
+              "title": "Outline"
             }
           }
         ]
@@ -179,34 +176,8 @@
       "bases:Create new base": false
     }
   },
-  "active": "991198b951ada3a5",
+  "active": "a5aef00cbd411798",
   "lastOpenFiles": [
-    "brag-output/brag.mp4",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/video-only.mp4",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames/frame_000611.jpg",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames/frame_000610.jpg",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames/frame_000600.jpg",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames/frame_000599.jpg",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames/frame_000597.jpg",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames/frame_000598.jpg",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames/frame_000596.jpg",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames/frame_000595.jpg",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames/frame_000594.jpg",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames/frame_000593.jpg",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/capture-attempt-0/worker-5",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/capture-attempt-0/worker-4",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/capture-attempt-0/worker-1",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/capture-attempt-0/worker-3",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/capture-attempt-0/worker-2",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/capture-attempt-0/worker-0",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/capture-attempt-0",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/capture-calibration",
-    "brag-output/work-7636ad7b-b798-497d-9636-e45bb1c98a37-E0U6Kh/captured-frames",
-    "brag-output/composition/CLAUDE.md",
-    "brag-output/composition/AGENTS.md",
-    "brag-output/composition-brief.md",
-    "brag-output/brag-plan.md",
-    "README.md",
-    "Untitled.canvas"
+    "everything-claude-code/README.md"
   ]
 }

@@ -2,7 +2,9 @@
 // (same API the hackclub.github.io/map site uses).
 (async function () {
     const el = document.getElementById('clubMap');
-    if (!el || typeof L === 'undefined') return;
+    const skeleton = document.querySelector('[data-skeleton="map"]');
+    const hideSkeleton = () => skeleton && skeleton.classList.add('skeleton-hidden');
+    if (!el || typeof L === 'undefined') { hideSkeleton(); return; }
 
     const countLabel = document.getElementById('mapClubCount');
     const errorPanel = document.getElementById('mapError');
@@ -72,9 +74,11 @@
         if (countLabel) {
             countLabel.textContent = `${plotted.toLocaleString()} active clubs around the world.`;
         }
+        hideSkeleton();
     } catch (error) {
         if (countLabel) countLabel.textContent = '';
         if (errorPanel) errorPanel.hidden = false;
         el.hidden = true;
+        hideSkeleton();
     }
 })();

@@ -1,0 +1,44 @@
+/* ── Skeleton Loader ──────────────────────────────────────────────────────── */
+
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--dash-fill, #f6f8fb) 25%, var(--dash-border, #e0e6ed) 50%, var(--dash-fill, #f6f8fb) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.skeleton-text { height: 14px; margin-bottom: 8px; width: 100%; }
+.skeleton-text.short { width: 60%; }
+.skeleton-text.medium { width: 80%; }
+.skeleton-heading { height: 24px; margin-bottom: 12px; width: 40%; }
+.skeleton-metric { height: 48px; width: 80px; border-radius: 12px; }
+.skeleton-avatar { height: 48px; width: 48px; border-radius: 50%; }
+.skeleton-card { height: 120px; width: 100%; }
+.skeleton-button { height: 36px; width: 120px; border-radius: 8px; }
+.skeleton-bar { height: 12px; width: 100%; border-radius: 6px; }
+.skeleton-progress { height: 8px; width: 100%; border-radius: 4px; }
+.skeleton-badge { height: 24px; width: 64px; border-radius: 12px; }
+
+.skeleton-block { margin-bottom: 16px; }
+.skeleton-hidden { display: none !important; }
+
+/* Map: shimmer overlay covering the Leaflet canvas until clubs load. The wrap
+   is the positioning context; the overlay sits above the tiles (Leaflet panes
+   top out around z-index 400) and is removed on load / error. */
+.map-canvas-wrap { position: relative; }
+.skeleton-map-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  border-radius: 12px;
+}
+
+body.dark-mode.dashboard-layout .skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+}

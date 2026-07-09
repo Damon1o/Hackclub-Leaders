@@ -1,12 +1,12 @@
 {% extends "dashboard_layout.html" %}
 
-{% block title %}Club Map{% endblock %}
-{% block page_title %}Club Map{% endblock %}
-{% block page_subtitle %}Every active Hack Club on the planet — make sure yours is on it.{% endblock %}
+{% block title %}<span data-i18n="side.map">Club Map</span>{% endblock %}
+{% block page_title %}<span data-i18n="side.map">Club Map</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="map.subtitle">Every active Hack Club on the planet — make sure yours is on it.</span>{% endblock %}
 
 {% block header_right %}
 <a class="btn-secondary" href="https://hackclub.github.io/map/" target="_blank" rel="noopener noreferrer">
-    Open full map <span class="button-icon" aria-hidden="true">↗</span>
+    <span data-i18n="map.openFullMap">Open full map</span> <span class="button-icon" aria-hidden="true">↗</span>
 </a>
 {% endblock %}
 
@@ -18,14 +18,17 @@
     <section class="card-modern map-card">
         <div class="panel-heading">
             <div>
-                <h2>The Hack Club Map</h2>
-                <p id="mapClubCount">Loading clubs…</p>
+                <h2 data-i18n="map.title">The Hack Club Map</h2>
+                <p id="mapClubCount" data-i18n="map.loadingClubs">Loading clubs…</p>
             </div>
         </div>
-        <div id="clubMap" class="club-map" role="application" aria-label="Map of Hack Clubs worldwide"></div>
+        <div class="map-canvas-wrap">
+            <div id="clubMap" class="club-map" role="application" aria-label="Map of Hack Clubs worldwide" data-i18n-attr="aria-label:map.mapAria"></div>
+            <div class="skeleton skeleton-map-overlay" data-skeleton="map" aria-hidden="true"></div>
+        </div>
         <div class="empty-state tight" id="mapError" hidden>
-            <h3>Couldn't load the map</h3>
-            <p>The club directory didn't respond. Check your connection and refresh the page.</p>
+            <h3 data-i18n="map.couldntLoad">Couldn't load the map</h3>
+            <p data-i18n="map.couldntLoadDesc">The club directory didn't respond. Check your connection and refresh the page.</p>
         </div>
     </section>
 </div>

@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from storage import AirtableStorage, StorageError  # noqa: E402
+from src.storage import AirtableStorage, StorageError  # noqa: E402
 
 TARGET_EMAILS = ['dev@example.com', 'mia@example.com', 'perf@example.com',
                  'lead@example.com']

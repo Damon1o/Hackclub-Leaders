@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - Hack Club Leaders</title>
+    <title data-i18n="signin.title">Sign In - Hack Club Leaders</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/borders.css') }}">
@@ -25,29 +25,29 @@
     <section class="navigation-bar">
 
         <input type="checkbox" id="nav-toggle" class="nav-toggle">
-        <label for="nav-toggle" class="nav-hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></label>
+        <label for="nav-toggle" class="nav-hamburger" data-i18n-attr="aria-label:pub.toggleMenu"><span></span><span></span><span></span></label>
         <div class="animated-nav-logo">
-            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" data-i18n-attr="alt:pub.navLogo" alt="Hack Club">
         </div>
         <div class="nav-bar-text">
-            <a href="/">Hack Club Leaders</a>
+            <a href="/" data-i18n="pub.navBrand">Hack Club Leaders</a>
         </div>
         <div class="nav-links">
             <ul>
                 <li class="nav-link">
-                    <a href="/events">Events</a>
+                    <a href="/events" data-i18n="nav.events">Events</a>
                 </li>
                 <li class="nav-link dropdown">
-                    <a href="#">Tools
+                    <a href="#"><span data-i18n="nav.tools">Tools</span>
                         <img class="dropdown-icon"
                             src="{{ url_for('static', filename='images/hackclub-site/dropdown-icon.svg') }}">
                     </a>
                     <div class="dropdown-menu">
-                        <a href="https://apply.hackclub.com/">Start a Club</a>
-                        <a href="https://ysws.hackclub.com/">All YSWS Programs</a>
-                        <a href="https://guide.leaders.hackclub.com/">Club Leaders Guide</a>
-                        <a href="https://hackclub.github.io/map/">Club Map</a>
-                        <a href="https://leaders.hackclub.com/posters/">Club Posters</a>
+                        <a href="https://apply.hackclub.com/" data-i18n="nav.startClub">Start a Club</a>
+                        <a href="https://ysws.hackclub.com/" data-i18n="nav.allYsws">All YSWS Programs</a>
+                        <a href="https://guide.leaders.hackclub.com/" data-i18n="nav.leadersGuide">Club Leaders Guide</a>
+                        <a href="https://hackclub.github.io/map/" data-i18n="nav.clubMap">Club Map</a>
+                        <a href="https://leaders.hackclub.com/posters/" data-i18n="nav.posters">Club Posters</a>
                     </div>
                 </li>
             </ul>
@@ -56,13 +56,13 @@
         <div class="mode-switch">
             <button class="mode-switch-button" id="toggleBtn">
                 <svg class="icon icon-first" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
-                    stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" aria-label="moon" viewBox="0 0 32 32"
+                    stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" data-i18n-attr="aria-label:pub.moonIcon" viewBox="0 0 32 32"
                     preserveAspectRatio="xMidYMid meet" fill="currentColor" width="16" height="16">
                     <path
                         d="M22.5317 23.4697C22.5313 23.4697 22.5308 23.4697 22.5303 23.4697C14.7983 23.4697 8.53027 17.2017 8.53027 9.46974C8.53027 9.46925 8.53027 9.46876 8.53027 9.46827C7.2733 11.1407 6.53027 13.2183 6.53027 15.4697C6.53027 20.9926 11.0074 25.4697 16.5303 25.4697C18.7817 25.4697 20.8593 24.7267 22.5317 23.4697ZM24.9529 21.2251C25.8563 21.0399 26.6747 21.9485 26.1197 22.6849C23.9298 25.591 20.4494 27.4697 16.5303 27.4697C9.90286 27.4697 4.53027 22.0972 4.53027 15.4697C4.53027 11.5506 6.40906 8.07026 9.3151 5.88028C10.0515 5.32532 10.9601 6.14376 10.7749 7.04709C10.6145 7.82957 10.5303 8.63981 10.5303 9.46974C10.5303 16.0972 15.9029 21.4697 22.5303 21.4697C23.3602 21.4697 24.1704 21.3855 24.9529 21.2251Z" />
                 </svg>
                 <svg class="icon icon-second" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
-                    stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" aria-label="sun" viewBox="0 0 32 32"
+                    stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" data-i18n-attr="aria-label:pub.sunIcon" viewBox="0 0 32 32"
                     preserveAspectRatio="xMidYMid meet" fill="currentColor" width="16" height="16">
                     <path
                         d="M15.001 5C15.001 4.448 15.449 4 16.001 4C16.553 4 17.001 4.448 17.001 5V7C17.001 7.552 16.553 8 16.001 8C15.449 8 15.001 7.552 15.001 7V5ZM9.12203 7.707C8.73203 7.317 8.09903 7.317 7.70803 7.707C7.31803 8.098 7.31803 8.731 7.70803 9.121L9.12203 10.536C9.51303 10.926 10.146 10.926 10.537 10.536C10.927 10.145 10.927 9.512 10.537 9.121L9.12203 7.707ZM24.536 7.707C24.146 7.317 23.513 7.317 23.122 7.707L21.708 9.121C21.318 9.512 21.318 10.145 21.708 10.536C22.099 10.926 22.732 10.926 23.122 10.536L24.537 9.121C24.927 8.731 24.926 8.098 24.536 7.707Z" />
@@ -79,21 +79,21 @@
         <div class="apply-now-container">
             {% if current_user %}
             <a href="{{ url_for('dashboard') }}" class="apply-now-link">
-                <p class="apply-now-text">Dashboard</p>
+                    <p class="apply-now-text" data-i18n="nav.dashboard">Dashboard</p>
             </a>
             {% else %}
             <a href="https://apply.hackclub.com" class="apply-now-link">
-                <p class="apply-now-text">Apply now</p>
+                <p class="apply-now-text" data-i18n="pub.applyNow">Apply now</p>
             </a>
             {% endif %}
 
             {% if current_user %}
             <a href="{{ url_for('sign_out') }}" class="sign-in-link">
-                <p class="sign-in-text">Sign out</p>
+                    <p class="sign-in-text" data-i18n="nav.signOut">Sign out</p>
             </a>
             {% else %}
             <a href="{{ url_for('sign_in') }}" class="sign-in-link">
-                <p class="sign-in-text">Sign in</p>
+                <p class="sign-in-text" data-i18n="pub.signIn">Sign in</p>
             </a>
             {% endif %}
         </div>
@@ -120,13 +120,13 @@
 
             <div class="sign-in-copy">
 
-                <p class="sign-in-eyebrow">The Leaders Portal</p>
+                <p class="sign-in-eyebrow" data-i18n="signin.eyebrow">The Leaders Portal</p>
 
-                <h1 class="sign-in-title">Run your club's <span class="marker-swipe">HQ</span></h1>
+                <h1 class="sign-in-title" data-i18n="signin.heading">Run your club's <span class="marker-swipe">HQ</span></h1>
 
-                <p class="sign-in-subtitle">
+                <p class="sign-in-subtitle" data-i18n="signin.subtext">
                     Plan meetings, log every ship, climb club levels, and put
-                    your club on the world map — whether you're starting a club
+                    your club on the world map &mdash; whether you're starting a club
                     or joining one.
                 </p>
 
@@ -141,16 +141,16 @@
                             <path d="M4 3h16v13l-8 5-8-5V3z" />
                         </svg>
                     </div>
-                    <h2 id="role-leader-h">Club <span class="marker-swipe">Leaders</span></h2>
-                    <p class="role-blurb">
-                        Starting or running a club? Sign in to open your HQ —
+                    <h2 id="role-leader-h" data-i18n="signin.leadersHeading">Club <span class="marker-swipe">Leaders</span></h2>
+                    <p class="role-blurb" data-i18n="signin.leadersText">
+                        Starting or running a club? Sign in to open your HQ &mdash;
                         plan meetings, log ships, and climb club levels.
                     </p>
                     <a href="{{ url_for('hackclub_login', intent='leader') }}{% if hint_email %}&login_hint={{ hint_email | urlencode }}{% endif %}" class="sign-in-hc-btn role-btn">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <path fill="white" d="M4 3h16v13l-8 5-8-5V3z" />
                         </svg>
-                        Continue as a leader
+                        <span data-i18n="signin.continueAsLeader">Continue as a leader</span>
                     </a>
                 </section>
 
@@ -160,8 +160,8 @@
                             <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.6-9 6v2h18v-2c0-3.4-4-6-9-6Z" />
                         </svg>
                     </div>
-                    <h2 id="role-member-h">Club Members</h2>
-                    <p class="role-blurb">
+                    <h2 id="role-member-h" data-i18n="signin.membersHeading">Club Members</h2>
+                    <p class="role-blurb" data-i18n="signin.membersText">
                         Joining a club? Enter the code your leader gave you (or
                         skip and add it after signing in).
                     </p>
@@ -170,18 +170,18 @@
                         {% if hint_email %}<input type="hidden" name="login_hint" value="{{ hint_email }}">{% endif %}
                         <label for="memberJoinCode" class="sr-only">Club join code</label>
                         <input type="text" id="memberJoinCode" name="join" class="welcome-code-input"
-                            placeholder="Join code (optional)" autocomplete="off"
+                            data-i18n-attr="placeholder:signin.joinCodePlaceholder" placeholder="Join code (optional)" autocomplete="off"
                             autocapitalize="off" spellcheck="false">
-                        <button type="submit" class="sign-in-hc-btn role-btn role-btn-outline">Join &amp; sign in</button>
+                        <button type="submit" class="sign-in-hc-btn role-btn role-btn-outline" data-i18n="signin.joinAndSignIn">Join &amp; sign in</button>
                     </form>
                 </section>
 
             </div>
 
             <p class="sign-in-footer-note">
-                By signing in, you agree to Hack Club's
+                <span data-i18n="signin.terms">By signing in, you agree to Hack Club's
                 <a href="https://hackclub.com/conduct" target="_blank" rel="noopener noreferrer">Code of Conduct</a>
-                and <a href="https://hackclub.com/privacy-and-terms" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                and <a href="https://hackclub.com/privacy-and-terms" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</span>
             </p>
         </div>
 
@@ -191,20 +191,20 @@
             <div class="sign-in-stickers" aria-hidden="true">
                 <img class="pile-sticker pile-flag"
                     src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" alt="">
-                <div class="pile-sticker pile-red">
+                <div class="pile-sticker pile-red" data-i18n="signin.stickerShipIt">
                     <i class="fa-solid fa-rocket"></i> Ship it
                 </div>
-                <div class="pile-sticker pile-blue">
+                <div class="pile-sticker pile-blue" data-i18n="signin.stickerOnTheMap">
                     <i class="fa-solid fa-map-location-dot"></i> On the map
                 </div>
-                <div class="pile-sticker pile-orange">
+                <div class="pile-sticker pile-orange" data-i18n="signin.stickerLevelUp">
                     <i class="fa-solid fa-trophy"></i> Level up
                     <span class="pile-bar"><span></span></span>
                 </div>
-                <div class="pile-sticker pile-green">
+                <div class="pile-sticker pile-green" data-i18n="signin.stickerRsvpd">
                     <i class="fa-solid fa-calendar-check"></i> RSVP'd
                 </div>
-                <div class="pile-sticker pile-purple">
+                <div class="pile-sticker pile-purple" data-i18n="signin.stickerDispatchSent">
                     <i class="fa-solid fa-envelope-open-text"></i> Dispatch sent
                 </div>
             </div>
@@ -223,19 +223,18 @@
 
             <div class="site-footer-left">
 
-                <div class="site-footer-logo-container"><a href="/"><img alt="Hack Club" loading="lazy" width="200"
+                <div class="site-footer-logo-container"><a href="/"><img data-i18n-attr="alt:pub.navLogo" alt="Hack Club" loading="lazy" width="200"
                             height="70" decoding="async" data-nimg="1" class="site-footer-logo"
                             src="{{ url_for('static', filename='images/hackclub-site/white-hack-club-banner.svg') }}" /></a>
                 </div>
 
-                <p class="site-footer-tagline">For teens, by teens.</p>
+                <p class="site-footer-tagline" data-i18n="pub.footerTagline">For teens, by teens.</p>
 
-                <a href="tel:18556254225" aria-label="Call Hack Club toll-free at 1-855-625-4225"
-                    class="site-footer-phone">1-855-625-HACK (call toll-free)</a>
+                <a href="tel:18556254225" class="site-footer-phone" data-i18n="pub.footerPhone">1-855-625-HACK (call toll-free)</a>
 
                 <div class="site-footer-socials">
 
-                    <a href="https://github.com/hackclub" target="_blank" rel="noopener noreferrer" aria-label="GitHub"
+                    <a href="https://github.com/hackclub" target="_blank" rel="noopener noreferrer" data-i18n-attr="aria-label:pub.footerGithub"
                         class="footer-social-link"><svg fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
                             stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" aria-label="github"
                             viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet" fill="currentColor" width="48"
@@ -254,7 +253,7 @@
                     </a>
 
                     <a href="https://www.youtube.com/c/HackClubHQ" target="_blank" rel="noopener noreferrer"
-                        aria-label="YouTube" class="footer-social-link"><svg fill-rule="evenodd" clip-rule="evenodd"
+                        data-i18n-attr="aria-label:pub.footerYoutube" class="footer-social-link"><svg fill-rule="evenodd" clip-rule="evenodd"
                             stroke-linejoin="round" stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg"
                             aria-label="youtube" viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet"
                             fill="currentColor" width="48" height="48">
@@ -271,7 +270,7 @@
                     </a>
 
                     <a href="https://www.instagram.com/starthackclub" target="_blank" rel="noopener noreferrer"
-                        aria-label="Instagram" class="footer-social-link"><svg fill-rule="evenodd" clip-rule="evenodd"
+                        data-i18n-attr="aria-label:pub.footerInstagram" class="footer-social-link"><svg fill-rule="evenodd" clip-rule="evenodd"
                             stroke-linejoin="round" stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg"
                             aria-label="instagram" viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet"
                             fill="currentColor" width="48" height="48">
@@ -288,7 +287,7 @@
 
                     </a>
 
-                    <a href="mailto:team@hackclub.com" aria-label="Email" class="footer-social-link"><svg
+                    <a href="mailto:team@hackclub.com" data-i18n-attr="aria-label:pub.footerEmail" class="footer-social-link"><svg
                             fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414"
                             xmlns="http://www.w3.org/2000/svg" aria-label="email" viewBox="0 0 32 32"
                             preserveAspectRatio="xMidYMid meet" fill="currentColor" width="48" height="48">
@@ -309,23 +308,23 @@
 
                 <div>
 
-                    <p class="site-footer-heading">
+                    <p class="site-footer-heading" data-i18n="pub.footerHackClub">
                         Hack Club</p>
                     <ul class="site-footer-list">
 
-                        <li><a class="footer-link" href="https://hackclub.com/philosophy" target="_blank" rel="noopener noreferrer">Philosophy</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/philosophy" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerPhilosophy">Philosophy</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/team" target="_blank" rel="noopener noreferrer">Our Team &amp; Board</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/team" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerTeam">Our Team &amp; Board</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/jobs" target="_blank" rel="noopener noreferrer">Jobs</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/jobs" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerJobs">Jobs</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/brand" target="_blank" rel="noopener noreferrer">Branding</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/brand" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerBranding">Branding</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/press" target="_blank" rel="noopener noreferrer">Press Inquiries</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/press" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerPress">Press Inquiries</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/philanthropy" target="_blank" rel="noopener noreferrer">Donate</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/philanthropy" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerDonate">Donate</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/imprint" target="_blank" rel="noopener noreferrer">Imprint</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/imprint" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerImprint">Imprint</a></li>
 
                     </ul>
 
@@ -333,29 +332,29 @@
 
                 <div class="site-footer-column">
 
-                    <p class="site-footer-heading">
+                    <p class="site-footer-heading" data-i18n="pub.footerResources">
                         Resources</p>
                     <ul class="site-footer-list">
 
-                        <li><a class="footer-link" href="https://hackclub.com/programs" target="_blank" rel="noopener noreferrer">Programs</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/programs" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerPrograms">Programs</a></li>
 
                         <li><a href="https://events.hackclub.com/" target="_blank" rel="noopener noreferrer"
-                                class="footer-link">Community
+                                class="footer-link" data-i18n="pub.footerEvents">Community
                                 Events</a></li>
 
                         <li><a href="https://toolbox.hackclub.com/" target="_blank" rel="noopener noreferrer"
-                                class="footer-link">Toolbox</a>
+                                class="footer-link" data-i18n="pub.footerToolbox">Toolbox</a>
                         </li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/clubs" target="_blank" rel="noopener noreferrer">Clubs</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/clubs" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerClubs">Clubs</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/fiscal-sponsorship" target="_blank" rel="noopener noreferrer">HCB</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/fiscal-sponsorship" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerHCB">HCB</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/conduct" target="_blank" rel="noopener noreferrer">Code of Conduct</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/conduct" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerCodeOfConduct">Code of Conduct</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/safeguarding" target="_blank" rel="noopener noreferrer">Safeguarding Policy</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/safeguarding" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerSafeguarding">Safeguarding Policy</a></li>
 
-                        <li><a class="footer-link" href="https://hackclub.com/privacy-and-terms" target="_blank" rel="noopener noreferrer">Privacy &amp; Terms</a></li>
+                        <li><a class="footer-link" href="https://hackclub.com/privacy-and-terms" target="_blank" rel="noopener noreferrer" data-i18n="pub.footerPrivacy">Privacy &amp; Terms</a></li>
 
                     </ul>
 
@@ -367,13 +366,13 @@
 
         <div class="site-footer-bottom">
 
-            <p class="site-footer-bottom-text">©
+            <p class="site-footer-bottom-text"><span data-i18n="pub.footerCopyright">&copy;
 
                 <!-- -->2026<!-- --> Hack Club. Registered under<!-- --> <a href="https://the.hackfoundation.org/"
                     target="_blank" rel="noopener noreferrer" class="site-footer-bottom-link">The Hack Foundation</a>, a
                 501(c)(3) nonprofit (EIN: 81-2908499).<!-- --> Commit 0defb6<!-- -->, open source at<!-- --> <a
                     href="https://github.com/hackclub/site" target="_blank" rel="noopener noreferrer"
-                    class="site-footer-bottom-link">hackclub/site</a>
+                    class="site-footer-bottom-link">hackclub/site</a></span>
 
                 <i class="fa-regular fa-lightbulb"></i>
             </p>
@@ -385,6 +384,12 @@
     <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/sign-in.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+
+    <div class="lang-switcher-wrap">
+        <select data-lang-switcher data-i18n-attr="aria-label:pub.language"></select>
+    </div>
 
 </body>
 

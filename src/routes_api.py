@@ -4,7 +4,7 @@ from datetime import date
 import flask
 from flask import request, session
 
-from helpers import (
+from .helpers import (
     _item_id,
     _join_missing,
     _owned_project_or_error,
@@ -23,7 +23,7 @@ from helpers import (
     require_leader_api,
     save_dashboard_state,
 )
-from storage import StorageError
+from .storage import StorageError
 
 
 def register(app, MAX_IMAGE_BYTES):
@@ -170,7 +170,7 @@ def register(app, MAX_IMAGE_BYTES):
             return csrf_error
 
         payload = json_payload()
-        from helpers import viewer_is_leader
+        from .helpers import viewer_is_leader
         if not viewer_is_leader() and set(payload.keys()) - {'rsvp'}:
             return flask.jsonify({'error': 'Only leaders and mentors can edit events.'}), 403
 

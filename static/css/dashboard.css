@@ -793,19 +793,49 @@ body.dark-mode .badge-up {
     width: 100%;
     height: auto;
     transform: rotate(-90deg);
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-                filter 0.3s ease;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .donut-svg:hover {
-    animation: rainbow-hue 1.5s linear infinite;
-    transform: rotate(-90deg) scale(1.06);
+    animation: donut-spin 2s linear infinite;
     cursor: pointer;
 }
 
-@keyframes rainbow-hue {
-    0%   { filter: drop-shadow(0 0 14px rgba(236,55,80,0.35)) hue-rotate(0deg); }
-    100% { filter: drop-shadow(0 0 14px rgba(236,55,80,0.35)) hue-rotate(360deg); }
+@keyframes donut-spin {
+    0%   { transform: rotate(-90deg) scale(1.06); }
+    100% { transform: rotate(270deg) scale(1.06); }
+}
+
+.donut-svg:hover .seg-leaders { animation: seg-rainbow-1 2.4s linear infinite; }
+.donut-svg:hover .seg-members { animation: seg-rainbow-2 2.4s linear infinite; }
+.donut-svg:hover .seg-mentors { animation: seg-rainbow-3 2.4s linear infinite; }
+
+@keyframes seg-rainbow-1 {
+    0%   { stroke: #ec3750; }
+    16%  { stroke: #ff8c37; }
+    33%  { stroke: #f1c40f; }
+    50%  { stroke: #33d6a6; }
+    66%  { stroke: #338eda; }
+    83%  { stroke: #a633d6; }
+    100% { stroke: #ec3750; }
+}
+@keyframes seg-rainbow-2 {
+    0%   { stroke: #ff8c37; }
+    16%  { stroke: #f1c40f; }
+    33%  { stroke: #33d6a6; }
+    50%  { stroke: #338eda; }
+    66%  { stroke: #a633d6; }
+    83%  { stroke: #ec3750; }
+    100% { stroke: #ff8c37; }
+}
+@keyframes seg-rainbow-3 {
+    0%   { stroke: #f1c40f; }
+    16%  { stroke: #33d6a6; }
+    33%  { stroke: #338eda; }
+    50%  { stroke: #a633d6; }
+    66%  { stroke: #ec3750; }
+    83%  { stroke: #ff8c37; }
+    100% { stroke: #f1c40f; }
 }
 
 .donut-track {
@@ -820,6 +850,18 @@ body.dark-mode .badge-up {
     stroke-linecap: round;
     transition: stroke-dasharray 0.7s cubic-bezier(0.22, 1, 0.36, 1),
                 stroke-dashoffset 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.donut-seg.seg-leaders,
+.donut-seg.seg-members,
+.donut-seg.seg-mentors {
+    will-change: stroke;
+}
+
+.donut-svg:hover .donut-seg.is-ghost,
+.donut-svg:hover .donut-seg.is-spotlit {
+    opacity: 1;
+    filter: none;
 }
 
 .donut-seg.seg-leaders { stroke: var(--hackclub-red); }

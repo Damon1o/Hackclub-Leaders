@@ -8,8 +8,14 @@ from flask import flash, redirect, request, session, url_for
 from .helpers import clean_text, login_required, playtest_state
 
 
-def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
-             HACKATIME_CLIENT_ID, HACKATIME_CLIENT_SECRET):
+def register(
+    app,
+    HACKCLUB_CLIENT_ID,
+    HACKCLUB_CLIENT_SECRET,
+    BASE_URL,
+    HACKATIME_CLIENT_ID,
+    HACKATIME_CLIENT_SECRET,
+):
     # ── Hack Club OAuth ─────────────────────────────────────────────────────
 
     def _oauth_redirect_uri():
@@ -38,11 +44,11 @@ def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
         login_hint = clean_text(request.args.get('login_hint'), max_len=120)
 
         params = {
-            'client_id':     HACKCLUB_CLIENT_ID,
-            'redirect_uri':  _oauth_redirect_uri(),
+            'client_id': HACKCLUB_CLIENT_ID,
+            'redirect_uri': _oauth_redirect_uri(),
             'response_type': 'code',
-            'scope':         'openid profile email',
-            'state':         state,
+            'scope': 'openid profile email',
+            'state': state,
         }
         if login_hint and '@' in login_hint:
             params['login_hint'] = login_hint
@@ -70,11 +76,11 @@ def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
             token_response = requests.post(
                 'https://identity.hackclub.com/oauth/token',
                 data={
-                    'client_id':     HACKCLUB_CLIENT_ID,
+                    'client_id': HACKCLUB_CLIENT_ID,
                     'client_secret': HACKCLUB_CLIENT_SECRET,
-                    'code':          code,
-                    'redirect_uri':  _oauth_redirect_uri(),
-                    'grant_type':    'authorization_code',
+                    'code': code,
+                    'redirect_uri': _oauth_redirect_uri(),
+                    'grant_type': 'authorization_code',
                 },
                 timeout=10,
             )
@@ -84,7 +90,10 @@ def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
             return redirect(url_for('sign_in'))
 
         if 'access_token' not in token_data:
-            flash(f'Hack Club token exchange failed: {token_data.get("error", "unknown error")}', 'error')
+            flash(
+                f'Hack Club token exchange failed: {token_data.get("error", "unknown error")}',
+                'error',
+            )
             return redirect(url_for('sign_in'))
 
         try:
@@ -103,10 +112,10 @@ def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
             return redirect(url_for('sign_in'))
 
         session['user'] = {
-            'id':       user_data.get('sub'),
-            'name':     user_data.get('name'),
-            'email':    user_data.get('email'),
-            'avatar':   user_data.get('picture'),
+            'id': user_data.get('sub'),
+            'name': user_data.get('name'),
+            'email': user_data.get('email'),
+            'avatar': user_data.get('picture'),
             'provider': 'hackclub',
         }
 
@@ -114,8 +123,11 @@ def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
 
         pending_code = session.pop('pending_join_code', None)
         session.pop('pending_intent', None)
-        target = (url_for('dashboard_welcome', code=pending_code)
-                  if pending_code else url_for('dashboard'))
+        target = (
+            url_for('dashboard_welcome', code=pending_code)
+            if pending_code
+            else url_for('dashboard')
+        )
 
         if not HACKATIME_CLIENT_ID:
             return redirect(target)
@@ -169,8 +181,8 @@ def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
     # ── Hackatime OAuth ─────────────────────────────────────────────────────
 
     HACKATIME_AUTHORIZE_URL = 'https://hackatime.hackclub.com/oauth/authorize'  # noqa: N806
-    HACKATIME_TOKEN_URL     = 'https://hackatime.hackclub.com/oauth/token'      # noqa: N806
-    HACKATIME_ME_URL        = 'https://hackatime.hackclub.com/api/v1/authenticated/me'  # noqa: N806
+    HACKATIME_TOKEN_URL = 'https://hackatime.hackclub.com/oauth/token'  # noqa: N806
+    HACKATIME_ME_URL = 'https://hackatime.hackclub.com/api/v1/authenticated/me'  # noqa: N806
 
     def _hackatime_redirect_uri():
         base = BASE_URL or request.url_root.rstrip('/')
@@ -180,18 +192,21 @@ def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
     @login_required
     def hackatime_login():
         if not HACKATIME_CLIENT_ID:
-            flash('Hackatime connect is not configured yet. Enter your Hackatime '
-                  'user ID manually for now.', 'error')
+            flash(
+                'Hackatime connect is not configured yet. Enter your Hackatime '
+                'user ID manually for now.',
+                'error',
+            )
             return redirect(url_for('dashboard_profile'))
 
         state = secrets.token_urlsafe(16)
         session['hackatime_oauth_state'] = state
         params = {
-            'client_id':     HACKATIME_CLIENT_ID,
-            'redirect_uri':  _hackatime_redirect_uri(),
+            'client_id': HACKATIME_CLIENT_ID,
+            'redirect_uri': _hackatime_redirect_uri(),
             'response_type': 'code',
-            'scope':         'profile',
-            'state':         state,
+            'scope': 'profile',
+            'state': state,
         }
         return redirect(f'{HACKATIME_AUTHORIZE_URL}?{urlencode(params)}')
 
@@ -221,11 +236,11 @@ def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
             token_response = requests.post(
                 HACKATIME_TOKEN_URL,
                 data={
-                    'client_id':     HACKATIME_CLIENT_ID,
+                    'client_id': HACKATIME_CLIENT_ID,
                     'client_secret': HACKATIME_CLIENT_SECRET,
-                    'code':          code,
-                    'redirect_uri':  _hackatime_redirect_uri(),
-                    'grant_type':    'authorization_code',
+                    'code': code,
+                    'redirect_uri': _hackatime_redirect_uri(),
+                    'grant_type': 'authorization_code',
                 },
                 timeout=10,
             )
@@ -236,7 +251,9 @@ def register(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
 
         access_token = token_data.get('access_token')
         if not access_token:
-            flash(f'Hackatime connection failed: {token_data.get("error", "unknown error")}', 'error')
+            flash(
+                f'Hackatime connection failed: {token_data.get("error", "unknown error")}', 'error'
+            )
             return redirect(fallback)
 
         try:

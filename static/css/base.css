@@ -36,6 +36,18 @@ svg {
     height: auto;
 }
 
+hc-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+hc-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
 html,
 body {
     /* `clip` (not `hidden`) prevents horizontal scroll WITHOUT turning the root

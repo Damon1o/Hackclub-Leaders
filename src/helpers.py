@@ -6,8 +6,10 @@ import secrets
 import tempfile
 import threading
 import zlib
-from datetime import date
+from collections.abc import Callable
+from datetime import date, datetime, timezone
 from functools import wraps
+from typing import Any, Final, TypedDict, TypeVar
 
 import requests
 from flask import flash, g, jsonify, redirect, request, session, url_for
@@ -16,30 +18,179 @@ from .storage import SessionStorage, StorageError, make_storage
 
 # ── Config constants (derived from env) ────────────────────────────────────────
 
-BLOB_READ_WRITE_TOKEN = os.environ.get('BLOB_READ_WRITE_TOKEN', '')
+BLOB_READ_WRITE_TOKEN: Final[str] = os.environ.get('BLOB_READ_WRITE_TOKEN', '')
 
-ADMIN_EMAILS = {
+ADMIN_EMAILS: Final[set[str]] = {
     email.strip().lower()
     for email in os.environ.get('ADMIN_EMAILS', '').split(',')
     if email.strip()
 }
 
 
-# ── Decorators ─────────────────────────────────────────────────────────────────
+# ── Type definitions ──────────────────────────────────────────────────────────
 
-def login_required(f):
+
+class Member(TypedDict):
+    id: str
+    name: str
+    email: str
+    role: str
+    avatar: str
+    status: str
+
+
+class Event(TypedDict):
+    id: str
+    title: str
+    date: str
+    time: str
+    location: str
+    type: str
+    repeat: str
+    rsvp: bool
+    attendees: int
+
+
+class Project(TypedDict):
+    id: str
+    name: str
+    description: str
+    url: str
+    repoUrl: str
+    demoUrl: str
+    thumbnail: str
+    hackatimeProject: str
+    status: str
+    ownerEmail: str
+    ownerName: str
+    date: str
+
+
+class ShopItem(TypedDict):
+    id: str
+    name: str
+    cost: str
+    image_src: str
+    filter: str
+
+
+class Newsletter(TypedDict):
+    id: str
+    title: str
+    excerpt: str
+    body: str
+    date: str
+    readTime: str
+    read: bool
+
+
+class OrderItem(TypedDict):
+    id: str
+    quantity: int
+
+
+class Order(TypedDict):
+    id: str
+    date: str
+    status: str
+    items: list[OrderItem]
+
+
+class ItemRequest(TypedDict):
+    id: str
+    name: str
+    note: str
+    date: str
+    status: str
+
+
+class Channel(TypedDict):
+    id: str
+    name: str
+    description: str
+    createdBy: str
+    lastMessageAt: str
+
+
+class Message(TypedDict):
+    id: str
+    channelId: str
+    authorEmail: str
+    authorName: str
+    authorAvatar: str
+    body: str
+    createdAt: str
+
+
+class Settings(TypedDict):
+    joinCode: str
+    clubName: str
+    location: str
+    website: str
+    avatar: str
+    publicDirectory: bool
+    emailNotifications: bool
+    darkModeDefault: bool
+    newsletterSubscribed: bool
+    language: str
+
+
+class DashboardState(TypedDict, total=False):
+    members: list[Member]
+    events: list[Event]
+    projects: list[Project]
+    shopItems: list[ShopItem]
+    cart: list[OrderItem]
+    orders: list[Order]
+    itemRequests: list[ItemRequest]
+    channels: list[Channel]
+    messages: list[Message]
+    newsletters: list[Newsletter]
+    settings: Settings
+
+
+# Lite state only has settings and members
+class ClubStateLite(TypedDict, total=False):
+    settings: Settings
+    members: list[Member]
+    _lite: bool
+
+
+# ClubState is the full state from Airtable load
+class ClubState(TypedDict, total=False):
+    settings: Settings
+    members: list[Member]
+    events: list[Event]
+    newsletters: list[Newsletter]
+    orders: list[Order]
+    itemRequests: list[ItemRequest]
+    projects: list[Project]
+    channels: list[Channel]
+    messages: list[Message]
+
+
+# Type variables for decorators
+F = TypeVar('F', bound=Callable[..., Any])
+R = TypeVar('R')
+
+
+# ── Decorators ────────────────────────────────────────────────────────────────
+
+
+def login_required(f: F) -> F:
     @wraps(f)
-    def decorated(*args, **kwargs):
+    def decorated(*args: Any, **kwargs: Any) -> Any:
         if not session.get('user'):
             return redirect(url_for('sign_in'))
         return f(*args, **kwargs)
-    return decorated
+
+    return decorated  # type: ignore[return-value]
 
 
-LEADER_ROLES = {'Leader', 'Mentor'}
+LEADER_ROLES: Final[set[str]] = {'Leader', 'Mentor'}
 
 
-def viewer_role():
+def viewer_role() -> str:
     user = session.get('user') or {}
     email = (user.get('email') or '').strip().lower()
     state = (viewer_club_lite() or {}) if user else {}
@@ -49,62 +200,70 @@ def viewer_role():
     return 'Leader'
 
 
-def viewer_is_leader():
+def viewer_is_leader() -> bool:
     return viewer_role() in LEADER_ROLES
 
 
-def leader_required(f):
+def leader_required(f: F) -> F:
     @wraps(f)
-    def decorated(*args, **kwargs):
+    def decorated(*args: Any, **kwargs: Any) -> Any:
         if not session.get('user'):
             return redirect(url_for('sign_in'))
         if not viewer_is_leader():
             flash('That page is for club leaders and mentors.', 'error')
             return redirect(url_for('dashboard'))
         return f(*args, **kwargs)
-    return decorated
+
+    return decorated  # type: ignore[return-value]
 
 
-def require_leader_api():
+def require_leader_api() -> tuple[Any, int] | None:
     if not viewer_is_leader():
         return jsonify({'error': 'Only leaders and mentors can do that.'}), 403
     return None
 
 
-def is_admin():
+def is_admin() -> bool:
     email = ((session.get('user') or {}).get('email') or '').strip().lower()
     return bool(email) and email in ADMIN_EMAILS
 
 
-def admin_required(f):
+def admin_required(f: F) -> F:
     @wraps(f)
-    def decorated(*args, **kwargs):
+    def decorated(*args: Any, **kwargs: Any) -> Any:
         if not session.get('user'):
             return redirect(url_for('sign_in'))
         if not is_admin():
             flash('That page is for site administrators.', 'error')
             return redirect(url_for('dashboard'))
         return f(*args, **kwargs)
-    return decorated
+
+    return decorated  # type: ignore[return-value]
 
 
-def require_admin_api():
+def require_admin_api() -> tuple[Any, int] | None:
     if not is_admin():
         return jsonify({'error': 'Admins only.'}), 403
     return None
 
 
-# ── ID / code generation ───────────────────────────────────────────────────────
+# ── ID / code generation ──────────────────────────────────────────────────────
 
-def _item_id(prefix):
+
+def _item_id(prefix: str) -> str:
     return f'{prefix}-{secrets.token_hex(4)}'
 
 
-def generate_join_code():
+def utc_iso() -> str:
+    """UTC timestamp, ISO-8601 with a 'Z' suffix (e.g. 2026-07-10T22:59:00.123456Z)."""
+    return datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+
+
+def generate_join_code() -> str:
     return secrets.token_urlsafe(9)
 
 
-def unique_join_code(backend, attempts=5):
+def unique_join_code(backend: Any, attempts: int = 5) -> str:
     for _ in range(attempts):
         code = generate_join_code()
         if backend.find_club_by_join_code(code) is None:
@@ -112,9 +271,10 @@ def unique_join_code(backend, attempts=5):
     return secrets.token_urlsafe(12)
 
 
-# ── CSRF ───────────────────────────────────────────────────────────────────────
+# ── CSRF ──────────────────────────────────────────────────────────────────────
 
-def get_csrf_token():
+
+def get_csrf_token() -> str:
     token = session.get('csrf_token')
     if not token:
         token = secrets.token_urlsafe(24)
@@ -122,7 +282,7 @@ def get_csrf_token():
     return token
 
 
-def require_dashboard_csrf():
+def require_dashboard_csrf() -> tuple[Any, int] | None:
     token = request.headers.get('X-CSRF-Token', '')
     expected = session.get('csrf_token', '')
     if not token or not expected or not secrets.compare_digest(token, expected):
@@ -130,52 +290,55 @@ def require_dashboard_csrf():
     return None
 
 
-# ── Shop catalog ───────────────────────────────────────────────────────────────
+# ── Shop catalog ──────────────────────────────────────────────────────────────
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(BASE_DIR)
-SHOP_JSON_PATH = os.path.join(PROJECT_ROOT, 'static', 'data', 'shop.json')
+BASE_DIR: Final[str] = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT: Final[str] = os.path.dirname(BASE_DIR)
+SHOP_JSON_PATH: Final[str] = os.path.join(PROJECT_ROOT, 'static', 'data', 'shop.json')
 
 
-def _slugify(text):
+def _slugify(text: str) -> str:
     return re.sub(r'[^a-z0-9]+', '-', (text or '').lower()).strip('-')
 
 
-def load_shop_items():
+def load_shop_items() -> list[ShopItem]:
     try:
         with open(SHOP_JSON_PATH, encoding='utf-8-sig') as fh:
-            raw = json.load(fh)
+            raw: list[dict[str, Any]] = json.load(fh)
     except (OSError, ValueError):
         return []
-    items = []
+    items: list[ShopItem] = []
     for entry in raw:
         name = entry.get('name', '')
-        items.append({
-            'id': _slugify(name),
-            'name': name,
-            'cost': entry.get('cost', ''),
-            'image-src': entry.get('image-src', ''),
-            'filter': entry.get('filter', ''),
-        })
+        items.append(
+            {
+                'id': _slugify(name),
+                'name': name,
+                'cost': entry.get('cost', ''),
+                'image_src': entry.get('image-src', ''),
+                'filter': entry.get('filter', ''),
+            }
+        )
     return items
 
 
-SHOP_ITEMS = load_shop_items()
-_STICKER_FILES = None
+SHOP_ITEMS: list[ShopItem] = load_shop_items()
+_STICKER_FILES: list[str] | None = None
 
 # Serializes shop.json reads/writes so two admins editing at once can't
 # clobber each other (the app is a single process, so a lock is enough).
-_SHOP_LOCK = threading.Lock()
-SHOP_FILTERS = {'Hardware', 'Swag', 'Digital'}
+_SHOP_LOCK: Final[threading.Lock] = threading.Lock()
+SHOP_FILTERS: Final[set[str]] = {'Hardware', 'Swag', 'Digital'}
 
 
-def get_sticker_files():
+def get_sticker_files() -> list[str]:
     global _STICKER_FILES
     if _STICKER_FILES is None:
         sticker_dir = os.path.join(PROJECT_ROOT, 'static', 'images', 'Stickers')
         try:
             _STICKER_FILES = sorted(
-                f for f in os.listdir(sticker_dir)
+                f
+                for f in os.listdir(sticker_dir)
                 if os.path.splitext(f)[1].lower()
                 in ('.png', '.svg', '.gif', '.webp', '.jpg', '.jpeg')
             )
@@ -184,16 +347,16 @@ def get_sticker_files():
     return _STICKER_FILES
 
 
-def _read_shop_raw():
+def _read_shop_raw() -> list[dict[str, Any]]:
     try:
         with open(SHOP_JSON_PATH, encoding='utf-8') as fh:
-            raw = json.load(fh)
+            raw: Any = json.load(fh)
     except (OSError, ValueError):
         return []
     return raw if isinstance(raw, list) else []
 
 
-def _write_shop_raw(raw):
+def _write_shop_raw(raw: list[dict[str, Any]]) -> None:
     # Write to a sibling temp file, then os.replace — atomic on Windows and
     # POSIX, so a crash mid-write never leaves shop.json truncated.
     directory = os.path.dirname(SHOP_JSON_PATH)
@@ -211,20 +374,20 @@ def _write_shop_raw(raw):
         raise
 
 
-def _normalize_cost(cost):
+def _normalize_cost(cost: str) -> str:
     """'$5', '5', '5.00' → '$5.00'; non-numeric labels ('Free', 'TBD') pass through."""
     text = (cost or '').strip()
     match = re.fullmatch(r'\$?([0-9]+(?:\.[0-9]{1,2})?)', text)
     return f'${float(match.group(1)):.2f}' if match else text
 
 
-def _shop_hours(cost):
+def _shop_hours(cost: str) -> str:
     """The 'hours' price is 1.5x the dollar cost; word labels mirror the cost."""
     match = re.fullmatch(r'\$([0-9]+(?:\.[0-9]{1,2})?)', cost or '')
     return f'${float(match.group(1)) * 1.5:.2f}' if match else (cost or '')
 
 
-def add_shop_item(name, cost, image_src, item_filter):
+def add_shop_item(name: str, cost: str, image_src: str, item_filter: str) -> ShopItem:
     """Append an item to shop.json and refresh the in-memory catalog.
 
     Returns the catalog-shaped item dict. Raises ValueError for a blank name
@@ -259,7 +422,7 @@ def add_shop_item(name, cost, image_src, item_filter):
     }
 
 
-def remove_shop_item(slug):
+def remove_shop_item(slug: str) -> bool:
     """Drop the item whose slug matches and refresh the catalog. Returns
     True if something was removed, False if no such item existed."""
     global SHOP_ITEMS
@@ -276,7 +439,32 @@ def remove_shop_item(slug):
 
 # ── Default state ──────────────────────────────────────────────────────────────
 
-def default_dashboard_state():
+DEFAULT_LANGUAGE: Final[str] = 'en'
+
+DASHBOARD_LANGUAGES: Final[list[tuple[str, str]]] = [
+    ('en', 'English'),
+    ('es', 'Español'),
+    ('fr', 'Français'),
+    ('de', 'Deutsch'),
+    ('pt', 'Português'),
+    ('it', 'Italiano'),
+    ('ru', 'Русский'),
+    ('hi', 'हिन्दी'),
+    ('zh', '中文'),
+    ('ja', '日本語'),
+    ('ko', '한국어'),
+    ('ar', 'العربية'),
+]
+SUPPORTED_LANGUAGES: Final[set[str]] = {code for code, _label in DASHBOARD_LANGUAGES}
+
+
+def parse_language(value: str) -> str:
+    """Return a supported language code, defaulting to English for anything else."""
+    code = str(value or '').strip().lower()
+    return code if code in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
+
+
+def default_dashboard_state() -> DashboardState:
     user = session.get('user') or {}
     leader_name = user.get('name') or 'Club Leader'
     leader_email = user.get('email') or 'leader@hackclub.com'
@@ -344,7 +532,7 @@ def default_dashboard_state():
     }
 
 
-def playtest_state():
+def playtest_state() -> DashboardState:
     today = date.today().isoformat()
     leader_email = 'playtest.leader@hackclub.com'
     member_email = 'playtest.member@hackclub.com'
@@ -443,27 +631,28 @@ def playtest_state():
 
 # ── Storage layer ──────────────────────────────────────────────────────────────
 
-def _storage():
+
+def _storage() -> Any:
     if 'storage_backend' not in g:
         g.storage_backend = make_storage(session)
     return g.storage_backend
 
 
-def _club_key():
+def _club_key() -> str:
     if 'club_key' not in g:
         email = (session.get('user') or {}).get('email') or ''
         g.club_key = _storage().resolve_club_key(email)
     return g.club_key
 
 
-def viewer_club_state():
+def viewer_club_state() -> ClubState | None:
     if 'club_state_loaded' not in g:
         g.club_state_loaded = True
         g.club_state = _storage().load(_club_key())
     return g.club_state
 
 
-def viewer_club_lite():
+def viewer_club_lite() -> ClubStateLite | None:
     if 'club_lite' in g:
         return g.club_lite
     if g.get('club_state_loaded') and g.get('club_state') is not None:
@@ -473,7 +662,7 @@ def viewer_club_lite():
     return g.club_lite
 
 
-def get_dashboard_state():
+def get_dashboard_state() -> DashboardState:
     if 'dashboard_state' in g:
         return g.dashboard_state
 
@@ -509,27 +698,26 @@ def get_dashboard_state():
     return state
 
 
-MAX_STATE_COOKIE_BYTES = 2800
+MAX_STATE_COOKIE_BYTES: Final[int] = 2800
 
 # In session (cookie) mode, keep only this many recent chat messages so a busy
 # channel can't overrun the cookie. Airtable mode keeps the full history.
-MAX_SESSION_MESSAGES = 30
+MAX_SESSION_MESSAGES: Final[int] = 30
 
 
 class StateTooLarge(Exception):  # noqa: N818
     pass
 
 
-def _state_cookie_size(state):
+def _state_cookie_size(state: DashboardState) -> int:
     raw = json.dumps(state, separators=(',', ':')).encode()
     return len(base64.urlsafe_b64encode(zlib.compress(raw)))
 
 
-def save_dashboard_state(state):
+def save_dashboard_state(state: DashboardState) -> None:
     backend = _storage()
     if isinstance(backend, SessionStorage):
-        persisted = {key: value for key, value in state.items()
-                     if key != 'shopItems'}
+        persisted = {key: value for key, value in state.items() if key != 'shopItems'}
         # Chat messages can grow without bound; the session cookie can't. Keep
         # only the most recent few so a busy channel doesn't blow the cookie
         # budget (Airtable mode has no cap and keeps everything).
@@ -541,8 +729,7 @@ def save_dashboard_state(state):
     else:
         session['cart_items'] = state.get('cart') or []
         session.modified = True
-        persisted = {key: value for key, value in state.items()
-                     if key not in ('shopItems', 'cart')}
+        persisted = {key: value for key, value in state.items() if key not in ('shopItems', 'cart')}
         backend.save(_club_key(), persisted)
     g.dashboard_state = state
     g.club_state = state
@@ -551,30 +738,32 @@ def save_dashboard_state(state):
 
 # ── JSON API utilities ─────────────────────────────────────────────────────────
 
-def json_payload():
+
+def json_payload() -> dict[str, Any]:
     payload = request.get_json(silent=True)
     return payload if isinstance(payload, dict) else {}
 
 
-def json_error(message, status=400):
+def json_error(message: str, status: int = 400) -> tuple[Any, int]:
     return jsonify({'error': message}), status
 
 
 # ── Image utilities ────────────────────────────────────────────────────────────
 
-def _sniff_image(data):
+
+def _sniff_image(data: bytes) -> tuple[str | None, str | None]:
     if data[:8] == b'\x89PNG\r\n\x1a\n':
         return 'image/png', 'png'
     if data[:3] == b'\xff\xd8\xff':
         return 'image/jpeg', 'jpg'
-    if data[:6] in (b'GIF87a', b'GIF89a'):
+    if data[:6] in (b'GIF87a', 'GIF89a'):
         return 'image/gif', 'gif'
     if data[:4] == b'RIFF' and data[8:12] == b'WEBP':
         return 'image/webp', 'webp'
     return None, None
 
 
-def _upload_to_blob(pathname, data, content_type):
+def _upload_to_blob(pathname: str, data: bytes, content_type: str) -> str:
     oidc_token = os.environ.get('VERCEL_OIDC_TOKEN', '').strip()
     store_id_env = os.environ.get('BLOB_STORE_ID', '').strip()
     if oidc_token and store_id_env:
@@ -584,8 +773,7 @@ def _upload_to_blob(pathname, data, content_type):
         token = BLOB_READ_WRITE_TOKEN
         store_id = BLOB_READ_WRITE_TOKEN.split('_')[3]
     else:
-        raise StorageError('Image uploads are not configured yet '
-                           '(missing BLOB_READ_WRITE_TOKEN).')
+        raise StorageError('Image uploads are not configured yet (missing BLOB_READ_WRITE_TOKEN).')
     safe_path = requests.utils.quote(pathname, safe='/')
     try:
         response = requests.put(
@@ -609,68 +797,48 @@ def _upload_to_blob(pathname, data, content_type):
             detail = (response.json() or {}).get('error', {}).get('message', '')
         except (ValueError, AttributeError):
             detail = response.text[:200]
-        raise StorageError(f'Image upload failed ({response.status_code}){": " + detail if detail else ""}.')
+        raise StorageError(
+            f'Image upload failed ({response.status_code}){": " + detail if detail else ""}.'
+        )
     return (response.json() or {}).get('url', '')
 
 
 # ── Generic utilities ──────────────────────────────────────────────────────────
 
-def find_by_id(items, item_id):
+T = TypeVar('T', bound=dict[str, Any])
+
+
+def find_by_id(items: list[T], item_id: str) -> T | None:
     return next((item for item in items if item.get('id') == item_id), None)
 
 
-def clean_text(value, fallback='', max_len=300):
+def clean_text(value: Any, fallback: str = '', max_len: int = 300) -> str:
     if value is None:
         return fallback
     return str(value).strip()[:max_len]
 
 
-def parse_bool(value):
+def parse_bool(value: Any) -> bool:
     if isinstance(value, bool):
         return value
     return str(value).lower() in {'1', 'true', 'yes', 'on'}
 
 
-# Keep this list in sync with LANGUAGES in static/js/i18n-data.js.
-# Ordered (code, native label) so the <select> can be rendered server-side —
-# the control then works even if JavaScript is slow or blocked.
-DASHBOARD_LANGUAGES = [
-    ('en', 'English'),
-    ('es', 'Español'),
-    ('fr', 'Français'),
-    ('de', 'Deutsch'),
-    ('pt', 'Português'),
-    ('it', 'Italiano'),
-    ('ru', 'Русский'),
-    ('hi', 'हिन्दी'),
-    ('zh', '中文'),
-    ('ja', '日本語'),
-    ('ko', '한국어'),
-    ('ar', 'العربية'),
-]
-SUPPORTED_LANGUAGES = {code for code, _label in DASHBOARD_LANGUAGES}
-DEFAULT_LANGUAGE = 'en'
-
-
-def parse_language(value):
-    """Return a supported language code, defaulting to English for anything else."""
-    code = str(value or '').strip().lower()
-    return code if code in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
-
-
 # ── Event construction ─────────────────────────────────────────────────────────
 
 # Allowed recurrence cadences for events; '' means the event does not repeat.
-EVENT_REPEAT_OPTIONS = {'', 'daily', 'weekly', 'biweekly', 'monthly', 'weekdays'}
+EVENT_REPEAT_OPTIONS: Final[set[str]] = {'', 'daily', 'weekly', 'biweekly', 'monthly', 'weekdays'}
 
 
-def parse_repeat(value, fallback=''):
+def parse_repeat(value: Any, fallback: str = '') -> str:
     """Return a supported repeat cadence, or the fallback for anything else."""
     code = str(value or '').strip().lower()
     return code if code in EVENT_REPEAT_OPTIONS else fallback
 
 
-def event_from_payload(payload, existing=None):
+def event_from_payload(
+    payload: dict[str, Any], existing: dict[str, Any] | None = None
+) -> tuple[Event | None, str | None]:
     existing = existing or {}
     title = clean_text(payload.get('title'), existing.get('title', ''))
     event_date = clean_text(payload.get('date'), existing.get('date', ''))
@@ -709,11 +877,12 @@ def event_from_payload(payload, existing=None):
 
 # ── Project helpers ────────────────────────────────────────────────────────────
 
-def _viewer_email():
+
+def _viewer_email() -> str:
     return ((session.get('user') or {}).get('email') or '').strip().lower()
 
 
-def _join_missing(items):
+def _join_missing(items: list[str]) -> str:
     if len(items) == 1:
         return items[0]
     if len(items) == 2:
@@ -721,7 +890,9 @@ def _join_missing(items):
     return ', '.join(items[:-1]) + ', and ' + items[-1]
 
 
-def _owned_project_or_error(state, project_id):
+def _owned_project_or_error(
+    state: DashboardState, project_id: str
+) -> tuple[Project | None, tuple[Any, int] | None]:
     project = find_by_id(state.get('projects') or [], project_id)
     if not project:
         return None, json_error('Project not found.', 404)
@@ -732,16 +903,18 @@ def _owned_project_or_error(state, project_id):
 
 # ── Chat helpers ───────────────────────────────────────────────────────────────
 
-MAX_MESSAGE_LEN = 500
+MAX_MESSAGE_LEN: Final[int] = 500
 
 
-def channel_from_payload(payload, existing=None):
+def channel_from_payload(
+    payload: dict[str, Any], existing: dict[str, Any] | None = None
+) -> tuple[dict[str, str] | None, str | None]:
     """Validate a channel create/edit payload. Returns (fields, error)."""
     existing = existing or {}
-    name = clean_text(payload.get('name'), existing.get('name', ''),
-                      max_len=60).lstrip('#').strip()
-    description = clean_text(payload.get('description'),
-                            existing.get('description', ''), max_len=140)
+    name = clean_text(payload.get('name'), existing.get('name', ''), max_len=60).lstrip('#').strip()
+    description = clean_text(
+        payload.get('description'), existing.get('description', ''), max_len=140
+    )
     if not name:
         return None, 'Channel name is required.'
     return {'name': name, 'description': description}, None
@@ -749,26 +922,27 @@ def channel_from_payload(payload, existing=None):
 
 # ── Admin helpers ──────────────────────────────────────────────────────────────
 
-ADMIN_REVIEW_STATUSES = {'Shipped', 'Draft'}
+ADMIN_REVIEW_STATUSES: Final[set[str]] = {'Shipped', 'Draft'}
 
 
-def _persist_club(backend, club_key, state):
+def _persist_club(backend: Any, club_key: str, state: ClubState) -> None:
     if isinstance(backend, SessionStorage):
         backend.save(club_key, state)
     else:
-        persisted = {key: value for key, value in state.items()
-                     if key not in ('shopItems', 'cart')}
+        persisted = {key: value for key, value in state.items() if key not in ('shopItems', 'cart')}
         backend.save(club_key, persisted)
 
 
-def _load_admin_club(backend, club_key):
+def _load_admin_club(
+    backend: Any, club_key: str
+) -> tuple[ClubState | None, tuple[Any, int] | None]:
     state = backend.load(club_key)
     if state is None:
         return None, json_error('Club not found.', 404)
     return state, None
 
 
-def _find_club_by_project(backend, project_id):
+def _find_club_by_project(backend: Any, project_id: str) -> tuple[ClubState | None, str | None]:
     for club in backend.list_clubs():
         club_key = club.get('clubKey', '')
         state = backend.load(club_key)

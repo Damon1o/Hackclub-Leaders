@@ -58,14 +58,6 @@ body.dark-mode .dropdown-menu {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-body.dark-mode .navigation-bar .nav-links ul li a .dropdown-icon {
-    filter: brightness(0) invert(1);
-}
-
-body.dark-mode .navigation-bar .nav-links ul li a:hover .dropdown-icon {
-    filter: brightness(0) saturate(100%) invert(27%) sepia(90%) saturate(1500%) hue-rotate(326deg);
-}
-
 /* Hero */
 body.dark-mode .hero {
     background: linear-gradient(rgba(31, 31, 39, 0.7) 60%, rgba(236, 55, 80, 0.3) 100%), url('../images/hackclub-site/background.webp');
@@ -73,7 +65,8 @@ body.dark-mode .hero {
     background-position: center;
 }
 
-body.dark-mode .hero .hero-text .header-text p {
+body.dark-mode .hero .hero-text .header-text p,
+body.dark-mode .hero .hero-text .header-text h1 {
     color: var(--primary-white) !important;
 }
 
@@ -151,10 +144,6 @@ body.dark-mode .final-cta-explore-button:hover {
     background: var(--hackclub-red);
 }
 
-body.dark-mode .wave-container {
-    color: var(--hackclub-dark);
-}
-
 body.dark-mode .events-header h1 {
     color: var(--primary-white);
 }
@@ -209,4 +198,115 @@ body.dark-mode .event-card-register {
 body.dark-mode .event-card-register:hover {
     background: var(--hackclub-red);
     color: var(--primary-white);
+}
+
+/* Hero mockup + quick links */
+
+body.dark-mode .mockup-window,
+body.dark-mode .mockup-chip {
+    background: #2d2d38;
+    border-color: #3d3d4d;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+}
+
+body.dark-mode .mockup-titlebar {
+    border-bottom-color: #3d3d4d;
+}
+
+body.dark-mode .mockup-address {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+body.dark-mode .mockup-side {
+    background: #262630;
+    border-right-color: #3d3d4d;
+}
+
+body.dark-mode .mockup-side-item {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode .mockup-side-item.is-active {
+    background: rgba(236, 55, 80, 0.45);
+}
+
+body.dark-mode .mockup-line {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+body.dark-mode .mockup-line-sm {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .mockup-stat {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .mockup-bar {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .hero-link-watch {
+    color: var(--primary-white);
+}
+
+body.dark-mode .hero-link-watch svg {
+    background: var(--hackclub-light);
+    color: var(--hackclub-dark);
+}
+
+body.dark-mode .hero-link-watch:hover svg {
+    background: var(--hackclub-red);
+    color: var(--primary-white);
+}
+
+/* Features */
+
+body.dark-mode .trust-chip,
+body.dark-mode .feature-card {
+    background: #2d2d38;
+    border-color: #3d3d4d;
+    color: var(--primary-white);
+}
+
+body.dark-mode .feature-card:hover {
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .feature-card-visual {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .feature-pill {
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Steps + leader band */
+
+body.dark-mode .step-card:not(:last-child)::after {
+    border-top-color: rgba(255, 255, 255, 0.18);
+}
+
+body.dark-mode .leader-band {
+    background: linear-gradient(180deg, rgba(236, 55, 80, 0.1), rgba(255, 140, 55, 0.08));
+}
+
+body.dark-mode .leader-link {
+    background: #2d2d38;
+    border-color: #3d3d4d;
+    color: var(--primary-white);
+}
+
+body.dark-mode .leader-link:hover {
+    border-color: rgba(236, 55, 80, 0.55);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+}
+/* Squiggle dividers */
+
+body.dark-mode .squiggle--soft {
+    color: #17171d;
+}
+
+body.dark-mode .squiggle--blush {
+    color: color-mix(in srgb, #ec3750 10%, var(--background));
 }

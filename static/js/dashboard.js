@@ -868,7 +868,7 @@
                         : `<p class="project-readiness">Needs ${escapeHtml(missing.join(', '))}</p>`);
                 let primaryAction = '';
                 if (isShipped) {
-                    primaryAction = '<span class="project-shipped-note"><i class="fa-solid fa-rocket"></i> Shipped — counts toward your club level</span>';
+                    primaryAction = '<span class="project-shipped-note"><span data-hc-icon="rocket" data-hc-size="14" data-hc-color="currentColor" aria-hidden="true"></span> Shipped — counts toward your club level</span>';
                 } else if (isSubmitted) {
                     primaryAction = `<button class="btn-secondary small" type="button" data-project-status="Draft" data-project-id="${escapeHtml(project.id)}">Unsubmit</button>`;
                 } else {
@@ -1168,10 +1168,10 @@
         setFormError('dispatchFormError', '');
     }
 
-    const CHECKLIST_ITEMS = [
+const CHECKLIST_ITEMS = [
         {
             id: 'signin',
-            icon: 'fa-solid fa-right-to-bracket',
+            icon: 'enter',
             tone: 'green',
             title: 'Sign in to the Leaders Portal',
             subtitle: "You're in! Your Hack Club identity is connected.",
@@ -1179,7 +1179,7 @@
         },
         {
             id: 'slack',
-            icon: 'fa-brands fa-slack',
+            icon: 'slack',
             tone: 'red',
             title: 'Set up your club on Slack',
             subtitle: 'Join the Hack Club Slack and connect with other leaders.',
@@ -1187,7 +1187,7 @@
         },
         {
             id: 'ysws',
-            icon: 'fa-solid fa-rocket',
+            icon: 'rocket',
             tone: 'blue',
             title: 'Apply for a YSWS grant',
             subtitle: 'Run a project and earn hardware for your club.',
@@ -1195,7 +1195,7 @@
         },
         {
             id: 'hcb',
-            icon: 'fa-solid fa-piggy-bank',
+            icon: 'purse',
             tone: 'orange',
             title: 'Set up HCB for your finances',
             subtitle: 'HCB gives your club a nonprofit bank account.',
@@ -1310,7 +1310,7 @@
             list.innerHTML = upcoming.slice(0, 3).map((event, index) => `
                 <a href="/dashboard/events" class="activity-item">
                     <div class="activity-icon ${tones[index % tones.length]}">
-                        <i class="fa-solid fa-calendar-check"></i>
+                        <span data-hc-icon="calendar-check" data-hc-size="18" data-hc-color="currentColor" aria-hidden="true"></span>
                     </div>
                     <div class="activity-content">
                         <h4 class="activity-title">${escapeHtml(event.title)}</h4>
@@ -1337,7 +1337,7 @@
                 <button class="activity-icon ${done[item.id] ? 'green' : item.tone} checklist-toggle" type="button"
                     data-check-item="${item.id}" ${item.id === 'signin' ? 'disabled' : ''}
                     aria-label="${done[item.id] ? 'Mark not done' : 'Mark done'}" aria-pressed="${Boolean(done[item.id])}">
-                    <i class="${done[item.id] ? 'fa-solid fa-check' : item.icon}"></i>
+                    <span data-hc-icon="${done[item.id] ? 'checkmark' : item.icon}" data-hc-size="18" data-hc-color="currentColor" aria-hidden="true"></span>
                 </button>
                 <div class="activity-content">
                     <h4 class="activity-title">${item.title}</h4>
@@ -1345,7 +1345,7 @@
                 </div>
                 ${item.link ? `
                     <a class="badge badge-up" href="${item.link}" target="_blank" rel="noopener noreferrer">
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Go
+                        <span data-hc-icon="external-link" data-hc-size="12" data-hc-color="currentColor" aria-hidden="true"></span> Go
                     </a>
                 ` : ''}
             </div>
@@ -1366,13 +1366,11 @@
         }
     }
 
-    // ── Chat ─────────────────────────────────────────────────────────────────
+    // ── Chat (polling) ───────────────────────────────────────────────────────
     // Channels + messages. All members read/post; leaders manage channels.
-    // Live-ish via a 4s poll that pauses when the tab is hidden. Unread state
-    // is per-device, kept in localStorage (not shared server state).
 
     const CHAT_READS_KEY = 'hcl:chatReads';
-    const CHAT_POLL_MS = 4000;
+    const CHAT_POLL_MS = 30000; // polling interval (30s)
     let chatChannels = [];
     let chatActiveId = null;
     let chatLastFetch = null;   // newest message createdAt seen in active channel
@@ -2490,6 +2488,207 @@
         if (pref && window.i18n.isSupported(pref)) {
             window.i18n.apply(pref);
         }
+    }
+
+    // ── Notification Center ──────────────────────────────────────────────────────
+    let notificationCenterOpen = false;
+    let notifications = [];
+
+    function loadNotifications() {
+        const stateNode = document.getElementById('dashboard-state');
+        if (stateNode) {
+            try {
+                const state = JSON.parse(stateNode.textContent || '{}');
+                notifications = state.notifications || [];
+                updateNotificationBadge();
+            } catch (e) {
+                notifications = [];
+            }
+        }
+    }
+
+    function updateNotificationBadge() {
+        const badge = $('#notificationBadge');
+        if (!badge) return;
+        const unread = notifications.filter(n => !n.read).length;
+        badge.textContent = unread > 9 ? '9+' : unread;
+        badge.style.display = unread > 0 ? 'flex' : 'none';
+    }
+
+    function renderNotificationCenter() {
+        const list = $('#notificationCenterList');
+        if (!list) return;
+
+        if (!notifications.length) {
+            list.innerHTML = `
+                <div class="notification-center-empty">
+                    <p data-i18n="notifications.noNotifications">No notifications yet.</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = notifications.slice(0, 50).map(notif => `
+            <button class="notification-item${notif.read ? ' is-read' : ''}" type="button" data-notification-id="${escapeHtml(notif.id)}">
+                <div class="notification-icon">
+                    ${getNotificationIcon(notif.type)}
+                </div>
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <span class="notification-title">${escapeHtml(notif.title)}</span>
+                        <time class="notification-time" datetime="${escapeHtml(notif.createdAt)}">${formatRelativeTime(notif.createdAt)}</time>
+                    </div>
+                    <p class="notification-message">${escapeHtml(notif.message)}</p>
+                </div>
+                ${!notif.read ? '<span class="notification-unread-dot" aria-hidden="true"></span>' : ''}
+            </button>
+        `).join('');
+
+        // Add click handlers
+        list.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const id = item.dataset.notificationId;
+                markNotificationRead(id);
+            });
+        });
+    }
+
+    function getNotificationIcon(type) {
+        const icons = {
+            'event_reminder': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+            'event_rsvp': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+            'order_placed': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
+            'project_submitted': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+            'member_invited': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+            'default': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+        };
+        return icons[type] || icons.default;
+    }
+
+    function formatRelativeTime(iso) {
+        if (!iso) return '';
+        const date = new Date(iso);
+        if (isNaN(date.getTime())) return '';
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString();
+    }
+
+    function openNotificationCenter() {
+        const center = $('#notificationCenter');
+        const backdrop = $('#notificationCenterBackdrop');
+        if (!center) return;
+
+        center.classList.add('is-open');
+        center.setAttribute('aria-hidden', 'false');
+        backdrop.classList.add('is-open');
+        notificationCenterOpen = true;
+
+        loadNotifications();
+        renderNotificationCenter();
+
+        // Focus first item
+        const firstItem = center.querySelector('.notification-item');
+        firstItem?.focus();
+
+        // Trap focus
+        document.addEventListener('keydown', handleNotificationCenterKeydown);
+    }
+
+    function closeNotificationCenter() {
+        const center = $('#notificationCenter');
+        const backdrop = $('#notificationCenterBackdrop');
+        if (!center) return;
+
+        center.classList.remove('is-open');
+        center.setAttribute('aria-hidden', 'true');
+        backdrop.classList.remove('is-open');
+        notificationCenterOpen = false;
+
+        document.removeEventListener('keydown', handleNotificationCenterKeydown);
+    }
+
+    function handleNotificationCenterKeydown(event) {
+        if (event.key === 'Escape') {
+            closeNotificationCenter();
+        }
+    }
+
+    function markNotificationRead(notificationId) {
+        const notif = notifications.find(n => n.id === notificationId);
+        if (!notif || notif.read) return;
+
+        notif.read = true;
+        updateNotificationBadge();
+        renderNotificationCenter();
+
+        // Sync with server
+        apiRequest(`/api/dashboard/notifications/${encodeURIComponent(notificationId)}`, {
+            method: 'PATCH',
+            body: { read: true },
+        }).catch(err => console.warn('Failed to mark notification read:', err));
+    }
+
+    function markAllNotificationsRead() {
+        let changed = false;
+        notifications.forEach(notif => {
+            if (!notif.read) {
+                notif.read = true;
+                changed = true;
+            }
+        });
+
+        if (changed) {
+            updateNotificationBadge();
+            renderNotificationCenter();
+
+            apiRequest('/api/dashboard/notifications/mark-all-read', {
+                method: 'PATCH',
+            }).catch(err => console.warn('Failed to mark all read:', err));
+        }
+    }
+
+    function initNotificationCenter() {
+        const bell = $('#notificationBell');
+        const backdrop = $('#notificationCenterBackdrop');
+        const markAllReadBtn = $('#markAllReadBtn');
+
+        if (bell) {
+            bell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (notificationCenterOpen) {
+                    closeNotificationCenter();
+                } else {
+                    openNotificationCenter();
+                }
+            });
+        }
+
+        if (backdrop) {
+            backdrop.addEventListener('click', closeNotificationCenter);
+        }
+
+        if (markAllReadBtn) {
+            markAllReadBtn.addEventListener('click', markAllNotificationsRead);
+        }
+
+        // Load initial notifications
+        loadNotifications();
+    }
+
+    // Call initNotificationCenter in the main init
+    const originalInit = init;
+    function init() {
+        originalInit();
+        initNotificationCenter();
     }
 
     function init() {

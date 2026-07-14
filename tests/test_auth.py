@@ -21,8 +21,7 @@ def test_callback_rejects_missing_state(client):
 
 
 def test_callback_rejects_error(client):
-    response = client.get('/auth/hackclub/callback?error=access_denied',
-                          follow_redirects=False)
+    response = client.get('/auth/hackclub/callback?error=access_denied', follow_redirects=False)
     assert response.status_code in (301, 302)
 
 

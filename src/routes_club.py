@@ -123,17 +123,19 @@ def register(app, HACKATIME_CLIENT_ID):
             return json_error('Avatar URL must start with http:// or https://.')
 
         state = get_dashboard_state()
-        state['settings'].update({
-            'clubName': club_name,
-            'location': location,
-            'website': website,
-            'avatar': avatar,
-            'publicDirectory': parse_bool(payload.get('publicDirectory')),
-            'emailNotifications': parse_bool(payload.get('emailNotifications')),
-            'darkModeDefault': parse_bool(payload.get('darkModeDefault')),
-            'newsletterSubscribed': parse_bool(payload.get('newsletterSubscribed')),
-            'language': parse_language(payload.get('language')),
-        })
+        state['settings'].update(
+            {
+                'clubName': club_name,
+                'location': location,
+                'website': website,
+                'avatar': avatar,
+                'publicDirectory': parse_bool(payload.get('publicDirectory')),
+                'emailNotifications': parse_bool(payload.get('emailNotifications')),
+                'darkModeDefault': parse_bool(payload.get('darkModeDefault')),
+                'newsletterSubscribed': parse_bool(payload.get('newsletterSubscribed')),
+                'language': parse_language(payload.get('language')),
+            }
+        )
         save_dashboard_state(state)
         return flask.jsonify({'state': state})
 
@@ -180,8 +182,15 @@ def register(app, HACKATIME_CLIENT_ID):
 
         old_email = ((session.get('user') or {}).get('email') or '').strip().lower()
         user = dict(session.get('user') or {})
-        user.update({'name': name, 'email': email, 'avatar': avatar, 'bio': bio,
-                     'hackatimeId': hackatime_id})
+        user.update(
+            {
+                'name': name,
+                'email': email,
+                'avatar': avatar,
+                'bio': bio,
+                'hackatimeId': hackatime_id,
+            }
+        )
         session['user'] = user
 
         state = get_dashboard_state()
@@ -198,8 +207,9 @@ def register(app, HACKATIME_CLIENT_ID):
     HACKATIME_API = 'https://hackatime.hackclub.com/api/v1'  # noqa: N806
 
     def _fetch_hackatime_data():
-        user_id = (request.args.get('userId')
-                   or (session.get('user') or {}).get('hackatimeId') or '').strip()
+        user_id = (
+            request.args.get('userId') or (session.get('user') or {}).get('hackatimeId') or ''
+        ).strip()
         if not user_id:
             return json_error('Add your Hackatime user ID on your profile first.', 400)
         if not user_id.isdigit():
@@ -233,17 +243,22 @@ def register(app, HACKATIME_CLIENT_ID):
             return data
 
         languages = [
-            {'name': lang.get('name'), 'text': lang.get('text'),
-             'totalSeconds': lang.get('total_seconds')}
+            {
+                'name': lang.get('name'),
+                'text': lang.get('text'),
+                'totalSeconds': lang.get('total_seconds'),
+            }
             for lang in (data.get('languages') or [])[:5]
         ]
-        return flask.jsonify({
-            'username': data.get('username'),
-            'totalSeconds': data.get('total_seconds'),
-            'humanReadableTotal': data.get('human_readable_total'),
-            'humanReadableDailyAverage': data.get('human_readable_daily_average'),
-            'languages': languages,
-        })
+        return flask.jsonify(
+            {
+                'username': data.get('username'),
+                'totalSeconds': data.get('total_seconds'),
+                'humanReadableTotal': data.get('human_readable_total'),
+                'humanReadableDailyAverage': data.get('human_readable_daily_average'),
+                'languages': languages,
+            }
+        )
 
     @app.get('/api/dashboard/hackatime/projects')
     @login_required
@@ -253,10 +268,13 @@ def register(app, HACKATIME_CLIENT_ID):
             return data
 
         projects = [
-            {'name': p['name'],
-             'hours': round((p.get('total_seconds') or 0) / 3600, 1),
-             'text': p.get('text') or ''}
-            for p in (data.get('projects') or []) if p.get('name')
+            {
+                'name': p['name'],
+                'hours': round((p.get('total_seconds') or 0) / 3600, 1),
+                'text': p.get('text') or '',
+            }
+            for p in (data.get('projects') or [])
+            if p.get('name')
         ]
         projects.sort(key=lambda p: p['hours'], reverse=True)
         return flask.jsonify({'projects': projects[:30]})

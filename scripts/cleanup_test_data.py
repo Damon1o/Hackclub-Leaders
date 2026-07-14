@@ -23,8 +23,7 @@ load_dotenv()
 
 from src.storage import AirtableStorage, StorageError  # noqa: E402
 
-TARGET_EMAILS = ['dev@example.com', 'mia@example.com', 'perf@example.com',
-                 'lead@example.com']
+TARGET_EMAILS = ['dev@example.com', 'mia@example.com', 'perf@example.com', 'lead@example.com']
 
 
 def main():

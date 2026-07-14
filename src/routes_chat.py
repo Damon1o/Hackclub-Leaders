@@ -5,8 +5,6 @@ and messages ride the same dashboard state as everything else, so they persist
 through whichever storage backend is configured (session cookie or Airtable).
 """
 
-from datetime import datetime, timezone
-
 import flask
 from flask import request, session
 
@@ -24,14 +22,12 @@ from .helpers import (
     require_dashboard_csrf,
     require_leader_api,
     save_dashboard_state,
+    utc_iso,
 )
 
 # Cap for a no-cursor message fetch, so opening a long channel stays light.
 MESSAGE_PAGE_SIZE = 50
 
-
-def _now_iso():
-    return datetime.now(timezone.utc).isoformat()
 
 
 def _channels(state):
@@ -116,8 +112,7 @@ def register(app):
         if len(state['channels']) == original_count:
             return json_error('Channel not found.', 404)
         # Drop the channel's messages too, so they don't linger orphaned.
-        state['messages'] = [m for m in _messages(state)
-                             if m.get('channelId') != channel_id]
+        state['messages'] = [m for m in _messages(state) if m.get('channelId') != channel_id]
         save_dashboard_state(state)
         return flask.jsonify({'state': state})
 
@@ -131,15 +126,13 @@ def register(app):
             return json_error('Channel not found.', 404)
 
         since = clean_text(request.args.get('since'), max_len=40)
-        thread = [m for m in _messages(state)
-                  if m.get('channelId') == channel_id]
+        thread = [m for m in _messages(state) if m.get('channelId') == channel_id]
         thread.sort(key=lambda m: m.get('createdAt') or '')
         if since:
             thread = [m for m in thread if (m.get('createdAt') or '') > since]
             return flask.jsonify({'messages': thread, 'hasMore': False})
         has_more = len(thread) > MESSAGE_PAGE_SIZE
-        return flask.jsonify({'messages': thread[-MESSAGE_PAGE_SIZE:],
-                              'hasMore': has_more})
+        return flask.jsonify({'messages': thread[-MESSAGE_PAGE_SIZE:], 'hasMore': has_more})
 
     @app.post('/api/dashboard/chat/channels/<channel_id>/messages')
     @login_required
@@ -158,7 +151,7 @@ def register(app):
             return json_error('Type a message first.')
 
         user = session.get('user') or {}
-        created_at = _now_iso()
+        created_at = utc_iso()
         message = {
             'id': _item_id('msg'),
             'channelId': channel_id,

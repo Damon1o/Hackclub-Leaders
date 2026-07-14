@@ -1,0 +1,77 @@
+<section class="showcase-section">
+
+    <div class="ambient-bg" aria-hidden="true">
+        <span class="ambient-blob ambient-blob-red"></span>
+        <span class="ambient-blob ambient-blob-blue"></span>
+        <span class="ambient-cursor-glow"></span>
+    </div>
+
+    <div class="showcase-inner">
+
+        <h2 class="showcase-heading reveal" data-i18n="pub.showcaseHeading">Imagine a world where <span class="animated-text-gradient">you</span>
+            made this:</h2>
+
+        <p class="showcase-subtext reveal" data-i18n="pub.showcaseSubtext">100,000 teens started exactly where you are. We're here to help you
+            build your first crazy thing.</p>
+
+        <div class="carousel-viewport">
+            <div class="carousel-fade-left" aria-hidden="true"></div>
+            <div class="carousel-fade-right" aria-hidden="true"></div>
+            <div class="carousel-track">
+                {% set projects = [
+                    {'name':'Specter',  'maker':'Yessa',       'age':18, 'country':'Philippines', 'program':'Milkyway',  'url':'https://shaaarkai.itch.io/specter',                       'repo':'https://github.com/coalpoweredcatgirl/specter'},
+                    {'name':'Brew75',   'maker':'Alexander',   'age':16, 'country':'US',          'program':'Blueprint',  'url':'https://blueprint.hackclub.com/projects/52',             'repo':''},
+                    {'name':'Starbird', 'maker':'Deltea',      'age':16, 'country':'US',          'program':'Milkyway',   'url':'https://deltea.itch.io/starbird',                        'repo':''},
+                    {'name':'AngstromIO','maker':'Clément',    'age':17, 'country':'France',      'program':'Blueprint',  'url':'https://github.com/Dieu-de-l-elec/AngstromIO-devboard',  'repo':'https://github.com/Dieu-de-l-elec/AngstromIO-devboard'},
+                    {'name':'Kamikamace','maker':'Andromeda, Nihaal &amp; Rimma','age':'', 'country':'UK &amp; US', 'program':'Daydream',   'url':'https://thatotherandrew.itch.io/kamikamace',             'repo':''},
+                ] %}
+                {% for _ in range(9) %}
+                {% for project in projects %}
+                <article class="carousel-card">
+                    <div class="carousel-card-visual">
+                        <img src="{{ url_for('static', filename='images/hackclub-site/showcase/' + project.name|lower + '.webp') }}"
+                            alt="{{ project.name }}" loading="lazy">
+                    </div>
+                    <div class="carousel-card-body">
+                        <p>
+                            <strong>{{ project.maker }}</strong>{% if project.age %} ({{ project.age }}){% endif %} from {{ project.country }} made
+                            <strong>{{ project.name }}</strong> for Hack Club {{ project.program }}.
+                        </p>
+                        <div class="carousel-card-footer">
+                            <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer" class="carousel-card-cta">
+                                Try it out <span class="cta-arrow">&rarr;</span>
+                            </a>
+                            {% if project.repo %}
+                            <a href="{{ project.repo }}" target="_blank" rel="noopener noreferrer" aria-label="View source code for {{ project.name }}" class="carousel-card-repo">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="carousel-footer">
+            <label class="carousel-pause-btn" aria-label="Pause auto-scrolling projects carousel">
+                <input type="checkbox" class="carousel-pause-toggle" id="carouselPause" data-i18n-attr="aria-label:pub.pauseCarousel">
+                <svg class="pause-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                    <line x1="8" y1="6" x2="8" y2="18" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+                    <line x1="16" y1="6" x2="16" y2="18" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+                </svg>
+                <svg class="play-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                    <path d="M8 6 Q8 5 9 5 L16.5 9.9 Q17.8 10.8 17.8 12 Q17.8 13.2 16.5 14.1 L9 19 Q8 19 8 18 Z" fill="currentColor"/>
+                </svg>
+            </label>
+            <a href="https://hackclub.com/projects" target="_blank" rel="noopener noreferrer" class="carousel-cta">
+                See more projects <span>&rarr;</span>
+            </a>
+        </div>
+
+    </div>
+
+    {% with squiggle_class = 'squiggle--soft' %}{% include 'partials/squiggle.html' %}{% endwith %}
+
+</section>

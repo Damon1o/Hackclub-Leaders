@@ -1,0 +1,146 @@
+<div class="video-modal-overlay" id="videoModal" aria-hidden="true">
+    <div class="video-inner-container">
+        <button class="video-close-btn" id="videoClose" data-i18n-attr="aria-label:pub.closeVideo">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+        </button>
+        <iframe id="videoIframe" src="" allow="autoplay; encrypted-media" allowfullscreen>
+        </iframe>
+    </div>
+</div>
+
+<section class="hero">
+
+    <div class="ambient-bg" aria-hidden="true">
+        <span class="ambient-blob ambient-blob-red"></span>
+        <span class="ambient-blob ambient-blob-orange"></span>
+        <span class="ambient-blob ambient-blob-blue"></span>
+        <span class="ambient-cursor-glow"></span>
+    </div>
+
+    <div class="hero-text">
+
+        <div class="header-text">
+
+            <h1>
+                <span data-i18n="pub.heroTitleA">Your Hack Club's</span>
+                <span class="animated-text-gradient" data-i18n="pub.heroTitleB">home base.</span>
+            </h1>
+
+        </div>
+
+        <div class="minor-text">
+
+            <p data-i18n="pub.heroSubtext">Team, events, ships, chat, and shop &mdash; everything you need to run your club, in one place.</p>
+
+        </div>
+
+        <div class="sign-up-cta">
+
+            <input class="sign-up-input" type="email" data-i18n-attr="placeholder:pub.emailPlaceholder" placeholder="orpheus@email.com">
+
+            <button class="sign-up-button" type="submit" data-i18n="pub.getStarted">Get Started</button>
+
+        </div>
+
+        <div class="hero-links">
+
+            <a class="hero-link hero-link-join" href="{{ url_for('dashboard_welcome') }}">
+                <span data-i18n="pub.haveJoinCode">Have a join code?</span>
+                <strong data-i18n="pub.joinYourClub">Join your club &rarr;</strong>
+            </a>
+
+            <button type="button" class="hero-link hero-link-watch" id="heroVideoPreview" data-i18n-attr="aria-label:pub.playVideo">
+                <span data-hc-icon="play-circle" data-hc-size="14" data-hc-color="currentColor" aria-hidden="true"></span>
+                <span data-i18n="pub.watchFilm">Watch the film</span>
+            </button>
+
+        </div>
+
+        <div class="join-terms-text">
+
+            <p><span data-i18n="pub.termsText">For all teens aged 13–18. By continuing, you agree to our <a
+                    href="https://hackclub.com/privacy-and-terms">terms.</a></span></p>
+
+        </div>
+
+    </div>
+
+    <div class="hero-mockup" aria-hidden="true">
+
+        <div class="mockup-window">
+
+            <div class="mockup-titlebar">
+                <span class="mockup-dot mockup-dot-red"></span>
+                <span class="mockup-dot mockup-dot-orange"></span>
+                <span class="mockup-dot mockup-dot-green"></span>
+                <span class="mockup-address">leaders.hackclub.com</span>
+            </div>
+
+            <div class="mockup-body">
+
+                <div class="mockup-side">
+                    <span class="mockup-side-logo"></span>
+                    <span class="mockup-side-item is-active"></span>
+                    <span class="mockup-side-item"></span>
+                    <span class="mockup-side-item"></span>
+                    <span class="mockup-side-item"></span>
+                    <span class="mockup-side-item"></span>
+                </div>
+
+                <div class="mockup-main">
+
+                    <span class="mockup-line mockup-line-lg"></span>
+                    <span class="mockup-line mockup-line-sm"></span>
+
+                    <div class="mockup-stats">
+                        <div class="mockup-stat mockup-stat-blue">
+                            <span class="mockup-stat-num">18</span>
+                            <span class="mockup-stat-label" data-i18n="pub.mockMembers">members</span>
+                        </div>
+                        <div class="mockup-stat mockup-stat-red">
+                            <span class="mockup-stat-num">7</span>
+                            <span class="mockup-stat-label" data-i18n="pub.mockShips">ships</span>
+                        </div>
+                        <div class="mockup-stat mockup-stat-green">
+                            <span class="mockup-stat-num">3</span>
+                            <span class="mockup-stat-label" data-i18n="pub.mockEvents">events</span>
+                        </div>
+                    </div>
+
+                    <div class="mockup-row">
+                        <span class="mockup-avatar mockup-avatar-red"></span>
+                        <span class="mockup-row-bars"><span class="mockup-bar mockup-bar-wide"></span><span class="mockup-bar"></span></span>
+                    </div>
+                    <div class="mockup-row">
+                        <span class="mockup-avatar mockup-avatar-blue"></span>
+                        <span class="mockup-row-bars"><span class="mockup-bar"></span><span class="mockup-bar mockup-bar-wide"></span></span>
+                    </div>
+                    <div class="mockup-row">
+                        <span class="mockup-avatar mockup-avatar-yellow"></span>
+                        <span class="mockup-row-bars"><span class="mockup-bar mockup-bar-wide"></span><span class="mockup-bar"></span></span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="mockup-chip mockup-chip-ship">
+            <span data-hc-icon="rocket" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span>
+            <span data-i18n="pub.mockShip">Ship logged!</span>
+        </div>
+
+        <div class="mockup-chip mockup-chip-chat">
+            <span data-hc-icon="message" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span>
+            <span data-i18n="pub.mockChat">New message in #general</span>
+        </div>
+
+    </div>
+
+    {% with squiggle_class = 'squiggle--bg' %}{% include 'partials/squiggle.html' %}{% endwith %}
+
+</section>

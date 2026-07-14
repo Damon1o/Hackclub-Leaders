@@ -119,8 +119,7 @@ def register(app):
         admin_error = require_admin_api()
         if admin_error:
             return admin_error
-        return flask.jsonify(
-            {'itemRequests': _storage().list_item_requests()})
+        return flask.jsonify({'itemRequests': _storage().list_item_requests()})
 
     @app.patch('/api/admin/item-requests/<club_key>/<request_id>')
     def api_admin_item_request_review(club_key, request_id):
@@ -149,18 +148,15 @@ def register(app):
             # still stands, so swallow that.
             shop_item = None
             try:
-                shop_item = add_shop_item(item_request.get('name'),
-                                          'TBD', '', 'Swag')
+                shop_item = add_shop_item(item_request.get('name'), 'TBD', '', 'Swag')
             except ValueError:
                 pass
             _persist_club(backend, club_key, state)
             return flask.jsonify({'request': item_request, 'shopItem': shop_item})
         if decision == 'rejected':
-            state['itemRequests'] = [r for r in requests_list
-                                     if r.get('id') != request_id]
+            state['itemRequests'] = [r for r in requests_list if r.get('id') != request_id]
             _persist_club(backend, club_key, state)
-            return flask.jsonify(
-                {'request': {'id': request_id, 'status': 'Rejected'}})
+            return flask.jsonify({'request': {'id': request_id, 'status': 'Rejected'}})
         return json_error('Status must be approved or rejected.')
 
     # ── Shop catalog ──────────────────────────────────────────────────────────
@@ -179,8 +175,7 @@ def register(app):
         item_filter = clean_text(payload.get('filter'), max_len=20)
         image = clean_text(payload.get('image'), max_len=500)
         if image and not image.startswith(('http://', 'https://', '/static/')):
-            return json_error(
-                'Image URL must start with http://, https://, or /static/.')
+            return json_error('Image URL must start with http://, https://, or /static/.')
         try:
             item = add_shop_item(name, cost, image, item_filter)
         except ValueError as exc:

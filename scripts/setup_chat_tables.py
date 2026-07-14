@@ -55,9 +55,11 @@ def main():
     # Which tables already exist?
     resp = requests.get(f'{META_API}/{base_id}/tables', headers=headers, timeout=15)
     if resp.status_code == 403:
-        sys.exit('403 from Airtable: your token lacks the "schema.bases:write" (and '
-                 '"schema.bases:read") scope. Add it at airtable.com/create/tokens, '
-                 'or create the tables manually.')
+        sys.exit(
+            '403 from Airtable: your token lacks the "schema.bases:write" (and '
+            '"schema.bases:read") scope. Add it at airtable.com/create/tokens, '
+            'or create the tables manually.'
+        )
     resp.raise_for_status()
     existing = {t['name'] for t in resp.json().get('tables', [])}
 
@@ -69,13 +71,16 @@ def main():
             'name': name,
             'fields': [{'name': fname, 'type': ftype} for fname, ftype in fields],
         }
-        create = requests.post(f'{META_API}/{base_id}/tables', headers=headers,
-                               json=payload, timeout=15)
+        create = requests.post(
+            f'{META_API}/{base_id}/tables', headers=headers, json=payload, timeout=15
+        )
         if create.status_code == 403:
-            sys.exit(f'x {name}: 403 on create. Your token can read the schema but '
-                     'not write it — add the "schema.bases:write" scope to your token '
-                     'at airtable.com/create/tokens (and give it access to this base), '
-                     'then re-run. Or create the tables manually.')
+            sys.exit(
+                f'x {name}: 403 on create. Your token can read the schema but '
+                'not write it — add the "schema.bases:write" scope to your token '
+                'at airtable.com/create/tokens (and give it access to this base), '
+                'then re-run. Or create the tables manually.'
+            )
         if create.status_code >= 400:
             detail = ''
             try:

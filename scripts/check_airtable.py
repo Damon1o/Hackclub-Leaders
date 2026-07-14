@@ -21,18 +21,56 @@ load_dotenv()
 import requests  # noqa: E402  (after load_dotenv on purpose)
 
 REQUIRED_FIELDS = {
-    'Clubs': ['Leader Email', 'Club Name', 'Location', 'Website', 'Avatar',
-              'Join Code', 'Public Directory', 'Email Notifications',
-              'Dark Mode Default', 'Newsletter Subscribed'],
-    'Members': ['App Id', 'Name', 'Email', 'Role', 'Status', 'Avatar',
-                'Club Email'],
-    'Events': ['App Id', 'Title', 'Date', 'Time', 'Location', 'Type', 'Repeat',
-               'RSVP', 'Attendees', 'Club Email'],
-    'Projects': ['App Id', 'Name', 'Description', 'URL', 'Repo URL',
-                 'Demo URL', 'Thumbnail', 'Hackatime Project', 'Status',
-                 'Owner Email', 'Owner Name', 'Date', 'Club Email'],
-    'Newsletters': ['App Id', 'Title', 'Excerpt', 'Body', 'Date', 'Read Time',
-                    'Read', 'Club Email'],
+    'Clubs': [
+        'Leader Email',
+        'Club Name',
+        'Location',
+        'Website',
+        'Avatar',
+        'Join Code',
+        'Public Directory',
+        'Email Notifications',
+        'Dark Mode Default',
+        'Newsletter Subscribed',
+    ],
+    'Members': ['App Id', 'Name', 'Email', 'Role', 'Status', 'Avatar', 'Club Email'],
+    'Events': [
+        'App Id',
+        'Title',
+        'Date',
+        'Time',
+        'Location',
+        'Type',
+        'Repeat',
+        'RSVP',
+        'Attendees',
+        'Club Email',
+    ],
+    'Projects': [
+        'App Id',
+        'Name',
+        'Description',
+        'URL',
+        'Repo URL',
+        'Demo URL',
+        'Thumbnail',
+        'Hackatime Project',
+        'Status',
+        'Owner Email',
+        'Owner Name',
+        'Date',
+        'Club Email',
+    ],
+    'Newsletters': [
+        'App Id',
+        'Title',
+        'Excerpt',
+        'Body',
+        'Date',
+        'Read Time',
+        'Read',
+        'Club Email',
+    ],
     'Orders': ['App Id', 'Date', 'Status', 'Items', 'Club Email'],
 }
 
@@ -71,15 +109,18 @@ def main():
         timeout=15,
     )
     if response.status_code == 401:
-        fail('Token rejected (401). Check AIRTABLE_TOKEN and its scopes — '
-             'it needs data.records:read, data.records:write, and '
-             'schema.bases:read for this base.')
+        fail(
+            'Token rejected (401). Check AIRTABLE_TOKEN and its scopes — '
+            'it needs data.records:read, data.records:write, and '
+            'schema.bases:read for this base.'
+        )
     if response.status_code == 404:
-        fail('Base not found (404). Check AIRTABLE_BASE_ID (starts with '
-             '"app") and that the token has access to this base.')
+        fail(
+            'Base not found (404). Check AIRTABLE_BASE_ID (starts with '
+            '"app") and that the token has access to this base.'
+        )
     if response.status_code >= 400:
-        fail(f'Airtable metadata API returned {response.status_code}: '
-             f'{response.text[:200]}')
+        fail(f'Airtable metadata API returned {response.status_code}: {response.text[:200]}')
 
     tables = {table['name']: table for table in response.json()['tables']}
     problems = 0
@@ -104,8 +145,10 @@ def main():
         name = os.environ.get(ENV_TABLE_OVERRIDES[default_name], default_name)
         table = tables.get(name)
         if table is None:
-            print(f'  OPTIONAL (absent)  {name} — that feature won\'t persist '
-                  'until you add this table.')
+            print(
+                f"  OPTIONAL (absent)  {name} — that feature won't persist "
+                'until you add this table.'
+            )
             continue
         have = {field['name'] for field in table['fields']}
         missing = [field for field in required if field not in have]
@@ -115,12 +158,13 @@ def main():
             print(f'  OK    {name}')
 
     if problems:
-        print(f'\n{problems} required table(s) need attention. Fix them in '
-              'Airtable and run this again.')
+        print(
+            f'\n{problems} required table(s) need attention. Fix them in '
+            'Airtable and run this again.'
+        )
         sys.exit(1)
 
-    print('\nRequired tables ready. Set STORAGE_BACKEND=airtable and restart '
-          'the app.')
+    print('\nRequired tables ready. Set STORAGE_BACKEND=airtable and restart the app.')
 
 
 if __name__ == '__main__':

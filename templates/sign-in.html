@@ -7,15 +7,10 @@
     <title data-i18n="signin.title">Sign In - Hack Club Leaders</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/borders.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sign-in.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
-
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
 </head>
@@ -39,8 +34,7 @@
                 </li>
                 <li class="nav-link dropdown">
                     <a href="#"><span data-i18n="nav.tools">Tools</span>
-                        <img class="dropdown-icon"
-                            src="{{ url_for('static', filename='images/hackclub-site/dropdown-icon.svg') }}">
+                        <span data-hc-icon="down-caret" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span>
                     </a>
                     <div class="dropdown-menu">
                         <a href="https://apply.hackclub.com/" data-i18n="nav.startClub">Start a Club</a>
@@ -203,20 +197,20 @@
                 <img class="pile-sticker pile-flag"
                     src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" alt="">
                 <div class="pile-sticker pile-red" data-i18n="signin.stickerShipIt">
-                    <i class="fa-solid fa-rocket"></i> Ship it
+                    <span data-hc-icon="bolt" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span> Ship it
                 </div>
                 <div class="pile-sticker pile-blue" data-i18n="signin.stickerOnTheMap">
-                    <i class="fa-solid fa-map-location-dot"></i> On the map
+                    <span data-hc-icon="map-pin" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span> On the map
                 </div>
                 <div class="pile-sticker pile-orange" data-i18n="signin.stickerLevelUp">
-                    <i class="fa-solid fa-trophy"></i> Level up
+                    <span data-hc-icon="trophy" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span> Level up
                     <span class="pile-bar"><span></span></span>
                 </div>
                 <div class="pile-sticker pile-green" data-i18n="signin.stickerRsvpd">
-                    <i class="fa-solid fa-calendar-check"></i> RSVP'd
+                    <span data-hc-icon="clock" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span> RSVP'd
                 </div>
                 <div class="pile-sticker pile-purple" data-i18n="signin.stickerDispatchSent">
-                    <i class="fa-solid fa-envelope-open-text"></i> Dispatch sent
+                    <span data-hc-icon="email" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span> Dispatch sent
                 </div>
             </div>
 
@@ -378,30 +372,25 @@
         <div class="site-footer-bottom">
 
             <p class="site-footer-bottom-text"><span data-i18n="pub.footerCopyright">&copy;
-
-                <!-- -->2026<!-- --> Hack Club. Registered under<!-- --> <a href="https://the.hackfoundation.org/"
+                2026 Hack Club. Registered under<!-- --> <a href="https://the.hackfoundation.org/"
                     target="_blank" rel="noopener noreferrer" class="site-footer-bottom-link">The Hack Foundation</a>, a
                 501(c)(3) nonprofit (EIN: 81-2908499).<!-- --> Commit 0defb6<!-- -->, open source at<!-- --> <a
                     href="https://github.com/hackclub/site" target="_blank" rel="noopener noreferrer"
                     class="site-footer-bottom-link">hackclub/site</a></span>
 
-                <i class="fa-regular fa-lightbulb"></i>
+                <span data-hc-icon="lightbulb" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span>
             </p>
 
         </div>
 
     </footer>
 
-    <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+<script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/sign-in.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
-
-    <div class="lang-switcher-wrap">
-        <select data-lang-switcher data-i18n-attr="aria-label:pub.language"></select>
-    </div>
+    <script defer src="{{ url_for('static', filename='js/hc-icons.js') }}"></script>
 
 </body>
-
 </html>

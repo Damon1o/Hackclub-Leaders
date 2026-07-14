@@ -133,8 +133,11 @@ def register(app, HACKATIME_CLIENT_ID):
             return redirect(url_for('dashboard'))
 
         if has_club and current_key == email:
-            flash("You lead your own club, so you can't join another as a member. "
-                  "Transfer or delete your club first.", 'error')
+            flash(
+                "You lead your own club, so you can't join another as a member. "
+                'Transfer or delete your club first.',
+                'error',
+            )
             return redirect(url_for('dashboard'))
 
         switching = has_club and current_key and current_key != target_key
@@ -142,7 +145,8 @@ def register(app, HACKATIME_CLIENT_ID):
             old_state = backend.load(current_key)
             if old_state:
                 old_state['members'] = [
-                    m for m in old_state.get('members', [])
+                    m
+                    for m in old_state.get('members', [])
                     if (m.get('email') or '').strip().lower() != email
                 ]
                 backend.save(current_key, old_state)
@@ -150,18 +154,24 @@ def register(app, HACKATIME_CLIENT_ID):
         target_state = backend.load(target_key) or {}
         members = target_state.setdefault('members', [])
         if not any((m.get('email') or '').strip().lower() == email for m in members):
-            members.append({
-                'id': _item_id('member'),
-                'name': user.get('name') or email,
-                'email': email,
-                'role': 'Member',
-                'avatar': user.get('avatar') or '',
-                'status': 'Active',
-            })
+            members.append(
+                {
+                    'id': _item_id('member'),
+                    'name': user.get('name') or email,
+                    'email': email,
+                    'role': 'Member',
+                    'avatar': user.get('avatar') or '',
+                    'status': 'Active',
+                }
+            )
             backend.save(target_key, target_state)
 
-        flash("You've switched clubs — welcome to your new club!" if switching
-              else 'Welcome to the club!', 'success')
+        flash(
+            "You've switched clubs — welcome to your new club!"
+            if switching
+            else 'Welcome to the club!',
+            'success',
+        )
         return redirect(url_for('dashboard'))
 
     @app.post('/dashboard/welcome/create')
@@ -257,11 +267,15 @@ def register(app, HACKATIME_CLIENT_ID):
     @app.route('/dashboard/settings')
     @leader_required
     def dashboard_settings():
-        return flask.render_template('dashboard/settings.html', dashboard_state=get_dashboard_state())
+        return flask.render_template(
+            'dashboard/settings.html', dashboard_state=get_dashboard_state()
+        )
 
     @app.route('/dashboard/profile')
     @login_required
     def dashboard_profile():
-        return flask.render_template('dashboard/profile.html',
-                                     dashboard_state=get_dashboard_state(),
-                                     hackatime_connect_enabled=bool(HACKATIME_CLIENT_ID))
+        return flask.render_template(
+            'dashboard/profile.html',
+            dashboard_state=get_dashboard_state(),
+            hackatime_connect_enabled=bool(HACKATIME_CLIENT_ID),
+        )

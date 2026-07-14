@@ -538,33 +538,6 @@ body.dark-mode .supporters-cta:hover {
 
 /* ── Wave separator ────────────────────────────────────────── */
 
-.supporters-wave {
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.supporters-wave-svg {
-    display: block;
-    width: 100%;
-    height: 120px;
-}
-
-.supporters-wave-fill {
-    fill: var(--background);
-}
-
-body.dark-mode .supporters-wave-fill {
-    fill: var(--hackclub-dark);
-}
-
-.supporters-wave-stroke {
-    stroke: rgba(236, 55, 80, 0.25);
-}
-
 /* ── Scroll reveal ── */
 
 .reveal {

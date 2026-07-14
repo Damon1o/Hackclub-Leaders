@@ -243,10 +243,6 @@
     align-items: left;
 }
 
-.navigation-bar .nav-links ul li a:hover .dropdown-icon {
-    filter: brightness(0) saturate(100%) invert(27%) sepia(90%) saturate(1500%) hue-rotate(326deg);
-}
-
 .navigation-bar .nav-links ul li .dropdown-menu a {
     padding: 12px 20px;
     color: #333;
@@ -256,27 +252,6 @@
     transition: background-color 0.2s ease;
     font-family: var(--hackclub-body-font);
 }
-
-.navigation-bar .nav-links ul li .dropdown-menu a:hover {
-    background-color: #f0f0f0;
-}
-
-.dropdown:hover .dropdown-menu {
-    display: flex;
-    left: 0;
-}
-
-.navigation-bar .nav-links ul li a .dropdown-icon {
-    width: 16px;
-    height: 16px;
-    margin-left: 8px;
-}
-
-.navigation-bar .nav-links ul li a:hover .dropdown-icon {
-    fill: var(--hackclub-red);
-}
-
-/* ── Hamburger toggle: hidden on desktop ──────────────────── */
 .navigation-bar .nav-toggle {
     position: absolute;
     width: 1px;

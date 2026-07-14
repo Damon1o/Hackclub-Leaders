@@ -34,6 +34,7 @@ def auth_client(client):
 def admin_client(client, monkeypatch):
     monkeypatch.setenv('ADMIN_EMAILS', 'admin@test.com')
     from src.helpers import ADMIN_EMAILS
+
     ADMIN_EMAILS.clear()
     ADMIN_EMAILS.add('admin@test.com')
     with client.session_transaction() as sess:

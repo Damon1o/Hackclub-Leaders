@@ -1,0 +1,60 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+    groups:
+      dev-dependencies:
+        patterns:
+          - "pytest*"
+          - "ruff*"
+          - "mypy*"
+          - "types-*"
+          - "bandit*"
+          - "pip-audit*"
+        update-types:
+          - "minor"
+          - "patch"
+      flask-dependencies:
+        patterns:
+          - "flask*"
+          - "werkzeug*"
+          - "jinja2*"
+          - "click*"
+          - "itsdangerous*"
+          - "blinker*"
+        update-types:
+          - "minor"
+          - "patch"
+      requests-dependencies:
+        patterns:
+          - "requests*"
+          - "urllib3*"
+          - "certifi*"
+          - "idna*"
+          - "charset-normalizer*"
+        update-types:
+          - "minor"
+          - "patch"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"

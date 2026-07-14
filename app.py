@@ -3,12 +3,13 @@ import secrets
 
 import flask
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from flask import Flask, flash, redirect, request, session, url_for
-from werkzeug.middleware.proxy_fix import ProxyFix
+from flask import Flask, flash, redirect, request, session, url_for  # noqa: E402
+from werkzeug.middleware.proxy_fix import ProxyFix  # noqa: E402
 
-from src.helpers import (
+from src.helpers import (  # noqa: E402
     DASHBOARD_LANGUAGES,
     StateTooLarge,
     get_csrf_token,
@@ -19,7 +20,8 @@ from src.helpers import (
     viewer_is_leader,
     viewer_role,
 )
-from src.storage import StorageError
+from src.email import mail  # noqa: E402
+from src.storage import StorageError  # noqa: E402
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
@@ -30,11 +32,21 @@ app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-HACKCLUB_CLIENT_ID     = os.environ.get('HACKCLUB_CLIENT_ID', '')
-HACKCLUB_CLIENT_SECRET = os.environ.get('HACKCLUB_CLIENT_SECRET', '')
-BASE_URL               = os.environ.get('BASE_URL', '')
+# Mail configuration
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'localhost')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'false').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'Hack Club Leaders <noreply@leaders.hackclub.com>')
+mail.init_app(app)
 
-HACKATIME_CLIENT_ID     = os.environ.get('HACKATIME_CLIENT_ID', '')
+HACKCLUB_CLIENT_ID = os.environ.get('HACKCLUB_CLIENT_ID', '')
+HACKCLUB_CLIENT_SECRET = os.environ.get('HACKCLUB_CLIENT_SECRET', '')
+BASE_URL = os.environ.get('BASE_URL', '')
+
+HACKATIME_CLIENT_ID = os.environ.get('HACKATIME_CLIENT_ID', '')
 HACKATIME_CLIENT_SECRET = os.environ.get('HACKATIME_CLIENT_SECRET', '')
 
 MAX_IMAGE_BYTES = 4 * 1024 * 1024
@@ -43,12 +55,15 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_IMAGE_BYTES + 512 * 1024
 
 # ── Error handlers ────────────────────────────────────────────────────────────
 
+
 @app.errorhandler(StateTooLarge)
 def handle_state_too_large(_error):
-    return flask.jsonify({
-        'error': 'Your club data is full — this demo stores everything in a browser cookie. '
-                 'Remove an old dispatch, event, or member before adding more.'
-    }), 413
+    return flask.jsonify(
+        {
+            'error': 'Your club data is full — this demo stores everything in a browser cookie. '
+            'Remove an old dispatch, event, or member before adding more.'
+        }
+    ), 413
 
 
 @app.errorhandler(StorageError)
@@ -65,6 +80,7 @@ def _payload_too_large(_error):
 
 
 # ── Context processor ─────────────────────────────────────────────────────────
+
 
 @app.context_processor
 def inject_user():
@@ -96,8 +112,14 @@ register_admin(app)
 register_api(app, MAX_IMAGE_BYTES)
 register_chat(app)
 register_club(app, HACKATIME_CLIENT_ID)
-register_auth(app, HACKCLUB_CLIENT_ID, HACKCLUB_CLIENT_SECRET, BASE_URL,
-              HACKATIME_CLIENT_ID, HACKATIME_CLIENT_SECRET)
+register_auth(
+    app,
+    HACKCLUB_CLIENT_ID,
+    HACKCLUB_CLIENT_SECRET,
+    BASE_URL,
+    HACKATIME_CLIENT_ID,
+    HACKATIME_CLIENT_SECRET,
+)
 
 
 if __name__ == '__main__':

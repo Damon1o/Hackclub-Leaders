@@ -7,7 +7,6 @@
     <title data-i18n="welcome.title">Welcome - Hack Club Leaders</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/borders.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sign-in.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
@@ -99,15 +98,11 @@
         </div>
     </section>
 
-    <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+<script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
-
-    <div class="lang-switcher-wrap">
-        <select data-lang-switcher data-i18n-attr="aria-label:pub.language"></select>
-    </div>
+    <script defer src="{{ url_for('static', filename='js/hc-icons.js') }}"></script>
 
 </body>
-
 </html>

@@ -1,0 +1,50 @@
+<section class="supporters-section">
+
+    <div class="ambient-bg" aria-hidden="true">
+        <span class="ambient-blob ambient-blob-red"></span>
+        <span class="ambient-blob ambient-blob-orange"></span>
+        <span class="ambient-cursor-glow"></span>
+    </div>
+
+    <div class="supporters-gradient" aria-hidden="true"></div>
+
+    <div class="supporters-inner">
+
+        <h2 class="supporters-heading reveal" data-i18n="pub.supportersHeading">Supported by people who believe in teens.</h2>
+
+        <p class="supporters-subtext reveal" data-i18n="pub.supportersFree">Hack Club is free for every teenager, forever.</p>
+
+        <div class="supporters-logos">
+            <img src="{{ url_for('static', filename='images/hackclub-site/supporters/github.webp') }}" data-i18n-attr="alt:pub.supporter.github" alt="GitHub"
+                loading="lazy">
+            <img src="{{ url_for('static', filename='images/hackclub-site/supporters/amd.webp') }}" data-i18n-attr="alt:pub.supporter.amd" alt="AMD"
+                loading="lazy">
+            <img src="{{ url_for('static', filename='images/hackclub-site/supporters/mit.webp') }}" data-i18n-attr="alt:pub.supporter.mit" alt="MIT"
+                loading="lazy">
+            <img src="{{ url_for('static', filename='images/hackclub-site/supporters/donor-masked.webp') }}" alt=""
+                loading="lazy">
+            <img src="{{ url_for('static', filename='images/hackclub-site/supporters/donor-4.webp') }}" alt=""
+                loading="lazy">
+        </div>
+
+        <div class="supporters-transparency">
+            <p data-i18n="pub.supportersTransparency">Hack Club is a 501(c)(3) nonprofit. Our finances are fully open &mdash; anyone can
+                <a href="https://hcb.hackclub.com/hq" target="_blank" rel="noopener noreferrer" data-i18n="pub.supportersSeeSpending">see exactly how money is spent.</a>
+            </p>
+            <p><span data-i18n="pub.supportersBelieve">If you believe in what we're building,</span>
+                <a href="https://hackclub.com/philanthropy" target="_blank" rel="noopener noreferrer" data-i18n="pub.supportersLoveSupport">we'd love your support.</a>
+            </p>
+        </div>
+
+        <a href="https://hackclub.com/philanthropy" target="_blank" rel="noopener noreferrer" class="supporters-cta">
+            <span data-i18n="pub.supportersCta">Learn more &amp; donate</span>
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8H13M13 8L8.5 3.5M13 8L8.5 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </a>
+
+    </div>
+
+    {% with squiggle_class = 'squiggle--soft' %}{% include 'partials/squiggle.html' %}{% endwith %}
+
+</section>

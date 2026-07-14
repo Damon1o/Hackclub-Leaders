@@ -7,7 +7,6 @@
     <title data-i18n="join.title">Join a Hack Club - Hack Club Leaders</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/borders.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sign-in.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
@@ -55,7 +54,7 @@
             </p>
             <a href="{{ url_for('dashboard_team') }}" class="sign-in-hc-btn" data-i18n="join.openTeam">Open the Team page</a>
             {% else %}
-            <h1><i class="fa-solid fa-party-horn" aria-hidden="true"></i> <span data-i18n="join.invitedHeading">You're invited to a Hack Club!</span></h1>
+            <h1><span data-hc-icon="party" data-hc-size="24" data-hc-color="currentColor" aria-hidden="true"></span> <span data-i18n="join.invitedHeading">You're invited to a Hack Club!</span></h1>
             {% if not shared_backend %}
             <p class="sign-in-subtitle" data-i18n="join.demoText">
                 This site is running in local demo mode, so joining by code
@@ -91,15 +90,11 @@
         </div>
     </section>
 
-    <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+<script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
-
-    <div class="lang-switcher-wrap">
-        <select data-lang-switcher data-i18n-attr="aria-label:pub.language"></select>
-    </div>
+    <script defer src="{{ url_for('static', filename='js/hc-icons.js') }}"></script>
 
 </body>
-
 </html>

@@ -46,7 +46,7 @@
                     {% endif %}
                     {% elif hackatime_connect_enabled %}
                     <a class="btn-primary small" href="{{ url_for('hackatime_login') }}">
-                        <span class="button-icon" aria-hidden="true"><i class="fa-solid fa-bolt"></i></span> <span data-i18n="profile.connectHackatime">Connect Hackatime</span>
+                        <span class="button-icon" aria-hidden="true"><span data-hc-icon="bolt" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span></span> <span data-i18n="profile.connectHackatime">Connect Hackatime</span>
                     </a>
                     {% endif %}
                 </div>

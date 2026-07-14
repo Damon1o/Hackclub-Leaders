@@ -2,7 +2,7 @@ import os
 from datetime import date
 
 import flask
-from flask import request, session
+from flask import current_app, request, session
 
 from .helpers import (
     _item_id,
@@ -25,6 +25,11 @@ from .helpers import (
     viewer_is_leader,
 )
 from .storage import StorageError
+from .notifications import (
+    notify_admins_of_project_submission,
+    notify_leaders_of_event_rsvp,
+    send_event_rsvp_confirmation,
+)
 
 
 def register(app, MAX_IMAGE_BYTES):
@@ -108,13 +113,15 @@ def register(app, MAX_IMAGE_BYTES):
         if member.get('role') == 'Leader' and role != 'Leader' and len(leaders) == 1:
             return json_error('A club needs at least one leader.')
 
-        member.update({
-            'name': name,
-            'email': email,
-            'role': role,
-            'avatar': avatar,
-            'status': status,
-        })
+        member.update(
+            {
+                'name': name,
+                'email': email,
+                'role': role,
+                'avatar': avatar,
+                'status': status,
+            }
+        )
         save_dashboard_state(state)
         return flask.jsonify({'member': member, 'state': state})
 
@@ -171,7 +178,8 @@ def register(app, MAX_IMAGE_BYTES):
             return csrf_error
 
         payload = json_payload()
-        if not viewer_is_leader() and set(payload.keys()) - {'rsvp'}:
+        is_rsvp_only = set(payload.keys()) <= {'rsvp'}
+        if not viewer_is_leader() and not is_rsvp_only:
             return flask.jsonify({'error': 'Only leaders and mentors can edit events.'}), 403
 
         state = get_dashboard_state()
@@ -179,13 +187,29 @@ def register(app, MAX_IMAGE_BYTES):
         if not event:
             return json_error('Event not found.', 404)
 
+        old_rsvp = event.get('rsvp', False)
         event_data, error = event_from_payload(payload, event)
         if error:
             return json_error(error)
 
+        new_rsvp = event_data.get('rsvp', old_rsvp)
+        rsvp_changed = old_rsvp != new_rsvp
+
         event.update(event_data)
         state['events'].sort(key=lambda item: (item.get('date', ''), item.get('time', '')))
         save_dashboard_state(state)
+
+        # Send RSVP notifications
+        if rsvp_changed:
+            user = session.get('user') or {}
+            user_email = user.get('email', '').lower()
+            user_name = user.get('name', 'A member')
+            try:
+                send_event_rsvp_confirmation(event, user_email, user_name, new_rsvp)
+                notify_leaders_of_event_rsvp(event, user_email, user_name, new_rsvp)
+            except Exception as e:
+                current_app.logger.warning(f'Failed to send RSVP notification: {e}')
+
         return flask.jsonify({'event': event, 'state': state})
 
     @app.delete('/api/dashboard/events/<event_id>')
@@ -358,9 +382,7 @@ def register(app, MAX_IMAGE_BYTES):
 
     # ── Projects ────────────────────────────────────────────────────────────
 
-    @app.post('/api/dashboard/projects/upload-image')
-    @login_required
-    def api_project_upload_image():
+    def _handle_image_upload(folder, default_stem):
         csrf_error = require_dashboard_csrf()
         if csrf_error:
             return csrf_error
@@ -378,43 +400,24 @@ def register(app, MAX_IMAGE_BYTES):
         if not content_type:
             return json_error('Only PNG, JPEG, WebP, or GIF images are allowed.')
 
-        stem = _slugify(os.path.splitext(file.filename)[0]) or 'image'
+        stem = _slugify(os.path.splitext(file.filename)[0]) or default_stem
         try:
-            url = _upload_to_blob(f'projects/{stem}.{ext}', data, content_type)
+            url = _upload_to_blob(f'{folder}/{stem}.{ext}', data, content_type)
         except StorageError as exc:
             return json_error(str(exc), 502)
         if not url:
             return json_error('Upload succeeded but no URL was returned.', 502)
         return flask.jsonify({'url': url})
+
+    @app.post('/api/dashboard/projects/upload-image')
+    @login_required
+    def api_project_upload_image():
+        return _handle_image_upload('projects', 'image')
 
     @app.post('/api/dashboard/upload-image')
     @login_required
     def api_upload_avatar():
-        csrf_error = require_dashboard_csrf()
-        if csrf_error:
-            return csrf_error
-
-        file = request.files.get('image')
-        if file is None or not file.filename:
-            return json_error('Choose an image to upload.')
-        data = file.read(MAX_IMAGE_BYTES + 1)
-        if not data:
-            return json_error('That image is empty.')
-        if len(data) > MAX_IMAGE_BYTES:
-            return json_error('Image must be 4 MB or smaller.')
-
-        content_type, ext = _sniff_image(data)
-        if not content_type:
-            return json_error('Only PNG, JPEG, WebP, or GIF images are allowed.')
-
-        stem = _slugify(os.path.splitext(file.filename)[0]) or 'avatar'
-        try:
-            url = _upload_to_blob(f'avatars/{stem}.{ext}', data, content_type)
-        except StorageError as exc:
-            return json_error(str(exc), 502)
-        if not url:
-            return json_error('Upload succeeded but no URL was returned.', 502)
-        return flask.jsonify({'url': url})
+        return _handle_image_upload('avatars', 'avatar')
 
     @app.post('/api/dashboard/projects')
     @login_required
@@ -484,8 +487,9 @@ def register(app, MAX_IMAGE_BYTES):
                 return json_error('Project name is required.')
             project['name'] = name
         if 'description' in payload:
-            project['description'] = clean_text(payload.get('description'),
-                                                project.get('description', ''), max_len=500)
+            project['description'] = clean_text(
+                payload.get('description'), project.get('description', ''), max_len=500
+            )
         if 'url' in payload:
             url = clean_text(payload.get('url'), project.get('url', ''))
             if url and not url.startswith(('http://', 'https://')):
@@ -510,12 +514,13 @@ def register(app, MAX_IMAGE_BYTES):
             project['thumbnail'] = thumbnail
         if 'hackatimeProject' in payload:
             project['hackatimeProject'] = clean_text(
-                payload.get('hackatimeProject'),
-                project.get('hackatimeProject', ''), max_len=120)
+                payload.get('hackatimeProject'), project.get('hackatimeProject', ''), max_len=120
+            )
         if 'status' in payload:
             status = clean_text(payload.get('status'), project.get('status', 'Draft')).title()
             if status not in {'Draft', 'Submitted'}:
                 return json_error('Status must be Draft or Submitted.')
+            was_draft = project.get('status') == 'Draft'
             if status == 'Submitted':
                 missing = []
                 if not (project.get('repoUrl') or '').strip():
@@ -525,9 +530,15 @@ def register(app, MAX_IMAGE_BYTES):
                 if not (project.get('hackatimeProject') or '').strip():
                     missing.append('a Hackatime project')
                 if missing:
-                    return json_error(
-                        'Add ' + _join_missing(missing) + ' before submitting.', 400)
+                    return json_error('Add ' + _join_missing(missing) + ' before submitting.', 400)
             project['status'] = status
+
+            # Notify admins when project is submitted
+            if status == 'Submitted' and was_draft:
+                try:
+                    notify_admins_of_project_submission(project)
+                except Exception as e:
+                    current_app.logger.error(f'Failed to send project submission notification: {e}')
 
         save_dashboard_state(state)
         return flask.jsonify({'project': project, 'state': state})
@@ -543,7 +554,6 @@ def register(app, MAX_IMAGE_BYTES):
         _project, error = _owned_project_or_error(state, project_id)
         if error:
             return error
-        state['projects'] = [p for p in state.get('projects') or []
-                             if p.get('id') != project_id]
+        state['projects'] = [p for p in state.get('projects') or [] if p.get('id') != project_id]
         save_dashboard_state(state)
         return flask.jsonify({'state': state})

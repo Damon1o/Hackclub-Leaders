@@ -493,3 +493,24 @@ def test_clear_missing_channel_404s(client):
     c, h = _seed(client, 'leader')
     resp = c.delete('/api/dashboard/chat/channels/nope/messages', headers=h)
     assert resp.status_code == 404
+
+
+# ── Feature flags ─────────────────────────────────────────────────────────────
+
+def test_feature_flags_default_on(monkeypatch):
+    from src.helpers import feature_enabled
+    monkeypatch.delenv('FEATURE_CHAT_UPLOADS', raising=False)
+    assert feature_enabled('FEATURE_CHAT_UPLOADS') is True
+
+
+@pytest.mark.parametrize('value', ['false', 'FALSE', '0', 'off', 'no', ' False '])
+def test_feature_flags_disabled_values(monkeypatch, value):
+    from src.helpers import feature_enabled
+    monkeypatch.setenv('FEATURE_CHAT_UPLOADS', value)
+    assert feature_enabled('FEATURE_CHAT_UPLOADS') is False
+
+
+def test_feature_flags_true_value(monkeypatch):
+    from src.helpers import feature_enabled
+    monkeypatch.setenv('FEATURE_CHAT_UPLOADS', 'true')
+    assert feature_enabled('FEATURE_CHAT_UPLOADS') is True

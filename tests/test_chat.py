@@ -597,3 +597,67 @@ def test_load_message_without_extras(monkeypatch):
     msg = s.load('lead@x.com')['messages'][0]
     assert 'linkPreview' not in msg
     assert 'attachments' not in msg
+
+
+# ── Airtable attachment upload ────────────────────────────────────────────────
+
+def test_upload_attachment_success(monkeypatch):
+    s = _airtable()
+    monkeypatch.setattr(
+        s, '_list', lambda *a: [{'id': 'recABC', 'fields': {'App Id': 'msg-1'}}]
+    )
+    captured = {}
+
+    class FakeResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {'fields': {'Attachments': [
+                {'id': 'att1', 'url': 'https://cdn/f.png',
+                 'filename': 'f.png', 'type': 'image/png', 'size': 5}
+            ]}}
+
+    def fake_post(url, **kwargs):
+        captured['url'] = url
+        captured['json'] = kwargs.get('json')
+        return FakeResponse()
+
+    monkeypatch.setattr('src.storage_airtable.requests.post', fake_post)
+    att = s.upload_attachment('msg-1', 'f.png', b'bytes', 'image/png')
+    assert att == {'url': 'https://cdn/f.png', 'filename': 'f.png',
+                   'type': 'image/png', 'size': 5}
+    assert captured['url'] == (
+        'https://content.airtable.com/v0/test-base/recABC/Attachments/uploadAttachment'
+    )
+    assert captured['json']['contentType'] == 'image/png'
+    assert captured['json']['filename'] == 'f.png'
+
+
+def test_upload_attachment_missing_record(monkeypatch):
+    s = _airtable()
+    monkeypatch.setattr(s, '_list', lambda *a: [])
+    assert s.upload_attachment('nope', 'f.png', b'', 'image/png') is None
+
+
+def test_upload_attachment_http_error(monkeypatch):
+    s = _airtable()
+    monkeypatch.setattr(
+        s, '_list', lambda *a: [{'id': 'recABC', 'fields': {'App Id': 'msg-1'}}]
+    )
+
+    class FakeResponse:
+        status_code = 422
+
+        @staticmethod
+        def json():
+            return {}
+
+    monkeypatch.setattr('src.storage_airtable.requests.post', lambda url, **k: FakeResponse())
+    assert s.upload_attachment('msg-1', 'f.png', b'x', 'image/png') is None
+
+
+def test_storage_upload_capability_flags():
+    from src.storage import SessionStorage
+    assert _airtable().supports_uploads is True
+    assert SessionStorage({}).supports_uploads is False

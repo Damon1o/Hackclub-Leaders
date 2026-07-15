@@ -74,6 +74,8 @@ SUBMITTED_STATUS: Final[str] = 'Submitted'
 class SessionStorage:
     """Today's behavior: the whole state rides in the session cookie."""
 
+    supports_uploads = False
+
     def __init__(self, session: Any) -> None:
         self._session = session
 

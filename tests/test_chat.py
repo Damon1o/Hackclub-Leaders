@@ -689,3 +689,114 @@ def test_storage_upload_capability_flags():
     from src.storage import SessionStorage
     assert _airtable().supports_uploads is True
     assert SessionStorage({}).supports_uploads is False
+
+
+# ── Link preview fetcher ──────────────────────────────────────────────────────
+
+from src import routes_chat
+
+
+class _FakePreviewResponse:
+    def __init__(self, status=200, headers=None, body=b'', encoding='utf-8'):
+        self.status_code = status
+        self.headers = headers if headers is not None else {
+            'Content-Type': 'text/html; charset=utf-8'
+        }
+        self._body = body
+        self.encoding = encoding
+
+    def iter_content(self, size):
+        yield self._body
+
+
+_OG_HTML = (
+    b'<html><head>'
+    b'<meta property="og:title" content="Example Domain">'
+    b'<meta property="og:description" content="A demo page">'
+    b'<meta property="og:image" content="https://example.com/img.png">'
+    b'<title>Fallback Title</title>'
+    b'</head><body></body></html>'
+)
+
+
+@pytest.fixture
+def public_dns(monkeypatch):
+    monkeypatch.setattr(
+        routes_chat.socket, 'getaddrinfo',
+        lambda *a, **k: [(2, 1, 6, '', ('93.184.216.34', 0))],
+    )
+
+
+def test_first_url_extraction():
+    assert routes_chat.first_url('see https://a.dev/x?y=1 now') == 'https://a.dev/x?y=1'
+    assert routes_chat.first_url('no links here') == ''
+    assert routes_chat.first_url('') == ''
+
+
+def test_preview_happy_path(monkeypatch, public_dns):
+    monkeypatch.setattr(
+        routes_chat.requests, 'get', lambda *a, **k: _FakePreviewResponse(body=_OG_HTML)
+    )
+    preview = routes_chat.fetch_link_preview('https://example.com/page')
+    assert preview == {
+        'url': 'https://example.com/page',
+        'title': 'Example Domain',
+        'description': 'A demo page',
+        'image': 'https://example.com/img.png',
+    }
+
+
+def test_preview_title_fallback(monkeypatch, public_dns):
+    html = b'<html><head><title>Just A Title</title></head></html>'
+    monkeypatch.setattr(
+        routes_chat.requests, 'get', lambda *a, **k: _FakePreviewResponse(body=html)
+    )
+    preview = routes_chat.fetch_link_preview('https://example.com/')
+    assert preview['title'] == 'Just A Title'
+
+
+def test_preview_private_host_refused(monkeypatch):
+    monkeypatch.setattr(
+        routes_chat.socket, 'getaddrinfo',
+        lambda *a, **k: [(2, 1, 6, '', ('10.0.0.5', 0))],
+    )
+    calls = []
+    monkeypatch.setattr(routes_chat.requests, 'get', lambda *a, **k: calls.append(1))
+    assert routes_chat.fetch_link_preview('https://internal.corp/') is None
+    assert not calls  # never even connected
+
+
+def test_preview_redirect_to_private_refused(monkeypatch):
+    def fake_getaddrinfo(host, *a, **k):
+        ip = '93.184.216.34' if host == 'example.com' else '127.0.0.1'
+        return [(2, 1, 6, '', (ip, 0))]
+
+    monkeypatch.setattr(routes_chat.socket, 'getaddrinfo', fake_getaddrinfo)
+    calls = []
+
+    def fake_get(url, **k):
+        calls.append(url)
+        return _FakePreviewResponse(status=302, headers={'Location': 'http://localhost/x'})
+
+    monkeypatch.setattr(routes_chat.requests, 'get', fake_get)
+    assert routes_chat.fetch_link_preview('https://example.com/') is None
+    assert calls == ['https://example.com/']  # stopped before hitting localhost
+
+
+def test_preview_timeout_returns_none(monkeypatch, public_dns):
+    def boom(*a, **k):
+        raise routes_chat.requests.Timeout('slow')
+
+    monkeypatch.setattr(routes_chat.requests, 'get', boom)
+    assert routes_chat.fetch_link_preview('https://example.com/') is None
+
+
+def test_preview_non_html_skipped(monkeypatch, public_dns):
+    resp = _FakePreviewResponse(headers={'Content-Type': 'application/pdf'}, body=b'%PDF')
+    monkeypatch.setattr(routes_chat.requests, 'get', lambda *a, **k: resp)
+    assert routes_chat.fetch_link_preview('https://example.com/doc.pdf') is None
+
+
+def test_preview_bad_scheme_refused():
+    assert routes_chat.fetch_link_preview('ftp://example.com/') is None
+    assert routes_chat.fetch_link_preview('') is None

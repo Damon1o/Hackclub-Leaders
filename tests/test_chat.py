@@ -6,6 +6,7 @@ would surface here as a 500 rather than slipping through the CSRF-only checks
 in test_api.py).
 """
 
+import json
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -514,3 +515,85 @@ def test_feature_flags_true_value(monkeypatch):
     from src.helpers import feature_enabled
     monkeypatch.setenv('FEATURE_CHAT_UPLOADS', 'true')
     assert feature_enabled('FEATURE_CHAT_UPLOADS') is True
+
+
+# ── Storage round-trip for message extras ─────────────────────────────────────
+
+def _airtable():
+    from src.storage import AirtableStorage
+    return AirtableStorage(token='test-token', base_id='test-base')
+
+
+def _save_messages_and_capture(monkeypatch, s, messages):
+    captured = {}
+    monkeypatch.setattr(s, '_list', lambda table, field, value: [])
+    monkeypatch.setattr(
+        s, '_request',
+        lambda method, table, **kw: {'records': [{'id': 'clubrec'}]},
+    )
+    monkeypatch.setattr(
+        s, '_batch',
+        lambda method, table, records: captured.setdefault(table, records),
+    )
+    s.save('lead@x.com', {'settings': {}, 'messages': messages})
+    return captured[s.tables['messages']][0]['fields']
+
+
+def test_item_fields_serializes_link_preview(monkeypatch):
+    s = _airtable()
+    msg = {
+        'id': 'msg-1', 'channelId': 'c1', 'authorEmail': 'a@x.com',
+        'authorName': 'A', 'authorAvatar': '', 'body': 'hi', 'createdAt': 'now',
+        'linkPreview': {'url': 'https://e.com', 'title': 'E'},
+    }
+    fields = _save_messages_and_capture(monkeypatch, s, [msg])
+    assert json.loads(fields['Metadata']) == {'url': 'https://e.com', 'title': 'E'}
+    assert 'Attachments' not in fields  # never synced back (URLs expire)
+
+
+def test_item_fields_no_preview_writes_blank(monkeypatch):
+    s = _airtable()
+    msg = {'id': 'msg-1', 'channelId': 'c1', 'authorEmail': 'a@x.com',
+           'authorName': 'A', 'authorAvatar': '', 'body': 'hi', 'createdAt': 'now'}
+    fields = _save_messages_and_capture(monkeypatch, s, [msg])
+    assert fields['Metadata'] == ''
+
+
+def test_load_parses_message_metadata_and_attachments(monkeypatch):
+    s = _airtable()
+
+    def fake_list(table, field, value):
+        if table == s.clubs_table:
+            return [{'id': 'rec0', 'fields': {'Leader Email': 'lead@x.com'}}]
+        if table == s.tables['messages']:
+            return [{'id': 'rec1', 'fields': {
+                'App Id': 'msg-1', 'Channel Id': 'c1', 'Body': 'hi',
+                'Metadata': '{"url": "https://e.com", "title": "E"}',
+                'Attachments': [{'id': 'att1', 'url': 'https://cdn/x.png',
+                                 'filename': 'x.png', 'type': 'image/png', 'size': 3}],
+            }}]
+        return []
+
+    monkeypatch.setattr(s, '_list', fake_list)
+    state = s.load('lead@x.com')
+    msg = state['messages'][0]
+    assert msg['linkPreview'] == {'url': 'https://e.com', 'title': 'E'}
+    assert msg['attachments'] == [
+        {'url': 'https://cdn/x.png', 'filename': 'x.png', 'type': 'image/png', 'size': 3}
+    ]
+
+
+def test_load_message_without_extras(monkeypatch):
+    s = _airtable()
+
+    def fake_list(table, field, value):
+        if table == s.clubs_table:
+            return [{'id': 'rec0', 'fields': {'Leader Email': 'lead@x.com'}}]
+        if table == s.tables['messages']:
+            return [{'id': 'rec1', 'fields': {'App Id': 'msg-1', 'Channel Id': 'c1', 'Body': 'hi'}}]
+        return []
+
+    monkeypatch.setattr(s, '_list', fake_list)
+    msg = s.load('lead@x.com')['messages'][0]
+    assert 'linkPreview' not in msg
+    assert 'attachments' not in msg

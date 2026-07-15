@@ -26,6 +26,7 @@ from .helpers import (
     _viewer_email,
     channel_from_payload,
     clean_text,
+    feature_enabled,
     find_by_id,
     get_dashboard_state,
     json_error,
@@ -381,6 +382,12 @@ def register(app):
             'body': body,
             'createdAt': created_at,
         }
+        if body and feature_enabled('FEATURE_CHAT_LINK_PREVIEWS'):
+            url = first_url(body)
+            if url:
+                preview = fetch_link_preview(url)
+                if preview:
+                    message['linkPreview'] = preview
         _messages(state).append(message)
         channel['lastMessageAt'] = created_at
         save_dashboard_state(state)

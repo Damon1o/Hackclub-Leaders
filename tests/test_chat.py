@@ -800,3 +800,63 @@ def test_preview_non_html_skipped(monkeypatch, public_dns):
 def test_preview_bad_scheme_refused():
     assert routes_chat.fetch_link_preview('ftp://example.com/') is None
     assert routes_chat.fetch_link_preview('') is None
+
+
+# ── Link previews on message post ─────────────────────────────────────────────
+
+def test_message_gets_link_preview(client, monkeypatch):
+    monkeypatch.setattr(
+        'src.routes_chat.fetch_link_preview',
+        lambda url: {'url': url, 'title': 'Example', 'description': '', 'image': ''},
+    )
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'look at https://example.com'}, headers=h,
+    )
+    assert resp.status_code == 200
+    assert resp.get_json()['message']['linkPreview']['title'] == 'Example'
+    listing = c.get(f'/api/dashboard/chat/channels/{cid}/messages').get_json()
+    assert listing['messages'][-1]['linkPreview']['title'] == 'Example'
+
+
+def test_no_url_no_preview_fetch(client, monkeypatch):
+    monkeypatch.setattr(
+        'src.routes_chat.fetch_link_preview',
+        lambda url: pytest.fail('must not fetch when body has no URL'),
+    )
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'plain text'}, headers=h,
+    )
+    assert 'linkPreview' not in resp.get_json()['message']
+
+
+def test_link_preview_flag_off(client, monkeypatch):
+    monkeypatch.setenv('FEATURE_CHAT_LINK_PREVIEWS', 'false')
+    monkeypatch.setattr(
+        'src.routes_chat.fetch_link_preview',
+        lambda url: pytest.fail('must not fetch when flag is off'),
+    )
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'https://example.com'}, headers=h,
+    )
+    assert 'linkPreview' not in resp.get_json()['message']
+
+
+def test_failed_preview_message_still_posts(client, monkeypatch):
+    monkeypatch.setattr('src.routes_chat.fetch_link_preview', lambda url: None)
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'https://example.com'}, headers=h,
+    )
+    assert resp.status_code == 200
+    assert 'linkPreview' not in resp.get_json()['message']

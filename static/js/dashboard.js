@@ -1373,11 +1373,18 @@
 
     const CHAT_READS_KEY = 'hcl:chatReads';
     const CHAT_POLL_MS = 4000;
+    const CHAT_GROUP_MS = 5 * 60 * 1000;   // same-author messages within 5min render grouped
+    const chatBaseTitle = document.title;  // restored when the tab regains focus
     let chatChannels = [];
     let chatActiveId = null;
     let chatLastFetch = null;   // newest message createdAt seen in active channel
     let chatPollTimer = null;
     let chatVisibilityBound = false;
+    let chatLastMsgMeta = null; // { key, time } of last rendered message, for grouping
+    let chatHiddenCount = 0;    // messages that arrived while the tab was hidden
+    let chatJumpBtn = null;     // floating "jump to newest" button (created lazily)
+    let chatJumpCount = 0;      // new messages accumulated while scrolled up
+    let chatScrollBound = false;
 
     function chatReads() {
         try {
@@ -1410,6 +1417,64 @@
         return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
     }
 
+    function chatFullTime(iso) {
+        if (!iso) return '';
+        const date = new Date(iso);
+        if (Number.isNaN(date.getTime())) return '';
+        return new Intl.DateTimeFormat(undefined, { dateStyle: 'full', timeStyle: 'short' }).format(date);
+    }
+
+    function renderChatTitle() {
+        document.title = chatHiddenCount > 0 ? `(${chatHiddenCount}) ${chatBaseTitle}` : chatBaseTitle;
+    }
+
+    function clearChatUnreadTitle() {
+        if (!chatHiddenCount) return;
+        chatHiddenCount = 0;
+        renderChatTitle();
+    }
+
+    function resetJumpButton() {
+        chatJumpCount = 0;
+        if (chatJumpBtn) chatJumpBtn.hidden = true;
+    }
+
+    function showJumpButton() {
+        const btn = ensureJumpButton();
+        if (!btn) return;
+        btn.textContent = `↓ ${chatJumpCount} new`;
+        btn.hidden = false;
+    }
+
+    function ensureJumpButton() {
+        if (chatJumpBtn) return chatJumpBtn;
+        const box = document.getElementById('chatMessages');
+        if (!box) return null;
+        const host = box.parentElement || box;
+        if (window.getComputedStyle(host).position === 'static') host.style.position = 'relative';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chat-jump-new';
+        btn.hidden = true;
+        btn.style.cssText = 'position:absolute;left:50%;transform:translateX(-50%);bottom:16px;'
+            + 'z-index:5;padding:6px 14px;border:none;border-radius:999px;background:#ec3750;'
+            + 'color:#fff;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;'
+            + 'box-shadow:0 4px 12px rgba(0,0,0,.18);';
+        btn.addEventListener('click', () => {
+            scrollChatToBottom(true);
+            resetJumpButton();
+        });
+        host.appendChild(btn);
+        if (!chatScrollBound) {
+            chatScrollBound = true;
+            box.addEventListener('scroll', () => {
+                if (box.scrollHeight - box.scrollTop - box.clientHeight < 40) resetJumpButton();
+            });
+        }
+        chatJumpBtn = btn;
+        return btn;
+    }
+
     function renderChat() {
         if (page !== 'chat') return;
         removeSkeletons('chat');
@@ -1425,6 +1490,7 @@
         }
         startChatPolling();
         bindChatVisibility();
+        ensureJumpButton();
     }
 
     function renderChannelList() {
@@ -1451,6 +1517,8 @@
         if (id === chatActiveId) return;
         chatActiveId = id;
         chatLastFetch = null;
+        chatLastMsgMeta = null;
+        resetJumpButton();
         const channel = chatChannels.find((item) => item.id === id);
         const msgs = document.getElementById('chatMessages');
         const head = document.getElementById('chatThreadHead');
@@ -1478,30 +1546,63 @@
         if (composer) composer.hidden = true;
         if (empty) empty.hidden = false;
         chatLastFetch = null;
+        chatLastMsgMeta = null;
+        resetJumpButton();
     }
 
-    function scrollChatToBottom() {
-        const box = document.getElementById('chatMessages');
-        if (box) box.scrollTop = box.scrollHeight;
-    }
-
-    function appendMessage(message) {
+    function scrollChatToBottom(smooth) {
         const box = document.getElementById('chatMessages');
         if (!box) return;
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (smooth && !reduce && typeof box.scrollTo === 'function') {
+            box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+        } else {
+            box.scrollTop = box.scrollHeight;
+        }
+    }
+
+    function appendMessage(message, opts) {
+        opts = opts || {};
+        const box = document.getElementById('chatMessages');
+        if (!box) return null;
+        // Skip messages already on screen (e.g. an optimistic send the poll re-fetches).
+        if (message.id) {
+            const existing = box.querySelector(`[data-mid="${window.CSS.escape(String(message.id))}"]`);
+            if (existing) return null;
+        }
         const person = { name: message.authorName, avatar: message.authorAvatar };
         const mine = (message.authorEmail || '').toLowerCase() === viewerEmail ? ' is-mine' : '';
+        const authorKey = String(message.authorEmail || message.authorName || '').toLowerCase();
+        const msgTime = new Date(message.createdAt).getTime();
+        const grouped = chatLastMsgMeta
+            && chatLastMsgMeta.key === authorKey
+            && Number.isFinite(msgTime) && Number.isFinite(chatLastMsgMeta.time)
+            && (msgTime - chatLastMsgMeta.time) >= 0
+            && (msgTime - chatLastMsgMeta.time) <= CHAT_GROUP_MS;
         const row = document.createElement('div');
-        row.className = 'chat-message' + mine;
-        row.innerHTML = `
+        row.className = 'chat-message' + mine + (grouped ? ' chat-message--grouped' : '')
+            + (opts.pending ? ' chat-message--pending' : '');
+        if (message.id) row.dataset.mid = String(message.id);
+        if (opts.pending) row.style.opacity = '0.6';
+        if (grouped) {
+            row.innerHTML = `
+            <div class="chat-message-body">
+                <p class="chat-message-text">${escapeHtml(message.body)}</p>
+            </div>`;
+        } else {
+            row.innerHTML = `
             ${avatarMarkup(person, 'avatar-sm')}
             <div class="chat-message-body">
                 <div class="chat-message-meta">
                     <span class="chat-message-author">${escapeHtml(message.authorName || message.authorEmail || 'Member')}</span>
-                    <span class="chat-message-time">${escapeHtml(chatTime(message.createdAt))}</span>
+                    <span class="chat-message-time" title="${escapeHtml(chatFullTime(message.createdAt))}">${escapeHtml(chatTime(message.createdAt))}</span>
                 </div>
                 <p class="chat-message-text">${escapeHtml(message.body)}</p>
             </div>`;
+        }
         box.appendChild(row);
+        chatLastMsgMeta = { key: authorKey, time: Number.isFinite(msgTime) ? msgTime : Date.now() };
+        return row;
     }
 
     async function fetchMessages(id, initial) {
@@ -1513,11 +1614,27 @@
             const incoming = payload.messages || [];
             if (!incoming.length) return;
             const box = document.getElementById('chatMessages');
-            const nearBottom = box
-                ? (box.scrollHeight - box.scrollTop - box.clientHeight < 80) : true;
-            incoming.forEach(appendMessage);
+            const distance = box
+                ? (box.scrollHeight - box.scrollTop - box.clientHeight) : 0;
+            const nearBottom = box ? (distance < 80) : true;
+            const added = incoming.map((message) => appendMessage(message)).filter(Boolean);
             chatLastFetch = incoming[incoming.length - 1].createdAt || chatLastFetch;
-            if (initial || nearBottom) scrollChatToBottom();
+            // Badge the tab title with messages that landed while it was hidden.
+            if (document.hidden && added.length) {
+                const others = added.filter(
+                    (row) => !row.classList.contains('is-mine')).length;
+                if (others) {
+                    chatHiddenCount += others;
+                    renderChatTitle();
+                }
+            }
+            if (initial || nearBottom) {
+                scrollChatToBottom();
+                resetJumpButton();
+            } else if (distance > 150 && added.length) {
+                chatJumpCount += added.length;
+                showJumpButton();
+            }
             markChannelRead(id, chatLastFetch);
             const channel = chatChannels.find((item) => item.id === id);
             if (channel) channel.lastMessageAt = chatLastFetch;
@@ -1566,11 +1683,15 @@
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 stopChatPolling();
-            } else if (page === 'chat') {
-                startChatPolling();
-                chatPoll();
+            } else {
+                clearChatUnreadTitle();
+                if (page === 'chat') {
+                    startChatPolling();
+                    chatPoll();
+                }
             }
         });
+        window.addEventListener('focus', clearChatUnreadTitle);
     }
 
     function setChatDrawer(open) {
@@ -1981,15 +2102,40 @@
             const input = event.currentTarget.elements.body;
             const body = (input.value || '').trim();
             if (!body || !chatActiveId) return;
+            const channelId = chatActiveId;
             input.value = '';
+            // Optimistically show the message; reconcile (or roll back) on response.
+            const pending = appendMessage(
+                { authorEmail: viewerEmail, body, createdAt: new Date().toISOString() },
+                { pending: true });
+            scrollChatToBottom();
+            resetJumpButton();
             try {
-                await apiRequest(`/api/dashboard/chat/channels/${encodeURIComponent(chatActiveId)}/messages`, {
-                    method: 'POST',
-                    body: { body },
-                });
-                await fetchMessages(chatActiveId);
-                scrollChatToBottom();
+                const response = await apiRequest(
+                    `/api/dashboard/chat/channels/${encodeURIComponent(channelId)}/messages`, {
+                        method: 'POST',
+                        body: { body },
+                    });
+                const real = response && response.message;
+                if (channelId !== chatActiveId) return;   // switched channels mid-flight
+                if (pending) {
+                    const dup = real && real.id
+                        ? document.querySelector(`#chatMessages [data-mid="${window.CSS.escape(String(real.id))}"]`)
+                        : null;
+                    if (dup && dup !== pending) {
+                        pending.remove();   // a poll already rendered the server copy
+                    } else {
+                        pending.classList.remove('chat-message--pending');
+                        pending.style.opacity = '';
+                        if (real && real.id) pending.dataset.mid = String(real.id);
+                    }
+                }
+                if (real && real.createdAt && (!chatLastFetch || real.createdAt > chatLastFetch)) {
+                    chatLastFetch = real.createdAt;
+                    markChannelRead(channelId, chatLastFetch);
+                }
             } catch (error) {
+                if (pending) pending.remove();
                 input.value = body;   // restore so the user doesn't lose their text
                 showToast(error.message, 'error');
             }

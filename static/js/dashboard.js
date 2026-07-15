@@ -1573,6 +1573,25 @@
         });
     }
 
+    function setChatDrawer(open) {
+        const sidebar = document.querySelector('.chat-sidebar');
+        const backdrop = document.getElementById('chatBackdrop');
+        const toggle = document.getElementById('chatDrawerToggle');
+        if (!sidebar) return;
+        sidebar.classList.toggle('open', open);
+        if (backdrop) backdrop.hidden = !open;
+        if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function toggleChatDrawer() {
+        const sidebar = document.querySelector('.chat-sidebar');
+        setChatDrawer(!(sidebar && sidebar.classList.contains('open')));
+    }
+
+    function closeChatDrawer() {
+        setChatDrawer(false);
+    }
+
     function prepareNewChannel() {
         const form = $('#channelForm');
         if (!form) return;
@@ -1742,9 +1761,21 @@
                 return;
             }
 
+            const drawerToggle = event.target.closest('#chatDrawerToggle');
+            if (drawerToggle) {
+                toggleChatDrawer();
+                return;
+            }
+
+            if (event.target.closest('#chatBackdrop')) {
+                closeChatDrawer();
+                return;
+            }
+
             const channelBtn = event.target.closest('[data-channel]');
             if (channelBtn) {
                 selectChannel(channelBtn.dataset.channel);
+                closeChatDrawer();
                 return;
             }
 
@@ -1940,6 +1971,7 @@
         document.addEventListener('keydown', (event) => {
             if (event.key !== 'Escape') return;
             $$('.modal-backdrop.is-open').forEach(closeModal);
+            closeChatDrawer();
         });
     }
 

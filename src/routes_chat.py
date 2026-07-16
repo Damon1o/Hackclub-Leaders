@@ -39,6 +39,14 @@ DELETE_WINDOW_SECONDS = 24 * 60 * 60
 # Per-user message rate limit: at most RATE_LIMIT_MAX posts per window.
 RATE_LIMIT_MAX = 10
 RATE_LIMIT_WINDOW_SECONDS = 10.0
+
+# Reactions: how long an emoji may be and how many distinct emoji one message
+# may carry, to keep the reaction bar bounded.
+MAX_REACTION_LEN = 8
+MAX_REACTION_EMOJI = 8
+
+# How long a channel topic may be.
+MAX_TOPIC_LEN = 120
 # Sliding window of recent post timestamps, keyed by author email. This is a
 # single-process app, so a module-level dict is enough; reset_rate_limits()
 # makes it trivially clearable between tests.
@@ -143,11 +151,17 @@ def register(app):
         if not channel:
             return json_error('Channel not found.', 404)
 
-        fields, error = channel_from_payload(json_payload(), channel)
+        payload = json_payload()
+        fields, error = channel_from_payload(payload, channel)
         if error:
             return json_error(error)
 
         channel.update(fields)
+        # Topic is optional and edited independently: only touch it when the
+        # payload carries the key, and an empty string clears it.
+        if 'topic' in payload:
+            channel['topic'] = clean_text(payload.get('topic'),
+                                          max_len=MAX_TOPIC_LEN)
         save_dashboard_state(state)
         return flask.jsonify({'channel': channel, 'state': state})
 
@@ -294,5 +308,51 @@ def register(app):
         # body and flag it so the client can render a placeholder.
         message['deleted'] = True
         message['body'] = ''
+        save_dashboard_state(state)
+        return flask.jsonify({'message': message})
+
+    # ── Reactions ─────────────────────────────────────────────────────────────
+
+    @app.post('/api/dashboard/chat/channels/<channel_id>/messages/'
+              '<message_id>/reactions')
+    @login_required
+    def api_chat_message_react(channel_id, message_id):
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+
+        state = get_dashboard_state()
+        if not find_by_id(_channels(state), channel_id):
+            return json_error('Channel not found.', 404)
+        message = _find_message(state, channel_id, message_id)
+        if not message:
+            return json_error('Message not found.', 404)
+        if message.get('deleted'):
+            return json_error('This message was deleted.', 409)
+
+        raw = json_payload().get('emoji')
+        emoji = raw.strip() if isinstance(raw, str) else ''
+        if not emoji or len(emoji) > MAX_REACTION_LEN:
+            return json_error('Pick a single emoji to react with.')
+
+        viewer = _viewer_email()
+        reactions = message.setdefault('reactions', {})
+        authors = reactions.get(emoji, [])
+        if viewer in authors:
+            # Toggle off: drop the viewer, and drop the emoji key if it empties.
+            authors = [a for a in authors if a != viewer]
+            if authors:
+                reactions[emoji] = authors
+            else:
+                reactions.pop(emoji, None)
+        else:
+            if emoji not in reactions and len(reactions) >= MAX_REACTION_EMOJI:
+                return json_error(
+                    'This message already has the maximum number of reactions.')
+            reactions[emoji] = authors + [viewer]
+
+        # Keep the message tidy: no empty reactions map lingering on it.
+        if not reactions:
+            message.pop('reactions', None)
         save_dashboard_state(state)
         return flask.jsonify({'message': message})

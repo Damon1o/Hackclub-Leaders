@@ -222,7 +222,10 @@
 
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-            throw new Error(payload.error || 'Request failed.');
+            const error = new Error(payload.error || 'Request failed.');
+            error.status = response.status;
+            if (payload.retryAfter != null) error.retryAfter = payload.retryAfter;
+            throw error;
         }
         if (payload.state) {
             setState(payload.state);
@@ -1581,14 +1584,21 @@
             && (msgTime - chatLastMsgMeta.time) <= CHAT_GROUP_MS;
         const row = document.createElement('div');
         row.className = 'chat-message' + mine + (grouped ? ' chat-message--grouped' : '')
+            + (message.deleted ? ' chat-message--deleted' : '')
             + (opts.pending ? ' chat-message--pending' : '');
         if (message.id) row.dataset.mid = String(message.id);
         if (opts.pending) row.style.opacity = '0.6';
+        const actions = messageActionsMarkup(message, Boolean(mine));
+        if (actions) row.tabIndex = -1;   // lets focus return here after edit/cancel
+        const edited = message.editedAt && !message.deleted ? editedBadgeMarkup(message) : '';
+        const bodyHtml = message.deleted
+            ? '<p class="chat-message-text chat-message-deleted"><em>Message deleted</em></p>'
+            : `<p class="chat-message-text">${escapeHtml(message.body)}</p>${grouped ? edited : ''}`;
         if (grouped) {
             row.innerHTML = `
             <div class="chat-message-body">
-                <p class="chat-message-text">${escapeHtml(message.body)}</p>
-            </div>`;
+                ${bodyHtml}
+            </div>${actions}`;
         } else {
             row.innerHTML = `
             ${avatarMarkup(person, 'avatar-sm')}
@@ -1596,13 +1606,149 @@
                 <div class="chat-message-meta">
                     <span class="chat-message-author">${escapeHtml(message.authorName || message.authorEmail || 'Member')}</span>
                     <span class="chat-message-time" title="${escapeHtml(chatFullTime(message.createdAt))}">${escapeHtml(chatTime(message.createdAt))}</span>
+                    ${edited}
                 </div>
-                <p class="chat-message-text">${escapeHtml(message.body)}</p>
-            </div>`;
+                ${bodyHtml}
+            </div>${actions}`;
         }
         box.appendChild(row);
         chatLastMsgMeta = { key: authorKey, time: Number.isFinite(msgTime) ? msgTime : Date.now() };
         return row;
+    }
+
+    // Edit is own-message-only (the API rejects leaders editing others'); delete
+    // is available to authors and to leaders on any message.
+    function messageActionsMarkup(message, mine) {
+        if (message.deleted) return '';
+        const canDelete = mine || isLeader;
+        if (!mine && !canDelete) return '';
+        const editBtn = mine
+            ? '<button class="chat-msg-action" type="button" data-edit-msg aria-label="Edit message">Edit</button>'
+            : '';
+        const deleteBtn = canDelete
+            ? '<button class="chat-msg-action" type="button" data-delete-msg aria-label="Delete message">Delete</button>'
+            : '';
+        if (!editBtn && !deleteBtn) return '';
+        return `<span class="chat-message-actions">${editBtn}${deleteBtn}</span>`;
+    }
+
+    function editedBadgeMarkup(message) {
+        if (!message.editedAt) return '';
+        return `<span class="chat-message-edited" title="${escapeHtml(chatFullTime(message.editedAt))}">(edited)</span>`;
+    }
+
+    function startInlineEdit(row) {
+        if (!row || row.classList.contains('chat-message--deleted')) return;
+        if (row.querySelector('.chat-edit-form')) return;
+        const text = row.querySelector('.chat-message-text');
+        if (!text) return;
+        const editor = document.createElement('div');
+        editor.className = 'chat-edit-form';
+        editor.innerHTML = `
+            <input class="chat-edit-input" type="text" maxlength="500" aria-label="Edit message">
+            <div class="chat-edit-actions">
+                <button class="btn-primary small" type="button" data-edit-save>Save</button>
+                <button class="text-button" type="button" data-edit-cancel>Cancel</button>
+            </div>`;
+        const input = editor.querySelector('.chat-edit-input');
+        input.value = text.textContent;   // textContent is the decoded body — safe to reuse
+        text.hidden = true;
+        text.insertAdjacentElement('afterend', editor);
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                saveInlineEdit(row);
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();   // cancel the edit, don't also close drawers/modals
+                cancelInlineEdit(row);
+            }
+        });
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+    }
+
+    function cancelInlineEdit(row) {
+        const editor = row && row.querySelector('.chat-edit-form');
+        if (!editor) return;
+        const text = row.querySelector('.chat-message-text');
+        if (text) text.hidden = false;
+        editor.remove();
+        if (row.tabIndex === -1) row.focus();
+    }
+
+    async function saveInlineEdit(row) {
+        const editor = row && row.querySelector('.chat-edit-form');
+        if (!editor) return;
+        const mid = row.dataset.mid;
+        const body = (editor.querySelector('.chat-edit-input').value || '').trim();
+        if (!body || !mid || !chatActiveId) return;
+        const saveBtn = editor.querySelector('[data-edit-save]');
+        if (saveBtn) saveBtn.disabled = true;
+        try {
+            const response = await apiRequest(
+                `/api/dashboard/chat/channels/${encodeURIComponent(chatActiveId)}/messages/${encodeURIComponent(mid)}`,
+                { method: 'PATCH', body: { body } });
+            const updated = (response && response.message)
+                || { body, editedAt: new Date().toISOString() };
+            applyMessageEdit(row, updated);
+        } catch (error) {
+            if (saveBtn) saveBtn.disabled = false;
+            showToast(error.message, 'error');
+        }
+    }
+
+    function applyMessageEdit(row, message) {
+        const editor = row.querySelector('.chat-edit-form');
+        if (editor) editor.remove();
+        const text = row.querySelector('.chat-message-text');
+        if (text) {
+            text.hidden = false;
+            text.textContent = message.body || '';   // textContent avoids re-escaping
+        }
+        if (message.editedAt && !row.querySelector('.chat-message-edited')) {
+            const badge = document.createElement('span');
+            badge.className = 'chat-message-edited';
+            badge.title = chatFullTime(message.editedAt);
+            badge.textContent = '(edited)';
+            const meta = row.querySelector('.chat-message-meta');
+            if (meta) {
+                meta.appendChild(badge);
+            } else if (text) {
+                text.insertAdjacentElement('afterend', badge);
+            }
+        }
+        if (row.tabIndex === -1) row.focus();
+    }
+
+    async function deleteMessage(row) {
+        const mid = row && row.dataset.mid;
+        if (!mid || !chatActiveId) return;
+        if (!window.confirm('Delete this message?')) return;
+        try {
+            await apiRequest(
+                `/api/dashboard/chat/channels/${encodeURIComponent(chatActiveId)}/messages/${encodeURIComponent(mid)}`,
+                { method: 'DELETE' });
+            applyMessageDelete(row);
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    }
+
+    function applyMessageDelete(row) {
+        row.classList.add('chat-message--deleted');
+        const editor = row.querySelector('.chat-edit-form');
+        if (editor) editor.remove();
+        const text = row.querySelector('.chat-message-text');
+        if (text) {
+            text.hidden = false;
+            text.classList.add('chat-message-deleted');
+            text.innerHTML = '<em>Message deleted</em>';
+        }
+        const badge = row.querySelector('.chat-message-edited');
+        if (badge) badge.remove();
+        const actions = row.querySelector('.chat-message-actions');
+        if (actions) actions.remove();
     }
 
     async function fetchMessages(id, initial) {
@@ -1908,6 +2054,30 @@
                 return;
             }
 
+            const editMsgBtn = event.target.closest('[data-edit-msg]');
+            if (editMsgBtn) {
+                startInlineEdit(editMsgBtn.closest('.chat-message'));
+                return;
+            }
+
+            const deleteMsgBtn = event.target.closest('[data-delete-msg]');
+            if (deleteMsgBtn) {
+                await deleteMessage(deleteMsgBtn.closest('.chat-message'));
+                return;
+            }
+
+            const editSaveBtn = event.target.closest('[data-edit-save]');
+            if (editSaveBtn) {
+                await saveInlineEdit(editSaveBtn.closest('.chat-message'));
+                return;
+            }
+
+            const editCancelBtn = event.target.closest('[data-edit-cancel]');
+            if (editCancelBtn) {
+                cancelInlineEdit(editCancelBtn.closest('.chat-message'));
+                return;
+            }
+
             const editMember = event.target.closest('[data-edit-member]');
             if (editMember) {
                 prepareEditMember(editMember.dataset.editMember);
@@ -2090,10 +2260,42 @@
         });
 
         document.addEventListener('keydown', (event) => {
-            if (event.key !== 'Escape') return;
-            $$('.modal-backdrop.is-open').forEach(closeModal);
-            closeChatDrawer();
+            if (event.key === 'Escape') {
+                // Cancel any in-progress inline edit first (when focus left the input).
+                $$('#chatMessages .chat-edit-form').forEach((editor) => {
+                    cancelInlineEdit(editor.closest('.chat-message'));
+                });
+                $$('.modal-backdrop.is-open').forEach(closeModal);
+                closeChatDrawer();
+                return;
+            }
+            if (page === 'chat') handleChatShortcuts(event);
         });
+    }
+
+    function handleChatShortcuts(event) {
+        const el = event.target;
+        const typing = el && (
+            (el.matches && el.matches('input, textarea, select')) || el.isContentEditable);
+        if (event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+            if (!chatChannels.length) return;
+            event.preventDefault();
+            const current = chatChannels.findIndex((channel) => channel.id === chatActiveId);
+            const delta = event.key === 'ArrowUp' ? -1 : 1;
+            const start = current < 0 ? 0 : current + delta;
+            const next = ((start % chatChannels.length) + chatChannels.length) % chatChannels.length;
+            selectChannel(chatChannels[next].id);
+            closeChatDrawer();
+            return;
+        }
+        if (event.key === '/' && !typing) {
+            const composer = document.getElementById('chatComposer');
+            const input = document.querySelector('.chat-composer-input');
+            if (input && composer && !composer.hidden) {
+                event.preventDefault();
+                input.focus();
+            }
+        }
     }
 
     function setupForms() {
@@ -2137,7 +2339,10 @@
             } catch (error) {
                 if (pending) pending.remove();
                 input.value = body;   // restore so the user doesn't lose their text
-                showToast(error.message, 'error');
+                const notice = error.retryAfter != null
+                    ? `${error.message} Try again in ${error.retryAfter}s.`
+                    : error.message;
+                showToast(notice, 'error');
             }
         });
 

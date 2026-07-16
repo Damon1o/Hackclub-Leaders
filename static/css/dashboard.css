@@ -3424,6 +3424,95 @@ body.dark-mode .dashboard-wrapper {
     overflow-wrap: anywhere;
 }
 
+.chat-message-text.chat-message-deleted {
+    color: var(--dash-muted);
+    font-style: italic;
+}
+
+.chat-message-edited {
+    color: var(--dash-muted);
+    font-size: 0.72rem;
+    font-style: italic;
+}
+
+/* Hover/focus-revealed per-message edit & delete controls. */
+.chat-message {
+    position: relative;
+}
+
+.chat-message-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 4px;
+    padding: 2px 4px;
+    border-radius: 8px;
+    background: var(--dash-card);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+}
+
+.chat-message:hover .chat-message-actions,
+.chat-message:focus-within .chat-message-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* While editing, hide the hover actions so they don't overlap the editor. */
+.chat-message:has(.chat-edit-form) .chat-message-actions {
+    display: none;
+}
+
+.chat-msg-action {
+    border: none;
+    background: none;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.75rem;
+    color: var(--dash-muted);
+    cursor: pointer;
+}
+
+.chat-msg-action:hover {
+    color: var(--dash-ink);
+    background: var(--dash-fill);
+}
+
+.chat-msg-action:focus-visible {
+    outline: 2px solid var(--hackclub-red);
+    outline-offset: 1px;
+}
+
+.chat-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.chat-edit-input {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--dash-border);
+    background: var(--dash-bg);
+    color: var(--dash-ink);
+    font: inherit;
+}
+
+.chat-edit-input:focus {
+    outline: 2px solid var(--hackclub-red);
+    outline-offset: 1px;
+}
+
+.chat-edit-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 .chat-composer {
     display: flex;
     gap: 10px;

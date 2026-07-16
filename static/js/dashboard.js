@@ -1564,7 +1564,11 @@
             topicEl.hidden = !channel?.topic;
         }
         renderChannelList();
-        fetchMessages(id, true);
+        fetchMessages(id, true).then(() => {
+            const mine = chatEphemerals().filter((m) => m.channelId === id);
+            mine.forEach(appendEphemeral);
+            if (mine.length) scrollChatToBottom();
+        });
     }
 
     function closeChatThread() {
@@ -1900,14 +1904,77 @@
         setChatDrawer(false);
     }
 
-    // ponytail: no Discord-style autocomplete popup — /help lists everything.
-    // Add a popup when someone actually asks for one.
+    const CHAT_COMMAND_DEFS = [
+        { name: 'help', usage: '/help', desc: 'List all commands' },
+        { name: 'mute', usage: '/mute', desc: 'Mute or unmute this channel on this device' },
+        { name: 'topic', usage: '/topic <text>', desc: 'Set the channel topic', leaders: true },
+        { name: 'clear', usage: '/clear', desc: 'Delete all messages in this channel', leaders: true },
+    ];
+
+    // ── Ephemeral messages: command feedback only the viewer sees, kept per
+    // device in localStorage until dismissed (capped at the newest 20). ──────
+    const CHAT_EPHEMERAL_KEY = 'hcl:chatEphemeral';
+
+    function chatEphemerals() {
+        try {
+            return JSON.parse(localStorage.getItem(CHAT_EPHEMERAL_KEY)) || [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function saveEphemerals(list) {
+        localStorage.setItem(CHAT_EPHEMERAL_KEY, JSON.stringify(list.slice(-20)));
+    }
+
+    function appendEphemeral(msg) {
+        const box = document.getElementById('chatMessages');
+        if (!box || msg.channelId !== chatActiveId) return;
+        const row = document.createElement('div');
+        row.className = 'chat-message chat-ephemeral';
+        row.innerHTML = `
+            <div class="chat-message-body">
+                <p class="chat-message-text">${escapeHtml(msg.body)}</p>
+                <p class="chat-ephemeral-note">Only you can see this ·
+                    <button class="text-button" type="button" data-hide-eph="${escapeHtml(msg.id)}">Hide</button></p>
+            </div>`;
+        box.appendChild(row);
+        chatLastMsgMeta = null;   // don't visually group real messages across it
+    }
+
+    function postEphemeral(text) {
+        const msg = {
+            id: 'eph-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+            channelId: chatActiveId,
+            body: text,
+            createdAt: new Date().toISOString(),
+        };
+        saveEphemerals(chatEphemerals().concat(msg));
+        appendEphemeral(msg);
+        scrollChatToBottom();
+    }
+
+    function hideEphemeral(id, row) {
+        saveEphemerals(chatEphemerals().filter((m) => m.id !== id));
+        if (row) row.remove();
+    }
+
     async function runChatCommand(text) {
         const [cmd, ...rest] = text.slice(1).split(/\s+/);
         const arg = rest.join(' ').trim();
+        const def = CHAT_COMMAND_DEFS.find((c) => c.name === (cmd || '').toLowerCase());
+        if (!def) {
+            postEphemeral(`Unknown command /${cmd}. Try /help.`);
+            return;
+        }
+        if (def.leaders && !isLeader) {
+            postEphemeral("You don't have permission to use this command.");
+            return;
+        }
         const commands = {
             help() {
-                showToast('Commands: /mute (toggle), /topic <text> (leaders), /clear (leaders), /help');
+                postEphemeral('Commands: ' + CHAT_COMMAND_DEFS.map((c) =>
+                    `${c.usage}${c.leaders ? ' (leaders)' : ''} — ${c.desc}`).join('  ·  '));
             },
             mute() {
                 const mutes = chatMutes();
@@ -1917,7 +1984,7 @@
                     : mutes.concat(chatActiveId);
                 localStorage.setItem(CHAT_MUTES_KEY, JSON.stringify(next));
                 renderChannelList();
-                showToast(muted ? 'Channel unmuted.' : 'Channel muted.');
+                postEphemeral(muted ? 'Channel unmuted.' : 'Channel muted.');
             },
             async clear() {
                 if (!window.confirm('Delete ALL messages in this channel?')) return;
@@ -1927,7 +1994,7 @@
                 const box = document.getElementById('chatMessages');
                 if (box) box.innerHTML = '';
                 chatLastMsgMeta = null;
-                showToast('Channel cleared.');
+                postEphemeral('Channel cleared.');
             },
             async topic() {
                 const payload = await apiRequest(
@@ -1940,19 +2007,63 @@
                     topicEl.textContent = arg;
                     topicEl.hidden = !arg;
                 }
-                showToast(arg ? 'Topic set.' : 'Topic cleared.');
+                postEphemeral(arg ? `Topic set: ${arg}` : 'Topic cleared.');
             },
         };
-        const run = commands[(cmd || '').toLowerCase()];
-        if (!run) {
-            showToast(`Unknown command /${cmd}. Try /help.`, 'error');
+        try {
+            await commands[def.name]();
+        } catch (error) {
+            postEphemeral(error.message);
+        }
+    }
+
+    // ── Command autocomplete: menu above the composer while typing "/…". ─────
+    let chatCmdMenu = null;
+
+    function ensureCmdMenu() {
+        if (chatCmdMenu) return chatCmdMenu;
+        const form = document.getElementById('chatComposer');
+        if (!form) return null;
+        const menu = document.createElement('div');
+        menu.className = 'chat-cmd-menu';
+        menu.hidden = true;
+        menu.addEventListener('mousedown', (event) => {
+            const option = event.target.closest('[data-cmd]');
+            if (!option) return;
+            event.preventDefault();   // keep composer focus
+            const def = CHAT_COMMAND_DEFS.find((c) => c.name === option.dataset.cmd);
+            const input = form.elements.body;
+            input.value = '/' + option.dataset.cmd + (def && def.usage.includes('<') ? ' ' : '');
+            input.focus();
+            hideCmdMenu();
+        });
+        form.appendChild(menu);
+        chatCmdMenu = menu;
+        return menu;
+    }
+
+    function hideCmdMenu() {
+        if (chatCmdMenu) chatCmdMenu.hidden = true;
+    }
+
+    function updateCmdMenu(value) {
+        const menu = ensureCmdMenu();
+        if (!menu) return;
+        if (!value.startsWith('/') || value.includes(' ')) {
+            menu.hidden = true;
             return;
         }
-        try {
-            await run();
-        } catch (error) {
-            showToast(error.message, 'error');
+        const term = value.slice(1).toLowerCase();
+        const matches = CHAT_COMMAND_DEFS.filter((c) => c.name.startsWith(term));
+        if (!matches.length) {
+            menu.hidden = true;
+            return;
         }
+        menu.innerHTML = matches.map((c) => `
+            <button class="chat-cmd-option" type="button" data-cmd="${c.name}">
+                <strong>${c.usage}</strong><span>${c.desc}${c.leaders ? ' (leaders only)' : ''}</span>
+            </button>`).join('');
+        menu.hidden = false;
     }
 
     function prepareNewChannel() {
@@ -2148,6 +2259,12 @@
                 if (!chatActiveId) return;
                 prepareEditChannel(chatActiveId);
                 openModal('channelModal');
+                return;
+            }
+
+            const hideEphBtn = event.target.closest('[data-hide-eph]');
+            if (hideEphBtn) {
+                hideEphemeral(hideEphBtn.dataset.hideEph, hideEphBtn.closest('.chat-ephemeral'));
                 return;
             }
 
@@ -2413,11 +2530,24 @@
     }
 
     function setupForms() {
+        const chatComposerInput = $('#chatComposer')?.elements.body;
+        if (chatComposerInput) {
+            chatComposerInput.addEventListener('input', () => updateCmdMenu(chatComposerInput.value));
+            chatComposerInput.addEventListener('blur', () => window.setTimeout(hideCmdMenu, 150));
+            chatComposerInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && chatCmdMenu && !chatCmdMenu.hidden) {
+                    event.stopPropagation();
+                    hideCmdMenu();
+                }
+            });
+        }
+
         $('#chatComposer')?.addEventListener('submit', async (event) => {
             event.preventDefault();
             const input = event.currentTarget.elements.body;
             const body = (input.value || '').trim();
             if (!body || !chatActiveId) return;
+            hideCmdMenu();
             if (body.startsWith('/')) {
                 input.value = '';
                 await runChatCommand(body);

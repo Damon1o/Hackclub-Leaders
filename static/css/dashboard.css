@@ -3566,6 +3566,63 @@ body.dark-mode .dashboard-wrapper {
     font-style: italic;
 }
 
+.chat-composer {
+    position: relative;
+}
+
+.chat-cmd-menu {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 18px;
+    right: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: 12px;
+    box-shadow: var(--dash-shadow-lg);
+    z-index: 20;
+}
+
+.chat-cmd-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: var(--dash-ink);
+    font: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.chat-cmd-option:hover,
+.chat-cmd-option:focus {
+    background: var(--dash-border);
+}
+
+.chat-cmd-option span {
+    color: var(--dash-muted);
+    font-size: 0.78rem;
+}
+
+.chat-ephemeral .chat-message-text {
+    color: var(--dash-muted);
+    font-style: italic;
+}
+
+.chat-ephemeral-note {
+    margin: 2px 0 0;
+    font-size: 0.72rem;
+    color: var(--dash-muted);
+}
+
 /* Mobile drawer controls — hidden on desktop, revealed in the media query below. */
 .chat-drawer-toggle {
     display: none;

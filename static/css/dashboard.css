@@ -3365,6 +3365,12 @@ body.dark-mode .dashboard-wrapper {
     display: flex;
     gap: 10px;
     align-items: flex-start;
+    animation: chatMessageSlideIn 0.2s ease-out;
+}
+
+@keyframes chatMessageSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .chat-message .avatar-sm {
@@ -3418,6 +3424,95 @@ body.dark-mode .dashboard-wrapper {
     overflow-wrap: anywhere;
 }
 
+.chat-message-text.chat-message-deleted {
+    color: var(--dash-muted);
+    font-style: italic;
+}
+
+.chat-message-edited {
+    color: var(--dash-muted);
+    font-size: 0.72rem;
+    font-style: italic;
+}
+
+/* Hover/focus-revealed per-message edit & delete controls. */
+.chat-message {
+    position: relative;
+}
+
+.chat-message-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 4px;
+    padding: 2px 4px;
+    border-radius: 8px;
+    background: var(--dash-card);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+}
+
+.chat-message:hover .chat-message-actions,
+.chat-message:focus-within .chat-message-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* While editing, hide the hover actions so they don't overlap the editor. */
+.chat-message:has(.chat-edit-form) .chat-message-actions {
+    display: none;
+}
+
+.chat-msg-action {
+    border: none;
+    background: none;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.75rem;
+    color: var(--dash-muted);
+    cursor: pointer;
+}
+
+.chat-msg-action:hover {
+    color: var(--dash-ink);
+    background: var(--dash-fill);
+}
+
+.chat-msg-action:focus-visible {
+    outline: 2px solid var(--hackclub-red);
+    outline-offset: 1px;
+}
+
+.chat-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.chat-edit-input {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--dash-border);
+    background: var(--dash-bg);
+    color: var(--dash-ink);
+    font: inherit;
+}
+
+.chat-edit-input:focus {
+    outline: 2px solid var(--hackclub-red);
+    outline-offset: 1px;
+}
+
+.chat-edit-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 .chat-composer {
     display: flex;
     gap: 10px;
@@ -3440,18 +3535,164 @@ body.dark-mode .dashboard-wrapper {
     outline-offset: 1px;
 }
 
+.chat-reactions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.chat-reactions:empty {
+    display: none;
+}
+
+.chat-reaction-pill {
+    border: 1px solid var(--dash-border);
+    border-radius: 999px;
+    background: var(--dash-card);
+    color: var(--dash-ink);
+    padding: 1px 8px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.chat-reaction-pill.is-mine {
+    border-color: var(--dash-accent, var(--hackclub-red));
+}
+
+.chat-topic {
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.chat-composer {
+    position: relative;
+}
+
+.chat-cmd-menu {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 18px;
+    right: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: 12px;
+    box-shadow: var(--dash-shadow-lg);
+    z-index: 20;
+}
+
+.chat-cmd-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: var(--dash-ink);
+    font: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.chat-cmd-option:hover,
+.chat-cmd-option:focus {
+    background: var(--dash-border);
+}
+
+.chat-cmd-option span {
+    color: var(--dash-muted);
+    font-size: 0.78rem;
+}
+
+.chat-ephemeral .chat-message-text {
+    color: var(--dash-muted);
+    font-style: italic;
+}
+
+.chat-ephemeral-note {
+    margin: 2px 0 0;
+    font-size: 0.72rem;
+    color: var(--dash-muted);
+}
+
+/* Mobile drawer controls — hidden on desktop, revealed in the media query below. */
+.chat-drawer-toggle {
+    display: none;
+    align-self: flex-start;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--dash-border);
+    border-radius: 10px;
+    background: var(--dash-card);
+    color: var(--dash-ink);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.chat-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1350;
+}
+
 @media (max-width: 768px) {
     .chat-layout {
         flex-direction: column;
-        height: auto;
+        height: calc(100vh - 200px);
+        min-height: 440px;
+    }
+
+    .chat-drawer-toggle {
+        display: inline-flex;
     }
 
     .chat-sidebar {
-        width: 100%;
-        max-height: 220px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        max-width: 82vw;
+        max-height: none;
+        border-radius: 0;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease-out;
+        z-index: 1400;
+    }
+
+    .chat-sidebar.open {
+        transform: translateX(0);
+        box-shadow: var(--dash-shadow-lg);
+    }
+
+    .chat-backdrop:not([hidden]) {
+        display: block;
     }
 
     .chat-main {
-        min-height: 440px;
+        min-height: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-message {
+        animation: none;
+    }
+
+    .chat-sidebar {
+        transition: none;
     }
 }

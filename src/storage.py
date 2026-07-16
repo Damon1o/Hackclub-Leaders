@@ -66,7 +66,7 @@ PROJECT_FIELDS = [('name', 'Name'), ('description', 'Description'),
                   ('ownerEmail', 'Owner Email'), ('ownerName', 'Owner Name'),
                   ('date', 'Date')]
 CHANNEL_FIELDS = [('name', 'Name'), ('description', 'Description'),
-                  ('createdBy', 'Created By'),
+                  ('topic', 'Topic'), ('createdBy', 'Created By'),
                   ('lastMessageAt', 'Last Message At')]
 MESSAGE_FIELDS = [('channelId', 'Channel Id'), ('authorEmail', 'Author Email'),
                   ('authorName', 'Author Name'),
@@ -500,6 +500,13 @@ class AirtableStorage:
                         item['items'] = json.loads(fields.get('Items') or '[]')
                     except ValueError:
                         item['items'] = []
+                if state_key == 'messages':
+                    try:
+                        reactions = json.loads(fields.get('Reactions') or '{}')
+                    except ValueError:
+                        reactions = {}
+                    if reactions:
+                        item['reactions'] = reactions
                 items.append(item)
             state[state_key] = items
         return state
@@ -510,7 +517,7 @@ class AirtableStorage:
         def sync(state_key, field_pairs):
             self._sync_children(self.tables[state_key], club_key,
                                 state.get(state_key) or [], field_pairs,
-                                serialize_items=(state_key == 'orders'))
+                                state_key=state_key)
 
         with ThreadPoolExecutor(max_workers=len(self.CHILD_TABLES) + 1) as pool:
             futures = [pool.submit(
@@ -544,7 +551,7 @@ class AirtableStorage:
         else:
             self._batch('post', self.clubs_table, [{'fields': fields}])
 
-    def _item_fields(self, club_key, item, field_pairs, serialize_items):
+    def _item_fields(self, club_key, item, field_pairs, state_key):
         fields = {'App Id': item.get('id') or '', 'Club Email': club_key}
         for item_key, field in field_pairs:
             value = item.get(item_key)
@@ -554,20 +561,22 @@ class AirtableStorage:
                 fields[field] = int(value or 0)
             else:
                 fields[field] = value or ''
-        if serialize_items:
+        if state_key == 'orders':
             fields['Items'] = json.dumps(item.get('items') or [])
+        if state_key == 'messages':
+            fields['Reactions'] = json.dumps(item.get('reactions') or {})
         return fields
 
     @staticmethod
     def _field_changed(old, new):
         # Airtable omits empty/false fields from responses, so a missing
         # value is equivalent to our '', 0, False, or [].
-        if new in ('', 0, False, '[]', None):
-            return old not in (None, '', 0, False, '[]')
+        if new in ('', 0, False, '[]', '{}', None):
+            return old not in (None, '', 0, False, '[]', '{}')
         return old != new
 
     def _sync_children(self, table, club_key, items, field_pairs,
-                       serialize_items=False):
+                       state_key=None):
         existing = {
             record['fields'].get('App Id'): record
             for record in self._list(table, 'Club Email', club_key)
@@ -577,7 +586,7 @@ class AirtableStorage:
             app_id = item.get('id') or ''
             keep.add(app_id)
             fields = self._item_fields(club_key, item, field_pairs,
-                                       serialize_items)
+                                       state_key)
             record = existing.get(app_id)
             if record is None:
                 creates.append({'fields': fields})

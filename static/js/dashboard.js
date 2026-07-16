@@ -1417,7 +1417,15 @@
         if (!iso) return '';
         const date = new Date(iso);
         if (Number.isNaN(date.getTime())) return '';
-        return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
+        const days = Math.floor((Date.now() - date.getTime()) / 86400000);
+        if (days < 1) {
+            return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
+        }
+        const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+        if (days <= 30) return rtf.format(-days, 'day');       // "yesterday", "5 days ago"
+        if (days <= 60) return rtf.format(-1, 'month');        // "last month"
+        // Older than that: a real date, slash-free ("Jan 15, 2026").
+        return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' }).format(date);
     }
 
     function chatFullTime(iso) {

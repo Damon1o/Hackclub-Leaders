@@ -56,6 +56,7 @@
                 <div>
                     <h2 id="chatThreadName">#</h2>
                     <p class="chat-muted" id="chatThreadDesc"></p>
+                    <p class="chat-muted chat-topic" id="chatThreadTopic" hidden></p>
                 </div>
                 {% if is_leader %}
                 <button class="text-button" type="button" id="chatEditChannel" data-i18n="chat.editChannel">Edit</button>
@@ -90,6 +91,11 @@
                 <span class="form-label" data-i18n="chat.channelDesc">Description</span>
                 <input class="form-input" type="text" name="description" maxlength="140"
                     data-i18n-attr="placeholder:chat.channelDescPlaceholder" placeholder="What's this channel for?">
+            </label>
+            <label class="form-group">
+                <span class="form-label" data-i18n="chat.channelTopic">Topic</span>
+                <input class="form-input" type="text" name="topic" maxlength="120"
+                    data-i18n-attr="placeholder:chat.channelTopicPlaceholder" placeholder="This week: hackathon prep">
             </label>
             <p class="form-error" id="channelFormError" hidden></p>
             <div class="modal-actions">

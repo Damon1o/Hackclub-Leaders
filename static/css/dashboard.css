@@ -3535,6 +3535,37 @@ body.dark-mode .dashboard-wrapper {
     outline-offset: 1px;
 }
 
+.chat-reactions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.chat-reactions:empty {
+    display: none;
+}
+
+.chat-reaction-pill {
+    border: 1px solid var(--dash-border);
+    border-radius: 999px;
+    background: var(--dash-card);
+    color: var(--dash-ink);
+    padding: 1px 8px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.chat-reaction-pill.is-mine {
+    border-color: var(--dash-accent, var(--hackclub-red));
+}
+
+.chat-topic {
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
 /* Mobile drawer controls — hidden on desktop, revealed in the media query below. */
 .chat-drawer-toggle {
     display: none;

@@ -1535,6 +1535,11 @@
         const descEl = document.getElementById('chatThreadDesc');
         if (nameEl) nameEl.textContent = '# ' + (channel?.name || '');
         if (descEl) descEl.textContent = channel?.description || '';
+        const topicEl = document.getElementById('chatThreadTopic');
+        if (topicEl) {
+            topicEl.textContent = channel?.topic || '';
+            topicEl.hidden = !channel?.topic;
+        }
         renderChannelList();
         fetchMessages(id, true);
     }
@@ -1591,9 +1596,10 @@
         const actions = messageActionsMarkup(message, Boolean(mine));
         if (actions) row.tabIndex = -1;   // lets focus return here after edit/cancel
         const edited = message.editedAt && !message.deleted ? editedBadgeMarkup(message) : '';
-        const bodyHtml = message.deleted
+        const bodyHtml = (message.deleted
             ? '<p class="chat-message-text chat-message-deleted"><em>Message deleted</em></p>'
-            : `<p class="chat-message-text">${escapeHtml(message.body)}</p>${grouped ? edited : ''}`;
+            : `<p class="chat-message-text">${escapeHtml(message.body)}</p>${grouped ? edited : ''}`)
+            + (message.deleted ? '' : reactionsMarkup(message));
         if (grouped) {
             row.innerHTML = `
             <div class="chat-message-body">
@@ -1616,20 +1622,32 @@
         return row;
     }
 
+    const REACTION_EMOJI = ['👍', '❤️', '😂', '🎉'];
+
+    function reactionsMarkup(message) {
+        const reactions = message.reactions || {};
+        const pills = Object.keys(reactions).map((emoji) => {
+            const authors = reactions[emoji] || [];
+            const mine = authors.includes(viewerEmail) ? ' is-mine' : '';
+            return `<button class="chat-reaction-pill${mine}" type="button" data-react="${escapeHtml(emoji)}"
+                aria-label="Toggle ${escapeHtml(emoji)} reaction">${escapeHtml(emoji)} ${authors.length}</button>`;
+        }).join('');
+        return `<div class="chat-reactions">${pills}</div>`;
+    }
+
     // Edit is own-message-only (the API rejects leaders editing others'); delete
-    // is available to authors and to leaders on any message.
+    // is available to authors and to leaders on any message. Anyone can react.
     function messageActionsMarkup(message, mine) {
         if (message.deleted) return '';
-        const canDelete = mine || isLeader;
-        if (!mine && !canDelete) return '';
+        const reactBtns = REACTION_EMOJI.map((emoji) =>
+            `<button class="chat-msg-action" type="button" data-react="${emoji}" aria-label="React ${emoji}">${emoji}</button>`).join('');
         const editBtn = mine
             ? '<button class="chat-msg-action" type="button" data-edit-msg aria-label="Edit message">Edit</button>'
             : '';
-        const deleteBtn = canDelete
+        const deleteBtn = (mine || isLeader)
             ? '<button class="chat-msg-action" type="button" data-delete-msg aria-label="Delete message">Delete</button>'
             : '';
-        if (!editBtn && !deleteBtn) return '';
-        return `<span class="chat-message-actions">${editBtn}${deleteBtn}</span>`;
+        return `<span class="chat-message-actions">${reactBtns}${editBtn}${deleteBtn}</span>`;
     }
 
     function editedBadgeMarkup(message) {
@@ -1876,6 +1894,7 @@
         form.elements.id.value = channel.id;
         form.elements.name.value = channel.name || '';
         form.elements.description.value = channel.description || '';
+        form.elements.topic.value = channel.topic || '';
         $('#channelModalTitle').textContent = 'Edit channel';
         $('#deleteChannelButton').hidden = false;
         setFormError('channelFormError', '');
@@ -2051,6 +2070,23 @@
                 if (!chatActiveId) return;
                 prepareEditChannel(chatActiveId);
                 openModal('channelModal');
+                return;
+            }
+
+            const reactBtn = event.target.closest('[data-react]');
+            if (reactBtn) {
+                const row = reactBtn.closest('.chat-message');
+                const mid = row?.dataset.mid;
+                if (!mid || !chatActiveId) return;
+                try {
+                    const payload = await apiRequest(
+                        `/api/dashboard/chat/channels/${encodeURIComponent(chatActiveId)}/messages/${encodeURIComponent(mid)}/reactions`,
+                        { method: 'POST', body: { emoji: reactBtn.dataset.react } });
+                    const pillBox = row.querySelector('.chat-reactions');
+                    if (pillBox && payload.message) pillBox.outerHTML = reactionsMarkup(payload.message);
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
                 return;
             }
 
@@ -2353,13 +2389,17 @@
             const body = {
                 name: form.elements.name.value,
                 description: form.elements.description.value,
+                topic: form.elements.topic.value,
             };
             setFormError('channelFormError', '');
             try {
                 if (id) {
-                    await apiRequest(`/api/dashboard/chat/channels/${encodeURIComponent(id)}`, {
+                    const payload = await apiRequest(`/api/dashboard/chat/channels/${encodeURIComponent(id)}`, {
                         method: 'PATCH', body,
                     });
+                    const local = chatChannels.find((item) => item.id === id);
+                    if (local && payload.channel) Object.assign(local, payload.channel);
+                    if (id === chatActiveId) { chatActiveId = null; selectChannel(id); }
                 } else {
                     const payload = await apiRequest('/api/dashboard/chat/channels', {
                         method: 'POST', body,

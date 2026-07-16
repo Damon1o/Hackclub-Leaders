@@ -1407,8 +1407,23 @@
         }
     }
 
+    const CHAT_MUTES_KEY = 'hcl:chatMutes';
+
+    function chatMutes() {
+        try {
+            return JSON.parse(localStorage.getItem(CHAT_MUTES_KEY)) || [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function isChannelMuted(id) {
+        return chatMutes().includes(id);
+    }
+
     function channelUnread(channel) {
         if (!channel.lastMessageAt || channel.id === chatActiveId) return false;
+        if (isChannelMuted(channel.id)) return false;
         const seen = chatReads()[channel.id];
         return !seen || channel.lastMessageAt > seen;
     }
@@ -1792,7 +1807,7 @@
             const added = incoming.map((message) => appendMessage(message)).filter(Boolean);
             chatLastFetch = incoming[incoming.length - 1].createdAt || chatLastFetch;
             // Badge the tab title with messages that landed while it was hidden.
-            if (document.hidden && added.length) {
+            if (document.hidden && added.length && !isChannelMuted(id)) {
                 const others = added.filter(
                     (row) => !row.classList.contains('is-mine')).length;
                 if (others) {
@@ -1883,6 +1898,61 @@
 
     function closeChatDrawer() {
         setChatDrawer(false);
+    }
+
+    // ponytail: no Discord-style autocomplete popup — /help lists everything.
+    // Add a popup when someone actually asks for one.
+    async function runChatCommand(text) {
+        const [cmd, ...rest] = text.slice(1).split(/\s+/);
+        const arg = rest.join(' ').trim();
+        const commands = {
+            help() {
+                showToast('Commands: /mute (toggle), /topic <text> (leaders), /clear (leaders), /help');
+            },
+            mute() {
+                const mutes = chatMutes();
+                const muted = mutes.includes(chatActiveId);
+                const next = muted
+                    ? mutes.filter((id) => id !== chatActiveId)
+                    : mutes.concat(chatActiveId);
+                localStorage.setItem(CHAT_MUTES_KEY, JSON.stringify(next));
+                renderChannelList();
+                showToast(muted ? 'Channel unmuted.' : 'Channel muted.');
+            },
+            async clear() {
+                if (!window.confirm('Delete ALL messages in this channel?')) return;
+                await apiRequest(
+                    `/api/dashboard/chat/channels/${encodeURIComponent(chatActiveId)}/messages`,
+                    { method: 'DELETE' });
+                const box = document.getElementById('chatMessages');
+                if (box) box.innerHTML = '';
+                chatLastMsgMeta = null;
+                showToast('Channel cleared.');
+            },
+            async topic() {
+                const payload = await apiRequest(
+                    `/api/dashboard/chat/channels/${encodeURIComponent(chatActiveId)}`,
+                    { method: 'PATCH', body: { topic: arg } });
+                const local = chatChannels.find((item) => item.id === chatActiveId);
+                if (local && payload.channel) Object.assign(local, payload.channel);
+                const topicEl = document.getElementById('chatThreadTopic');
+                if (topicEl) {
+                    topicEl.textContent = arg;
+                    topicEl.hidden = !arg;
+                }
+                showToast(arg ? 'Topic set.' : 'Topic cleared.');
+            },
+        };
+        const run = commands[(cmd || '').toLowerCase()];
+        if (!run) {
+            showToast(`Unknown command /${cmd}. Try /help.`, 'error');
+            return;
+        }
+        try {
+            await run();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
     }
 
     function prepareNewChannel() {
@@ -2348,6 +2418,11 @@
             const input = event.currentTarget.elements.body;
             const body = (input.value || '').trim();
             if (!body || !chatActiveId) return;
+            if (body.startsWith('/')) {
+                input.value = '';
+                await runChatCommand(body);
+                return;
+            }
             const channelId = chatActiveId;
             input.value = '';
             // Optimistically show the message; reconcile (or roll back) on response.

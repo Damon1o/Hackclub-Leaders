@@ -459,3 +459,26 @@ def test_topic_included_in_channel_listing(client):
     channels = c.get('/api/dashboard/chat/channels').get_json()['channels']
     got = next(ch for ch in channels if ch['id'] == 'chan-1')
     assert got['topic'] == 'Reading group'
+
+
+def test_leader_clears_channel_messages(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('msg-1', 'someone@test.com'))
+    _seed_message(c, _msg('msg-2', 'else@test.com'))
+    resp = c.delete('/api/dashboard/chat/channels/chan-1/messages', headers=h)
+    assert resp.status_code == 200
+    resp = c.get('/api/dashboard/chat/channels/chan-1/messages')
+    assert resp.get_json()['messages'] == []
+
+
+def test_member_cannot_clear_channel_messages(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('msg-1', 'member@test.com'))
+    resp = c.delete('/api/dashboard/chat/channels/chan-1/messages', headers=h)
+    assert resp.status_code == 403
+
+
+def test_clear_missing_channel_404s(client):
+    c, h = _seed(client, 'leader')
+    resp = c.delete('/api/dashboard/chat/channels/nope/messages', headers=h)
+    assert resp.status_code == 404

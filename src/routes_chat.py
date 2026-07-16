@@ -248,6 +248,24 @@ def register(app):
         # and returning state here would trigger a heavy full-page re-render.
         return flask.jsonify({'message': message})
 
+    @app.delete('/api/dashboard/chat/channels/<channel_id>/messages')
+    @login_required
+    def api_chat_channel_clear(channel_id):
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+        role_error = require_leader_api()
+        if role_error:
+            return role_error
+
+        state = get_dashboard_state()
+        if not find_by_id(_channels(state), channel_id):
+            return json_error('Channel not found.', 404)
+        state['messages'] = [m for m in _messages(state)
+                             if m.get('channelId') != channel_id]
+        save_dashboard_state(state)
+        return flask.jsonify({'cleared': True})
+
     @app.patch('/api/dashboard/chat/channels/<channel_id>/messages/<message_id>')
     @login_required
     def api_chat_message_update(channel_id, message_id):

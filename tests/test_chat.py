@@ -6,6 +6,8 @@ would surface here as a 500 rather than slipping through the CSRF-only checks
 in test_api.py).
 """
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 
 CSRF = 'test-csrf-token'
@@ -16,6 +18,18 @@ def _session_backend(monkeypatch):
     # The app's .env may select the Airtable backend; these tests need the
     # in-cookie session backend so a seeded club is actually visible.
     monkeypatch.setenv('STORAGE_BACKEND', 'session')
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limit():
+    # The message POST limiter keeps a process-global bucket per user; clear it
+    # between tests so counts from one test don't spill into the next.
+    try:
+        from src.routes_chat import reset_rate_limits
+        reset_rate_limits()
+    except ImportError:
+        pass
+    yield
 
 
 def _seed(client, role, channels=None):
@@ -165,3 +179,317 @@ def test_member_cannot_delete_channel(client):
     c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
     resp = c.delete('/api/dashboard/chat/channels/chan-1', headers=h)
     assert resp.status_code == 403
+
+
+# ── Message deletion / editing helpers ──────────────────────────────────────
+
+def _iso(delta=None):
+    now = datetime.now(timezone.utc)
+    return (now + delta if delta else now).isoformat()
+
+
+def _seed_message(client, message):
+    """Append a pre-built message onto the seeded dashboard state."""
+    with client.session_transaction() as sess:
+        state = sess['dashboard_state']
+        state['messages'].append(message)
+        # Reassign the top-level key: mutating the nested list alone doesn't
+        # mark the session dirty, so it wouldn't persist.
+        sess['dashboard_state'] = state
+
+
+def _msg(mid, author, body='hello', created=None, **extra):
+    return {
+        'id': mid, 'channelId': 'chan-1', 'authorEmail': author,
+        'authorName': author, 'authorAvatar': '',
+        'body': body, 'createdAt': created or _iso(), **extra,
+    }
+
+
+# ── Message deletion ────────────────────────────────────────────────────────
+
+def test_leader_deletes_any_message(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'someone@test.com'))
+    resp = c.delete('/api/dashboard/chat/channels/chan-1/messages/m-1', headers=h)
+    assert resp.status_code == 200
+    msg = resp.get_json()['message']
+    assert msg['deleted'] is True
+    assert msg['body'] == ''
+
+
+def test_author_deletes_own_recent_message(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'member@test.com'))
+    resp = c.delete('/api/dashboard/chat/channels/chan-1/messages/m-1', headers=h)
+    assert resp.status_code == 200
+    assert resp.get_json()['message']['deleted'] is True
+
+
+def test_member_cannot_delete_others_message(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'someone@test.com'))
+    resp = c.delete('/api/dashboard/chat/channels/chan-1/messages/m-1', headers=h)
+    assert resp.status_code == 403
+
+
+def test_member_cannot_delete_own_stale_message(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'member@test.com',
+                          created=_iso(timedelta(hours=-25))))
+    resp = c.delete('/api/dashboard/chat/channels/chan-1/messages/m-1', headers=h)
+    assert resp.status_code == 403
+
+
+def test_delete_missing_message_404(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    resp = c.delete('/api/dashboard/chat/channels/chan-1/messages/nope', headers=h)
+    assert resp.status_code == 404
+
+
+def test_delete_message_requires_csrf(client):
+    c, _ = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'leader@test.com'))
+    resp = c.delete('/api/dashboard/chat/channels/chan-1/messages/m-1')
+    assert resp.status_code == 403
+
+
+# ── Message editing ─────────────────────────────────────────────────────────
+
+def test_author_edits_own_recent_message(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'member@test.com', body='typo'))
+    resp = c.patch('/api/dashboard/chat/channels/chan-1/messages/m-1',
+                   json={'body': 'fixed'}, headers=h)
+    assert resp.status_code == 200
+    msg = resp.get_json()['message']
+    assert msg['body'] == 'fixed'
+    assert msg['editedAt']
+
+
+def test_member_cannot_edit_after_5_minutes(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'member@test.com',
+                          created=_iso(timedelta(minutes=-6))))
+    resp = c.patch('/api/dashboard/chat/channels/chan-1/messages/m-1',
+                   json={'body': 'late edit'}, headers=h)
+    assert resp.status_code == 403
+
+
+def test_leader_edits_own_message_anytime(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'leader@test.com',
+                          created=_iso(timedelta(days=-3))))
+    resp = c.patch('/api/dashboard/chat/channels/chan-1/messages/m-1',
+                   json={'body': 'still editable'}, headers=h)
+    assert resp.status_code == 200
+    assert resp.get_json()['message']['body'] == 'still editable'
+
+
+def test_member_cannot_edit_others_message(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'someone@test.com'))
+    resp = c.patch('/api/dashboard/chat/channels/chan-1/messages/m-1',
+                   json={'body': 'hijack'}, headers=h)
+    assert resp.status_code == 403
+
+
+def test_cannot_edit_deleted_message(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'leader@test.com', body='', deleted=True))
+    resp = c.patch('/api/dashboard/chat/channels/chan-1/messages/m-1',
+                   json={'body': 'undelete'}, headers=h)
+    assert resp.status_code == 409
+
+
+def test_edit_empty_body_rejected(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'leader@test.com'))
+    resp = c.patch('/api/dashboard/chat/channels/chan-1/messages/m-1',
+                   json={'body': '   '}, headers=h)
+    assert resp.status_code == 400
+
+
+def test_edit_enforces_length_limit(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'leader@test.com'))
+    resp = c.patch('/api/dashboard/chat/channels/chan-1/messages/m-1',
+                   json={'body': 'x' * 600}, headers=h)
+    assert resp.status_code == 200
+    assert len(resp.get_json()['message']['body']) == 500
+
+
+def test_edit_missing_message_404(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    resp = c.patch('/api/dashboard/chat/channels/chan-1/messages/nope',
+                   json={'body': 'x'}, headers=h)
+    assert resp.status_code == 404
+
+
+# ── Rate limiting ───────────────────────────────────────────────────────────
+
+def test_message_post_rate_limited(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    for _ in range(10):
+        ok = c.post('/api/dashboard/chat/channels/chan-1/messages',
+                    json={'body': 'spam'}, headers=h)
+        assert ok.status_code == 200
+    blocked = c.post('/api/dashboard/chat/channels/chan-1/messages',
+                     json={'body': 'one too many'}, headers=h)
+    assert blocked.status_code == 429
+    assert blocked.get_json()['retryAfter'] >= 1
+
+
+# ── Emoji reactions ─────────────────────────────────────────────────────────
+
+_REACT_URL = '/api/dashboard/chat/channels/chan-1/messages/m-1/reactions'
+
+
+def test_add_reaction(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'someone@test.com'))
+    resp = c.post(_REACT_URL, json={'emoji': '👍'}, headers=h)
+    assert resp.status_code == 200
+    assert resp.get_json()['message']['reactions'] == {
+        '👍': ['member@test.com']}
+
+
+def test_toggle_reaction_off_drops_empty_key(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'someone@test.com',
+                          reactions={'👍': ['member@test.com']}))
+    resp = c.post(_REACT_URL, json={'emoji': '👍'}, headers=h)
+    assert resp.status_code == 200
+    # viewer's reaction removed and the now-empty emoji key dropped entirely
+    assert resp.get_json()['message'].get('reactions', {}) == {}
+
+
+def test_reaction_appends_to_other_authors(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'someone@test.com',
+                          reactions={'👍': ['other@test.com']}))
+    resp = c.post(_REACT_URL, json={'emoji': '👍'}, headers=h)
+    assert resp.status_code == 200
+    assert resp.get_json()['message']['reactions']['👍'] == [
+        'other@test.com', 'member@test.com']
+
+
+def test_reaction_requires_csrf(client):
+    c, _ = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'someone@test.com'))
+    resp = c.post(_REACT_URL, json={'emoji': '👍'})
+    assert resp.status_code == 403
+
+
+def test_reaction_empty_emoji_rejected(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'someone@test.com'))
+    resp = c.post(_REACT_URL, json={'emoji': '   '}, headers=h)
+    assert resp.status_code == 400
+
+
+def test_reaction_overlong_emoji_rejected(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'someone@test.com'))
+    resp = c.post(_REACT_URL, json={'emoji': 'x' * 9}, headers=h)
+    assert resp.status_code == 400
+
+
+def test_reaction_missing_channel_404(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    resp = c.post('/api/dashboard/chat/channels/nope/messages/m-1/reactions',
+                  json={'emoji': '👍'}, headers=h)
+    assert resp.status_code == 404
+
+
+def test_reaction_missing_message_404(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    resp = c.post('/api/dashboard/chat/channels/chan-1/messages/nope/reactions',
+                  json={'emoji': '👍'}, headers=h)
+    assert resp.status_code == 404
+
+
+def test_cannot_react_to_deleted_message(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('m-1', 'someone@test.com', body='', deleted=True))
+    resp = c.post(_REACT_URL, json={'emoji': '👍'}, headers=h)
+    assert resp.status_code == 409
+
+
+def test_reaction_distinct_emoji_capped_at_8(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    full = {e: ['someone@test.com'] for e in '😀😁😂🤣😃😄😅😆'}  # 8 distinct
+    _seed_message(c, _msg('m-1', 'someone@test.com', reactions=full))
+    # a 9th distinct emoji is refused
+    resp = c.post(_REACT_URL, json={'emoji': '🎉'}, headers=h)
+    assert resp.status_code == 400
+    # but joining an emoji already present on the message still works
+    ok = c.post(_REACT_URL, json={'emoji': '😀'}, headers=h)
+    assert ok.status_code == 200
+    assert 'member@test.com' in ok.get_json()['message']['reactions']['😀']
+
+
+# ── Channel topic ───────────────────────────────────────────────────────────
+
+def test_channel_patch_sets_topic(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    resp = c.patch('/api/dashboard/chat/channels/chan-1',
+                   json={'topic': 'Weekly standup'}, headers=h)
+    assert resp.status_code == 200
+    assert resp.get_json()['channel']['topic'] == 'Weekly standup'
+
+
+def test_channel_topic_cleared_by_empty_string(client):
+    c, h = _seed(client, 'leader',
+                 channels=[dict(_SEED_CHANNEL, topic='old topic')])
+    resp = c.patch('/api/dashboard/chat/channels/chan-1',
+                   json={'topic': ''}, headers=h)
+    assert resp.status_code == 200
+    assert resp.get_json()['channel']['topic'] == ''
+
+
+def test_channel_topic_length_capped(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    resp = c.patch('/api/dashboard/chat/channels/chan-1',
+                   json={'topic': 'x' * 200}, headers=h)
+    assert resp.status_code == 200
+    assert len(resp.get_json()['channel']['topic']) == 120
+
+
+def test_member_cannot_set_topic(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    resp = c.patch('/api/dashboard/chat/channels/chan-1',
+                   json={'topic': 'nope'}, headers=h)
+    assert resp.status_code == 403
+
+
+def test_topic_included_in_channel_listing(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    c.patch('/api/dashboard/chat/channels/chan-1',
+            json={'topic': 'Reading group'}, headers=h)
+    channels = c.get('/api/dashboard/chat/channels').get_json()['channels']
+    got = next(ch for ch in channels if ch['id'] == 'chan-1')
+    assert got['topic'] == 'Reading group'
+
+
+def test_leader_clears_channel_messages(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('msg-1', 'someone@test.com'))
+    _seed_message(c, _msg('msg-2', 'else@test.com'))
+    resp = c.delete('/api/dashboard/chat/channels/chan-1/messages', headers=h)
+    assert resp.status_code == 200
+    resp = c.get('/api/dashboard/chat/channels/chan-1/messages')
+    assert resp.get_json()['messages'] == []
+
+
+def test_member_cannot_clear_channel_messages(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _seed_message(c, _msg('msg-1', 'member@test.com'))
+    resp = c.delete('/api/dashboard/chat/channels/chan-1/messages', headers=h)
+    assert resp.status_code == 403
+
+
+def test_clear_missing_channel_404s(client):
+    c, h = _seed(client, 'leader')
+    resp = c.delete('/api/dashboard/chat/channels/nope/messages', headers=h)
+    assert resp.status_code == 404

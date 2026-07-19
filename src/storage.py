@@ -96,6 +96,7 @@ PROJECT_FIELDS: Final[list[tuple[str, str]]] = [
 CHANNEL_FIELDS: Final[list[tuple[str, str]]] = [
     ('name', 'Name'),
     ('description', 'Description'),
+    ('topic', 'Topic'),
     ('createdBy', 'Created By'),
     ('lastMessageAt', 'Last Message At'),
 ]
@@ -545,6 +546,13 @@ class AirtableStorage:
                         item['items'] = json.loads(fields.get('Items') or '[]')
                     except ValueError:
                         item['items'] = []
+                if state_key == 'messages':
+                    try:
+                        reactions = json.loads(fields.get('Reactions') or '{}')
+                    except ValueError:
+                        reactions = {}
+                    if reactions:
+                        item['reactions'] = reactions
                 items.append(item)
             state[state_key] = items
         return state
@@ -558,7 +566,7 @@ class AirtableStorage:
                 club_key,
                 state.get(state_key) or [],
                 field_pairs,
-                serialize_items=(state_key == 'orders'),
+                state_key=state_key,
             )
 
         with ThreadPoolExecutor(max_workers=len(self.CHILD_TABLES) + 1) as pool:
@@ -598,7 +606,7 @@ class AirtableStorage:
         club_key: str,
         item: dict[str, Any],
         field_pairs: list[tuple[str, str]],
-        serialize_items: bool,
+        state_key: str,
     ) -> dict[str, Any]:
         fields: dict[str, Any] = {'App Id': item.get('id') or '', 'Club Email': club_key}
         for item_key, field in field_pairs:
@@ -609,16 +617,18 @@ class AirtableStorage:
                 fields[field] = int(value or 0)
             else:
                 fields[field] = value or ''
-        if serialize_items:
+        if state_key == 'orders':
             fields['Items'] = json.dumps(item.get('items') or [])
+        if state_key == 'messages':
+            fields['Reactions'] = json.dumps(item.get('reactions') or {})
         return fields
 
     @staticmethod
     def _field_changed(old: Any, new: Any) -> bool:
         # Airtable omits empty/false fields from responses, so a missing
         # value is equivalent to our '', 0, False, or [].
-        if new in ('', 0, False, '[]', None):
-            return old not in (None, '', 0, False, '[]')
+        if new in ('', 0, False, '[]', '{}', None):
+            return old not in (None, '', 0, False, '[]', '{}')
         return old != new
 
     def _sync_children(
@@ -627,7 +637,7 @@ class AirtableStorage:
         club_key: str,
         items: list[dict[str, Any]],
         field_pairs: list[tuple[str, str]],
-        serialize_items: bool,
+        state_key: str | None = None,
     ) -> None:
         existing: dict[str, dict[str, Any]] = {
             record['fields'].get('App Id'): record
@@ -639,7 +649,7 @@ class AirtableStorage:
         for item in items:
             app_id = item.get('id') or ''
             keep.add(app_id)
-            fields = self._item_fields(club_key, item, field_pairs, serialize_items)
+            fields = self._item_fields(club_key, item, field_pairs, state_key)
             record = existing.get(app_id)
             if record is None:
                 creates.append({'fields': fields})

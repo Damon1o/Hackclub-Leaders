@@ -14,16 +14,18 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/skeleton.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/stickers.css') }}">
-    <script defer src="{{ url_for('static', filename='js/hc-icons.js') }}"></script>
     <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
 </head>
 
-<body class="dashboard-layout" data-viewer-role="{{ viewer_role }}" data-viewer-email="{{ (current_user.email if current_user else '') | lower }}">
+<body class="dashboard-layout" data-viewer-role="{{ viewer_role }}"
+    data-viewer-email="{{ (current_user.email if current_user else '') | lower }}">
     <a class="skip-link" href="#dashboardMain" data-i18n="common.skipLink">Skip to dashboard</a>
+    {% from 'partials/icons.html' import sidebar_icon %}
 
     <section class="navigation-bar">
         <div class="animated-nav-logo">
-            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" alt="Hack Club" data-i18n-attr="alt:pub.navLogo">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" alt="Hack Club"
+                data-i18n-attr="alt:pub.navLogo">
         </div>
         <div class="nav-bar-text">
             <a href="/"><span data-i18n="pub.navBrand">Hack Club Leaders</span></a>
@@ -35,12 +37,13 @@
                 </li>
                 <li class="nav-link dropdown">
                     <a href="#"><span data-i18n="nav.tools">Tools</span>
-                        <span data-hc-icon="down-caret" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span>
+                        {{ sidebar_icon('down-caret', 16) }}
                     </a>
                     <div class="dropdown-menu">
                         <a href="https://apply.hackclub.com/" data-i18n="nav.startClub">Start a Club</a>
                         <a href="https://ysws.hackclub.com/" data-i18n="nav.allYsws">All YSWS Programs</a>
-                        <a href="https://guide.leaders.hackclub.com/" data-i18n="nav.leadersGuide">Club Leaders Guide</a>
+                        <a href="https://guide.leaders.hackclub.com/" data-i18n="nav.leadersGuide">Club Leaders
+                            Guide</a>
                         <a href="https://hackclub.github.io/map/" data-i18n="nav.clubMap">Club Map</a>
                         <a href="https://leaders.hackclub.com/posters/" data-i18n="nav.posters">Club Posters</a>
                     </div>
@@ -48,7 +51,8 @@
             </ul>
         </div>
         <div class="mode-switch">
-            <button class="mode-switch-button" id="toggleBtn" type="button" aria-label="Toggle dark mode" data-i18n-attr="aria-label:pub.toggleDarkMode">
+            <button class="mode-switch-button" id="toggleBtn" type="button" aria-label="Toggle dark mode"
+                data-i18n-attr="aria-label:pub.toggleDarkMode">
                 <svg class="icon icon-first" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
                     stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" aria-label="moon" viewBox="0 0 32 32"
                     preserveAspectRatio="xMidYMid meet" fill="currentColor" width="16" height="16">
@@ -85,56 +89,87 @@
         <aside class="dashboard-sidebar">
             <nav class="dashboard-sidebar-nav" aria-label="Dashboard" data-i18n-attr="aria-label:side.navLabel">
                 {% set current_path = request.path %}
-                <a href="/dashboard" class="dashboard-sidebar-link {% if current_path == '/dashboard' %}active{% endif %}" title="Home" aria-label="Home" data-i18n-attr="title:side.home;aria-label:side.home">
-                    <span data-hc-icon="home" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard' %}active{% endif %}" title="Home"
+                    aria-label="Home" data-i18n-attr="title:side.home;aria-label:side.home">
+                    {{ sidebar_icon('home') }}
                 </a>
-                <a href="/dashboard/team" class="dashboard-sidebar-link {% if current_path == '/dashboard/team' %}active{% endif %}" title="Team" aria-label="Team" data-i18n-attr="title:side.team;aria-label:side.team">
-                    <span data-hc-icon="people-3" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/team"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/team' %}active{% endif %}"
+                    title="Team" aria-label="Team" data-i18n-attr="title:side.team;aria-label:side.team">
+                    {{ sidebar_icon('people-3') }}
                 </a>
-                <a href="/dashboard/events" class="dashboard-sidebar-link {% if current_path == '/dashboard/events' %}active{% endif %}" title="Events" aria-label="Events" data-i18n-attr="title:side.events;aria-label:side.events">
-                    <span data-hc-icon="event-add" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/events"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/events' %}active{% endif %}"
+                    title="Events" aria-label="Events" data-i18n-attr="title:side.events;aria-label:side.events">
+                    {{ sidebar_icon('event-add') }}
                 </a>
-                <a href="/dashboard/ships" class="dashboard-sidebar-link {% if current_path == '/dashboard/ships' %}active{% endif %}" title="Ships" aria-label="Ships" data-i18n-attr="title:side.ships;aria-label:side.ships">
-                    <span data-hc-icon="rocket" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/ships"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/ships' %}active{% endif %}"
+                    title="Ships" aria-label="Ships" data-i18n-attr="title:side.ships;aria-label:side.ships">
+                    {{ sidebar_icon('rocket') }}
                 </a>
-                <a href="/dashboard/projects" class="dashboard-sidebar-link {% if current_path == '/dashboard/projects' %}active{% endif %}" title="Projects" aria-label="Projects" data-i18n-attr="title:side.projects;aria-label:side.projects">
-                    <span data-hc-icon="package" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/projects"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/projects' %}active{% endif %}"
+                    title="Projects" aria-label="Projects"
+                    data-i18n-attr="title:side.projects;aria-label:side.projects">
+                    {{ sidebar_icon('package') }}
                 </a>
-                <a href="/dashboard/levels" class="dashboard-sidebar-link {% if current_path == '/dashboard/levels' %}active{% endif %}" title="Levels" aria-label="Levels" data-i18n-attr="title:side.levels;aria-label:side.levels">
-                    <span data-hc-icon="trophy" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/levels"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/levels' %}active{% endif %}"
+                    title="Levels" aria-label="Levels" data-i18n-attr="title:side.levels;aria-label:side.levels">
+                    {{ sidebar_icon('trophy') }}
                 </a>
                 {% if is_leader %}
-                <a href="/dashboard/shop" class="dashboard-sidebar-link {% if current_path == '/dashboard/shop' %}active{% endif %}" title="Shop" aria-label="Shop" data-i18n-attr="title:side.shop;aria-label:side.shop">
-                    <span data-hc-icon="bag" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/shop"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/shop' %}active{% endif %}"
+                    title="Shop" aria-label="Shop" data-i18n-attr="title:side.shop;aria-label:side.shop">
+                    {{ sidebar_icon('bag') }}
                 </a>
                 {% endif %}
-                <a href="/dashboard/newsletters" class="dashboard-sidebar-link {% if current_path == '/dashboard/newsletters' %}active{% endif %}" title="Newsletters" aria-label="Newsletters" data-i18n-attr="title:side.newsletters;aria-label:side.newsletters">
-                    <span data-hc-icon="email" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/newsletters"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/newsletters' %}active{% endif %}"
+                    title="Newsletters" aria-label="Newsletters"
+                    data-i18n-attr="title:side.newsletters;aria-label:side.newsletters">
+                    {{ sidebar_icon('email') }}
                 </a>
-                <a href="/dashboard/chat" class="dashboard-sidebar-link {% if current_path == '/dashboard/chat' %}active{% endif %}" title="Chat" aria-label="Chat" data-i18n-attr="title:side.chat;aria-label:side.chat">
-                    <span data-hc-icon="message" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/chat"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/chat' %}active{% endif %}"
+                    title="Chat" aria-label="Chat" data-i18n-attr="title:side.chat;aria-label:side.chat">
+                    {{ sidebar_icon('message') }}
                 </a>
             </nav>
-            <nav class="dashboard-sidebar-nav dashboard-sidebar-bottom" aria-label="Dashboard utilities" data-i18n-attr="aria-label:side.utilLabel">
-                <a href="/dashboard/map" class="dashboard-sidebar-link {% if current_path == '/dashboard/map' %}active{% endif %}" title="Club Map" aria-label="Club Map" data-i18n-attr="title:side.map;aria-label:side.map">
-                    <span data-hc-icon="map-app" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+            <nav class="dashboard-sidebar-nav dashboard-sidebar-bottom" aria-label="Dashboard utilities"
+                data-i18n-attr="aria-label:side.utilLabel">
+                <a href="/dashboard/map"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/map' %}active{% endif %}"
+                    title="Club Map" aria-label="Club Map" data-i18n-attr="title:side.map;aria-label:side.map">
+                    {{ sidebar_icon('map-app') }}
                 </a>
                 {% if is_leader %}
-                <a href="/dashboard/tools" class="dashboard-sidebar-link {% if current_path == '/dashboard/tools' %}active{% endif %}" title="Tools" aria-label="Tools" data-i18n-attr="title:side.tools;aria-label:side.tools">
-                    <span data-hc-icon="settings" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/tools"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/tools' %}active{% endif %}"
+                    title="Tools" aria-label="Tools" data-i18n-attr="title:side.tools;aria-label:side.tools">
+                    {{ sidebar_icon('settings') }}
                 </a>
-                <a href="/dashboard/settings" class="dashboard-sidebar-link {% if current_path == '/dashboard/settings' %}active{% endif %}" title="Club Settings" aria-label="Club Settings" data-i18n-attr="title:side.settings;aria-label:side.settings">
-                    <span data-hc-icon="settings" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/settings"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/settings' %}active{% endif %}"
+                    title="Club Settings" aria-label="Club Settings"
+                    data-i18n-attr="title:side.settings;aria-label:side.settings">
+                    {{ sidebar_icon('settings') }}
                 </a>
                 {% endif %}
                 {% if is_admin %}
-                <a href="/dashboard/admin" class="dashboard-sidebar-link sidebar-admin-link {% if current_path.startswith('/dashboard/admin') %}active{% endif %}" title="Admin" aria-label="Admin" data-i18n-attr="title:side.admin;aria-label:side.admin">
-                    <span data-hc-icon="admin" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                <a href="/dashboard/admin"
+                    class="dashboard-sidebar-link sidebar-admin-link {% if current_path.startswith('/dashboard/admin') %}active{% endif %}"
+                    title="Admin" aria-label="Admin" data-i18n-attr="title:side.admin;aria-label:side.admin">
+                    {{ sidebar_icon('admin') }}
                 </a>
                 {% endif %}
                 <a href="/dashboard/profile" id="sidebarProfile"
                     class="sidebar-profile {% if current_path == '/dashboard/profile' %}active{% endif %}"
-                    title="Your profile" aria-label="Your profile" data-i18n-attr="title:side.profile;aria-label:side.profile">
+                    title="Your profile" aria-label="Your profile"
+                    data-i18n-attr="title:side.profile;aria-label:side.profile">
                     {% if current_user and current_user.avatar %}
                     <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
                     {% else %}
@@ -149,13 +184,17 @@
         <main class="dashboard-main" id="dashboardMain">
             <header class="dashboard-header">
                 <div class="dashboard-header-left">
-                    <h1 class="dashboard-title">{% block page_title %}<span data-i18n="side.home">Dashboard</span>{% endblock %}</h1>
-                    <p class="dashboard-subtitle">{% block page_subtitle %}<span data-i18n="home.welcomeBack">Welcome back, </span><strong>{{ current_user.name if current_user else 'User' }}</strong><span data-i18n="home.welcomeDot">.</span>{% endblock %}</p>
+                    <h1 class="dashboard-title">{% block page_title %}<span data-i18n="side.home">Dashboard</span>{%
+                        endblock %}</h1>
+                    <p class="dashboard-subtitle">{% block page_subtitle %}<span data-i18n="home.welcomeBack">Welcome
+                            back, </span><strong>{{ current_user.name if current_user else 'User' }}</strong><span
+                            data-i18n="home.welcomeDot">.</span>{% endblock %}</p>
                 </div>
                 <div class="dashboard-header-right">
                     {% if current_user %}
-                    <button class="icon-button notification-bell" id="notificationBell" type="button" aria-label="Notifications" data-i18n-attr="aria-label:notifications.title">
-                        <span data-hc-icon="bell" data-hc-size="20" data-hc-color="currentColor" aria-hidden="true"></span>
+                    <button class="icon-button notification-bell" id="notificationBell" type="button"
+                        aria-label="Notifications" data-i18n-attr="aria-label:notifications.title">
+                        {{ sidebar_icon('bell') }}
                         <span class="notification-badge" id="notificationBadge" aria-hidden="true"></span>
                     </button>
                     {% endif %}
@@ -170,7 +209,8 @@
                 <div class="flash flash--{{ category }}">
                     <span class="flash-status-dot" aria-hidden="true"></span>
                     <span>{{ message }}</span>
-                    <button class="flash-close" type="button" onclick="this.parentElement.remove()" aria-label="Dismiss" data-i18n-attr="aria-label:common.dismiss">
+                    <button class="flash-close" type="button" onclick="this.parentElement.remove()" aria-label="Dismiss"
+                        data-i18n-attr="aria-label:common.dismiss">
                         <span aria-hidden="true">x</span>
                     </button>
                 </div>
@@ -192,16 +232,19 @@
     </footer>
 
     <!-- Notification Center -->
-    <div class="notification-center" id="notificationCenter" aria-hidden="true" role="dialog" aria-label="Notifications">
+    <div class="notification-center" id="notificationCenter" aria-hidden="true" role="dialog"
+        aria-label="Notifications">
         <div class="notification-center-header">
             <h2 data-i18n="notifications.title">Notifications</h2>
-            <button class="icon-button" type="button" id="markAllReadBtn" aria-label="Mark all as read" data-i18n-attr="aria-label:notifications.markAllRead">
-                <span data-hc-icon="checkmark-all" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span>
+            <button class="icon-button" type="button" id="markAllReadBtn" aria-label="Mark all as read"
+                data-i18n-attr="aria-label:notifications.markAllRead">
+                {{ sidebar_icon('checkmark-all', 16) }}
             </button>
         </div>
         <div class="notification-center-list" id="notificationCenterList"></div>
         <div class="notification-center-footer">
-            <a href="/dashboard/notifications" class="text-button" data-i18n="notifications.viewAll">View all notifications</a>
+            <a href="/dashboard/notifications" class="text-button" data-i18n="notifications.viewAll">View all
+                notifications</a>
         </div>
     </div>
     <div class="notification-center-backdrop" id="notificationCenterBackdrop" aria-hidden="true"></div>
@@ -213,7 +256,6 @@
     <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='js/hc-icons.js') }}"></script>
     <script id="stickerData" type="application/json">{{ sticker_files | tojson }}</script>
     <div class="sticker-field" id="stickerField" data-sticker-count="3" aria-hidden="true"></div>
     <script defer src="{{ url_for('static', filename='js/stickers.js') }}"></script>

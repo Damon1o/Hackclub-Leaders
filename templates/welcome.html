@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sign-in.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/effects.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
 </head>
@@ -32,8 +33,8 @@
         </div>
     </section>
 
-    <section class="sign-in-main">
-        <div class="sign-in-card">
+    <section class="sign-in-main" data-fx="aurora">
+        <div class="sign-in-card" data-fx="rise">
             <div class="sign-in-icon">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 3h16v13l-8 5-8-5V3z" />
@@ -100,8 +101,9 @@
 
 <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n-langs.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/effects.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/hc-icons.js') }}"></script>
 
 </body>

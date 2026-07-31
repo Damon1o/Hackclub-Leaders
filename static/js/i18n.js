@@ -9,15 +9,49 @@
  *   <span data-i18n="nav.events">Events</span>          -> textContent
  *   <a   data-i18n-attr="title:side.team;aria-label:side.team"> -> attributes
  * The English text stays in the template as the built-in fallback.
+ *
+ * Loading: i18n-langs.js supplies the language list; each language's strings
+ * live in static/js/i18n/<code>.js and are fetched only when that language is
+ * actually selected. A visitor downloads ~30 KB of translations instead of the
+ * ~370 KB of all twelve. Until the file lands, the page shows the English
+ * already in the template, so nothing renders blank.
  */
 (function (global) {
     'use strict';
 
+    // Where the per-language files live, derived from this script's own URL so
+    // it keeps working under any static path or CDN prefix.
+    const SELF_SRC = (document.currentScript && document.currentScript.src) || '';
+    const LANG_BASE = SELF_SRC.replace(/i18n\.js(\?.*)?$/, 'i18n/');
+
     const data = global.I18N || { LANGUAGES: [], TRANSLATIONS: {} };
+    global.I18N = data;
     const LANGUAGES = data.LANGUAGES;
     const TRANSLATIONS = data.TRANSLATIONS;
     const DEFAULT_LANG = 'en';
     const STORAGE_KEY = 'lang';
+
+    // code -> Promise, so a language is never requested twice.
+    const loads = {};
+
+    function loadLanguage(code) {
+        if (!isSupported(code)) return Promise.resolve();
+        // English is the text already in the markup, and it is also what
+        // translate() falls back to for a missing key — never worth a request.
+        if (code === DEFAULT_LANG) return Promise.resolve();
+        if (TRANSLATIONS[code]) return Promise.resolve();
+        if (loads[code]) return loads[code];
+        loads[code] = new Promise(function (resolve) {
+            const script = document.createElement('script');
+            script.src = LANG_BASE + code + '.js';
+            // A missing or broken language file must not wedge the page —
+            // resolve either way and fall back to the template's English.
+            script.onload = resolve;
+            script.onerror = resolve;
+            document.head.appendChild(script);
+        });
+        return loads[code];
+    }
 
     function isSupported(code) {
         return LANGUAGES.some((lang) => lang.code === code);
@@ -74,16 +108,26 @@
             document.documentElement.setAttribute('dir', info ? info.dir : 'ltr');
             syncControls(lang);
         }
+        // Translating rewrites textContent, which wipes out any markup other
+        // code injected into these nodes (effects.js splits headings into
+        // per-character spans). Let those listeners rebuild.
+        document.dispatchEvent(new CustomEvent('i18n:applied', { detail: { lang: lang } }));
     }
 
     // Persist + apply. Call from the nav switcher and the settings save handler.
+    // The strings may still be in flight, so applying is deferred until the
+    // language file resolves; syncControls runs immediately to keep the
+    // switcher responsive.
     function setLanguage(code) {
         const lang = isSupported(code) ? code : DEFAULT_LANG;
         try {
             localStorage.setItem(STORAGE_KEY, lang);
         } catch (_e) { /* private mode — apply in-memory only */ }
-        apply(lang);
         syncControls(lang);
+        loadLanguage(lang).then(function () {
+            apply(lang);
+            syncControls(lang);
+        });
         return lang;
     }
 
@@ -117,7 +161,13 @@
             populate(sel, lang);
             sel.addEventListener('change', (e) => setLanguage(e.target.value));
         });
-        apply(lang);
+        // English is what the templates already contain, so there is nothing
+        // to fetch or repaint for it.
+        if (lang === DEFAULT_LANG) {
+            apply(lang);
+            return;
+        }
+        loadLanguage(lang).then(() => apply(lang));
     }
 
     global.i18n = {
@@ -126,6 +176,9 @@
         current: current,
         languages: LANGUAGES,
         isSupported: isSupported,
+        // Callers that render markup after load (dashboard.js) need the
+        // strings present before they translate a fragment.
+        load: loadLanguage,
     };
 
     if (document.readyState === 'loading') {

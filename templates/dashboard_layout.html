@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/skeleton.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/effects.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/stickers.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
@@ -242,10 +243,6 @@
             </button>
         </div>
         <div class="notification-center-list" id="notificationCenterList"></div>
-        <div class="notification-center-footer">
-            <a href="/dashboard/notifications" class="text-button" data-i18n="notifications.viewAll">View all
-                notifications</a>
-        </div>
     </div>
     <div class="notification-center-backdrop" id="notificationCenterBackdrop" aria-hidden="true"></div>
 
@@ -253,9 +250,10 @@
     <script id="dashboard-state" type="application/json">{{ dashboard_state | default({}) | tojson }}</script>
     <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n-langs.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/effects.js') }}"></script>
     <script id="stickerData" type="application/json">{{ sticker_files | tojson }}</script>
     <div class="sticker-field" id="stickerField" data-sticker-count="3" aria-hidden="true"></div>
     <script defer src="{{ url_for('static', filename='js/stickers.js') }}"></script>

@@ -14,7 +14,9 @@ from flask import request, session
 
 from .helpers import (
     MAX_MESSAGE_LEN,
+    _club_key,
     _item_id,
+    _storage,
     _viewer_email,
     channel_from_payload,
     clean_text,
@@ -32,6 +34,8 @@ from .helpers import (
 
 # Cap for a no-cursor message fetch, so opening a long channel stays light.
 MESSAGE_PAGE_SIZE = 50
+# Ceiling on ?limit=, so a client can't ask for a whole channel in one go.
+MAX_MESSAGE_PAGE_SIZE = 200
 
 # How long a message stays editable/deletable by its (non-leader) author.
 EDIT_WINDOW_SECONDS = 5 * 60
@@ -86,6 +90,15 @@ def _find_message(state, channel_id, message_id):
     if message and message.get('channelId') == channel_id:
         return message
     return None
+
+
+def _page_limit(raw):
+    """A sane page size from an untrusted ?limit= value."""
+    try:
+        limit = int(raw)
+    except (TypeError, ValueError):
+        return MESSAGE_PAGE_SIZE
+    return max(1, min(limit, MAX_MESSAGE_PAGE_SIZE))
 
 
 def _within_window(created_at, seconds):
@@ -189,18 +202,43 @@ def register(app):
     @app.get('/api/dashboard/chat/channels/<channel_id>/messages')
     @login_required
     def api_chat_messages(channel_id):
+        """One page of a channel's thread, oldest message first.
+
+        ?since=<iso>   everything newer than this timestamp (the poll path)
+        ?before=<iso>  the page immediately older than this timestamp
+        ?limit=<n>     page size, capped at MAX_MESSAGE_PAGE_SIZE
+
+        `hasMore` reports whether older messages exist before the page
+        returned, which is what the client's scroll-up loader keys off.
+        """
+        since = clean_text(request.args.get('since'), max_len=40)
+        before = clean_text(request.args.get('before'), max_len=40)
+        limit = _page_limit(request.args.get('limit'))
+
+        backend = _storage()
+        pager = getattr(backend, 'page_messages', None)
+        if pager is not None:
+            # Backend can page in the database — don't load the channel's
+            # history into the process just to slice the tail off it.
+            state = get_dashboard_state(['members', 'channels'])
+            if not find_by_id(_channels(state), channel_id):
+                return json_error('Channel not found.', 404)
+            messages, has_more = pager(_club_key(), channel_id, limit, before, since)
+            return flask.jsonify({'messages': messages, 'hasMore': has_more})
+
         state = get_dashboard_state()
         if not find_by_id(_channels(state), channel_id):
             return json_error('Channel not found.', 404)
 
-        since = clean_text(request.args.get('since'), max_len=40)
         thread = [m for m in _messages(state) if m.get('channelId') == channel_id]
         thread.sort(key=lambda m: m.get('createdAt') or '')
         if since:
             thread = [m for m in thread if (m.get('createdAt') or '') > since]
             return flask.jsonify({'messages': thread, 'hasMore': False})
-        has_more = len(thread) > MESSAGE_PAGE_SIZE
-        return flask.jsonify({'messages': thread[-MESSAGE_PAGE_SIZE:], 'hasMore': has_more})
+        if before:
+            thread = [m for m in thread if (m.get('createdAt') or '') < before]
+        has_more = len(thread) > limit
+        return flask.jsonify({'messages': thread[-limit:], 'hasMore': has_more})
 
     @app.post('/api/dashboard/chat/channels/<channel_id>/messages')
     @login_required

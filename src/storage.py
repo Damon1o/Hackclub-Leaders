@@ -1,11 +1,14 @@
 """Storage backends for the dashboard state.
 
-The app talks to one of two backends, chosen by the STORAGE_BACKEND env var:
+The app talks to one of three backends, chosen by the STORAGE_BACKEND env var:
 
   session   (default) — state lives in the signed session cookie, exactly as
             before. Zero setup, single-player, ~2.8KB cap.
   airtable  — state lives in an Airtable base shared by the whole club.
             Requires AIRTABLE_TOKEN and AIRTABLE_BASE_ID.
+  mongo     — state lives in MongoDB (src/storage_mongo.py). Requires
+            MONGODB_URI. Import existing Airtable data with
+            `python scripts/seed_mongo.py`.
 
 Both backends expose the same three methods:
 
@@ -148,7 +151,9 @@ class SessionStorage:
     def resolve_club_key(self, viewer_email: str) -> str:
         return (viewer_email or '').strip().lower()
 
-    def load(self, club_key: str) -> dict[str, Any] | None:
+    def load(self, club_key: str, sections: list[str] | None = None) -> dict[str, Any] | None:
+        # Cookie state is one blob, so there is nothing to load lazily —
+        # `sections` is accepted only to match the other backends.
         return self._session.get('dashboard_state')
 
     def load_lite(self, club_key: str) -> dict[str, Any] | None:
@@ -244,6 +249,11 @@ class AirtableStorage:
             key: os.environ.get(f'AIRTABLE_TABLE_{suffix}', default)
             for suffix, default, key, _ in self.CHILD_TABLES
         }
+        # A request typically asks "which club is this viewer in?" more than
+        # once (membership gate, role check, club key). The answer can't
+        # change mid-request, so look it up once. The instance is per-request
+        # (built into flask.g), so this never goes stale across requests.
+        self._member_club_cache: dict[str, str | None] = {}
 
     # ── HTTP plumbing ─────────────────────────────────────────────────────────
 
@@ -273,15 +283,40 @@ class AirtableStorage:
     def _escape_formula_value(self, value: Any) -> str:
         return str(value).replace('\\', '\\\\').replace("'", "\\'")
 
-    def _list(self, table: str, field: str, value: Any) -> list[dict[str, Any]]:
-        """All records in `table` where {field} = value, following pagination."""
+    def _list(
+        self,
+        table: str,
+        field: str,
+        value: Any,
+        fields: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """All records in `table` where {field} = value, following pagination.
+
+        `fields` narrows the columns Airtable sends back — a lookup that only
+        needs one column shouldn't drag every other column over the wire.
+        """
         safe = self._escape_formula_value(value)
-        params = {'filterByFormula': f"{{{field}}}='{safe}'", 'pageSize': 100}
+        params: dict[str, Any] = {'filterByFormula': f"{{{field}}}='{safe}'", 'pageSize': 100}
+        if fields:
+            params['fields[]'] = fields
         return self._paged(table, params)
 
-    def _list_all(self, table: str) -> list[dict[str, Any]]:
-        """Every record in `table`, following pagination."""
-        return self._paged(table, {'pageSize': 100})
+    def _list_all(
+        self,
+        table: str,
+        fields: list[str] | None = None,
+        formula: str = '',
+    ) -> list[dict[str, Any]]:
+        """Every record in `table`, optionally narrowed by a filter formula
+        and a column projection. Pushing the filter to Airtable beats pulling
+        the whole table down and dropping most of it in Python.
+        """
+        params: dict[str, Any] = {'pageSize': 100}
+        if fields:
+            params['fields[]'] = fields
+        if formula:
+            params['filterByFormula'] = formula
+        return self._paged(table, params)
 
     def _paged(self, table: str, params: dict[str, Any]) -> list[dict[str, Any]]:
         params = dict(params)
@@ -305,25 +340,35 @@ class AirtableStorage:
 
     # ── Interface ─────────────────────────────────────────────────────────────
 
+    def _lookup_member_club(self, email: str) -> str | None:
+        """The club whose roster lists `email`, or None. Only the Club Email
+        column is fetched, and the answer is memoized per instance."""
+        if email in self._member_club_cache:
+            return self._member_club_cache[email]
+        records = self._list(self.tables['members'], 'Email', email, fields=['Club Email'])
+        found: str | None = None
+        for record in records:
+            club_email = (record['fields'].get('Club Email') or '').strip().lower()
+            if club_email:
+                found = club_email
+                break
+        self._member_club_cache[email] = found
+        return found
+
     def resolve_club_key(self, viewer_email: str) -> str:
         """Members belong to the club whose roster lists their email;
         everyone else keys a club of their own."""
         email = (viewer_email or '').strip().lower()
         if not email:
             return email
-        matches = self._list(self.tables['members'], 'Email', email)
-        for record in matches:
-            club_email = (record['fields'].get('Club Email') or '').strip().lower()
-            if club_email:
-                return club_email
-        return email
+        return self._lookup_member_club(email) or email
 
     def find_club_by_join_code(self, code: str) -> str | None:
         """The club key owning this join code, or None."""
         code = (code or '').strip()
         if not code:
             return None
-        records = self._list(self.clubs_table, 'Join Code', code)
+        records = self._list(self.clubs_table, 'Join Code', code, fields=['Leader Email'])
         for record in records:
             leader = (record['fields'].get('Leader Email') or '').strip().lower()
             if leader:
@@ -337,23 +382,23 @@ class AirtableStorage:
         if not email:
             return None
         try:
-            records = self._list(self.tables['members'], 'Email', email)
+            return self._lookup_member_club(email)
         except StorageError:
             return None
-        for record in records:
-            club_key = (record['fields'].get('Club Email') or '').strip().lower()
-            if club_key:
-                return club_key
-        return None
 
     def list_clubs(self) -> list[dict[str, Any]]:
         """Summary of every club, for the admin overview. Three full-table
-        scans (clubs, members, projects), run concurrently. "Ships" = projects
-        with Status "Shipped"; "pending" = projects awaiting review."""
+        scans (clubs, members, projects), run concurrently and each narrowed
+        to the handful of columns the summary actually reads. "Ships" =
+        projects with Status "Shipped"; "pending" = projects awaiting review."""
         with ThreadPoolExecutor(max_workers=3) as pool:
-            clubs_future = pool.submit(self._list_all, self.clubs_table)
-            members_future = pool.submit(self._list_all, self.tables['members'])
-            projects_future = pool.submit(self._list_all, self.tables['projects'])
+            clubs_future = pool.submit(
+                self._list_all, self.clubs_table, ['Leader Email', 'Club Name', 'Location']
+            )
+            members_future = pool.submit(self._list_all, self.tables['members'], ['Club Email'])
+            projects_future = pool.submit(
+                self._list_all, self.tables['projects'], ['Club Email', 'Status']
+            )
             club_rows = clubs_future.result()
             member_rows = members_future.result()
             try:
@@ -399,10 +444,14 @@ class AirtableStorage:
 
     def list_pending_projects(self) -> list[dict[str, Any]]:
         """Every Submitted project across all clubs, newest first, for the
-        admin review queue. Clubs and projects scanned concurrently."""
+        admin review queue. The Status filter runs in Airtable rather than in
+        Python, so only the review queue itself crosses the wire."""
+        formula = f"{{Status}}='{self._escape_formula_value(SUBMITTED_STATUS)}'"
         with ThreadPoolExecutor(max_workers=2) as pool:
-            clubs_future = pool.submit(self._list_all, self.clubs_table)
-            projects_future = pool.submit(self._list_all, self.tables['projects'])
+            clubs_future = pool.submit(
+                self._list_all, self.clubs_table, ['Leader Email', 'Club Name']
+            )
+            projects_future = pool.submit(self._list_all, self.tables['projects'], None, formula)
             club_rows = clubs_future.result()
             try:
                 project_rows = projects_future.result()
@@ -417,8 +466,6 @@ class AirtableStorage:
         pending: list[dict[str, Any]] = []
         for record in project_rows:
             fields = record['fields']
-            if fields.get('Status') != SUBMITTED_STATUS:
-                continue
             key = (fields.get('Club Email') or '').strip().lower()
             project: dict[str, Any] = {'id': fields.get('App Id') or record['id']}
             for item_key, field in PROJECT_FIELDS:
@@ -439,7 +486,9 @@ class AirtableStorage:
         panel. Degrades to an empty list if the (optional) ItemRequests table
         isn't in the base yet."""
         with ThreadPoolExecutor(max_workers=2) as pool:
-            clubs_future = pool.submit(self._list_all, self.clubs_table)
+            clubs_future = pool.submit(
+                self._list_all, self.clubs_table, ['Leader Email', 'Club Name']
+            )
             requests_future = pool.submit(self._list_all, self.tables['itemRequests'])
             club_rows = clubs_future.result()
             try:
@@ -497,7 +546,16 @@ class AirtableStorage:
             members.append(item)
         return {'settings': settings, 'members': members, '_lite': True}
 
-    def load(self, club_key: str) -> dict[str, Any] | None:
+    def load(self, club_key: str, sections: list[str] | None = None) -> dict[str, Any] | None:
+        """Full club state, or just the named sections.
+
+        `sections` is a list of state keys; None means all of them. Skipping a
+        section skips its Airtable round-trip entirely, so a page that only
+        renders events doesn't pay for the club's whole chat history.
+        """
+        wanted = {state_key for _s, _d, state_key, _f in self.CHILD_TABLES}
+        if sections is not None:
+            wanted &= set(sections)
         # Fire the club lookup and every child-table query at once — they are
         # independent GETs, so this turns ~8 sequential round-trips into one.
         with ThreadPoolExecutor(max_workers=len(self.CHILD_TABLES) + 1) as pool:
@@ -505,6 +563,7 @@ class AirtableStorage:
             child_futures: dict[str, Any] = {
                 state_key: pool.submit(self._list, self.tables[state_key], 'Club Email', club_key)
                 for _s, _d, state_key, _f in self.CHILD_TABLES
+                if state_key in wanted
             }
             club_records = club_future.result()
 
@@ -522,6 +581,8 @@ class AirtableStorage:
 
         state: dict[str, Any] = {'settings': settings}
         for _suffix, _default, state_key, field_pairs in self.CHILD_TABLES:
+            if state_key not in wanted:
+                continue
             try:
                 records = child_futures[state_key].result()
             except StorageError:
@@ -558,6 +619,10 @@ class AirtableStorage:
         return state
 
     def save(self, club_key: str, state: dict[str, Any]) -> None:
+        """Persist a state dict. Sections absent from `state` are left alone,
+        so saving a lazily-loaded partial state can't delete the sections that
+        request never fetched."""
+
         # The club row and each child table are independent; sync them all
         # concurrently instead of one blocking round-trip after another.
         def sync(state_key: str, field_pairs: list[tuple[str, str]]) -> None:
@@ -575,6 +640,8 @@ class AirtableStorage:
             ]
             future_keys: dict[Any, str] = {}
             for _s, _d, state_key, field_pairs in self.CHILD_TABLES:
+                if state_key not in state:
+                    continue
                 future = pool.submit(sync, state_key, field_pairs)
                 future_keys[future] = state_key
                 futures.append(future)
@@ -664,11 +731,17 @@ class AirtableStorage:
             self._batch('delete', table, deletes)
 
 
-def make_storage(session: dict[str, Any]) -> SessionStorage | AirtableStorage:
+def make_storage(session: dict[str, Any]) -> Any:
     """Build the backend named by STORAGE_BACKEND (default: session)."""
     if (session.get('user') or {}).get('provider') == 'playtest':
         return SessionStorage(session)
     backend = os.environ.get('STORAGE_BACKEND', 'session').strip().lower()
     if backend == 'airtable':
         return AirtableStorage()
+    if backend in ('mongo', 'mongodb'):
+        # Imported lazily so the pymongo dependency is only needed by
+        # deployments that actually select this backend.
+        from .storage_mongo import MongoStorage
+
+        return MongoStorage()
     return SessionStorage(session)

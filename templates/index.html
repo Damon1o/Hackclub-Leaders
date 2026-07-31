@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/stickers.css') }}">
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/effects.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
 
     <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
@@ -55,8 +56,9 @@
     <script defer src="{{ url_for('static', filename='js/events-data.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/happening.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/showcase.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n-langs.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/effects.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/hc-icons.js') }}"></script>
     <script id="stickerData" type="application/json">{{ sticker_files | tojson }}</script>
     <div class="sticker-field" id="stickerField" data-sticker-count="6" aria-hidden="true"></div>

@@ -4,20 +4,36 @@
 {% block page_title %}<span data-i18n="admin.title">Admin</span>{% endblock %}
 {% block page_subtitle %}<span data-i18n="admin.subtitle">Every club, and the shipped projects waiting on your review.</span>{% endblock %}
 
+{# Pager for a paginated list. `pager` is the dict from helpers.paginate();
+   `arg` is the query-string key so the two lists on this page page apart. #}
+{% macro pager(page, arg) %}
+{% if page.pages > 1 %}
+<nav class="admin-pager" aria-label="Pagination">
+    {% if page.page > 1 %}
+    <a class="btn-secondary small" href="{{ url_for(request.endpoint, **dict(request.args, **{arg: page.page - 1})) }}" rel="prev">← Previous</a>
+    {% endif %}
+    <span class="admin-pager-status">Page {{ page.page }} of {{ page.pages }} · {{ page.total }} total</span>
+    {% if page.page < page.pages %}
+    <a class="btn-secondary small" href="{{ url_for(request.endpoint, **dict(request.args, **{arg: page.page + 1})) }}" rel="next">Next →</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endmacro %}
+
 {% block content %}
 <div class="dashboard-page" data-dashboard-page="admin">
     <section class="dashboard-metrics">
         <article class="metric-tile">
             <span class="metric-label" data-i18n="admin.clubs">Clubs</span>
-            <strong>{{ clubs | length }}</strong>
+            <strong>{{ clubs_page.total }}</strong>
         </article>
         <article class="metric-tile">
             <span class="metric-label" data-i18n="admin.projectsPending">Projects pending review</span>
-            <strong>{{ pending_projects | length }}</strong>
+            <strong>{{ pending_projects_page.total }}</strong>
         </article>
         <article class="metric-tile">
             <span class="metric-label" data-i18n="admin.totalMembers">Total members</span>
-            <strong>{{ clubs | sum(attribute='memberCount') }}</strong>
+            <strong>{{ total_members }}</strong>
         </article>
     </section>
 
@@ -56,6 +72,7 @@
             </article>
             {% endfor %}
         </div>
+        {{ pager(pending_projects_page, 'projects_page') }}
         {% else %}
         <div class="empty-state">
             <h3 data-i18n="admin.nothingToReview">Nothing to review</h3>
@@ -157,6 +174,7 @@
                 </tbody>
             </table>
         </div>
+        {{ pager(clubs_page, 'page') }}
         {% else %}
         <div class="empty-state">
             <h3 data-i18n="admin.noClubs">No clubs yet</h3>

@@ -9,6 +9,7 @@ load_dotenv()
 from flask import Flask, flash, redirect, request, session, url_for  # noqa: E402
 from werkzeug.middleware.proxy_fix import ProxyFix  # noqa: E402
 
+from src.email import mail  # noqa: E402
 from src.helpers import (  # noqa: E402
     DASHBOARD_LANGUAGES,
     StateTooLarge,
@@ -17,10 +18,10 @@ from src.helpers import (  # noqa: E402
     get_sticker_files,
     is_admin,
     json_error,
+    sections_for_request,
     viewer_is_leader,
     viewer_role,
 )
-from src.email import mail  # noqa: E402
 from src.storage import StorageError  # noqa: E402
 
 app = Flask(__name__)
@@ -92,7 +93,10 @@ def inject_user():
         is_leader=viewer_is_leader() if signed_in else False,
         is_admin=is_admin() if signed_in else False,
         dashboard_languages=DASHBOARD_LANGUAGES,
-        dashboard_state=get_dashboard_state() if signed_in else None,
+        # Every template gets the state, but only the sections the page being
+        # served actually renders — the rest is fetched by the client when
+        # (and if) it needs them.
+        dashboard_state=get_dashboard_state(sections_for_request()) if signed_in else None,
         sticker_files=get_sticker_files(),
         playtest_enabled=os.environ.get('PLAYTEST_ENABLED', '').lower() == 'true',
     )

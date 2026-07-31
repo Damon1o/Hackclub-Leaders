@@ -14,6 +14,7 @@ from .helpers import (
     leader_required,
     login_required,
     save_dashboard_state,
+    sections_for_request,
     viewer_club_lite,
 )
 from .storage import SessionStorage
@@ -242,7 +243,7 @@ def register(app, HACKATIME_CLIENT_ID):
     @app.route('/dashboard/tools')
     @leader_required
     def dashboard_tools():
-        return flask.render_template('dashboard/tools.html', dashboard_state=get_dashboard_state())
+        return flask.render_template('dashboard/tools.html', dashboard_state=get_dashboard_state(sections_for_request()))
 
     @app.route('/dashboard/shop')
     @leader_required
@@ -268,7 +269,7 @@ def register(app, HACKATIME_CLIENT_ID):
     @leader_required
     def dashboard_settings():
         return flask.render_template(
-            'dashboard/settings.html', dashboard_state=get_dashboard_state()
+            'dashboard/settings.html', dashboard_state=get_dashboard_state(sections_for_request())
         )
 
     @app.route('/dashboard/profile')
@@ -276,6 +277,6 @@ def register(app, HACKATIME_CLIENT_ID):
     def dashboard_profile():
         return flask.render_template(
             'dashboard/profile.html',
-            dashboard_state=get_dashboard_state(),
+            dashboard_state=get_dashboard_state(sections_for_request()),
             hackatime_connect_enabled=bool(HACKATIME_CLIENT_ID),
         )

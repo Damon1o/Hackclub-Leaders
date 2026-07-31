@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sign-in.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/effects.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
 
     <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
@@ -94,7 +95,7 @@
 
     </section>
 
-    <section class="sign-in-main">
+    <section class="sign-in-main" data-fx="aurora">
 
       <div class="sign-in-stack">
 
@@ -388,8 +389,9 @@
 <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/sign-in.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='js/i18n-data.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/i18n-langs.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/effects.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/hc-icons.js') }}"></script>
 
 </body>

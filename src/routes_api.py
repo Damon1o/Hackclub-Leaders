@@ -5,6 +5,7 @@ import flask
 from flask import current_app, request, session
 
 from .helpers import (
+    STATE_SECTIONS,
     _item_id,
     _join_missing,
     _owned_project_or_error,
@@ -19,17 +20,19 @@ from .helpers import (
     json_error,
     json_payload,
     login_required,
+    paginate,
+    parse_bool,
     require_dashboard_csrf,
     require_leader_api,
     save_dashboard_state,
     viewer_is_leader,
 )
-from .storage import StorageError
 from .notifications import (
     notify_admins_of_project_submission,
     notify_leaders_of_event_rsvp,
     send_event_rsvp_confirmation,
 )
+from .storage import StorageError
 
 
 def register(app, MAX_IMAGE_BYTES):
@@ -38,7 +41,114 @@ def register(app, MAX_IMAGE_BYTES):
     @app.get('/api/dashboard/state')
     @login_required
     def api_dashboard_state():
-        return flask.jsonify({'state': get_dashboard_state()})
+        """The club state, or just the sections named in ?sections=a,b,c.
+
+        The client asks for what the page it is rendering needs; unknown names
+        are ignored so an older client can't 500 this. No `sections` at all
+        keeps the original behaviour and returns everything.
+        """
+        raw = clean_text(request.args.get('sections'), max_len=200)
+        sections = None
+        if raw:
+            asked = {part.strip() for part in raw.split(',') if part.strip()}
+            sections = [key for key in STATE_SECTIONS if key in asked]
+        return flask.jsonify({'state': get_dashboard_state(sections)})
+
+    # ── Paginated list reads ────────────────────────────────────────────────
+    #
+    # The dashboard used to render these from the whole state blob. Each has
+    # its own endpoint now so a club with hundreds of members, events, or
+    # projects sends one page at a time: ?page= (1-based) and ?per_page=.
+
+    @app.get('/api/dashboard/team')
+    @login_required
+    def api_team_list():
+        members = get_dashboard_state(['members']).get('members') or []
+        return flask.jsonify(paginate(members))
+
+    @app.get('/api/dashboard/events')
+    @login_required
+    def api_events_list():
+        events = get_dashboard_state(['events']).get('events') or []
+        # Soonest first — the list is a schedule, not an archive.
+        events = sorted(events, key=lambda e: (e.get('date') or '', e.get('time') or ''))
+        return flask.jsonify(paginate(events))
+
+    @app.get('/api/dashboard/projects')
+    @login_required
+    def api_projects_list():
+        """?status= narrows to one review state (e.g. Shipped)."""
+        projects = get_dashboard_state(['projects']).get('projects') or []
+        status = clean_text(request.args.get('status'), max_len=20)
+        if status:
+            projects = [p for p in projects if (p.get('status') or '') == status]
+        projects = sorted(projects, key=lambda p: p.get('date') or '', reverse=True)
+        return flask.jsonify(paginate(projects))
+
+    # ── Notifications ───────────────────────────────────────────────────────
+    #
+    # The notification centre in dashboard_layout.html calls these. They were
+    # missing entirely, so every mark-as-read from the bell menu 404'd.
+
+    @app.get('/api/dashboard/notifications')
+    @login_required
+    def api_notifications_list():
+        """Newest first, paginated with ?page= / ?per_page=."""
+        notifications = get_dashboard_state(['notifications']).get('notifications') or []
+        page = paginate(notifications)
+        page['unread'] = sum(1 for n in notifications if not n.get('read'))
+        return flask.jsonify(page)
+
+    # Registered before the <notification_id> rule so the literal path can
+    # never be swallowed as an id.
+    @app.patch('/api/dashboard/notifications/mark-all-read')
+    @login_required
+    def api_notifications_mark_all_read():
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+        state = get_dashboard_state(['notifications'])
+        notifications = state.get('notifications') or []
+        updated = [n for n in notifications if not n.get('read')]
+        for notification in updated:
+            notification['read'] = True
+        if updated:
+            save_dashboard_state(state)
+        return flask.jsonify({'updated': len(updated), 'unread': 0})
+
+    @app.patch('/api/dashboard/notifications/<notification_id>')
+    @login_required
+    def api_notification_update(notification_id):
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+        state = get_dashboard_state(['notifications'])
+        notifications = state.get('notifications') or []
+        notification = find_by_id(notifications, notification_id)
+        if not notification:
+            return json_error('Notification not found.', 404)
+
+        read = parse_bool(json_payload().get('read', True))
+        if notification.get('read') != read:
+            notification['read'] = read
+            save_dashboard_state(state)
+        unread = sum(1 for n in notifications if not n.get('read'))
+        return flask.jsonify({'notification': notification, 'unread': unread})
+
+    @app.delete('/api/dashboard/notifications/<notification_id>')
+    @login_required
+    def api_notification_delete(notification_id):
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+        state = get_dashboard_state(['notifications'])
+        notifications = state.get('notifications') or []
+        remaining = [n for n in notifications if n.get('id') != notification_id]
+        if len(remaining) == len(notifications):
+            return json_error('Notification not found.', 404)
+        state['notifications'] = remaining
+        save_dashboard_state(state)
+        return flask.jsonify({'unread': sum(1 for n in remaining if not n.get('read'))})
 
     # ── Team ────────────────────────────────────────────────────────────────
 

@@ -11,10 +11,14 @@
             "id": "a5aef00cbd411798",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "brag-output/composition/AGENTS.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "AGENTS"
             }
           }
         ]

@@ -6,6 +6,7 @@ from .helpers import (
     _find_club_by_project,
     _load_admin_club,
     _persist_club,
+    _positive_int,
     _storage,
     add_shop_item,
     admin_required,
@@ -13,6 +14,7 @@ from .helpers import (
     find_by_id,
     json_error,
     json_payload,
+    paginate,
     parse_bool,
     remove_shop_item,
     require_admin_api,
@@ -26,11 +28,24 @@ def register(app):
     @app.route('/dashboard/admin')
     @admin_required
     def dashboard_admin():
+        """?page= and ?per_page= page the club list; ?projects_page= pages the
+        review queue independently, so paging one doesn't reset the other."""
         backend = _storage()
+        all_clubs = backend.list_clubs()
+        # Headline metrics count every club, not just the page on screen.
+        total_members = sum(club.get('memberCount') or 0 for club in all_clubs)
+        clubs = paginate(all_clubs)
+        projects = paginate(
+            backend.list_pending_projects(),
+            page=_positive_int(flask.request.args.get('projects_page'), 1, 10_000),
+        )
         return flask.render_template(
             'dashboard/admin.html',
-            clubs=backend.list_clubs(),
-            pending_projects=backend.list_pending_projects(),
+            clubs=clubs['items'],
+            clubs_page=clubs,
+            pending_projects=projects['items'],
+            pending_projects_page=projects,
+            total_members=total_members,
         )
 
     @app.route('/dashboard/admin/club/<club_key>')
@@ -116,10 +131,13 @@ def register(app):
 
     @app.get('/api/admin/item-requests')
     def api_admin_item_requests():
+        """?page= / ?per_page= page the queue. `itemRequests` stays in the
+        response under its original name so existing clients keep working."""
         admin_error = require_admin_api()
         if admin_error:
             return admin_error
-        return flask.jsonify({'itemRequests': _storage().list_item_requests()})
+        page = paginate(_storage().list_item_requests())
+        return flask.jsonify({'itemRequests': page.pop('items'), **page})
 
     @app.patch('/api/admin/item-requests/<club_key>/<request_id>')
     def api_admin_item_request_review(club_key, request_id):

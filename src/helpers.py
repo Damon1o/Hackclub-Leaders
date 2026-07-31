@@ -1,5 +1,6 @@
 import base64
 import json
+import math
 import os
 import re
 import secrets
@@ -488,6 +489,7 @@ def default_dashboard_state() -> DashboardState:
         'projects': [],
         'channels': [],
         'messages': [],
+        'notifications': [],
         'newsletters': [
             {
                 'id': 'dispatch-hardware-grants',
@@ -645,10 +647,82 @@ def _club_key() -> str:
     return g.club_key
 
 
-def viewer_club_state() -> ClubState | None:
-    if 'club_state_loaded' not in g:
-        g.club_state_loaded = True
-        g.club_state = _storage().load(_club_key())
+# The state keys a backend stores per club. A page can ask for a subset of
+# these; anything outside the list (shopItems, cart) is filled in locally.
+STATE_SECTIONS: Final[tuple[str, ...]] = (
+    'members',
+    'events',
+    'newsletters',
+    'orders',
+    'itemRequests',
+    'projects',
+    'channels',
+    'messages',
+    'notifications',
+)
+
+# Sections every page needs regardless of what it renders: the roster drives
+# viewer_role(), and the notification bell lives in the shared layout.
+ALWAYS_LOADED: Final[frozenset[str]] = frozenset({'members', 'notifications'})
+
+# Which sections each dashboard page actually renders, keyed by Flask
+# endpoint. Endpoints not listed here get the full state. Keeping this map
+# next to the loader (rather than in the routes) is what makes it safe:
+# get_dashboard_state() drops the unlisted keys, and both shared backends
+# treat a missing key as "leave this section alone" on save.
+PAGE_SECTIONS: Final[dict[str, tuple[str, ...]]] = {
+    'dashboard': ('events', 'projects', 'newsletters'),
+    'dashboard_team': (),
+    'dashboard_events': ('events',),
+    'dashboard_ships': ('projects',),
+    'dashboard_projects': ('projects',),
+    'dashboard_levels': ('projects',),
+    'dashboard_tools': (),
+    'dashboard_shop': ('orders', 'itemRequests'),
+    'dashboard_chat': ('channels', 'messages'),
+    'dashboard_newsletters': ('newsletters',),
+    'dashboard_map': (),
+    'dashboard_settings': (),
+    'dashboard_profile': ('projects',),
+}
+
+
+def sections_for_page(page: str) -> list[str] | None:
+    """The sections the given endpoint needs, or None for "everything"."""
+    if page not in PAGE_SECTIONS:
+        return None
+    return sorted(ALWAYS_LOADED | set(PAGE_SECTIONS[page]))
+
+
+def sections_for_request() -> list[str] | None:
+    """Sections needed by the endpoint currently being served.
+
+    Pages outside the dashboard (landing, sign-in, join) render no club data
+    at all, so they get the cheapest useful slice rather than a full load.
+    """
+    endpoint = (request.endpoint or '') if request else ''
+    if endpoint in PAGE_SECTIONS:
+        return sections_for_page(endpoint)
+    if endpoint.startswith('dashboard') or endpoint.startswith('api_'):
+        return None
+    return sorted(ALWAYS_LOADED)
+
+
+def viewer_club_state(sections: list[str] | None = None) -> ClubState | None:
+    """The club's stored state. `sections` limits which parts are fetched;
+    None means all of them.
+
+    A request that first asks for a subset and later asks for more reloads —
+    the cached partial isn't silently passed off as complete.
+    """
+    wanted = None if sections is None else set(sections) | ALWAYS_LOADED
+    if 'club_state_loaded' in g:
+        loaded = g.get('club_sections')
+        if loaded is None or (wanted is not None and wanted <= loaded):
+            return g.club_state
+    g.club_state_loaded = True
+    g.club_sections = wanted
+    g.club_state = _storage().load(_club_key(), sections=sections)
     return g.club_state
 
 
@@ -662,20 +736,49 @@ def viewer_club_lite() -> ClubStateLite | None:
     return g.club_lite
 
 
-def get_dashboard_state() -> DashboardState:
+def get_dashboard_state(sections: list[str] | None = None) -> DashboardState:
+    """The viewer's dashboard state.
+
+    `sections` names the state keys the caller will read; None loads
+    everything. A partial state deliberately omits the keys it didn't fetch
+    instead of defaulting them to empty — save_dashboard_state() treats a
+    missing key as "leave alone", so an omitted section can't be erased by a
+    page that never loaded it.
+    """
+    # A caller naming only the sections it reads still gets ALWAYS_LOADED —
+    # otherwise the role check and the notification bell would break on any
+    # endpoint that asked for a narrow slice.
+    wanted = None if sections is None else set(sections) | ALWAYS_LOADED
     if 'dashboard_state' in g:
-        return g.dashboard_state
+        loaded = g.get('dashboard_sections')
+        if loaded is None or (wanted is not None and wanted <= loaded):
+            return g.dashboard_state
 
     backend = _storage()
-    state = viewer_club_state()
+    state = viewer_club_state(sections)
+    g.dashboard_sections = wanted
     if state is None:
         state = default_dashboard_state()
+        g.dashboard_sections = None
         g.dashboard_state = state
         return state
+
+    # Sections this request never fetched. Their keys stay absent so nothing
+    # downstream mistakes "not loaded" for "empty". Session mode is exempt:
+    # its state object *is* the session dict, so dropping keys from it would
+    # delete them for real rather than just skip a fetch.
+    omitted = (
+        set()
+        if wanted is None or isinstance(backend, SessionStorage)
+        else {s for s in STATE_SECTIONS if s not in wanted}
+    )
 
     defaults = default_dashboard_state()
     changed = False
     for key, value in defaults.items():
+        if key in omitted:
+            state.pop(key, None)
+            continue
         if key not in state:
             state[key] = value
             changed = True
@@ -737,6 +840,46 @@ def save_dashboard_state(state: DashboardState) -> None:
 
 
 # ── JSON API utilities ─────────────────────────────────────────────────────────
+
+
+DEFAULT_PAGE_SIZE: Final[int] = 25
+MAX_PAGE_SIZE: Final[int] = 200
+
+
+def _positive_int(raw: Any, default: int, maximum: int) -> int:
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return default
+    return max(1, min(value, maximum))
+
+
+def paginate(
+    items: list[Any],
+    page: int | None = None,
+    per_page: int | None = None,
+) -> dict[str, Any]:
+    """One page of `items` plus the counts a pager needs to render.
+
+    Reads ?page= and ?per_page= from the request when not passed explicitly.
+    Both are clamped, so a hostile or buggy client can't ask for page
+    -1 or a million rows at once.
+    """
+    args = request.args if request else {}
+    per_page = per_page or _positive_int(args.get('per_page'), DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE)
+    total = len(items)
+    pages = max(1, math.ceil(total / per_page))
+    page = page or _positive_int(args.get('page'), 1, pages)
+    page = min(page, pages)
+    start = (page - 1) * per_page
+    return {
+        'items': items[start : start + per_page],
+        'page': page,
+        'perPage': per_page,
+        'total': total,
+        'pages': pages,
+        'hasMore': start + per_page < total,
+    }
 
 
 def json_payload() -> dict[str, Any]:

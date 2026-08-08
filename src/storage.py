@@ -29,13 +29,14 @@ The Airtable schema this module expects (table names overridable via env):
   Projects     App Id*, Name, Description, URL, Repo URL, Demo URL, Thumbnail,
                Hackatime Project, Status, Owner Email, Owner Name, Date,
                Club Email
+  Notifications App Id*, Type, Title, Message, Data, Read, Created At, Club Email
 
 A "ship" is just a Project with Status = "Shipped" (set when an admin approves a
 Submitted project) — there is no separate Ships table.
 
-(* = used as the lookup key; "Items" is JSON text. Checkbox fields: Public
-Directory, Email Notifications, Dark Mode Default, Newsletter Subscribed,
-RSVP, Read. Attendees is a number.)
+(* = used as the lookup key; "Items" and "Data" are JSON text. Checkbox fields:
+Public Directory, Email Notifications, Dark Mode Default, Newsletter
+Subscribed, RSVP, Read. Attendees is a number.)
 
 Not stored in Airtable: shopItems (static catalog) and cart (transient,
 kept in the session by app.py).
@@ -109,6 +110,13 @@ MESSAGE_FIELDS: Final[list[tuple[str, str]]] = [
     ('authorName', 'Author Name'),
     ('authorAvatar', 'Author Avatar'),
     ('body', 'Body'),
+    ('createdAt', 'Created At'),
+]
+NOTIFICATION_FIELDS: Final[list[tuple[str, str]]] = [
+    ('type', 'Type'),
+    ('title', 'Title'),
+    ('message', 'Message'),
+    ('read', 'Read'),
     ('createdAt', 'Created At'),
 ]
 
@@ -228,6 +236,7 @@ class AirtableStorage:
         ('PROJECTS', 'Projects', 'projects', PROJECT_FIELDS),
         ('CHANNELS', 'Channels', 'channels', CHANNEL_FIELDS),
         ('MESSAGES', 'Messages', 'messages', MESSAGE_FIELDS),
+        ('NOTIFICATIONS', 'Notifications', 'notifications', NOTIFICATION_FIELDS),
     ]
 
     # Tables that degrade gracefully if the base doesn't have them yet (that
@@ -235,7 +244,12 @@ class AirtableStorage:
     # here — it is the single source of truth for projects and ships, so the
     # base must have a Projects table. Chat tables are optional so existing
     # bases keep working until the club adds the Channels/Messages tables.
-    OPTIONAL_CHILD_KEYS: Final[set[str]] = {'itemRequests', 'channels', 'messages'}
+    OPTIONAL_CHILD_KEYS: Final[set[str]] = {
+        'itemRequests',
+        'channels',
+        'messages',
+        'notifications',
+    }
 
     def __init__(self, token: str | None = None, base_id: str | None = None) -> None:
         self.token = token or os.environ.get('AIRTABLE_TOKEN', '')
@@ -614,6 +628,11 @@ class AirtableStorage:
                         reactions = {}
                     if reactions:
                         item['reactions'] = reactions
+                if state_key == 'notifications':
+                    try:
+                        item['data'] = json.loads(fields.get('Data') or '{}')
+                    except ValueError:
+                        item['data'] = {}
                 items.append(item)
             state[state_key] = items
         return state
@@ -688,6 +707,8 @@ class AirtableStorage:
             fields['Items'] = json.dumps(item.get('items') or [])
         if state_key == 'messages':
             fields['Reactions'] = json.dumps(item.get('reactions') or {})
+        if state_key == 'notifications':
+            fields['Data'] = json.dumps(item.get('data') or {})
         return fields
 
     @staticmethod

@@ -73,7 +73,7 @@ class Project(TypedDict):
 class ShopItem(TypedDict):
     id: str
     name: str
-    cost: str
+    cost: int | None
     image_src: str
     filter: str
 
@@ -91,6 +91,7 @@ class Newsletter(TypedDict):
 class OrderItem(TypedDict):
     id: str
     quantity: int
+    coinCost: int
 
 
 class CoinTransaction(TypedDict):
@@ -372,7 +373,7 @@ def load_shop_items() -> list[ShopItem]:
             {
                 'id': _slugify(name),
                 'name': name,
-                'cost': entry.get('cost', ''),
+                'cost': entry.get('cost'),
                 'image_src': entry.get('image-src', ''),
                 'filter': entry.get('filter', ''),
             }
@@ -432,35 +433,35 @@ def _write_shop_raw(raw: list[dict[str, Any]]) -> None:
         raise
 
 
-def _normalize_cost(cost: str) -> str:
-    """'$5', '5', '5.00' → '$5.00'; non-numeric labels ('Free', 'TBD') pass through."""
+def _parse_coins(cost: str) -> int | None:
+    """'50', '$50', '50.00' -> 50 coins; 'free' -> 0 (case-insensitive);
+    anything else ('TBD', blank, garbage) -> None, meaning the admin hasn't
+    priced this item yet."""
     text = (cost or '').strip()
-    match = re.fullmatch(r'\$?([0-9]+(?:\.[0-9]{1,2})?)', text)
-    return f'${float(match.group(1)):.2f}' if match else text
-
-
-def _shop_hours(cost: str) -> str:
-    """The 'hours' price is 1.5x the dollar cost; word labels mirror the cost."""
-    match = re.fullmatch(r'\$([0-9]+(?:\.[0-9]{1,2})?)', cost or '')
-    return f'${float(match.group(1)) * 1.5:.2f}' if match else (cost or '')
+    if text.lower() == 'free':
+        return 0
+    match = re.fullmatch(r'\$?([0-9]+)(?:\.[0-9]{1,2})?', text)
+    return int(match.group(1)) if match else None
 
 
 def add_shop_item(name: str, cost: str, image_src: str, item_filter: str) -> ShopItem:
     """Append an item to shop.json and refresh the in-memory catalog.
 
     Returns the catalog-shaped item dict. Raises ValueError for a blank name
-    or a duplicate (same slug)."""
+    or a duplicate (same slug). `cost` is free text from an admin form;
+    anything that doesn't parse to a whole coin amount (including 'TBD' or a
+    blank string) leaves the item unpriced (cost: None) rather than
+    rejecting the request — an admin can price it later."""
     global SHOP_ITEMS
     name = (name or '').strip()
     if not name:
         raise ValueError('Item name is required.')
     slug = _slugify(name)
     item_filter = item_filter if item_filter in SHOP_FILTERS else 'Swag'
-    cost = _normalize_cost(cost) or 'TBD'
+    coins = _parse_coins(cost)
     entry = {
         'name': name,
-        'cost': cost,
-        'hours': _shop_hours(cost),
+        'cost': coins,
         'image-src': (image_src or '').strip(),
         'filter': item_filter,
     }
@@ -474,7 +475,7 @@ def add_shop_item(name: str, cost: str, image_src: str, item_filter: str) -> Sho
     return {
         'id': slug,
         'name': name,
-        'cost': cost,
+        'cost': coins,
         'image-src': entry['image-src'],
         'filter': item_filter,
     }

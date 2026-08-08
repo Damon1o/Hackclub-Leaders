@@ -27,6 +27,9 @@ ADMIN_EMAILS: Final[set[str]] = {
     if email.strip()
 }
 
+COINS_PER_APPROVED_SHIP: Final[int] = 25
+STARTER_GRANT_COINS: Final[int] = 50
+
 
 # ── Type definitions ──────────────────────────────────────────────────────────
 
@@ -90,6 +93,15 @@ class OrderItem(TypedDict):
     quantity: int
 
 
+class CoinTransaction(TypedDict):
+    id: str
+    delta: int
+    kind: str
+    ref: str
+    note: str
+    at: str
+
+
 class Order(TypedDict):
     id: str
     date: str
@@ -123,7 +135,7 @@ class Message(TypedDict):
     createdAt: str
 
 
-class Settings(TypedDict):
+class Settings(TypedDict, total=False):
     joinCode: str
     clubName: str
     location: str
@@ -134,6 +146,8 @@ class Settings(TypedDict):
     darkModeDefault: bool
     newsletterSubscribed: bool
     language: str
+    coinBalance: int
+    coinsSpent: int
 
 
 class DashboardState(TypedDict, total=False):
@@ -147,6 +161,7 @@ class DashboardState(TypedDict, total=False):
     channels: list[Channel]
     messages: list[Message]
     newsletters: list[Newsletter]
+    ledger: list[CoinTransaction]
     settings: Settings
 
 
@@ -258,6 +273,48 @@ def _item_id(prefix: str) -> str:
 def utc_iso() -> str:
     """UTC timestamp, ISO-8601 with a 'Z' suffix (e.g. 2026-07-10T22:59:00.123456Z)."""
     return datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+
+
+def coin_balance(ledger: list[CoinTransaction]) -> int:
+    return sum(t['delta'] for t in ledger)
+
+
+def coins_spent(ledger: list[CoinTransaction]) -> int:
+    return -sum(t['delta'] for t in ledger if t['delta'] < 0)
+
+
+def reconcile_coins(state: DashboardState) -> None:
+    """Recompute the cached balance/spent totals in `settings` from the
+    ledger. Called by award_coins() after every mutation, so the cheap
+    cache in ALWAYS_LOADED settings can never drift from the ledger that
+    backs it, even though the ledger itself is loaded lazily."""
+    ledger = state.get('ledger') or []
+    settings = state.setdefault('settings', {})
+    settings['coinBalance'] = coin_balance(ledger)
+    settings['coinsSpent'] = coins_spent(ledger)
+
+
+def award_coins(
+    state: DashboardState, delta: int, kind: str, ref: str, note: str
+) -> CoinTransaction:
+    """Append a ledger transaction and refresh the balance/spent cache.
+
+    The only function that should ever mutate `state['ledger']` — every
+    earn or spend path (shop checkout, ship approval, admin adjustment)
+    calls this so the cache in `settings` can't fall out of sync with the
+    ledger. Does not check sufficiency; callers that need to block an
+    over-spend (checkout) check `coin_balance()` before calling this."""
+    transaction: CoinTransaction = {
+        'id': _item_id('coin'),
+        'delta': delta,
+        'kind': kind,
+        'ref': ref,
+        'note': note,
+        'at': utc_iso(),
+    }
+    state.setdefault('ledger', []).append(transaction)
+    reconcile_coins(state)
+    return transaction
 
 
 def generate_join_code() -> str:

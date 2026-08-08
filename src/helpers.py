@@ -10,7 +10,7 @@ import zlib
 from collections.abc import Callable
 from datetime import date, datetime, timezone
 from functools import wraps
-from typing import Any, Final, TypedDict, TypeVar
+from typing import Any, Final, TypedDict, TypeVar, cast
 
 import requests
 from flask import flash, g, jsonify, redirect, request, session, url_for
@@ -135,7 +135,7 @@ class Message(TypedDict):
     createdAt: str
 
 
-class Settings(TypedDict, total=False):
+class Settings(TypedDict):
     joinCode: str
     clubName: str
     location: str
@@ -289,7 +289,7 @@ def reconcile_coins(state: DashboardState) -> None:
     cache in ALWAYS_LOADED settings can never drift from the ledger that
     backs it, even though the ledger itself is loaded lazily."""
     ledger = state.get('ledger') or []
-    settings = state.setdefault('settings', {})
+    settings = state.setdefault('settings', cast(Settings, {}))
     settings['coinBalance'] = coin_balance(ledger)
     settings['coinsSpent'] = coins_spent(ledger)
 

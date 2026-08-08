@@ -2,7 +2,14 @@ from src.helpers import CoinTransaction, award_coins, coin_balance, coins_spent,
 
 
 def _tx(delta: int, kind: str = 'ship_approved') -> CoinTransaction:
-    return {'id': 'coin-x', 'delta': delta, 'kind': kind, 'ref': '', 'note': '', 'at': '2026-08-07T00:00:00Z'}
+    return {
+        'id': 'coin-x',
+        'delta': delta,
+        'kind': kind,
+        'ref': '',
+        'note': '',
+        'at': '2026-08-07T00:00:00Z',
+    }
 
 
 def test_coin_balance_sums_all_deltas():

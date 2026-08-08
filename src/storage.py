@@ -20,7 +20,7 @@ The Airtable schema this module expects (table names overridable via env):
 
   Clubs        Leader Email*, Club Name, Location, Website, Avatar, Join Code,
                Public Directory, Email Notifications, Dark Mode Default,
-               Newsletter Subscribed
+               Newsletter Subscribed, Coin Balance, Coins Spent
   Members      App Id*, Name, Email, Role, Status, Avatar, Club Email
   Events       App Id*, Title, Date, Time, Location, Type, RSVP, Attendees,
                Club Email
@@ -37,7 +37,7 @@ Submitted project) — there is no separate Ships table.
 
 (* = used as the lookup key; "Items" and "Data" are JSON text. Checkbox fields:
 Public Directory, Email Notifications, Dark Mode Default, Newsletter
-Subscribed, RSVP, Read. Attendees is a number.)
+Subscribed, RSVP, Read. Attendees, Coin Balance, and Coins Spent are numbers.)
 
 Not stored in Airtable: shopItems (static catalog) and cart (transient,
 kept in the session by app.py).
@@ -138,7 +138,15 @@ SETTINGS_FIELDS: Final[list[tuple[str, str]]] = [
     ('emailNotifications', 'Email Notifications'),
     ('darkModeDefault', 'Dark Mode Default'),
     ('newsletterSubscribed', 'Newsletter Subscribed'),
+    ('coinBalance', 'Coin Balance'),
+    ('coinsSpent', 'Coins Spent'),
 ]
+
+# Settings keys that hold numbers rather than strings/booleans — mirrors the
+# attendees/delta int-coercion on child-table records below. Without this,
+# the generic `value or ''` branch would turn a real 0 balance into '' on
+# both load and save.
+SETTINGS_INT_KEYS: Final[set[str]] = {'coinBalance', 'coinsSpent'}
 
 BOOL_KEYS: Final[set[str]] = {
     'rsvp',
@@ -558,7 +566,12 @@ class AirtableStorage:
         settings: dict[str, Any] = {}
         for state_key, field in SETTINGS_FIELDS:
             value = club_fields.get(field)
-            settings[state_key] = bool(value) if state_key in BOOL_KEYS else (value or '')
+            if state_key in BOOL_KEYS:
+                settings[state_key] = bool(value)
+            elif state_key in SETTINGS_INT_KEYS:
+                settings[state_key] = int(value or 0)
+            else:
+                settings[state_key] = value or ''
 
         members: list[dict[str, Any]] = []
         for record in member_records:
@@ -600,6 +613,8 @@ class AirtableStorage:
             value = club_fields.get(field)
             if state_key in BOOL_KEYS:
                 settings[state_key] = bool(value)
+            elif state_key in SETTINGS_INT_KEYS:
+                settings[state_key] = int(value or 0)
             else:
                 settings[state_key] = value or ''
 
@@ -690,7 +705,12 @@ class AirtableStorage:
         fields: dict[str, Any] = {'Leader Email': club_key}
         for state_key, field in SETTINGS_FIELDS:
             value = settings.get(state_key)
-            fields[field] = bool(value) if state_key in BOOL_KEYS else (value or '')
+            if state_key in BOOL_KEYS:
+                fields[field] = bool(value)
+            elif state_key in SETTINGS_INT_KEYS:
+                fields[field] = int(value or 0)
+            else:
+                fields[field] = value or ''
         existing = self._list(self.clubs_table, 'Leader Email', club_key)
         if existing:
             self._batch('patch', self.clubs_table, [{'id': existing[0]['id'], 'fields': fields}])

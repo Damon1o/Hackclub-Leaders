@@ -1,5 +1,12 @@
-from src.helpers import CoinTransaction, award_coins, coin_balance, coins_spent, reconcile_coins
-from src.storage import AirtableStorage
+from src.helpers import (
+    CoinTransaction,
+    Settings,
+    award_coins,
+    coin_balance,
+    coins_spent,
+    reconcile_coins,
+)
+from src.storage import SETTINGS_FIELDS, AirtableStorage
 from src.storage_mongo import CHILD_COLLECTIONS, INDEXES
 
 
@@ -93,6 +100,17 @@ def test_every_state_section_has_a_mongo_collection():
 def test_every_mongo_collection_has_an_index():
     missing = set(CHILD_COLLECTIONS) - set(INDEXES)
     assert not missing, f'CHILD_COLLECTIONS with no INDEXES entry: {missing}'
+
+
+def test_every_settings_key_has_an_airtable_field():
+    # `language` is a session-local preference that predates this backfill
+    # and is not yet synced to Airtable at all (pre-existing gap, out of
+    # this fix's scope) — tracked here explicitly so no *other* Settings key
+    # can silently join it without this test catching it.
+    known_gaps = {'language'}
+    airtable_keys = {state_key for state_key, _field in SETTINGS_FIELDS}
+    missing = set(Settings.__annotations__) - airtable_keys - known_gaps
+    assert not missing, f'Settings keys with no AirtableStorage.SETTINGS_FIELDS entry: {missing}'
 
 
 def test_default_dashboard_state_seeds_a_starter_grant(client):

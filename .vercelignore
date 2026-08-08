@@ -11,3 +11,8 @@ YSWS_FEATURES.md
 ruvector.db
 *.pyc
 *.lock
+tests
+.pytest_cache
+docs
+brag-output
+.ruff_cache

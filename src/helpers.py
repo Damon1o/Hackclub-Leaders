@@ -899,7 +899,7 @@ def _sniff_image(data: bytes) -> tuple[str | None, str | None]:
         return 'image/png', 'png'
     if data[:3] == b'\xff\xd8\xff':
         return 'image/jpeg', 'jpg'
-    if data[:6] in (b'GIF87a', 'GIF89a'):
+    if data[:6] in (b'GIF87a', b'GIF89a'):
         return 'image/gif', 'gif'
     if data[:4] == b'RIFF' and data[8:12] == b'WEBP':
         return 'image/webp', 'webp'

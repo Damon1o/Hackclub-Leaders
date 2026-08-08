@@ -52,6 +52,9 @@ graphify-out/
 # Ruff cache
 .ruff_cache/
 
+# Pytest cache
+.pytest_cache/
+
 # ECC (Elliptic Curve Cryptography) certs and keys
 *.ecc
 *.pem

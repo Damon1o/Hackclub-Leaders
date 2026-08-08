@@ -1,11 +1,11 @@
 """In-app and email notifications for the Hack Club Leaders Portal."""
 
-from src.email import (
+from .email import (
     render_event_rsvp_confirmation,
     render_project_submitted,
     send_email,
 )
-from src.helpers import _item_id, get_dashboard_state, save_dashboard_state, utc_iso
+from .helpers import _item_id, get_dashboard_state, save_dashboard_state, utc_iso
 
 
 def _club_name():
@@ -71,7 +71,7 @@ def notify_leaders_of_event_rsvp(event, user_email, user_name, is_rsvp):
 
 def notify_admins_of_project_submission(project):
     """Notify admins when a project is submitted for review."""
-    from src.helpers import ADMIN_EMAILS, _club_key
+    from .helpers import ADMIN_EMAILS, _club_key
 
     club_name = _club_name()
     for admin_email in ADMIN_EMAILS:

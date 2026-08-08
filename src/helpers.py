@@ -587,6 +587,8 @@ def default_dashboard_state() -> DashboardState:
             'darkModeDefault': False,
             'newsletterSubscribed': True,
             'language': DEFAULT_LANGUAGE,
+            'coinBalance': 0,
+            'coinsSpent': 0,
         },
     }
 
@@ -607,6 +609,8 @@ def playtest_state() -> DashboardState:
             'darkModeDefault': False,
             'newsletterSubscribed': True,
             'language': 'en',
+            'coinBalance': 0,
+            'coinsSpent': 0,
         },
         'members': [
             {

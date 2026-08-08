@@ -1,4 +1,6 @@
 from src.helpers import CoinTransaction, award_coins, coin_balance, coins_spent, reconcile_coins
+from src.storage import AirtableStorage
+from src.storage_mongo import CHILD_COLLECTIONS, INDEXES
 
 
 def _tx(delta: int, kind: str = 'ship_approved') -> CoinTransaction:
@@ -71,3 +73,40 @@ def test_award_coins_negative_delta_updates_spent_cache():
     award_coins(state, -30, 'shop_order', 'order-1', 'Order: Pin')
     assert state['settings']['coinBalance'] == 20
     assert state['settings']['coinsSpent'] == 30
+
+
+def test_every_state_section_has_an_airtable_table():
+    from src.helpers import STATE_SECTIONS
+
+    airtable_keys = {state_key for _s, _d, state_key, _f in AirtableStorage.CHILD_TABLES}
+    missing = set(STATE_SECTIONS) - airtable_keys
+    assert not missing, f'STATE_SECTIONS keys with no AirtableStorage.CHILD_TABLES entry: {missing}'
+
+
+def test_every_state_section_has_a_mongo_collection():
+    from src.helpers import STATE_SECTIONS
+
+    missing = set(STATE_SECTIONS) - set(CHILD_COLLECTIONS)
+    assert not missing, f'STATE_SECTIONS keys with no Mongo CHILD_COLLECTIONS entry: {missing}'
+
+
+def test_every_mongo_collection_has_an_index():
+    missing = set(CHILD_COLLECTIONS) - set(INDEXES)
+    assert not missing, f'CHILD_COLLECTIONS with no INDEXES entry: {missing}'
+
+
+def test_default_dashboard_state_seeds_a_starter_grant(client):
+    with client.session_transaction() as sess:
+        sess['user'] = {'name': 'Test Leader', 'email': 'leader@test.com'}
+    with client.application.test_request_context():
+        from flask import session as flask_session
+
+        flask_session['user'] = {'name': 'Test Leader', 'email': 'leader@test.com'}
+        from src.helpers import STARTER_GRANT_COINS, default_dashboard_state
+
+        state = default_dashboard_state()
+        assert len(state['ledger']) == 1
+        assert state['ledger'][0]['kind'] == 'starter_grant'
+        assert state['ledger'][0]['delta'] == STARTER_GRANT_COINS
+        assert state['settings']['coinBalance'] == STARTER_GRANT_COINS
+        assert state['settings']['coinsSpent'] == 0

@@ -527,7 +527,7 @@ def default_dashboard_state() -> DashboardState:
     leader_name = user.get('name') or 'Club Leader'
     leader_email = user.get('email') or 'leader@hackclub.com'
 
-    return {
+    state: DashboardState = {
         'members': [
             {
                 'id': 'member-leader',
@@ -547,6 +547,7 @@ def default_dashboard_state() -> DashboardState:
         'channels': [],
         'messages': [],
         'notifications': [],
+        'ledger': [],
         'newsletters': [
             {
                 'id': 'dispatch-hardware-grants',
@@ -591,6 +592,14 @@ def default_dashboard_state() -> DashboardState:
             'coinsSpent': 0,
         },
     }
+    award_coins(
+        state,
+        STARTER_GRANT_COINS,
+        'starter_grant',
+        '',
+        'Welcome to Hack Club — here are your first coins.',
+    )
+    return state
 
 
 def playtest_state() -> DashboardState:
@@ -720,6 +729,7 @@ STATE_SECTIONS: Final[tuple[str, ...]] = (
     'channels',
     'messages',
     'notifications',
+    'ledger',
 )
 
 # Sections every page needs regardless of what it renders: the roster drives
@@ -868,6 +878,9 @@ MAX_STATE_COOKIE_BYTES: Final[int] = 2800
 # channel can't overrun the cookie. Airtable mode keeps the full history.
 MAX_SESSION_MESSAGES: Final[int] = 30
 
+# Same reasoning as MAX_SESSION_MESSAGES, for the coin ledger.
+MAX_SESSION_LEDGER_ENTRIES: Final[int] = 100
+
 
 class StateTooLarge(Exception):  # noqa: N818
     pass
@@ -887,6 +900,12 @@ def save_dashboard_state(state: DashboardState) -> None:
         # budget (Airtable mode has no cap and keeps everything).
         if persisted.get('messages'):
             persisted['messages'] = persisted['messages'][-MAX_SESSION_MESSAGES:]
+        # Same reasoning as messages: the cookie can't hold unbounded history.
+        # settings.coinBalance/coinsSpent were already reconciled from the
+        # full ledger by award_coins() earlier in this request, so trimming
+        # the persisted list here only drops old audit rows — never coins.
+        if persisted.get('ledger'):
+            persisted['ledger'] = persisted['ledger'][-MAX_SESSION_LEDGER_ENTRIES:]
         if _state_cookie_size(persisted) > MAX_STATE_COOKIE_BYTES:
             raise StateTooLarge()
         backend.save(_club_key(), persisted)

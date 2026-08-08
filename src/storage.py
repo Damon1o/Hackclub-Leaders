@@ -30,6 +30,7 @@ The Airtable schema this module expects (table names overridable via env):
                Hackatime Project, Status, Owner Email, Owner Name, Date,
                Club Email
   Notifications App Id*, Type, Title, Message, Data, Read, Created At, Club Email
+  Ledger       App Id*, Delta, Kind, Ref, Note, At, Club Email
 
 A "ship" is just a Project with Status = "Shipped" (set when an admin approves a
 Submitted project) — there is no separate Ships table.
@@ -96,6 +97,13 @@ PROJECT_FIELDS: Final[list[tuple[str, str]]] = [
     ('ownerEmail', 'Owner Email'),
     ('ownerName', 'Owner Name'),
     ('date', 'Date'),
+]
+LEDGER_FIELDS: Final[list[tuple[str, str]]] = [
+    ('delta', 'Delta'),
+    ('kind', 'Kind'),
+    ('ref', 'Ref'),
+    ('note', 'Note'),
+    ('at', 'At'),
 ]
 CHANNEL_FIELDS: Final[list[tuple[str, str]]] = [
     ('name', 'Name'),
@@ -237,6 +245,7 @@ class AirtableStorage:
         ('CHANNELS', 'Channels', 'channels', CHANNEL_FIELDS),
         ('MESSAGES', 'Messages', 'messages', MESSAGE_FIELDS),
         ('NOTIFICATIONS', 'Notifications', 'notifications', NOTIFICATION_FIELDS),
+        ('LEDGER', 'Ledger', 'ledger', LEDGER_FIELDS),
     ]
 
     # Tables that degrade gracefully if the base doesn't have them yet (that
@@ -249,6 +258,7 @@ class AirtableStorage:
         'channels',
         'messages',
         'notifications',
+        'ledger',
     }
 
     def __init__(self, token: str | None = None, base_id: str | None = None) -> None:
@@ -612,7 +622,7 @@ class AirtableStorage:
                     value = fields.get(field)
                     if item_key in BOOL_KEYS:
                         item[item_key] = bool(value)
-                    elif item_key == 'attendees':
+                    elif item_key in ('attendees', 'delta'):
                         item[item_key] = int(value or 0)
                     else:
                         item[item_key] = value or ''
@@ -699,7 +709,7 @@ class AirtableStorage:
             value = item.get(item_key)
             if item_key in BOOL_KEYS:
                 fields[field] = bool(value)
-            elif item_key == 'attendees':
+            elif item_key in ('attendees', 'delta'):
                 fields[field] = int(value or 0)
             else:
                 fields[field] = value or ''

@@ -128,3 +128,62 @@ def test_default_dashboard_state_seeds_a_starter_grant(client):
         assert state['ledger'][0]['delta'] == STARTER_GRANT_COINS
         assert state['settings']['coinBalance'] == STARTER_GRANT_COINS
         assert state['settings']['coinsSpent'] == 0
+
+
+def test_get_dashboard_state_reconciles_stale_mongo_settings_cache(client, monkeypatch):
+    """Regression for a pre-existing MongoDB-backed club whose stored
+    `settings` document predates the coin fields: schemaless Mongo never
+    defaulted `coinBalance`/`coinsSpent` onto that document, so they're
+    genuinely absent, while the `ledger` collection query correctly returns
+    a real, present, empty list (no transactions exist yet).
+
+    Without the fix, get_dashboard_state()'s settings-backfill loop fills
+    the missing settings keys from a throwaway default_dashboard_state()
+    call, which side-effects its own STARTER_GRANT_COINS award — handing
+    this real, empty-ledger club a phantom 50-coin balance with zero
+    backing transactions. The cache must instead be recomputed from the
+    ledger this club actually has.
+
+    Storage is mocked directly (not forced into session mode) so the two
+    independent backfill loops — top-level state keys vs. settings
+    sub-keys — actually diverge the way they do against a schemaless
+    backend: `ledger` present and empty, `settings` missing the coin keys.
+    """
+    with client.session_transaction() as sess:
+        sess['user'] = {'name': 'Test Leader', 'email': 'leader@test.com'}
+
+    with client.application.test_request_context():
+        from flask import session as flask_session
+
+        flask_session['user'] = {'name': 'Test Leader', 'email': 'leader@test.com'}
+
+        stale_state = {
+            'members': [],
+            'ledger': [],  # real, present, empty — as Mongo's own query returns
+            'settings': {
+                'joinCode': 'abc123xyz',
+                'clubName': "Test Leader's Hack Club",
+                # coinBalance/coinsSpent intentionally absent: pre-migration doc
+            },
+        }
+
+        class FakeMongoLikeStorage:
+            def load(self, club_key: str, sections: list[str] | None = None) -> dict:
+                return dict(stale_state)
+
+            def resolve_club_key(self, email: str) -> str:
+                return email
+
+        import src.helpers as helpers_module
+
+        monkeypatch.setattr(helpers_module, '_storage', lambda: FakeMongoLikeStorage())
+
+        from src.helpers import coin_balance, get_dashboard_state
+
+        state = get_dashboard_state()
+
+        assert state['ledger'] == []
+        assert coin_balance(state['ledger']) == 0
+        assert state['settings']['coinBalance'] == coin_balance(state['ledger'])
+        assert state['settings']['coinBalance'] == 0
+        assert state['settings']['coinsSpent'] == 0

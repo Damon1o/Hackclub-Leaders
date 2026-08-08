@@ -860,6 +860,24 @@ def get_dashboard_state(sections: list[str] | None = None) -> DashboardState:
             settings[key] = value
             changed = True
 
+    # coinBalance/coinsSpent are a cache derived from `ledger`, not an
+    # independent field — the loop above may have just seeded them from a
+    # throwaway default_dashboard_state() call (which side-effects its own
+    # STARTER_GRANT_COINS award) purely to keep `settings` complete under a
+    # schemaless backend. Once `ledger` itself is known for this request
+    # (present in `state`, whether loaded from storage or backfilled to []
+    # above), unconditionally recompute the cache from it so it always
+    # matches this specific club's real ledger and never keeps a defaulted
+    # guess. `ledger` is absent only when this request's `sections` never
+    # asked for it (narrow page loads) — nothing to reconcile against then,
+    # so the previously-loaded/backfilled cache value is left alone.
+    if 'ledger' in state:
+        prev_balance = settings.get('coinBalance')
+        prev_spent = settings.get('coinsSpent')
+        reconcile_coins(state)
+        if settings.get('coinBalance') != prev_balance or settings.get('coinsSpent') != prev_spent:
+            changed = True
+
     state['shopItems'] = [dict(item) for item in SHOP_ITEMS]
 
     if isinstance(backend, SessionStorage):

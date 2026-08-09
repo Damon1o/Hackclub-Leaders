@@ -74,13 +74,13 @@ class Workshop(TypedDict):
     id: str
     title: str
     description: str
-    status: str            # 'Proposed' | 'Scheduled' | 'Run'
+    status: str  # 'Proposed' | 'Scheduled' | 'Run'
     proposerEmail: str
     proposerName: str
     applicants: list[str]  # member emails who applied to run it
-    runnerEmail: str       # '' until Scheduled
-    runnerName: str        # '' until Scheduled
-    eventId: str           # '' until Scheduled; id of the linked Event
+    runnerEmail: str  # '' until Scheduled
+    runnerName: str  # '' until Scheduled
+    eventId: str  # '' until Scheduled; id of the linked Event
     createdAt: str
 
 

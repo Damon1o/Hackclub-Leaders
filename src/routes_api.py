@@ -6,6 +6,7 @@ from flask import current_app, request, session
 
 from .helpers import (
     STATE_SECTIONS,
+    Order,
     _item_id,
     _join_missing,
     _owned_project_or_error,
@@ -360,7 +361,8 @@ def register(app, MAX_IMAGE_BYTES):
         item = find_by_id(state['shopItems'], item_id)
         if not item:
             return json_error('Shop item not found.', 404)
-        if item.get('cost') is None:
+        cost = item['cost']
+        if cost is None:
             return json_error("This item isn't priced yet.")
 
         try:
@@ -371,7 +373,7 @@ def register(app, MAX_IMAGE_BYTES):
         if cart_item:
             cart_item['quantity'] += quantity
         else:
-            state['cart'].append({'id': item_id, 'quantity': quantity, 'coinCost': item['cost']})
+            state['cart'].append({'id': item_id, 'quantity': quantity, 'coinCost': cost})
         save_dashboard_state(state)
         return flask.jsonify({'state': state})
 
@@ -438,17 +440,18 @@ def register(app, MAX_IMAGE_BYTES):
         if total > coin_balance(state.get('ledger') or []):
             return json_error("You don't have enough coins for this order.")
 
-        order = {
+        order: Order = {
             'id': _item_id('order'),
             'date': date.today().isoformat(),
             'status': 'Requested',
-            'items': [dict(item) for item in state['cart']],
+            'items': list(state['cart']),
         }
         state['orders'].insert(0, order)
         state['cart'] = []
         item_names = ', '.join(
-            (find_by_id(state['shopItems'], item.get('id', '')) or {}).get('name')
-            or item.get('id', '')
+            shop_item['name']
+            if (shop_item := find_by_id(state['shopItems'], item['id']))
+            else item['id']
             for item in order['items']
         )
         award_coins(state, -total, 'shop_order', order['id'], f'Order: {item_names}')

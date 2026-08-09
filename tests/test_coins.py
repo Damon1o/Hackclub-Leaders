@@ -187,3 +187,124 @@ def test_get_dashboard_state_reconciles_stale_mongo_settings_cache(client, monke
         assert state['settings']['coinBalance'] == coin_balance(state['ledger'])
         assert state['settings']['coinBalance'] == 0
         assert state['settings']['coinsSpent'] == 0
+
+
+def _seed_cart_club(client, monkeypatch, ledger=None, cart=None):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    # get_dashboard_state() unconditionally overwrites state['shopItems'] with
+    # the process-global helpers.SHOP_ITEMS catalog (src/helpers.py:882) —
+    # the shop catalog is shared across every club, not per-club data, so a
+    # 'shopItems' key seeded into this club's session (below) is never read
+    # by api_cart_add. Patch the actual catalog the endpoint reads instead,
+    # or these tests would exercise the real static/data/shop.json contents
+    # (where Sticker Pack costs 0, not 15, and Mystery Box doesn't exist).
+    import src.helpers as helpers_module
+
+    monkeypatch.setattr(
+        helpers_module,
+        'SHOP_ITEMS',
+        [
+            {
+                'id': 'sticker-pack',
+                'name': 'Sticker Pack',
+                'cost': 15,
+                'image_src': '',
+                'filter': 'Swag',
+            },
+            {
+                'id': 'mystery-box',
+                'name': 'Mystery Box',
+                'cost': None,
+                'image_src': '',
+                'filter': 'Swag',
+            },
+        ],
+    )
+    with client.session_transaction() as sess:
+        sess['csrf_token'] = 'tok'
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Cart Club', 'coinBalance': 0, 'coinsSpent': 0},
+            'members': [],
+            'shopItems': [
+                {
+                    'id': 'sticker-pack',
+                    'name': 'Sticker Pack',
+                    'cost': 15,
+                    'image_src': '',
+                    'filter': 'Swag',
+                },
+                {
+                    'id': 'mystery-box',
+                    'name': 'Mystery Box',
+                    'cost': None,
+                    'image_src': '',
+                    'filter': 'Swag',
+                },
+            ],
+            'cart': cart or [],
+            'orders': [],
+            'ledger': ledger or [],
+        }
+
+
+HEADERS = {'X-CSRF-Token': 'tok'}
+
+
+def test_cart_add_snapshots_coin_cost(auth_client, monkeypatch):
+    _seed_cart_club(auth_client, monkeypatch)
+    response = auth_client.post(
+        '/api/dashboard/cart', headers=HEADERS, json={'itemId': 'sticker-pack', 'quantity': 2}
+    )
+    assert response.status_code == 200
+    cart = response.get_json()['state']['cart']
+    assert cart[0]['coinCost'] == 15
+    assert cart[0]['quantity'] == 2
+
+
+def test_cart_add_rejects_unpriced_item(auth_client, monkeypatch):
+    _seed_cart_club(auth_client, monkeypatch)
+    response = auth_client.post(
+        '/api/dashboard/cart', headers=HEADERS, json={'itemId': 'mystery-box'}
+    )
+    assert response.status_code == 400
+
+
+def test_checkout_debits_ledger_on_success(auth_client, monkeypatch):
+    ledger = [
+        {
+            'id': 'c1',
+            'delta': 50,
+            'kind': 'starter_grant',
+            'ref': '',
+            'note': '',
+            'at': '2026-08-07T00:00:00Z',
+        }
+    ]
+    cart = [{'id': 'sticker-pack', 'quantity': 2, 'coinCost': 15}]
+    _seed_cart_club(auth_client, monkeypatch, ledger=ledger, cart=cart)
+    response = auth_client.post('/api/dashboard/checkout', headers=HEADERS)
+    assert response.status_code == 200
+    state = response.get_json()['state']
+    assert state['settings']['coinBalance'] == 20  # 50 - (15*2)
+    assert state['settings']['coinsSpent'] == 30
+    assert any(t['kind'] == 'shop_order' for t in state['ledger'])
+    assert state['cart'] == []
+
+
+def test_checkout_rejects_when_over_budget(auth_client, monkeypatch):
+    ledger = [
+        {
+            'id': 'c1',
+            'delta': 10,
+            'kind': 'starter_grant',
+            'ref': '',
+            'note': '',
+            'at': '2026-08-07T00:00:00Z',
+        }
+    ]
+    cart = [{'id': 'sticker-pack', 'quantity': 2, 'coinCost': 15}]
+    _seed_cart_club(auth_client, monkeypatch, ledger=ledger, cart=cart)
+    response = auth_client.post('/api/dashboard/checkout', headers=HEADERS)
+    assert response.status_code == 400
+    with auth_client.session_transaction() as sess:
+        assert sess['dashboard_state']['cart'] == cart  # unchanged — nothing was debited

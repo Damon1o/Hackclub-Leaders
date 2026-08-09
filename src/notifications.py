@@ -4,6 +4,7 @@ from .email import (
     render_event_rsvp_confirmation,
     render_project_submitted,
     render_workshop_application_notification,
+    render_workshop_scheduled_confirmation,
     send_email,
 )
 from .helpers import _item_id, get_dashboard_state, save_dashboard_state, utc_iso
@@ -105,6 +106,24 @@ def notify_leaders_of_workshop_application(workshop, user_email, user_name, is_a
                     'isApplying': is_applying,
                 },
             )
+
+
+def notify_runner_of_workshop_selection(workshop, runner_email, runner_name):
+    """Notify the member picked to run a workshop once a leader schedules it."""
+    club_name = _club_name()
+    title = workshop.get('title', 'Workshop')
+    send_email(
+        subject=f'🎉 You\'re running "{title}" - {club_name}',
+        recipients=runner_email,
+        template=render_workshop_scheduled_confirmation(workshop, club_name, runner_name),
+    )
+    add_in_app_notification(
+        runner_email,
+        'workshop_scheduled',
+        f'You\'re running "{title}"',
+        'Check the Events page for the date and time.',
+        {'workshopId': workshop.get('id'), 'eventId': workshop.get('eventId')},
+    )
 
 
 def notify_admins_of_project_submission(project):

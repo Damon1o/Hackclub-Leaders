@@ -6,6 +6,7 @@ from flask import current_app, request, session
 
 from .helpers import (
     STATE_SECTIONS,
+    Event,
     Order,
     Workshop,
     _item_id,
@@ -37,6 +38,7 @@ from .notifications import (
     notify_admins_of_project_submission,
     notify_leaders_of_event_rsvp,
     notify_leaders_of_workshop_application,
+    notify_runner_of_workshop_selection,
     send_event_rsvp_confirmation,
 )
 from .storage import StorageError
@@ -421,7 +423,86 @@ def register(app, MAX_IMAGE_BYTES):
                 current_app.logger.warning(f'Failed to send workshop application notification: {e}')
             return flask.jsonify({'workshop': workshop, 'state': state})
 
+        new_status = payload.get('status')
+        if new_status == 'Scheduled':
+            if workshop['status'] != 'Proposed':
+                return json_error('This workshop has already been scheduled.')
+            runner_email = clean_text(payload.get('runnerEmail')).lower()
+            if runner_email not in workshop['applicants']:
+                return json_error('Pick an applicant who actually applied to run this.')
+            event_date = clean_text(payload.get('date'))
+            event_time = clean_text(payload.get('time'))
+            location = clean_text(payload.get('location'))
+            try:
+                date.fromisoformat(event_date)
+            except ValueError:
+                return json_error('Choose a valid date.')
+            if not event_time:
+                return json_error('Event time is required.')
+            if not location:
+                return json_error('Event location is required.')
+
+            runner = next(
+                (m for m in state['members'] if (m.get('email') or '').lower() == runner_email),
+                None,
+            )
+            runner_name = runner.get('name', 'A member') if runner else 'A member'
+
+            new_event: Event = {
+                'id': _item_id('event'),
+                'title': workshop['title'],
+                'date': event_date,
+                'time': event_time,
+                'location': location,
+                'type': 'Workshop',
+                'repeat': '',
+                'rsvp': False,
+                'attendees': 0,
+            }
+            state['events'].append(new_event)
+            state['events'].sort(key=lambda item: (item.get('date', ''), item.get('time', '')))
+
+            workshop['status'] = 'Scheduled'
+            workshop['runnerEmail'] = runner_email
+            workshop['runnerName'] = runner_name
+            workshop['eventId'] = new_event['id']
+            save_dashboard_state(state)
+
+            try:
+                notify_runner_of_workshop_selection(workshop, runner_email, runner_name)
+            except Exception as e:
+                current_app.logger.warning(f'Failed to send workshop selection notification: {e}')
+
+            return flask.jsonify({'workshop': workshop, 'state': state})
+
+        if new_status == 'Run':
+            if workshop['status'] != 'Scheduled':
+                return json_error('Only a scheduled workshop can be marked as run.')
+            workshop['status'] = 'Run'
+            save_dashboard_state(state)
+            return flask.jsonify({'workshop': workshop, 'state': state})
+
         return json_error('Unsupported update.')
+
+    @app.delete('/api/dashboard/workshops/<workshop_id>')
+    @login_required
+    def api_workshops_delete(workshop_id):
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+        role_error = require_leader_api()
+        if role_error:
+            return role_error
+
+        state = get_dashboard_state()
+        workshop = find_by_id(state['workshops'], workshop_id)
+        if not workshop:
+            return json_error('Workshop not found.', 404)
+        if workshop['status'] != 'Proposed':
+            return json_error('Only a proposed (not yet scheduled) workshop can be deleted.')
+        state['workshops'] = [w for w in state['workshops'] if w.get('id') != workshop_id]
+        save_dashboard_state(state)
+        return flask.jsonify({'state': state})
 
     # ── Cart ────────────────────────────────────────────────────────────────
 

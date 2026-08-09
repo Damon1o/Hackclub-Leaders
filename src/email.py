@@ -134,6 +134,50 @@ def render_workshop_application_notification(
 '''
 
 
+def render_workshop_scheduled_confirmation(workshop, club_name, recipient_name):
+    """Render the email sent to a member once a leader schedules them to run a workshop."""
+    return f'''
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>You're Running a Workshop</title>
+    <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }}
+        .event-card {{ background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+        .footer {{ text-align: center; color: #999; font-size: 12px; margin-top: 30px; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 style="margin: 0; font-size: 24px;">🎉 You're Running a Workshop</h1>
+        <p style="margin: 10px 0 0; opacity: 0.9;">{escape(club_name)}</p>
+    </div>
+    <div class="content">
+        <p>Hi {escape(recipient_name)},</p>
+        <p>A leader picked you to run the following workshop:</p>
+
+        <div class="event-card">
+            <p style="margin: 0; font-weight: 600;">{escape(workshop.get('title', 'Untitled Workshop'))}</p>
+            <p style="margin: 10px 0 0; color: #666;">{escape(workshop.get('description', ''))}</p>
+        </div>
+
+        <p style="text-align: center;">
+            <a href="{os.environ.get('BASE_URL', '')}/dashboard/events" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">View Event</a>
+        </p>
+
+        <div class="footer">
+            <p>You're receiving this because you're a member of {escape(club_name)}.</p>
+        </div>
+    </div>
+</body>
+</html>
+'''
+
+
 def render_project_submitted(project, club_name, recipient_name):
     """Render project submission notification email."""
     return f'''

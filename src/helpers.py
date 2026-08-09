@@ -10,7 +10,7 @@ import zlib
 from collections.abc import Callable
 from datetime import date, datetime, timezone
 from functools import wraps
-from typing import Any, Final, TypedDict, TypeVar
+from typing import Any, Final, TypedDict, TypeVar, cast
 
 import requests
 from flask import flash, g, jsonify, redirect, request, session, url_for
@@ -26,6 +26,9 @@ ADMIN_EMAILS: Final[set[str]] = {
     for email in os.environ.get('ADMIN_EMAILS', '').split(',')
     if email.strip()
 }
+
+COINS_PER_APPROVED_SHIP: Final[int] = 25
+STARTER_GRANT_COINS: Final[int] = 50
 
 
 # ── Type definitions ──────────────────────────────────────────────────────────
@@ -70,7 +73,7 @@ class Project(TypedDict):
 class ShopItem(TypedDict):
     id: str
     name: str
-    cost: str
+    cost: int | None
     image_src: str
     filter: str
 
@@ -88,6 +91,16 @@ class Newsletter(TypedDict):
 class OrderItem(TypedDict):
     id: str
     quantity: int
+    coinCost: int
+
+
+class CoinTransaction(TypedDict):
+    id: str
+    delta: int
+    kind: str
+    ref: str
+    note: str
+    at: str
 
 
 class Order(TypedDict):
@@ -134,6 +147,8 @@ class Settings(TypedDict):
     darkModeDefault: bool
     newsletterSubscribed: bool
     language: str
+    coinBalance: int
+    coinsSpent: int
 
 
 class DashboardState(TypedDict, total=False):
@@ -147,6 +162,7 @@ class DashboardState(TypedDict, total=False):
     channels: list[Channel]
     messages: list[Message]
     newsletters: list[Newsletter]
+    ledger: list[CoinTransaction]
     settings: Settings
 
 
@@ -260,6 +276,48 @@ def utc_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
 
 
+def coin_balance(ledger: list[CoinTransaction]) -> int:
+    return sum(t['delta'] for t in ledger)
+
+
+def coins_spent(ledger: list[CoinTransaction]) -> int:
+    return -sum(t['delta'] for t in ledger if t['delta'] < 0)
+
+
+def reconcile_coins(state: DashboardState) -> None:
+    """Recompute the cached balance/spent totals in `settings` from the
+    ledger. Called by award_coins() after every mutation, so the cheap
+    cache in ALWAYS_LOADED settings can never drift from the ledger that
+    backs it, even though the ledger itself is loaded lazily."""
+    ledger = state.get('ledger') or []
+    settings = state.setdefault('settings', cast(Settings, {}))
+    settings['coinBalance'] = coin_balance(ledger)
+    settings['coinsSpent'] = coins_spent(ledger)
+
+
+def award_coins(
+    state: DashboardState, delta: int, kind: str, ref: str, note: str
+) -> CoinTransaction:
+    """Append a ledger transaction and refresh the balance/spent cache.
+
+    The only function that should ever mutate `state['ledger']` — every
+    earn or spend path (shop checkout, ship approval, admin adjustment)
+    calls this so the cache in `settings` can't fall out of sync with the
+    ledger. Does not check sufficiency; callers that need to block an
+    over-spend (checkout) check `coin_balance()` before calling this."""
+    transaction: CoinTransaction = {
+        'id': _item_id('coin'),
+        'delta': delta,
+        'kind': kind,
+        'ref': ref,
+        'note': note,
+        'at': utc_iso(),
+    }
+    state.setdefault('ledger', []).append(transaction)
+    reconcile_coins(state)
+    return transaction
+
+
 def generate_join_code() -> str:
     return secrets.token_urlsafe(9)
 
@@ -315,7 +373,7 @@ def load_shop_items() -> list[ShopItem]:
             {
                 'id': _slugify(name),
                 'name': name,
-                'cost': entry.get('cost', ''),
+                'cost': entry.get('cost'),
                 'image_src': entry.get('image-src', ''),
                 'filter': entry.get('filter', ''),
             }
@@ -375,35 +433,35 @@ def _write_shop_raw(raw: list[dict[str, Any]]) -> None:
         raise
 
 
-def _normalize_cost(cost: str) -> str:
-    """'$5', '5', '5.00' → '$5.00'; non-numeric labels ('Free', 'TBD') pass through."""
+def _parse_coins(cost: str) -> int | None:
+    """'50', '$50', '50.00' -> 50 coins; 'free' -> 0 (case-insensitive);
+    anything else ('TBD', blank, garbage) -> None, meaning the admin hasn't
+    priced this item yet."""
     text = (cost or '').strip()
-    match = re.fullmatch(r'\$?([0-9]+(?:\.[0-9]{1,2})?)', text)
-    return f'${float(match.group(1)):.2f}' if match else text
-
-
-def _shop_hours(cost: str) -> str:
-    """The 'hours' price is 1.5x the dollar cost; word labels mirror the cost."""
-    match = re.fullmatch(r'\$([0-9]+(?:\.[0-9]{1,2})?)', cost or '')
-    return f'${float(match.group(1)) * 1.5:.2f}' if match else (cost or '')
+    if text.lower() == 'free':
+        return 0
+    match = re.fullmatch(r'\$?([0-9]+)(?:\.[0-9]{1,2})?', text)
+    return int(match.group(1)) if match else None
 
 
 def add_shop_item(name: str, cost: str, image_src: str, item_filter: str) -> ShopItem:
     """Append an item to shop.json and refresh the in-memory catalog.
 
     Returns the catalog-shaped item dict. Raises ValueError for a blank name
-    or a duplicate (same slug)."""
+    or a duplicate (same slug). `cost` is free text from an admin form;
+    anything that doesn't parse to a whole coin amount (including 'TBD' or a
+    blank string) leaves the item unpriced (cost: None) rather than
+    rejecting the request — an admin can price it later."""
     global SHOP_ITEMS
     name = (name or '').strip()
     if not name:
         raise ValueError('Item name is required.')
     slug = _slugify(name)
     item_filter = item_filter if item_filter in SHOP_FILTERS else 'Swag'
-    cost = _normalize_cost(cost) or 'TBD'
+    coins = _parse_coins(cost)
     entry = {
         'name': name,
-        'cost': cost,
-        'hours': _shop_hours(cost),
+        'cost': coins,
         'image-src': (image_src or '').strip(),
         'filter': item_filter,
     }
@@ -417,7 +475,7 @@ def add_shop_item(name: str, cost: str, image_src: str, item_filter: str) -> Sho
     return {
         'id': slug,
         'name': name,
-        'cost': cost,
+        'cost': coins,
         'image-src': entry['image-src'],
         'filter': item_filter,
     }
@@ -470,7 +528,7 @@ def default_dashboard_state() -> DashboardState:
     leader_name = user.get('name') or 'Club Leader'
     leader_email = user.get('email') or 'leader@hackclub.com'
 
-    return {
+    state: DashboardState = {
         'members': [
             {
                 'id': 'member-leader',
@@ -490,6 +548,7 @@ def default_dashboard_state() -> DashboardState:
         'channels': [],
         'messages': [],
         'notifications': [],
+        'ledger': [],
         'newsletters': [
             {
                 'id': 'dispatch-hardware-grants',
@@ -530,8 +589,18 @@ def default_dashboard_state() -> DashboardState:
             'darkModeDefault': False,
             'newsletterSubscribed': True,
             'language': DEFAULT_LANGUAGE,
+            'coinBalance': 0,
+            'coinsSpent': 0,
         },
     }
+    award_coins(
+        state,
+        STARTER_GRANT_COINS,
+        'starter_grant',
+        '',
+        'Welcome to Hack Club — here are your first coins.',
+    )
+    return state
 
 
 def playtest_state() -> DashboardState:
@@ -550,6 +619,8 @@ def playtest_state() -> DashboardState:
             'darkModeDefault': False,
             'newsletterSubscribed': True,
             'language': 'en',
+            'coinBalance': 0,
+            'coinsSpent': 0,
         },
         'members': [
             {
@@ -659,6 +730,7 @@ STATE_SECTIONS: Final[tuple[str, ...]] = (
     'channels',
     'messages',
     'notifications',
+    'ledger',
 )
 
 # Sections every page needs regardless of what it renders: the roster drives
@@ -789,6 +861,24 @@ def get_dashboard_state(sections: list[str] | None = None) -> DashboardState:
             settings[key] = value
             changed = True
 
+    # coinBalance/coinsSpent are a cache derived from `ledger`, not an
+    # independent field — the loop above may have just seeded them from a
+    # throwaway default_dashboard_state() call (which side-effects its own
+    # STARTER_GRANT_COINS award) purely to keep `settings` complete under a
+    # schemaless backend. Once `ledger` itself is known for this request
+    # (present in `state`, whether loaded from storage or backfilled to []
+    # above), unconditionally recompute the cache from it so it always
+    # matches this specific club's real ledger and never keeps a defaulted
+    # guess. `ledger` is absent only when this request's `sections` never
+    # asked for it (narrow page loads) — nothing to reconcile against then,
+    # so the previously-loaded/backfilled cache value is left alone.
+    if 'ledger' in state:
+        prev_balance = settings.get('coinBalance')
+        prev_spent = settings.get('coinsSpent')
+        reconcile_coins(state)
+        if settings.get('coinBalance') != prev_balance or settings.get('coinsSpent') != prev_spent:
+            changed = True
+
     state['shopItems'] = [dict(item) for item in SHOP_ITEMS]
 
     if isinstance(backend, SessionStorage):
@@ -806,6 +896,9 @@ MAX_STATE_COOKIE_BYTES: Final[int] = 2800
 # In session (cookie) mode, keep only this many recent chat messages so a busy
 # channel can't overrun the cookie. Airtable mode keeps the full history.
 MAX_SESSION_MESSAGES: Final[int] = 30
+
+# Same reasoning as MAX_SESSION_MESSAGES, for the coin ledger.
+MAX_SESSION_LEDGER_ENTRIES: Final[int] = 100
 
 
 class StateTooLarge(Exception):  # noqa: N818
@@ -826,6 +919,12 @@ def save_dashboard_state(state: DashboardState) -> None:
         # budget (Airtable mode has no cap and keeps everything).
         if persisted.get('messages'):
             persisted['messages'] = persisted['messages'][-MAX_SESSION_MESSAGES:]
+        # Same reasoning as messages: the cookie can't hold unbounded history.
+        # settings.coinBalance/coinsSpent were already reconciled from the
+        # full ledger by award_coins() earlier in this request, so trimming
+        # the persisted list here only drops old audit rows — never coins.
+        if persisted.get('ledger'):
+            persisted['ledger'] = persisted['ledger'][-MAX_SESSION_LEDGER_ENTRIES:]
         if _state_cookie_size(persisted) > MAX_STATE_COOKIE_BYTES:
             raise StateTooLarge()
         backend.save(_club_key(), persisted)

@@ -382,7 +382,7 @@
             'admin.addItem': 'Add an item to the shop',
             'admin.addItemDesc': "New items show up in every club's shop right away.",
             'admin.itemName': 'Item name',
-            'admin.itemCost': 'Cost ($)',
+            'admin.itemCost': 'Cost (coins)',
             'admin.itemFilter': 'Category',
             'admin.filterSwag': 'Swag',
             'admin.filterHardware': 'Hardware',

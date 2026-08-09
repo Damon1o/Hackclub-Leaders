@@ -20,7 +20,7 @@ The Airtable schema this module expects (table names overridable via env):
 
   Clubs        Leader Email*, Club Name, Location, Website, Avatar, Join Code,
                Public Directory, Email Notifications, Dark Mode Default,
-               Newsletter Subscribed
+               Newsletter Subscribed, Coin Balance, Coins Spent
   Members      App Id*, Name, Email, Role, Status, Avatar, Club Email
   Events       App Id*, Title, Date, Time, Location, Type, RSVP, Attendees,
                Club Email
@@ -29,13 +29,15 @@ The Airtable schema this module expects (table names overridable via env):
   Projects     App Id*, Name, Description, URL, Repo URL, Demo URL, Thumbnail,
                Hackatime Project, Status, Owner Email, Owner Name, Date,
                Club Email
+  Notifications App Id*, Type, Title, Message, Data, Read, Created At, Club Email
+  Ledger       App Id*, Delta, Kind, Ref, Note, At, Club Email
 
 A "ship" is just a Project with Status = "Shipped" (set when an admin approves a
 Submitted project) — there is no separate Ships table.
 
-(* = used as the lookup key; "Items" is JSON text. Checkbox fields: Public
-Directory, Email Notifications, Dark Mode Default, Newsletter Subscribed,
-RSVP, Read. Attendees is a number.)
+(* = used as the lookup key; "Items" and "Data" are JSON text. Checkbox fields:
+Public Directory, Email Notifications, Dark Mode Default, Newsletter
+Subscribed, RSVP, Read. Attendees, Coin Balance, and Coins Spent are numbers.)
 
 Not stored in Airtable: shopItems (static catalog) and cart (transient,
 kept in the session by app.py).
@@ -96,6 +98,13 @@ PROJECT_FIELDS: Final[list[tuple[str, str]]] = [
     ('ownerName', 'Owner Name'),
     ('date', 'Date'),
 ]
+LEDGER_FIELDS: Final[list[tuple[str, str]]] = [
+    ('delta', 'Delta'),
+    ('kind', 'Kind'),
+    ('ref', 'Ref'),
+    ('note', 'Note'),
+    ('at', 'At'),
+]
 CHANNEL_FIELDS: Final[list[tuple[str, str]]] = [
     ('name', 'Name'),
     ('description', 'Description'),
@@ -111,7 +120,6 @@ MESSAGE_FIELDS: Final[list[tuple[str, str]]] = [
     ('body', 'Body'),
     ('createdAt', 'Created At'),
 ]
-
 NOTIFICATION_FIELDS: Final[list[tuple[str, str]]] = [
     ('type', 'Type'),
     ('title', 'Title'),
@@ -130,7 +138,15 @@ SETTINGS_FIELDS: Final[list[tuple[str, str]]] = [
     ('emailNotifications', 'Email Notifications'),
     ('darkModeDefault', 'Dark Mode Default'),
     ('newsletterSubscribed', 'Newsletter Subscribed'),
+    ('coinBalance', 'Coin Balance'),
+    ('coinsSpent', 'Coins Spent'),
 ]
+
+# Settings keys that hold numbers rather than strings/booleans — mirrors the
+# attendees/delta int-coercion on child-table records below. Without this,
+# the generic `value or ''` branch would turn a real 0 balance into '' on
+# both load and save.
+SETTINGS_INT_KEYS: Final[set[str]] = {'coinBalance', 'coinsSpent'}
 
 BOOL_KEYS: Final[set[str]] = {
     'rsvp',
@@ -237,6 +253,7 @@ class AirtableStorage:
         ('CHANNELS', 'Channels', 'channels', CHANNEL_FIELDS),
         ('MESSAGES', 'Messages', 'messages', MESSAGE_FIELDS),
         ('NOTIFICATIONS', 'Notifications', 'notifications', NOTIFICATION_FIELDS),
+        ('LEDGER', 'Ledger', 'ledger', LEDGER_FIELDS),
     ]
 
     # Tables that degrade gracefully if the base doesn't have them yet (that
@@ -244,7 +261,13 @@ class AirtableStorage:
     # here — it is the single source of truth for projects and ships, so the
     # base must have a Projects table. Chat tables are optional so existing
     # bases keep working until the club adds the Channels/Messages tables.
-    OPTIONAL_CHILD_KEYS: Final[set[str]] = {'itemRequests', 'channels', 'messages', 'notifications'}
+    OPTIONAL_CHILD_KEYS: Final[set[str]] = {
+        'itemRequests',
+        'channels',
+        'messages',
+        'notifications',
+        'ledger',
+    }
 
     def __init__(self, token: str | None = None, base_id: str | None = None) -> None:
         self.token = token or os.environ.get('AIRTABLE_TOKEN', '')
@@ -543,7 +566,12 @@ class AirtableStorage:
         settings: dict[str, Any] = {}
         for state_key, field in SETTINGS_FIELDS:
             value = club_fields.get(field)
-            settings[state_key] = bool(value) if state_key in BOOL_KEYS else (value or '')
+            if state_key in BOOL_KEYS:
+                settings[state_key] = bool(value)
+            elif state_key in SETTINGS_INT_KEYS:
+                settings[state_key] = int(value or 0)
+            else:
+                settings[state_key] = value or ''
 
         members: list[dict[str, Any]] = []
         for record in member_records:
@@ -585,6 +613,8 @@ class AirtableStorage:
             value = club_fields.get(field)
             if state_key in BOOL_KEYS:
                 settings[state_key] = bool(value)
+            elif state_key in SETTINGS_INT_KEYS:
+                settings[state_key] = int(value or 0)
             else:
                 settings[state_key] = value or ''
 
@@ -607,7 +637,7 @@ class AirtableStorage:
                     value = fields.get(field)
                     if item_key in BOOL_KEYS:
                         item[item_key] = bool(value)
-                    elif item_key == 'attendees':
+                    elif item_key in ('attendees', 'delta'):
                         item[item_key] = int(value or 0)
                     else:
                         item[item_key] = value or ''
@@ -675,7 +705,12 @@ class AirtableStorage:
         fields: dict[str, Any] = {'Leader Email': club_key}
         for state_key, field in SETTINGS_FIELDS:
             value = settings.get(state_key)
-            fields[field] = bool(value) if state_key in BOOL_KEYS else (value or '')
+            if state_key in BOOL_KEYS:
+                fields[field] = bool(value)
+            elif state_key in SETTINGS_INT_KEYS:
+                fields[field] = int(value or 0)
+            else:
+                fields[field] = value or ''
         existing = self._list(self.clubs_table, 'Leader Email', club_key)
         if existing:
             self._batch('patch', self.clubs_table, [{'id': existing[0]['id'], 'fields': fields}])
@@ -694,7 +729,7 @@ class AirtableStorage:
             value = item.get(item_key)
             if item_key in BOOL_KEYS:
                 fields[field] = bool(value)
-            elif item_key == 'attendees':
+            elif item_key in ('attendees', 'delta'):
                 fields[field] = int(value or 0)
             else:
                 fields[field] = value or ''

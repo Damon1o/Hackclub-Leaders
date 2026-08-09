@@ -221,3 +221,28 @@ def test_i18n_all_languages_cover_public_page_keys(client):
     for lang, keys in sorted(langs.items()):
         missing = used - keys
         assert not missing, f'{lang} is missing {len(missing)} keys: {sorted(missing)}'
+
+
+def test_dashboard_layout_has_coin_balance_chip(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Chip Club', 'coinBalance': 0, 'coinsSpent': 0},
+            'members': [],
+        }
+    response = auth_client.get('/dashboard')
+    assert response.status_code == 200
+    assert b'id="coinBalanceChip"' in response.data
+    assert b'id="coinBalanceAmount"' in response.data
+
+
+def test_shop_page_has_cart_subtotal_shell(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Chip Club', 'coinBalance': 0, 'coinsSpent': 0},
+            'members': [],
+        }
+    response = auth_client.get('/dashboard/shop')
+    assert response.status_code == 200
+    assert b'id="cartSubtotal"' in response.data

@@ -41,7 +41,6 @@ def _html_to_text(html):
 
 # ── Email templates ────────────────────────────────────────────────────────────
 
-
 def render_event_rsvp_confirmation(event, club_name, recipient_name, is_rsvp):
     """Render RSVP confirmation email."""
     action = 'RSVPed to' if is_rsvp else 'removed RSVP from'

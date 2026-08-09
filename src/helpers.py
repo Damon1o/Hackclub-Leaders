@@ -564,6 +564,7 @@ def default_dashboard_state() -> DashboardState:
         'messages': [],
         'notifications': [],
         'ledger': [],
+        'workshops': [],
         'newsletters': [
             {
                 'id': 'dispatch-hardware-grants',
@@ -746,6 +747,7 @@ STATE_SECTIONS: Final[tuple[str, ...]] = (
     'messages',
     'notifications',
     'ledger',
+    'workshops',
 )
 
 # Sections every page needs regardless of what it renders: the roster drives
@@ -758,7 +760,7 @@ ALWAYS_LOADED: Final[frozenset[str]] = frozenset({'members', 'notifications'})
 # get_dashboard_state() drops the unlisted keys, and both shared backends
 # treat a missing key as "leave this section alone" on save.
 PAGE_SECTIONS: Final[dict[str, tuple[str, ...]]] = {
-    'dashboard': ('events', 'projects', 'newsletters'),
+    'dashboard': ('events', 'projects', 'newsletters', 'workshops'),
     'dashboard_team': (),
     'dashboard_events': ('events',),
     'dashboard_ships': ('projects',),
@@ -766,6 +768,7 @@ PAGE_SECTIONS: Final[dict[str, tuple[str, ...]]] = {
     'dashboard_levels': ('projects',),
     'dashboard_tools': (),
     'dashboard_shop': ('orders', 'itemRequests'),
+    'dashboard_workshops': ('workshops',),
     'dashboard_chat': ('channels', 'messages'),
     'dashboard_newsletters': ('newsletters',),
     'dashboard_map': (),

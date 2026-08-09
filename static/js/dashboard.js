@@ -199,7 +199,7 @@
     // src/helpers.py — the server drops everything else, so a page fetches only
     // what it paints. Pages missing from this map get the full state.
     const PAGE_SECTIONS = {
-        dashboard: ['events', 'projects', 'newsletters'],
+        dashboard: ['events', 'projects', 'newsletters', 'workshops'],
         team: [],
         events: ['events'],
         ships: ['projects'],
@@ -207,6 +207,7 @@
         levels: ['projects'],
         tools: [],
         shop: ['orders', 'itemRequests'],
+        workshops: ['workshops'],
         chat: ['channels', 'messages'],
         newsletters: ['newsletters'],
         map: [],

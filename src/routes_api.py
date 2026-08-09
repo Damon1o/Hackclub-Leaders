@@ -7,6 +7,7 @@ from flask import current_app, request, session
 from .helpers import (
     STATE_SECTIONS,
     Order,
+    Workshop,
     _item_id,
     _join_missing,
     _owned_project_or_error,
@@ -356,12 +357,12 @@ def register(app, MAX_IMAGE_BYTES):
             return csrf_error
 
         workshop_data, error = workshop_from_payload(json_payload())
-        if error:
-            return json_error(error)
+        if workshop_data is None:
+            return json_error(error or 'Invalid workshop.')
 
         user = session.get('user') or {}
         state = get_dashboard_state()
-        workshop = {
+        workshop: Workshop = {
             'id': _item_id('workshop'),
             'title': workshop_data['title'],
             'description': workshop_data['description'],

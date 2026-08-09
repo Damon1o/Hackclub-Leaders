@@ -3,6 +3,7 @@
 from .email import (
     render_event_rsvp_confirmation,
     render_project_submitted,
+    render_workshop_application_notification,
     send_email,
 )
 from .helpers import _item_id, get_dashboard_state, save_dashboard_state, utc_iso
@@ -66,6 +67,39 @@ def notify_leaders_of_event_rsvp(event, user_email, user_name, is_rsvp):
                 f'{user_name} {action} "{event.get("title", "Event")}"',
                 f'{user_name} has {action.lower()} the event on {event.get("date", "TBD")}.',
                 {'eventId': event.get('id'), 'userEmail': user_email, 'isRsvp': is_rsvp},
+            )
+
+
+def notify_leaders_of_workshop_application(workshop, user_email, user_name, is_applying):
+    """Notify club leaders when a member applies to run (or withdraws from) a workshop."""
+    state = get_dashboard_state()
+    leaders = [m for m in state.get('members', []) if m.get('role') in ('Leader', 'Mentor')]
+    club_name = _club_name()
+    title = workshop.get('title', 'Workshop')
+    if is_applying:
+        subject_action = 'applied to run'
+        body = f'{user_name} applied to run this workshop.'
+    else:
+        subject_action = 'withdrew their application for'
+        body = f'{user_name} withdrew their application to run this workshop.'
+
+    for leader in leaders:
+        leader_email = leader.get('email', '').lower()
+        if leader_email and leader_email != user_email:
+            template = render_workshop_application_notification(
+                workshop, club_name, leader.get('name', 'Leader'), user_name, is_applying
+            )
+            send_email(
+                subject=f'🔔 {user_name} {subject_action} "{title}"',
+                recipients=leader_email,
+                template=template,
+            )
+            add_in_app_notification(
+                leader_email,
+                'workshop_application',
+                f'{user_name} {subject_action} "{title}"',
+                body,
+                {'workshopId': workshop.get('id'), 'userEmail': user_email, 'isApplying': is_applying},
             )
 
 

@@ -28,11 +28,14 @@ from .helpers import (
     require_dashboard_csrf,
     require_leader_api,
     save_dashboard_state,
+    utc_iso,
     viewer_is_leader,
+    workshop_from_payload,
 )
 from .notifications import (
     notify_admins_of_project_submission,
     notify_leaders_of_event_rsvp,
+    notify_leaders_of_workshop_application,
     send_event_rsvp_confirmation,
 )
 from .storage import StorageError
@@ -342,6 +345,82 @@ def register(app, MAX_IMAGE_BYTES):
             return json_error('Event not found.', 404)
         save_dashboard_state(state)
         return flask.jsonify({'state': state})
+
+    # ── Workshops ──────────────────────────────────────────────────────────
+
+    @app.post('/api/dashboard/workshops')
+    @login_required
+    def api_workshops_add():
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+
+        workshop_data, error = workshop_from_payload(json_payload())
+        if error:
+            return json_error(error)
+
+        user = session.get('user') or {}
+        state = get_dashboard_state()
+        workshop = {
+            'id': _item_id('workshop'),
+            'title': workshop_data['title'],
+            'description': workshop_data['description'],
+            'status': 'Proposed',
+            'proposerEmail': _viewer_email(),
+            'proposerName': user.get('name', 'A member'),
+            'applicants': [],
+            'runnerEmail': '',
+            'runnerName': '',
+            'eventId': '',
+            'createdAt': utc_iso(),
+        }
+        state['workshops'].insert(0, workshop)
+        save_dashboard_state(state)
+        return flask.jsonify({'workshop': workshop, 'state': state})
+
+    @app.patch('/api/dashboard/workshops/<workshop_id>')
+    @login_required
+    def api_workshops_update(workshop_id):
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+
+        payload = json_payload()
+        is_apply_only = set(payload.keys()) <= {'applying'}
+        if not is_apply_only:
+            role_error = require_leader_api()
+            if role_error:
+                return role_error
+
+        state = get_dashboard_state()
+        workshop = find_by_id(state['workshops'], workshop_id)
+        if not workshop:
+            return json_error('Workshop not found.', 404)
+
+        if is_apply_only:
+            if workshop['status'] != 'Proposed':
+                return json_error('This workshop is no longer open to applicants.')
+            applying = parse_bool(payload.get('applying'))
+            viewer_email = _viewer_email()
+            already_applied = viewer_email in workshop['applicants']
+            if applying == already_applied:
+                return flask.jsonify({'workshop': workshop, 'state': state})
+            if applying:
+                workshop['applicants'].append(viewer_email)
+            else:
+                workshop['applicants'].remove(viewer_email)
+            save_dashboard_state(state)
+
+            user = session.get('user') or {}
+            try:
+                notify_leaders_of_workshop_application(
+                    workshop, viewer_email, user.get('name', 'A member'), applying
+                )
+            except Exception as e:
+                current_app.logger.warning(f'Failed to send workshop application notification: {e}')
+            return flask.jsonify({'workshop': workshop, 'state': state})
+
+        return json_error('Unsupported update.')
 
     # ── Cart ────────────────────────────────────────────────────────────────
 

@@ -59,3 +59,144 @@ def test_dashboard_workshops_page_section_loads_workshops():
 
     assert PAGE_SECTIONS['dashboard_workshops'] == ('workshops',)
     assert 'workshops' in PAGE_SECTIONS['dashboard']
+
+
+def _seed_workshop_club(client, monkeypatch, workshops=None, members=None):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with client.session_transaction() as sess:
+        sess['csrf_token'] = 'tok'
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Workshop Club'},
+            'members': members if members is not None else [],
+            'events': [],
+            'workshops': workshops or [],
+        }
+
+
+HEADERS = {'X-CSRF-Token': 'tok'}
+
+
+def test_propose_workshop_creates_proposed_entry(auth_client, monkeypatch):
+    _seed_workshop_club(
+        auth_client,
+        monkeypatch,
+        members=[
+            {
+                'id': 'm1',
+                'name': 'Test Leader',
+                'email': 'leader@test.com',
+                'role': 'Member',
+                'avatar': '',
+                'status': 'Active',
+            }
+        ],
+    )
+    response = auth_client.post(
+        '/api/dashboard/workshops',
+        headers=HEADERS,
+        json={'title': 'Intro to Git', 'description': 'Version control basics.'},
+    )
+    assert response.status_code == 200
+    workshop = response.get_json()['workshop']
+    assert workshop['title'] == 'Intro to Git'
+    assert workshop['status'] == 'Proposed'
+    assert workshop['proposerEmail'] == 'leader@test.com'
+    assert workshop['applicants'] == []
+    assert workshop['runnerEmail'] == ''
+    assert workshop['eventId'] == ''
+    assert workshop['id']
+    assert workshop['createdAt']
+
+
+def test_propose_workshop_requires_title(auth_client, monkeypatch):
+    _seed_workshop_club(auth_client, monkeypatch)
+    response = auth_client.post(
+        '/api/dashboard/workshops',
+        headers=HEADERS,
+        json={'title': '', 'description': 'Version control basics.'},
+    )
+    assert response.status_code == 400
+
+
+def _base_workshop(**overrides):
+    workshop = {
+        'id': 'w1',
+        'title': 'Intro to Git',
+        'description': 'Basics.',
+        'status': 'Proposed',
+        'proposerEmail': 'other@test.com',
+        'proposerName': 'Other',
+        'applicants': [],
+        'runnerEmail': '',
+        'runnerName': '',
+        'eventId': '',
+        'createdAt': '2026-08-09T00:00:00Z',
+    }
+    workshop.update(overrides)
+    return workshop
+
+
+def test_apply_to_workshop_adds_viewer_to_applicants(auth_client, monkeypatch):
+    _seed_workshop_club(auth_client, monkeypatch, workshops=[_base_workshop()])
+    response = auth_client.patch(
+        '/api/dashboard/workshops/w1', headers=HEADERS, json={'applying': True}
+    )
+    assert response.status_code == 200
+    assert 'leader@test.com' in response.get_json()['workshop']['applicants']
+
+
+def test_withdraw_from_workshop_removes_viewer(auth_client, monkeypatch):
+    _seed_workshop_club(
+        auth_client, monkeypatch, workshops=[_base_workshop(applicants=['leader@test.com'])]
+    )
+    response = auth_client.patch(
+        '/api/dashboard/workshops/w1', headers=HEADERS, json={'applying': False}
+    )
+    assert response.status_code == 200
+    assert response.get_json()['workshop']['applicants'] == []
+
+
+def test_apply_rejected_once_workshop_is_scheduled(auth_client, monkeypatch):
+    _seed_workshop_club(
+        auth_client,
+        monkeypatch,
+        workshops=[
+            _base_workshop(
+                status='Scheduled', runnerEmail='runner@test.com', runnerName='Runner', eventId='e1'
+            )
+        ],
+    )
+    response = auth_client.patch(
+        '/api/dashboard/workshops/w1', headers=HEADERS, json={'applying': True}
+    )
+    assert response.status_code == 400
+
+
+def test_apply_does_not_require_leader_role(auth_client, monkeypatch):
+    _seed_workshop_club(
+        auth_client,
+        monkeypatch,
+        members=[
+            {
+                'id': 'm1',
+                'name': 'Test Leader',
+                'email': 'leader@test.com',
+                'role': 'Member',
+                'avatar': '',
+                'status': 'Active',
+            }
+        ],
+        workshops=[_base_workshop()],
+    )
+    response = auth_client.patch(
+        '/api/dashboard/workshops/w1', headers=HEADERS, json={'applying': True}
+    )
+    assert response.status_code == 200
+
+
+def test_apply_to_missing_workshop_404s(auth_client, monkeypatch):
+    _seed_workshop_club(auth_client, monkeypatch)
+    response = auth_client.patch(
+        '/api/dashboard/workshops/nope', headers=HEADERS, json={'applying': True}
+    )
+    assert response.status_code == 404

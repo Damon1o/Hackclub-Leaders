@@ -99,7 +99,11 @@ def notify_leaders_of_workshop_application(workshop, user_email, user_name, is_a
                 'workshop_application',
                 f'{user_name} {subject_action} "{title}"',
                 body,
-                {'workshopId': workshop.get('id'), 'userEmail': user_email, 'isApplying': is_applying},
+                {
+                    'workshopId': workshop.get('id'),
+                    'userEmail': user_email,
+                    'isApplying': is_applying,
+                },
             )
 
 

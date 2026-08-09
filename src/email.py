@@ -41,6 +41,7 @@ def _html_to_text(html):
 
 # ── Email templates ────────────────────────────────────────────────────────────
 
+
 def render_event_rsvp_confirmation(event, club_name, recipient_name, is_rsvp):
     """Render RSVP confirmation email."""
     action = 'RSVPed to' if is_rsvp else 'removed RSVP from'
@@ -86,7 +87,9 @@ def render_event_rsvp_confirmation(event, club_name, recipient_name, is_rsvp):
 '''
 
 
-def render_workshop_application_notification(workshop, club_name, recipient_name, applicant_name, is_applying):
+def render_workshop_application_notification(
+    workshop, club_name, recipient_name, applicant_name, is_applying
+):
     """Render the email sent to leaders when a member applies to run (or withdraws from) a workshop."""
     action = 'applied to run' if is_applying else 'withdrew their application for'
     return f'''

@@ -199,6 +199,12 @@
                         <span class="notification-badge" id="notificationBadge" aria-hidden="true"></span>
                     </button>
                     {% endif %}
+                    {% if current_user %}
+                    <div class="coin-balance-chip" id="coinBalanceChip" aria-label="Club coins balance">
+                        {{ sidebar_icon('coin', 16) }}
+                        <span id="coinBalanceAmount">0</span>
+                    </div>
+                    {% endif %}
                 </div>
                 {% block header_right %}{% endblock %}
             </header>

@@ -137,6 +137,13 @@
             .replace(/'/g, '&#039;');
     }
 
+    const COIN_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" class="coin-icon" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 6.5v11"/><path d="M15 9a3 3 0 0 0-3-1h-.5a2 2 0 0 0 0 4h1a2 2 0 0 1 0 4H12a3 3 0 0 1-3-1"/></svg>';
+
+    function coinLabel(cost) {
+        if (cost === null || cost === undefined) return 'TBD';
+        return `${COIN_ICON_SVG}<span>${Number(cost)}</span>`;
+    }
+
     function initials(name) {
         return String(name || 'User')
             .trim()
@@ -993,6 +1000,11 @@
         if (node) node.textContent = joinLink();
     }
 
+    function renderCoinBalance() {
+        const amount = $('#coinBalanceAmount');
+        if (amount) amount.textContent = Number(settings().coinBalance || 0);
+    }
+
     // Shop filters shown in the catalog. "All" is special (shows everything);
     // the rest match a shop item's `filter` field. Each renders an image from
     // SHOP_FILTER_IMAGE_BASE + "<filter>.png".
@@ -1042,8 +1054,8 @@
                     </div>
                     <h3>${escapeHtml(item.name)}</h3>
                     <div class="card-footer-line">
-                        <span class="shop-price">${escapeHtml(item.cost)}</span>
-                        <button class="btn-secondary small" type="button" data-add-cart="${escapeHtml(item.id)}">Add</button>
+                        <span class="shop-price">${coinLabel(item.cost)}</span>
+                        <button class="btn-secondary small" type="button" data-add-cart="${escapeHtml(item.id)}" ${item.cost == null ? 'disabled' : ''}>Add</button>
                     </div>
                 </article>
             `).join('');
@@ -1058,7 +1070,7 @@
                     <article class="cart-item">
                         <div>
                             <strong>${escapeHtml(item.name || entry.id)}</strong>
-                            <span>${escapeHtml(item.cost || '')}</span>
+                            <span>${coinLabel(entry.coinCost)}</span>
                         </div>
                         <div class="quantity-control">
                             <button class="icon-button" type="button" data-cart-step="-1" data-cart-item="${escapeHtml(entry.id)}">-</button>
@@ -1071,8 +1083,14 @@
             }).join('');
         }
 
+        const subtotal = cart().reduce((total, entry) => total + Number(entry.coinCost || 0) * Number(entry.quantity || 0), 0);
+        const subtotalNode = $('#cartSubtotal');
+        const subtotalAmount = $('#cartSubtotalAmount');
+        if (subtotalNode) subtotalNode.hidden = cart().length === 0;
+        if (subtotalAmount) subtotalAmount.innerHTML = coinLabel(subtotal);
+
         if (empty) empty.hidden = cart().length > 0;
-        if (checkoutButton) checkoutButton.disabled = cart().length === 0;
+        if (checkoutButton) checkoutButton.disabled = cart().length === 0 || subtotal > Number(settings().coinBalance || 0);
         renderOrders();
         renderItemRequests();
     }
@@ -1497,6 +1515,7 @@ const CHECKLIST_ITEMS = [
         renderProjects();
         renderLevels();
         renderJoinLink();
+        renderCoinBalance();
         renderShop();
         renderNewsletters();
         renderChat();

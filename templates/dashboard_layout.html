@@ -105,6 +105,11 @@
                     title="Events" aria-label="Events" data-i18n-attr="title:side.events;aria-label:side.events">
                     {{ sidebar_icon('event-add') }}
                 </a>
+                <a href="/dashboard/workshops"
+                    class="dashboard-sidebar-link {% if current_path == '/dashboard/workshops' %}active{% endif %}"
+                    title="Workshops" aria-label="Workshops" data-i18n-attr="title:side.workshops;aria-label:side.workshops">
+                    {{ sidebar_icon('workshop') }}
+                </a>
                 <a href="/dashboard/ships"
                     class="dashboard-sidebar-link {% if current_path == '/dashboard/ships' %}active{% endif %}"
                     title="Ships" aria-label="Ships" data-i18n-attr="title:side.ships;aria-label:side.ships">

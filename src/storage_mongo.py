@@ -44,6 +44,7 @@ CHILD_COLLECTIONS: Final[list[str]] = [
     'messages',
     'notifications',
     'ledger',
+    'workshops',
 ]
 
 # Every index the app's read paths rely on: {collection: [(keys, unique), ...]}.
@@ -88,6 +89,9 @@ INDEXES: Final[dict[str, list[tuple[list[tuple[str, int]], bool]]]] = {
     ],
     'ledger': [
         ([('clubKey', ASCENDING), ('at', DESCENDING)], False),
+    ],
+    'workshops': [
+        ([('clubKey', ASCENDING), ('createdAt', DESCENDING)], False),
     ],
 }
 
@@ -335,6 +339,9 @@ class MongoStorage:
             elif key == 'ledger':
                 # Newest first: the bell menu's counterpart for coin history.
                 sort = [('at', DESCENDING)]
+            elif key == 'workshops':
+                # Newest-proposed-first, matching the catalog page's default order.
+                sort = [('createdAt', DESCENDING)]
             docs = self._find(key, {'clubKey': club_key}, sort=sort)
             state[key] = [self._to_item(doc) for doc in docs]
         if lite:

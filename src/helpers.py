@@ -70,6 +70,20 @@ class Project(TypedDict):
     date: str
 
 
+class Workshop(TypedDict):
+    id: str
+    title: str
+    description: str
+    status: str  # 'Proposed' | 'Scheduled' | 'Run'
+    proposerEmail: str
+    proposerName: str
+    applicants: list[str]  # member emails who applied to run it
+    runnerEmail: str  # '' until Scheduled
+    runnerName: str  # '' until Scheduled
+    eventId: str  # '' until Scheduled; id of the linked Event
+    createdAt: str
+
+
 class ShopItem(TypedDict):
     id: str
     name: str
@@ -163,6 +177,7 @@ class DashboardState(TypedDict, total=False):
     messages: list[Message]
     newsletters: list[Newsletter]
     ledger: list[CoinTransaction]
+    workshops: list[Workshop]
     settings: Settings
 
 
@@ -549,6 +564,7 @@ def default_dashboard_state() -> DashboardState:
         'messages': [],
         'notifications': [],
         'ledger': [],
+        'workshops': [],
         'newsletters': [
             {
                 'id': 'dispatch-hardware-grants',
@@ -731,6 +747,7 @@ STATE_SECTIONS: Final[tuple[str, ...]] = (
     'messages',
     'notifications',
     'ledger',
+    'workshops',
 )
 
 # Sections every page needs regardless of what it renders: the roster drives
@@ -743,7 +760,7 @@ ALWAYS_LOADED: Final[frozenset[str]] = frozenset({'members', 'notifications'})
 # get_dashboard_state() drops the unlisted keys, and both shared backends
 # treat a missing key as "leave this section alone" on save.
 PAGE_SECTIONS: Final[dict[str, tuple[str, ...]]] = {
-    'dashboard': ('events', 'projects', 'newsletters'),
+    'dashboard': ('events', 'projects', 'newsletters', 'workshops'),
     'dashboard_team': (),
     'dashboard_events': ('events',),
     'dashboard_ships': ('projects',),
@@ -751,6 +768,7 @@ PAGE_SECTIONS: Final[dict[str, tuple[str, ...]]] = {
     'dashboard_levels': ('projects',),
     'dashboard_tools': (),
     'dashboard_shop': ('orders', 'itemRequests'),
+    'dashboard_workshops': ('workshops',),
     'dashboard_chat': ('channels', 'messages'),
     'dashboard_newsletters': ('newsletters',),
     'dashboard_map': (),
@@ -1115,6 +1133,16 @@ def event_from_payload(
         'rsvp': parse_bool(payload.get('rsvp', existing.get('rsvp', False))),
         'attendees': attendees,
     }, None
+
+
+def workshop_from_payload(payload: dict[str, Any]) -> tuple[dict[str, str] | None, str | None]:
+    title = clean_text(payload.get('title'), max_len=120)
+    description = clean_text(payload.get('description'), max_len=2000)
+    if not title:
+        return None, 'Workshop title is required.'
+    if not description:
+        return None, 'Workshop description is required.'
+    return {'title': title, 'description': description}, None
 
 
 # ── Project helpers ────────────────────────────────────────────────────────────

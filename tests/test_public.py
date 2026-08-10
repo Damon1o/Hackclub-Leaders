@@ -246,3 +246,29 @@ def test_shop_page_has_cart_subtotal_shell(auth_client, monkeypatch):
     response = auth_client.get('/dashboard/shop')
     assert response.status_code == 200
     assert b'id="cartSubtotal"' in response.data
+
+
+def test_dashboard_layout_has_workshops_nav_link(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {'settings': {'clubName': 'Nav Club'}, 'members': []}
+    response = auth_client.get('/dashboard')
+    assert response.status_code == 200
+    assert b'/dashboard/workshops' in response.data
+    assert b'id="homeWorkshopTotal"' in response.data
+
+
+def test_workshops_page_has_expected_shell(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Nav Club'},
+            'members': [],
+            'workshops': [],
+        }
+    response = auth_client.get('/dashboard/workshops')
+    assert response.status_code == 200
+    assert b'id="workshopGrid"' in response.data
+    assert b'id="workshopProposeModal"' in response.data
+    assert b'id="workshopDetailModal"' in response.data
+    assert b'id="workshopScheduleModal"' in response.data

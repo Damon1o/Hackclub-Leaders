@@ -50,6 +50,10 @@
         return dashboardState.orders || [];
     }
 
+    function workshops() {
+        return dashboardState.workshops || [];
+    }
+
     function newsletters() {
         return dashboardState.newsletters || [];
     }
@@ -199,7 +203,7 @@
     // src/helpers.py — the server drops everything else, so a page fetches only
     // what it paints. Pages missing from this map get the full state.
     const PAGE_SECTIONS = {
-        dashboard: ['events', 'projects', 'newsletters'],
+        dashboard: ['events', 'projects', 'newsletters', 'workshops'],
         team: [],
         events: ['events'],
         ships: ['projects'],
@@ -207,6 +211,7 @@
         levels: ['projects'],
         tools: [],
         shop: ['orders', 'itemRequests'],
+        workshops: ['workshops'],
         chat: ['channels', 'messages'],
         newsletters: ['newsletters'],
         map: [],
@@ -431,6 +436,13 @@
         $('#deleteEventButton').hidden = false;
         setFormError('eventFormError', '');
         openModal('eventModal');
+    }
+
+    function prepareNewWorkshop() {
+        const form = $('#workshopProposeForm');
+        if (!form) return;
+        form.reset();
+        setFormError('workshopProposeFormError', '');
     }
 
     const REPEAT_LABELS = {
@@ -1095,6 +1107,102 @@
         renderItemRequests();
     }
 
+    const WORKSHOP_FILTERS = ['All', 'Proposed', 'Scheduled', 'Run'];
+    let workshopFilter = 'All';
+    let openWorkshopId = '';
+
+    function renderWorkshopFilters() {
+        const bar = $('#workshopFilters');
+        if (!bar) return;
+        bar.innerHTML = WORKSHOP_FILTERS.map((filter) => {
+            const active = filter === workshopFilter;
+            return `
+                <button class="shop-filter-chip${active ? ' is-active' : ''}" type="button" role="tab"
+                    aria-selected="${active}" data-workshop-filter="${escapeHtml(filter)}">
+                    <span>${escapeHtml(filter)}</span>
+                </button>
+            `;
+        }).join('');
+    }
+
+    function renderWorkshopDetail(workshop) {
+        const titleNode = $('#workshopDetailTitle');
+        if (titleNode) titleNode.textContent = workshop.title;
+        const body = $('#workshopDetailBody');
+        const actionsNode = $('#workshopDetailActions');
+        if (!body || !actionsNode) return;
+
+        const applied = workshop.applicants.includes(viewerEmail);
+        const applicantRows = workshop.applicants.map((email) => {
+            const person = members().find((m) => m.email === email);
+            const name = person ? person.name : email;
+            return `
+                <div class="order-row">
+                    <span>${escapeHtml(name)}</span>
+                    ${isLeader && workshop.status === 'Proposed'
+                        ? `<button class="btn-secondary small" type="button" data-schedule-workshop="${escapeHtml(workshop.id)}::${escapeHtml(email)}">Schedule</button>`
+                        : ''}
+                </div>
+            `;
+        }).join('');
+
+        const runnerLine = workshop.runnerName
+            ? `<p><strong>Run by:</strong> ${escapeHtml(workshop.runnerName)}</p>`
+            : '';
+
+        body.innerHTML = `
+            <span class="status-chip">${escapeHtml(workshop.status)}</span>
+            <p>${escapeHtml(workshop.description)}</p>
+            <p><strong>Proposed by:</strong> ${escapeHtml(workshop.proposerName)}</p>
+            ${runnerLine}
+            ${isLeader ? `<h3>Applicants</h3><div class="workshop-applicant-list" style="display:grid; gap:8px;">${applicantRows || '<p>No applicants yet.</p>'}</div>` : ''}
+        `;
+
+        let actionsHtml = '';
+        if (workshop.status === 'Proposed') {
+            actionsHtml = applied
+                ? `<button class="btn-secondary" type="button" data-withdraw-workshop="${escapeHtml(workshop.id)}">Withdraw application</button>`
+                : `<button class="btn-primary" type="button" data-apply-workshop="${escapeHtml(workshop.id)}">Apply to run</button>`;
+            if (isLeader) {
+                actionsHtml = `<button class="text-button" type="button" data-delete-workshop="${escapeHtml(workshop.id)}">Delete proposal</button>` + actionsHtml;
+            }
+        } else if (workshop.status === 'Scheduled' && isLeader) {
+            actionsHtml = `<button class="btn-primary" type="button" data-mark-run-workshop="${escapeHtml(workshop.id)}">Mark as run</button>`;
+        }
+        actionsNode.innerHTML = actionsHtml;
+    }
+
+    function renderWorkshops() {
+        if (page !== 'workshops') return;
+        removeSkeletons('workshops');
+        const grid = $('#workshopGrid');
+        const empty = $('#workshopsEmpty');
+        renderWorkshopFilters();
+
+        const all = workshops();
+        const visible = workshopFilter === 'All' ? all : all.filter((w) => w.status === workshopFilter);
+
+        if (grid) {
+            grid.innerHTML = visible.map((workshop, index) => `
+                <article class="item-card workshop-card" style="--card-index: ${index}" data-open-workshop="${escapeHtml(workshop.id)}">
+                    <span class="status-chip">${escapeHtml(workshop.status)}</span>
+                    <h3>${escapeHtml(workshop.title)}</h3>
+                    <p>${escapeHtml(workshop.description)}</p>
+                    <div class="card-footer-line">
+                        <span>${workshop.applicants.length} applicant${workshop.applicants.length === 1 ? '' : 's'}</span>
+                    </div>
+                </article>
+            `).join('');
+        }
+        if (empty) empty.hidden = visible.length > 0;
+
+        if (openWorkshopId) {
+            const current = all.find((w) => w.id === openWorkshopId);
+            if (current) renderWorkshopDetail(current);
+            else closeModal('workshopDetailModal');
+        }
+    }
+
     function renderItemRequests() {
         const list = $('#itemRequestList');
         if (!list) return;
@@ -1285,6 +1393,7 @@ const CHECKLIST_ITEMS = [
         $('#homeEventTotal').textContent = upcoming.length;
         $('#homeRsvpTotal').textContent = upcoming.filter((event) => event.rsvp).length;
         $('#homeOrderTotal').textContent = orders().length;
+        $('#homeWorkshopTotal').textContent = workshops().filter((w) => w.status === 'Run').length;
         $('#homeShipTotal').textContent = shippedProjects().length;
 
         const progress = levelProgress();
@@ -1511,6 +1620,7 @@ const CHECKLIST_ITEMS = [
         renderHome();
         renderTeam();
         renderEvents();
+        renderWorkshops();
         renderShips();
         renderProjects();
         renderLevels();
@@ -1640,6 +1750,7 @@ const CHECKLIST_ITEMS = [
                 if (modalId === 'dispatchModal') prepareNewDispatch();
                 if (modalId === 'projectModal') prepareNewProject();
                 if (modalId === 'channelModal') prepareNewChannel();
+                if (modalId === 'workshopProposeModal') prepareNewWorkshop();
                 openModal(modalId);
                 return;
             }
@@ -1760,6 +1871,94 @@ const CHECKLIST_ITEMS = [
             if (shopFilterChip) {
                 shopFilter = shopFilterChip.dataset.shopFilter;
                 renderShop();
+                return;
+            }
+
+            const workshopFilterChip = event.target.closest('[data-workshop-filter]');
+            if (workshopFilterChip) {
+                workshopFilter = workshopFilterChip.dataset.workshopFilter;
+                renderWorkshops();
+                return;
+            }
+
+            const openWorkshop = event.target.closest('[data-open-workshop]');
+            if (openWorkshop) {
+                openWorkshopId = openWorkshop.dataset.openWorkshop;
+                const workshop = workshops().find((w) => w.id === openWorkshopId);
+                if (!workshop) return;
+                renderWorkshopDetail(workshop);
+                openModal('workshopDetailModal');
+                return;
+            }
+
+            const applyWorkshop = event.target.closest('[data-apply-workshop]');
+            if (applyWorkshop) {
+                try {
+                    await apiRequest(`/api/dashboard/workshops/${applyWorkshop.dataset.applyWorkshop}`, {
+                        method: 'PATCH',
+                        body: { applying: true },
+                    });
+                    showToast('Applied to run this workshop.');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+                return;
+            }
+
+            const withdrawWorkshop = event.target.closest('[data-withdraw-workshop]');
+            if (withdrawWorkshop) {
+                try {
+                    await apiRequest(`/api/dashboard/workshops/${withdrawWorkshop.dataset.withdrawWorkshop}`, {
+                        method: 'PATCH',
+                        body: { applying: false },
+                    });
+                    showToast('Application withdrawn.');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+                return;
+            }
+
+            const markRunWorkshop = event.target.closest('[data-mark-run-workshop]');
+            if (markRunWorkshop) {
+                try {
+                    await apiRequest(`/api/dashboard/workshops/${markRunWorkshop.dataset.markRunWorkshop}`, {
+                        method: 'PATCH',
+                        body: { status: 'Run' },
+                    });
+                    showToast('Workshop marked as run.');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+                return;
+            }
+
+            const deleteWorkshop = event.target.closest('[data-delete-workshop]');
+            if (deleteWorkshop) {
+                try {
+                    await apiRequest(`/api/dashboard/workshops/${deleteWorkshop.dataset.deleteWorkshop}`, { method: 'DELETE' });
+                    closeModal('workshopDetailModal');
+                    showToast('Proposal deleted.');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+                return;
+            }
+
+            const scheduleWorkshopTrigger = event.target.closest('[data-schedule-workshop]');
+            if (scheduleWorkshopTrigger) {
+                const [workshopId, runnerEmail] = String(scheduleWorkshopTrigger.dataset.scheduleWorkshop).split('::');
+                const runner = members().find((m) => m.email === runnerEmail);
+                const form = $('#workshopScheduleForm');
+                if (form) {
+                    form.reset();
+                    form.elements.workshopId.value = workshopId;
+                    form.elements.runnerEmail.value = runnerEmail;
+                }
+                const nameLine = $('#workshopScheduleRunnerName');
+                if (nameLine) nameLine.textContent = `Running: ${runner ? runner.name : runnerEmail}`;
+                setFormError('workshopScheduleFormError', '');
+                openModal('workshopScheduleModal');
                 return;
             }
 
@@ -2120,6 +2319,44 @@ const CHECKLIST_ITEMS = [
                 showToast('Event deleted.');
             } catch (error) {
                 setFormError('eventFormError', error.message);
+            }
+        });
+
+        $('#workshopProposeForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const data = formObject(form);
+            setFormError('workshopProposeFormError', '');
+            try {
+                await apiRequest('/api/dashboard/workshops', { method: 'POST', body: data });
+                closeModal('workshopProposeModal');
+                showToast('Workshop proposed.');
+            } catch (error) {
+                setFormError('workshopProposeFormError', error.message);
+            }
+        });
+
+        $('#workshopScheduleForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const data = formObject(form);
+            setFormError('workshopScheduleFormError', '');
+            try {
+                await apiRequest(`/api/dashboard/workshops/${data.workshopId}`, {
+                    method: 'PATCH',
+                    body: {
+                        status: 'Scheduled',
+                        runnerEmail: data.runnerEmail,
+                        date: data.date,
+                        time: data.time,
+                        location: data.location,
+                    },
+                });
+                closeModal('workshopScheduleModal');
+                closeModal('workshopDetailModal');
+                showToast('Workshop scheduled.');
+            } catch (error) {
+                setFormError('workshopScheduleFormError', error.message);
             }
         });
 

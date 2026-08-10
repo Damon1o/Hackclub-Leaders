@@ -31,11 +31,13 @@ The Airtable schema this module expects (table names overridable via env):
                Club Email
   Notifications App Id*, Type, Title, Message, Data, Read, Created At, Club Email
   Ledger       App Id*, Delta, Kind, Ref, Note, At, Club Email
+  Workshops    App Id*, Title, Description, Status, Proposer Email, Proposer Name,
+               Applicants, Runner Email, Runner Name, Event Id, Created At, Club Email
 
 A "ship" is just a Project with Status = "Shipped" (set when an admin approves a
 Submitted project) — there is no separate Ships table.
 
-(* = used as the lookup key; "Items" and "Data" are JSON text. Checkbox fields:
+(* = used as the lookup key; "Items", "Data", and "Applicants" are JSON text. Checkbox fields:
 Public Directory, Email Notifications, Dark Mode Default, Newsletter
 Subscribed, RSVP, Read. Attendees, Coin Balance, and Coins Spent are numbers.)
 
@@ -104,6 +106,17 @@ LEDGER_FIELDS: Final[list[tuple[str, str]]] = [
     ('ref', 'Ref'),
     ('note', 'Note'),
     ('at', 'At'),
+]
+WORKSHOP_FIELDS: Final[list[tuple[str, str]]] = [
+    ('title', 'Title'),
+    ('description', 'Description'),
+    ('status', 'Status'),
+    ('proposerEmail', 'Proposer Email'),
+    ('proposerName', 'Proposer Name'),
+    ('runnerEmail', 'Runner Email'),
+    ('runnerName', 'Runner Name'),
+    ('eventId', 'Event Id'),
+    ('createdAt', 'Created At'),
 ]
 CHANNEL_FIELDS: Final[list[tuple[str, str]]] = [
     ('name', 'Name'),
@@ -254,6 +267,7 @@ class AirtableStorage:
         ('MESSAGES', 'Messages', 'messages', MESSAGE_FIELDS),
         ('NOTIFICATIONS', 'Notifications', 'notifications', NOTIFICATION_FIELDS),
         ('LEDGER', 'Ledger', 'ledger', LEDGER_FIELDS),
+        ('WORKSHOPS', 'Workshops', 'workshops', WORKSHOP_FIELDS),
     ]
 
     # Tables that degrade gracefully if the base doesn't have them yet (that
@@ -267,6 +281,7 @@ class AirtableStorage:
         'messages',
         'notifications',
         'ledger',
+        'workshops',
     }
 
     def __init__(self, token: str | None = None, base_id: str | None = None) -> None:
@@ -658,6 +673,11 @@ class AirtableStorage:
                         item['data'] = json.loads(fields.get('Data') or '{}')
                     except ValueError:
                         item['data'] = {}
+                if state_key == 'workshops':
+                    try:
+                        item['applicants'] = json.loads(fields.get('Applicants') or '[]')
+                    except ValueError:
+                        item['applicants'] = []
                 items.append(item)
             state[state_key] = items
         return state
@@ -739,6 +759,8 @@ class AirtableStorage:
             fields['Reactions'] = json.dumps(item.get('reactions') or {})
         if state_key == 'notifications':
             fields['Data'] = json.dumps(item.get('data') or {})
+        if state_key == 'workshops':
+            fields['Applicants'] = json.dumps(item.get('applicants') or [])
         return fields
 
     @staticmethod

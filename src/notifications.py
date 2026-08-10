@@ -9,14 +9,22 @@ from .email import (
     render_workshop_scheduled_confirmation,
     send_email,
 )
-from .helpers import COINS_PER_APPROVED_SHIP, _item_id, get_dashboard_state, save_dashboard_state, utc_iso
+from .helpers import (
+    COINS_PER_APPROVED_SHIP,
+    _item_id,
+    get_dashboard_state,
+    save_dashboard_state,
+    utc_iso,
+)
 
 
 def _club_name():
     return get_dashboard_state().get('settings', {}).get('clubName', 'Your Club')
 
 
-def add_in_app_notification(user_email, notification_type, title, message, data=None, *, state=None):
+def add_in_app_notification(
+    user_email, notification_type, title, message, data=None, *, state=None
+):
     """Add a notification to the user's in-app notification center.
 
     `state` lets a caller already holding a specific club's state (e.g. an
@@ -179,7 +187,9 @@ def notify_owner_of_project_review(state, project, approved):
         send_email(
             subject=f'🎉 "{title}" was approved — +{COINS_PER_APPROVED_SHIP} coins!',
             recipients=owner_email,
-            template=render_project_approved(project, club_name, owner_name, COINS_PER_APPROVED_SHIP),
+            template=render_project_approved(
+                project, club_name, owner_name, COINS_PER_APPROVED_SHIP
+            ),
         )
         add_in_app_notification(
             owner_email,

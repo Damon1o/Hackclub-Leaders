@@ -235,9 +235,20 @@ def test_approve_project_awards_coins(admin_client, monkeypatch):
 
 def test_reapproving_shipped_project_does_not_double_award(admin_client, monkeypatch):
     monkeypatch.setenv('STORAGE_BACKEND', 'session')
-    _seed_project(admin_client, status='Shipped', ledger=[
-        {'id': 'c1', 'delta': 25, 'kind': 'ship_approved', 'ref': 'p1', 'note': '', 'at': '2026-08-01T00:00:00Z'}
-    ])
+    _seed_project(
+        admin_client,
+        status='Shipped',
+        ledger=[
+            {
+                'id': 'c1',
+                'delta': 25,
+                'kind': 'ship_approved',
+                'ref': 'p1',
+                'note': '',
+                'at': '2026-08-01T00:00:00Z',
+            }
+        ],
+    )
     response = admin_client.patch(
         '/api/admin/projects/admin@test.com/p1', json={'status': 'Shipped'}, headers=HEADERS
     )

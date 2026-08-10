@@ -108,7 +108,10 @@ def test_mark_unread_again(client):
 
 def test_mark_unknown_notification_is_404(client):
     c, h = _seed(client)
-    assert c.patch('/api/dashboard/notifications/nope', json={'read': True}, headers=h).status_code == 404
+    assert (
+        c.patch('/api/dashboard/notifications/nope', json={'read': True}, headers=h).status_code
+        == 404
+    )
 
 
 def test_mark_requires_csrf(client):
@@ -194,11 +197,17 @@ def test_notify_owner_of_project_review_approved(monkeypatch):
 
     sent = []
     monkeypatch.setattr(
-        notifications, 'send_email',
+        notifications,
+        'send_email',
         lambda subject, recipients, template: sent.append((subject, recipients, template)),
     )
     state = {'settings': {'clubName': 'Test Club'}, 'notifications': []}
-    project = {'id': 'p1', 'name': 'Tide Tracker', 'ownerEmail': 'Owner@Test.com', 'ownerName': 'Owner'}
+    project = {
+        'id': 'p1',
+        'name': 'Tide Tracker',
+        'ownerEmail': 'Owner@Test.com',
+        'ownerName': 'Owner',
+    }
 
     notifications.notify_owner_of_project_review(state, project, approved=True)
 
@@ -219,11 +228,17 @@ def test_notify_owner_of_project_review_rejected(monkeypatch):
 
     sent = []
     monkeypatch.setattr(
-        notifications, 'send_email',
+        notifications,
+        'send_email',
         lambda subject, recipients, template: sent.append((subject, recipients, template)),
     )
     state = {'settings': {'clubName': 'Test Club'}, 'notifications': []}
-    project = {'id': 'p1', 'name': 'Tide Tracker', 'ownerEmail': 'owner@test.com', 'ownerName': 'Owner'}
+    project = {
+        'id': 'p1',
+        'name': 'Tide Tracker',
+        'ownerEmail': 'owner@test.com',
+        'ownerName': 'Owner',
+    }
 
     notifications.notify_owner_of_project_review(state, project, approved=False)
 
@@ -237,7 +252,8 @@ def test_notify_owner_of_project_review_skips_ownerless_project(monkeypatch):
 
     sent = []
     monkeypatch.setattr(
-        notifications, 'send_email',
+        notifications,
+        'send_email',
         lambda subject, recipients, template: sent.append((subject, recipients, template)),
     )
     state = {'settings': {'clubName': 'Test Club'}, 'notifications': []}

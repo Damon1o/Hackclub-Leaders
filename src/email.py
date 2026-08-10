@@ -226,3 +226,94 @@ def render_project_submitted(project, club_name, recipient_name):
 </body>
 </html>
 '''
+
+
+def render_project_approved(project, club_name, recipient_name, coins_awarded):
+    """Render the email sent to a member when their shipped project is approved."""
+    return f'''
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Project Approved</title>
+    <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }}
+        .project-card {{ background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+        .coin-banner {{ background: #fff8e1; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center; font-weight: 600; font-size: 18px; }}
+        .footer {{ text-align: center; color: #999; font-size: 12px; margin-top: 30px; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 style="margin: 0; font-size: 24px;">🎉 Project Approved</h1>
+        <p style="margin: 10px 0 0; opacity: 0.9;">{escape(club_name)}</p>
+    </div>
+    <div class="content">
+        <p>Hi {escape(recipient_name)},</p>
+        <p>Your project shipped:</p>
+
+        <div class="project-card">
+            <p style="margin: 0; font-weight: 600; font-size: 18px;">{escape(project.get('name', 'Untitled Project'))}</p>
+        </div>
+
+        <div class="coin-banner">+{escape(str(coins_awarded))} coins awarded 🪙</div>
+
+        <p style="text-align: center;">
+            <a href="{os.environ.get('BASE_URL', '')}/dashboard/projects" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">View Your Projects</a>
+        </p>
+
+        <div class="footer">
+            <p>You're receiving this because you submitted a project.</p>
+        </div>
+    </div>
+</body>
+</html>
+'''
+
+
+def render_project_rejected(project, club_name, recipient_name):
+    """Render the email sent to a member when their submitted project is sent back to Draft."""
+    return f'''
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Project Needs Changes</title>
+    <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }}
+        .project-card {{ background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+        .footer {{ text-align: center; color: #999; font-size: 12px; margin-top: 30px; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 style="margin: 0; font-size: 24px;">Project Sent Back to Draft</h1>
+        <p style="margin: 10px 0 0; opacity: 0.9;">{escape(club_name)}</p>
+    </div>
+    <div class="content">
+        <p>Hi {escape(recipient_name)},</p>
+        <p>A club leader reviewed your project and sent it back to Draft:</p>
+
+        <div class="project-card">
+            <p style="margin: 0; font-weight: 600; font-size: 18px;">{escape(project.get('name', 'Untitled Project'))}</p>
+        </div>
+
+        <p>Make any changes it needs and resubmit when it's ready.</p>
+
+        <p style="text-align: center;">
+            <a href="{os.environ.get('BASE_URL', '')}/dashboard/projects" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">View Your Projects</a>
+        </p>
+
+        <div class="footer">
+            <p>You're receiving this because you submitted a project.</p>
+        </div>
+    </div>
+</body>
+</html>
+'''

@@ -2,12 +2,14 @@
 
 from .email import (
     render_event_rsvp_confirmation,
+    render_project_approved,
+    render_project_rejected,
     render_project_submitted,
     render_workshop_application_notification,
     render_workshop_scheduled_confirmation,
     send_email,
 )
-from .helpers import _item_id, get_dashboard_state, save_dashboard_state, utc_iso
+from .helpers import COINS_PER_APPROVED_SHIP, _item_id, get_dashboard_state, save_dashboard_state, utc_iso
 
 
 def _club_name():
@@ -155,3 +157,49 @@ def notify_admins_of_project_submission(project):
                 f'{project.get("ownerName", "A member")} submitted a project for review.',
                 {'projectId': project.get('id'), 'clubKey': _club_key()},
             )
+
+
+def notify_owner_of_project_review(state, project, approved):
+    """Notify a project's owner once a leader/admin reviews their submission.
+
+    Takes the reviewed club's already-loaded `state` and mutates it in
+    place — the caller persists once, together with the status change and
+    (on approval) the coin award. Silently no-ops for a project with no
+    owner email (shouldn't happen for a real submission, but a review
+    action should never 500 over it).
+    """
+    owner_email = (project.get('ownerEmail') or '').strip().lower()
+    if not owner_email:
+        return
+    club_name = (state.get('settings') or {}).get('clubName') or 'Your Club'
+    owner_name = project.get('ownerName') or 'there'
+    title = project.get('name') or 'Untitled'
+
+    if approved:
+        send_email(
+            subject=f'🎉 "{title}" was approved — +{COINS_PER_APPROVED_SHIP} coins!',
+            recipients=owner_email,
+            template=render_project_approved(project, club_name, owner_name, COINS_PER_APPROVED_SHIP),
+        )
+        add_in_app_notification(
+            owner_email,
+            'project_reviewed',
+            f'"{title}" was approved!',
+            f'You earned {COINS_PER_APPROVED_SHIP} coins for shipping this project.',
+            {'projectId': project.get('id'), 'approved': True},
+            state=state,
+        )
+    else:
+        send_email(
+            subject=f'"{title}" needs changes before it can ship',
+            recipients=owner_email,
+            template=render_project_rejected(project, club_name, owner_name),
+        )
+        add_in_app_notification(
+            owner_email,
+            'project_reviewed',
+            f'"{title}" was sent back to Draft',
+            'A club leader reviewed your project and sent it back to Draft. Make changes and resubmit when ready.',
+            {'projectId': project.get('id'), 'approved': False},
+            state=state,
+        )

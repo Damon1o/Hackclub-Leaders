@@ -184,3 +184,66 @@ def test_add_in_app_notification_with_explicit_state_caps_at_100():
     add_in_app_notification('owner@test.com', 'type', 'Title', 'Message', state=state)
     assert len(state['notifications']) == 100
     assert state['notifications'][0]['type'] == 'type'
+
+
+# ── notify_owner_of_project_review ───────────────────────────────────────────
+
+
+def test_notify_owner_of_project_review_approved(monkeypatch):
+    from src import notifications
+
+    sent = []
+    monkeypatch.setattr(
+        notifications, 'send_email',
+        lambda subject, recipients, template: sent.append((subject, recipients, template)),
+    )
+    state = {'settings': {'clubName': 'Test Club'}, 'notifications': []}
+    project = {'id': 'p1', 'name': 'Tide Tracker', 'ownerEmail': 'Owner@Test.com', 'ownerName': 'Owner'}
+
+    notifications.notify_owner_of_project_review(state, project, approved=True)
+
+    assert len(sent) == 1
+    subject, recipients, template = sent[0]
+    assert 'Tide Tracker' in subject
+    assert recipients == 'owner@test.com'
+    assert '25' in template
+
+    assert len(state['notifications']) == 1
+    note = state['notifications'][0]
+    assert note['type'] == 'project_reviewed'
+    assert note['data'] == {'projectId': 'p1', 'approved': True}
+
+
+def test_notify_owner_of_project_review_rejected(monkeypatch):
+    from src import notifications
+
+    sent = []
+    monkeypatch.setattr(
+        notifications, 'send_email',
+        lambda subject, recipients, template: sent.append((subject, recipients, template)),
+    )
+    state = {'settings': {'clubName': 'Test Club'}, 'notifications': []}
+    project = {'id': 'p1', 'name': 'Tide Tracker', 'ownerEmail': 'owner@test.com', 'ownerName': 'Owner'}
+
+    notifications.notify_owner_of_project_review(state, project, approved=False)
+
+    assert len(sent) == 1
+    assert 'Draft' in state['notifications'][0]['title']
+    assert state['notifications'][0]['data']['approved'] is False
+
+
+def test_notify_owner_of_project_review_skips_ownerless_project(monkeypatch):
+    from src import notifications
+
+    sent = []
+    monkeypatch.setattr(
+        notifications, 'send_email',
+        lambda subject, recipients, template: sent.append((subject, recipients, template)),
+    )
+    state = {'settings': {'clubName': 'Test Club'}, 'notifications': []}
+    project = {'id': 'p1', 'name': 'Orphan Project', 'ownerEmail': ''}
+
+    notifications.notify_owner_of_project_review(state, project, approved=True)
+
+    assert sent == []
+    assert state['notifications'] == []

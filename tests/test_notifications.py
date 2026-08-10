@@ -159,3 +159,28 @@ def test_default_state_has_a_notifications_list(auth_client, monkeypatch):
     with auth_client.session_transaction() as sess:
         sess['dashboard_state'] = {'settings': {'clubName': 'C'}, 'members': []}
     assert auth_client.get('/api/dashboard/notifications').get_json()['total'] == 0
+
+
+# ── add_in_app_notification with an explicit state ──────────────────────────
+
+
+def test_add_in_app_notification_with_explicit_state_skips_ambient_lookup():
+    from src.notifications import add_in_app_notification
+
+    state = {'notifications': []}
+    notification = add_in_app_notification(
+        'owner@test.com', 'project_reviewed', 'Title', 'Message', {'k': 'v'}, state=state
+    )
+    assert state['notifications'] == [notification]
+    assert notification['type'] == 'project_reviewed'
+    assert notification['read'] is False
+    assert notification['data'] == {'k': 'v'}
+
+
+def test_add_in_app_notification_with_explicit_state_caps_at_100():
+    from src.notifications import add_in_app_notification
+
+    state = {'notifications': [{'id': f'old-{i}'} for i in range(100)]}
+    add_in_app_notification('owner@test.com', 'type', 'Title', 'Message', state=state)
+    assert len(state['notifications']) == 100
+    assert state['notifications'][0]['type'] == 'type'

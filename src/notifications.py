@@ -14,9 +14,18 @@ def _club_name():
     return get_dashboard_state().get('settings', {}).get('clubName', 'Your Club')
 
 
-def add_in_app_notification(user_email, notification_type, title, message, data=None):
-    """Add a notification to the user's in-app notification center."""
-    state = get_dashboard_state()
+def add_in_app_notification(user_email, notification_type, title, message, data=None, *, state=None):
+    """Add a notification to the user's in-app notification center.
+
+    `state` lets a caller already holding a specific club's state (e.g. an
+    admin reviewing a *different* club's project) target that club
+    directly. Without it, this resolves via the ambient
+    `get_dashboard_state()`/`save_dashboard_state()` pair, which always
+    means the *current viewer's own* club — wrong for a cross-club caller.
+    """
+    owns_state = state is None
+    if owns_state:
+        state = get_dashboard_state()
     notifications = state.setdefault('notifications', [])
     notification = {
         'id': _item_id('notif'),
@@ -29,7 +38,8 @@ def add_in_app_notification(user_email, notification_type, title, message, data=
     }
     notifications.insert(0, notification)
     state['notifications'] = notifications[:100]
-    save_dashboard_state(state)
+    if owns_state:
+        save_dashboard_state(state)
     return notification
 
 

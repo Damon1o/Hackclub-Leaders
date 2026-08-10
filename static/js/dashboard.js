@@ -926,7 +926,7 @@
                         : `<p class="project-readiness">Needs ${escapeHtml(missing.join(', '))}</p>`);
                 let primaryAction = '';
                 if (isShipped) {
-                    primaryAction = '<span class="project-shipped-note"><span data-hc-icon="rocket" data-hc-size="14" data-hc-color="currentColor" aria-hidden="true"></span> Shipped — counts toward your club level</span>';
+                    primaryAction = '<span class="project-shipped-note"><span data-hc-icon="rocket" data-hc-size="14" data-hc-color="currentColor" aria-hidden="true"></span> Shipped — counts toward your club level and earned you coins</span>';
                 } else if (isSubmitted) {
                     primaryAction = `<button class="btn-secondary small" type="button" data-project-status="Draft" data-project-id="${escapeHtml(project.id)}">Unsubmit</button>`;
                 } else {
@@ -1641,16 +1641,16 @@ const CHECKLIST_ITEMS = [
         return data;
     }
 
-    async function adminProjectAction(trigger, status, message) {
+    async function adminProjectAction(trigger, status, buildMessage) {
         const [clubKey, projectId] = String(trigger.dataset.adminProject || '').split('::');
         if (!clubKey || !projectId) return;
         trigger.disabled = true;
         try {
-            await apiRequest(`/api/admin/projects/${encodeURIComponent(clubKey)}/${encodeURIComponent(projectId)}`, {
+            const response = await apiRequest(`/api/admin/projects/${encodeURIComponent(clubKey)}/${encodeURIComponent(projectId)}`, {
                 method: 'PATCH',
                 body: { status },
             });
-            showToast(message);
+            showToast(buildMessage(response.coinsAwarded || 0));
             // Admin pages are server-rendered outside dashboardState — reload.
             setTimeout(() => window.location.reload(), 350);
         } catch (error) {
@@ -1722,12 +1722,13 @@ const CHECKLIST_ITEMS = [
         document.addEventListener('click', async (event) => {
             const approveProject = event.target.closest('[data-approve-project]');
             if (approveProject) {
-                await adminProjectAction(approveProject, 'Shipped', 'Project approved — shipped!');
+                await adminProjectAction(approveProject, 'Shipped', (coins) =>
+                    coins > 0 ? `Project approved — shipped! +${coins} coins awarded 🎉` : 'Project approved — shipped!');
                 return;
             }
             const rejectProject = event.target.closest('[data-reject-project]');
             if (rejectProject) {
-                await adminProjectAction(rejectProject, 'Draft', 'Project sent back to draft.');
+                await adminProjectAction(rejectProject, 'Draft', () => 'Project sent back to draft.');
                 return;
             }
 

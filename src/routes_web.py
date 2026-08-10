@@ -225,6 +225,11 @@ def register(app, HACKATIME_CLIENT_ID):
     def dashboard_events():
         return flask.render_template('dashboard/events.html')
 
+    @app.route('/dashboard/workshops')
+    @login_required
+    def dashboard_workshops():
+        return flask.render_template('dashboard/workshops.html')
+
     @app.route('/dashboard/ships')
     @login_required
     def dashboard_ships():

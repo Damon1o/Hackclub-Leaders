@@ -1,8 +1,9 @@
 import flask
-from flask import flash, redirect, url_for
+from flask import current_app, flash, redirect, url_for
 
 from .helpers import (
     ADMIN_REVIEW_STATUSES,
+    COINS_PER_APPROVED_SHIP,
     _find_club_by_project,
     _load_admin_club,
     _persist_club,
@@ -10,6 +11,7 @@ from .helpers import (
     _storage,
     add_shop_item,
     admin_required,
+    award_coins,
     clean_text,
     find_by_id,
     json_error,
@@ -20,6 +22,7 @@ from .helpers import (
     require_admin_api,
     require_dashboard_csrf,
 )
+from .notifications import notify_owner_of_project_review
 
 
 def register(app):
@@ -123,9 +126,28 @@ def register(app):
         status = clean_text(payload.get('status')).title()
         if status not in ADMIN_REVIEW_STATUSES:
             return json_error('Status must be Shipped or Draft.')
+
+        old_status = project.get('status')
         project['status'] = status
+
+        coins_awarded = 0
+        if status != old_status:
+            if status == 'Shipped':
+                coins_awarded = COINS_PER_APPROVED_SHIP
+                award_coins(
+                    state,
+                    coins_awarded,
+                    'ship_approved',
+                    project_id,
+                    f'Approved: {project.get("name", "Untitled")}',
+                )
+            try:
+                notify_owner_of_project_review(state, project, status == 'Shipped')
+            except Exception as exc:
+                current_app.logger.error(f'Failed to send project review notification: {exc}')
+
         _persist_club(backend, club_key, state)
-        return flask.jsonify({'project': project})
+        return flask.jsonify({'project': project, 'coinsAwarded': coins_awarded})
 
     # ── Item requests ─────────────────────────────────────────────────────────
 

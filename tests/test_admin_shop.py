@@ -186,6 +186,86 @@ def test_reject_item_request_removes_it(admin_client, monkeypatch):
         assert sess['dashboard_state']['itemRequests'] == []
 
 
+# ── Ship review (coin award) ─────────────────────────────────────────────────
+
+
+def _seed_project(admin_client, status='Submitted', ledger=None, notifications=None):
+    ledger = ledger or []
+    with admin_client.session_transaction() as sess:
+        sess['csrf_token'] = 'tok'
+        sess['dashboard_state'] = {
+            'settings': {
+                'clubName': 'Ship Club',
+                'coinBalance': sum(t['delta'] for t in ledger),
+                'coinsSpent': 0,
+            },
+            'members': [],
+            'projects': [
+                {
+                    'id': 'p1',
+                    'name': 'Tide Tracker',
+                    'status': status,
+                    'ownerEmail': 'owner@test.com',
+                    'ownerName': 'Owner',
+                    'date': '2026-08-01',
+                }
+            ],
+            'ledger': ledger or [],
+            'notifications': notifications or [],
+        }
+
+
+def test_approve_project_awards_coins(admin_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    _seed_project(admin_client)
+    response = admin_client.patch(
+        '/api/admin/projects/admin@test.com/p1', json={'status': 'Shipped'}, headers=HEADERS
+    )
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body['project']['status'] == 'Shipped'
+    assert body['coinsAwarded'] == 25
+    with admin_client.session_transaction() as sess:
+        state = sess['dashboard_state']
+        assert state['settings']['coinBalance'] == 25
+        assert any(t['kind'] == 'ship_approved' and t['ref'] == 'p1' for t in state['ledger'])
+        assert state['notifications'][0]['type'] == 'project_reviewed'
+        assert state['notifications'][0]['data']['approved'] is True
+
+
+def test_reapproving_shipped_project_does_not_double_award(admin_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    _seed_project(admin_client, status='Shipped', ledger=[
+        {'id': 'c1', 'delta': 25, 'kind': 'ship_approved', 'ref': 'p1', 'note': '', 'at': '2026-08-01T00:00:00Z'}
+    ])
+    response = admin_client.patch(
+        '/api/admin/projects/admin@test.com/p1', json={'status': 'Shipped'}, headers=HEADERS
+    )
+    assert response.status_code == 200
+    assert response.get_json()['coinsAwarded'] == 0
+    with admin_client.session_transaction() as sess:
+        state = sess['dashboard_state']
+        assert len(state['ledger']) == 1
+        assert state['settings']['coinBalance'] == 25
+        assert state['notifications'] == []
+
+
+def test_reject_project_notifies_without_coins(admin_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    _seed_project(admin_client)
+    response = admin_client.patch(
+        '/api/admin/projects/admin@test.com/p1', json={'status': 'Draft'}, headers=HEADERS
+    )
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body['project']['status'] == 'Draft'
+    assert body['coinsAwarded'] == 0
+    with admin_client.session_transaction() as sess:
+        state = sess['dashboard_state']
+        assert state['ledger'] == []
+        assert state['notifications'][0]['data']['approved'] is False
+
+
 def test_add_shop_item_route(admin_client, monkeypatch, shop_file):
     monkeypatch.setenv('STORAGE_BACKEND', 'session')
     _seed(admin_client)

@@ -76,6 +76,7 @@
             'side.shop': 'Shop',
             'side.workshops': 'Workshops',
             'side.newsletters': 'Newsletters',
+            'side.notifications': 'Notification',
             'side.map': 'Club Map',
             'side.tools': 'Tools',
             'side.settings': 'Club Settings',

@@ -770,7 +770,7 @@ PAGE_SECTIONS: Final[dict[str, tuple[str, ...]]] = {
     'dashboard_shop': ('orders', 'itemRequests'),
     'dashboard_workshops': ('workshops',),
     'dashboard_chat': ('channels', 'messages'),
-    'dashboard_newsletters': ('newsletters',),
+    'dashboard_notifications': ('newsletters',),
     'dashboard_map': (),
     'dashboard_settings': (),
     'dashboard_profile': ('projects',),

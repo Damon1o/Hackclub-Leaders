@@ -260,10 +260,15 @@ def register(app, HACKATIME_CLIENT_ID):
     def dashboard_chat():
         return flask.render_template('dashboard/chat.html')
 
+    @app.route('/dashboard/notifications')
+    @login_required
+    def dashboard_notifications():
+        return flask.render_template('dashboard/notifications.html')
+
     @app.route('/dashboard/newsletters')
     @login_required
-    def dashboard_newsletters():
-        return flask.render_template('dashboard/newsletters.html')
+    def dashboard_newsletters_redirect():
+        return redirect(url_for('dashboard_notifications'), code=301)
 
     @app.route('/dashboard/map')
     @login_required

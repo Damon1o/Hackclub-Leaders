@@ -308,3 +308,26 @@ def test_workshops_page_has_expected_shell(auth_client, monkeypatch):
     assert b'id="workshopProposeModal"' in response.data
     assert b'id="workshopDetailModal"' in response.data
     assert b'id="workshopScheduleModal"' in response.data
+
+
+def test_dashboard_notifications_page_loads(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Nav Club'},
+            'members': [],
+        }
+    response = auth_client.get('/dashboard/notifications')
+    assert response.status_code == 200
+
+
+def test_old_newsletters_path_redirects_to_notifications(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Nav Club'},
+            'members': [],
+        }
+    response = auth_client.get('/dashboard/newsletters', follow_redirects=False)
+    assert response.status_code == 301
+    assert response.headers['Location'].endswith('/dashboard/notifications')

@@ -65,3 +65,6 @@ graphify-out/
 *.log
 .DS_Store
 Thumbs.db
+
+# Local git worktrees
+.worktrees/

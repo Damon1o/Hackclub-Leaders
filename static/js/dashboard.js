@@ -2334,13 +2334,15 @@ const CHECKLIST_ITEMS = [
                 $$('#chatMessages .chat-edit-form').forEach((editor) => {
                     cancelInlineEdit(editor.closest('.chat-message'));
                 });
-                $$('.modal-backdrop.is-open').forEach((modal) => {
-                    if (modal.id === 'imageCropModal') {
-                        closeCropModal();
-                    } else {
-                        closeModal(modal);
-                    }
-                });
+                // Close only the topmost modal first: the crop modal can be
+                // stacked over another open modal (e.g. the project form),
+                // and closing both at once would silently reset that form.
+                const cropModal = $('#imageCropModal');
+                if (cropModal && cropModal.classList.contains('is-open')) {
+                    closeCropModal();
+                    return;
+                }
+                $$('.modal-backdrop.is-open').forEach((modal) => closeModal(modal));
                 closeChatDrawer();
                 return;
             }

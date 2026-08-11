@@ -892,42 +892,47 @@
 
             uploadBtn.addEventListener('click', function () { fileInput.click(); });
 
-            fileInput.addEventListener('change', async function () {
+            fileInput.addEventListener('change', function () {
                 const file = fileInput.files && fileInput.files[0];
+                fileInput.value = '';
                 if (!file) return;
                 if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
                     statusText.textContent = 'Only PNG, JPEG, WebP, or GIF.';
-                    fileInput.value = '';
                     return;
                 }
                 if (file.size > 4 * 1024 * 1024) {
                     statusText.textContent = 'Max 4 MB.';
-                    fileInput.value = '';
                     return;
                 }
-                uploadBtn.disabled = true;
-                statusText.textContent = 'Uploading...';
-                try {
-                    const body = new FormData();
-                    body.append('image', file);
-                    const response = await fetch('/api/dashboard/upload-image', {
-                        method: 'POST',
-                        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
-                        credentials: 'same-origin',
-                        body,
-                    });
-                    const payload = await response.json().catch(() => ({}));
-                    if (!response.ok) throw new Error(payload.error || 'Upload failed.');
-                    input.value = payload.url;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    statusText.textContent = 'Uploaded.';
-                    updateNearbyAvatarPreview(input);
-                } catch (error) {
-                    statusText.textContent = error.message;
-                } finally {
-                    uploadBtn.disabled = false;
-                    fileInput.value = '';
-                }
+
+                openCropModal({
+                    file,
+                    aspect: 1,
+                    onCropped: async (blob) => {
+                        uploadBtn.disabled = true;
+                        statusText.textContent = 'Uploading...';
+                        try {
+                            const body = new FormData();
+                            body.append('image', blob);
+                            const response = await fetch('/api/dashboard/upload-image', {
+                                method: 'POST',
+                                headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
+                                credentials: 'same-origin',
+                                body,
+                            });
+                            const payload = await response.json().catch(() => ({}));
+                            if (!response.ok) throw new Error(payload.error || 'Upload failed.');
+                            input.value = payload.url;
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                            statusText.textContent = 'Uploaded.';
+                            updateNearbyAvatarPreview(input);
+                        } catch (error) {
+                            statusText.textContent = error.message;
+                        } finally {
+                            uploadBtn.disabled = false;
+                        }
+                    },
+                });
             });
 
             row.appendChild(uploadBtn);

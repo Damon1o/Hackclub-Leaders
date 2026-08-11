@@ -2328,7 +2328,13 @@ const CHECKLIST_ITEMS = [
                 $$('#chatMessages .chat-edit-form').forEach((editor) => {
                     cancelInlineEdit(editor.closest('.chat-message'));
                 });
-                $$('.modal-backdrop.is-open').forEach(closeModal);
+                $$('.modal-backdrop.is-open').forEach((modal) => {
+                    if (modal.id === 'imageCropModal') {
+                        closeCropModal();
+                    } else {
+                        closeModal(modal);
+                    }
+                });
                 closeChatDrawer();
                 return;
             }

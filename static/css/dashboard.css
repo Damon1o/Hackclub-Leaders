@@ -144,6 +144,44 @@ body.dark-mode .dashboard-sidebar {
     box-shadow: none;
 }
 
+.dashboard-sidebar-panel {
+    position: absolute;
+    inset: 0;
+    width: 76px;
+    overflow: hidden;
+    border-radius: inherit;
+    background: inherit;
+    box-shadow: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 22px 0;
+    transition: width 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 1;
+}
+
+.dashboard-sidebar:hover .dashboard-sidebar-panel {
+    width: 232px;
+}
+
+.sidebar-label {
+    display: inline-block;
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+    margin-left: 0;
+    font-size: 14px;
+    font-weight: 600;
+    transition: max-width 0.22s ease 0.05s, opacity 0.18s ease 0.08s, margin-left 0.22s ease 0.05s;
+}
+
+.dashboard-sidebar:hover .sidebar-label {
+    max-width: 160px;
+    opacity: 1;
+    margin-left: 12px;
+}
+
 .dashboard-sidebar-nav {
     display: flex;
     flex-direction: column;
@@ -164,8 +202,8 @@ body.dark-mode .dashboard-sidebar {
 }
 
 .dashboard-sidebar-link {
+    min-height: 46px;
     width: 46px;
-    height: 46px;
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -173,7 +211,14 @@ body.dark-mode .dashboard-sidebar {
     color: #6c727c;
     text-decoration: none;
     flex-shrink: 0;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, width 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    overflow: hidden;
+}
+
+.dashboard-sidebar:hover .dashboard-sidebar-link {
+    width: 208px;
+    justify-content: flex-start;
+    padding-left: 12px;
 }
 
 .sidebar-icon {

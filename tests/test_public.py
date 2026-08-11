@@ -258,6 +258,42 @@ def test_dashboard_layout_has_workshops_nav_link(auth_client, monkeypatch):
     assert b'id="homeWorkshopTotal"' in response.data
 
 
+# ── StorageError resilience (no infinite self-redirect loop) ────────────────
+
+
+def test_storage_error_on_index_degrades_instead_of_looping(auth_client, monkeypatch):
+    from src.storage import AirtableStorage, StorageError
+
+    def always_fail(*_args, **_kwargs):
+        raise StorageError('simulated outage')
+
+    monkeypatch.setattr(AirtableStorage, 'load', always_fail)
+    monkeypatch.setattr(AirtableStorage, 'load_lite', always_fail)
+    monkeypatch.setattr(AirtableStorage, 'resolve_club_key', always_fail)
+
+    response = auth_client.get('/', follow_redirects=False)
+    assert response.status_code == 200
+    with auth_client.session_transaction() as sess:
+        assert not sess.get('_flashes')
+
+
+def test_storage_error_on_dashboard_redirects_once_not_forever(auth_client, monkeypatch):
+    from src.storage import AirtableStorage, StorageError
+
+    def always_fail(*_args, **_kwargs):
+        raise StorageError('simulated outage')
+
+    monkeypatch.setattr(AirtableStorage, 'load', always_fail)
+    monkeypatch.setattr(AirtableStorage, 'load_lite', always_fail)
+    monkeypatch.setattr(AirtableStorage, 'resolve_club_key', always_fail)
+
+    first = auth_client.get('/dashboard', follow_redirects=False)
+    assert first.status_code in (301, 302)
+
+    second = auth_client.get(first.headers['Location'], follow_redirects=False)
+    assert second.status_code == 200
+
+
 def test_workshops_page_has_expected_shell(auth_client, monkeypatch):
     monkeypatch.setenv('STORAGE_BACKEND', 'session')
     with auth_client.session_transaction() as sess:

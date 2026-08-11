@@ -86,17 +86,32 @@ def _payload_too_large(_error):
 @app.context_processor
 def inject_user():
     signed_in = bool(session.get('user'))
+    role, is_leader, dashboard_state = '', False, None
+    if signed_in:
+        # This context processor runs on every template render, including the
+        # StorageError handler's own redirect target. If a storage lookup here
+        # raises, that target fails to render too, the handler catches it and
+        # redirects again, and the cycle repeats forever — an infinite
+        # self-redirect loop that also grows the session cookie without bound
+        # (each iteration flashes a new, never-displayed error message). So a
+        # backend outage must degrade this block, not propagate out of it.
+        try:
+            role = viewer_role()
+            is_leader = viewer_is_leader()
+            dashboard_state = get_dashboard_state(sections_for_request())
+        except StorageError:
+            pass
     return dict(
         current_user=session.get('user'),
         csrf_token=get_csrf_token() if signed_in else '',
-        viewer_role=viewer_role() if signed_in else '',
-        is_leader=viewer_is_leader() if signed_in else False,
+        viewer_role=role,
+        is_leader=is_leader,
         is_admin=is_admin() if signed_in else False,
         dashboard_languages=DASHBOARD_LANGUAGES,
         # Every template gets the state, but only the sections the page being
         # served actually renders — the rest is fetched by the client when
         # (and if) it needs them.
-        dashboard_state=get_dashboard_state(sections_for_request()) if signed_in else None,
+        dashboard_state=dashboard_state,
         sticker_files=get_sticker_files(),
         playtest_enabled=os.environ.get('PLAYTEST_ENABLED', '').lower() == 'true',
     )

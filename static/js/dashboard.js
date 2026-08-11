@@ -2847,6 +2847,10 @@ const CHECKLIST_ITEMS = [
             ? dashboardState.notifications
             : [];
         updateNotificationBadge();
+        // Sidebar badge, unlike the header bell above, needs to stay current on
+        // every dashboard page, not just while the reader is open — the link it
+        // decorates lives in the shared sidebar, not the notifications page.
+        updateNotificationsNavBadge(notificationFeedItems());
         if (notificationCenterOpen) renderNotificationCenter();
     }
 

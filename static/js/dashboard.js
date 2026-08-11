@@ -213,7 +213,7 @@
         shop: ['orders', 'itemRequests'],
         workshops: ['workshops'],
         chat: ['channels', 'messages'],
-        newsletters: ['newsletters'],
+        notifications: ['newsletters', 'notifications'],
         map: [],
         settings: [],
         profile: ['projects'],
@@ -1250,11 +1250,11 @@
         `;
     }
 
-    function renderNewsletters() {
-        if (page !== 'newsletters') return;
+    function renderNotificationFeed() {
+        if (page !== 'notifications') return;
         removeSkeletons('newsletters');
         const list = $('#newsletterList');
-        const archive = newsletters();
+        const archive = notificationFeedItems();
         const prefs = settings();
         if (!selectedNewsletterId && archive.length) {
             selectedNewsletterId = archive[0].id;
@@ -1262,32 +1262,78 @@
         $('#newsletterSubscribe').checked = Boolean(prefs.newsletterSubscribed);
 
         if (list) {
-            list.innerHTML = archive.map((dispatch, index) => `
-                <button class="newsletter-row ${dispatch.id === selectedNewsletterId ? 'active' : ''}" type="button" data-open-dispatch="${escapeHtml(dispatch.id)}" style="--card-index: ${index}">
-                    <span class="read-dot ${dispatch.read ? 'read' : ''}" aria-hidden="true"></span>
+            list.innerHTML = archive.map((item, index) => `
+                <button class="newsletter-row ${item.id === selectedNewsletterId ? 'active' : ''}" type="button" data-open-dispatch="${escapeHtml(item.id)}" style="--card-index: ${index}">
+                    <span class="read-dot ${item.read ? 'read' : ''}" aria-hidden="true"></span>
                     <span>
-                        <strong>${escapeHtml(dispatch.title)}</strong>
-                        <small>${escapeHtml(dispatch.excerpt)}</small>
+                        <strong>${escapeHtml(item.title)}</strong>
+                        <small>${escapeHtml(item.excerpt)}</small>
                     </span>
-                    <em>${escapeHtml(dispatch.readTime)}</em>
+                    <em>${escapeHtml(item.readLabel)}</em>
                 </button>
             `).join('');
         }
-        renderNewsletterReader();
+        renderNotificationReader();
+        updateNotificationsNavBadge(archive);
     }
 
-    function renderNewsletterReader() {
-        const dispatch = newsletters().find((item) => item.id === selectedNewsletterId);
+    // Merges the two independent state sections into one chronological feed
+    // for display only — `notifications` and `newsletters` stay separate in
+    // storage. `kind` tells the reader pane and the read/unread toggle which
+    // shape (and which API endpoint) a given row is.
+    function notificationFeedItems() {
+        const dispatchRows = newsletters().map((n) => ({
+            kind: 'dispatch',
+            id: n.id,
+            title: n.title,
+            excerpt: n.excerpt,
+            body: n.body,
+            readLabel: n.readTime,
+            read: Boolean(n.read),
+            sortKey: n.date || '',
+        }));
+        const notificationRows = (dashboardState.notifications || []).map((n) => ({
+            kind: 'notification',
+            id: n.id,
+            title: n.title,
+            excerpt: n.message,
+            body: n.message,
+            readLabel: formatRelativeTime(n.createdAt),
+            read: Boolean(n.read),
+            sortKey: n.createdAt || '',
+        }));
+        return dispatchRows.concat(notificationRows).sort((a, b) => (b.sortKey || '').localeCompare(a.sortKey || ''));
+    }
+
+    function renderNotificationReader() {
+        const item = notificationFeedItems().find((row) => row.id === selectedNewsletterId);
         const button = $('#toggleReadButton');
-        if (!dispatch) return;
-        $('#newsletterReadTime').textContent = dispatch.readTime || 'Dispatch';
-        $('#newsletterTitle').textContent = dispatch.title || 'Untitled dispatch';
-        $('#newsletterDate').textContent = formatDate(dispatch.date);
-        $('#newsletterBody').textContent = dispatch.body || dispatch.excerpt || '';
+        if (!item) return;
+        $('#newsletterReadTime').textContent = item.readLabel || (item.kind === 'dispatch' ? 'Dispatch' : 'Notification');
+        $('#newsletterTitle').textContent = item.title || 'Untitled';
+        $('#newsletterDate').textContent = item.kind === 'dispatch'
+            ? formatDate(newsletters().find((n) => n.id === item.id)?.date)
+            : item.readLabel;
+        $('#newsletterBody').textContent = item.body || item.excerpt || '';
         if (button) {
             button.hidden = false;
-            button.textContent = dispatch.read ? 'Mark unread' : 'Mark read';
+            button.textContent = item.read ? 'Mark unread' : 'Mark read';
         }
+    }
+
+    function updateNotificationsNavBadge(feedItems) {
+        const link = $('#sidebarNotificationsLink');
+        if (!link) return;
+        let badge = link.querySelector('.notification-badge');
+        const unread = feedItems.filter((row) => !row.read).length;
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'notification-badge';
+            badge.setAttribute('aria-hidden', 'true');
+            link.appendChild(badge);
+        }
+        badge.textContent = unread > 9 ? '9+' : String(unread);
+        badge.style.display = unread > 0 ? 'flex' : 'none';
     }
 
     function prepareNewProject() {
@@ -1627,7 +1673,7 @@ const CHECKLIST_ITEMS = [
         renderJoinLink();
         renderCoinBalance();
         renderShop();
-        renderNewsletters();
+        renderNotificationFeed();
         renderChat();
         renderSettings();
     }
@@ -2094,14 +2140,14 @@ const CHECKLIST_ITEMS = [
             const dispatchRow = event.target.closest('[data-open-dispatch]');
             if (dispatchRow) {
                 selectedNewsletterId = dispatchRow.dataset.openDispatch;
-                const dispatch = newsletters().find((item) => item.id === selectedNewsletterId);
-                renderNewsletters();
-                if (dispatch && !dispatch.read) {
+                const feedItem = notificationFeedItems().find((row) => row.id === selectedNewsletterId);
+                renderNotificationFeed();
+                if (feedItem && !feedItem.read) {
+                    const endpoint = feedItem.kind === 'notification'
+                        ? `/api/dashboard/notifications/${feedItem.id}`
+                        : `/api/dashboard/newsletters/${feedItem.id}`;
                     try {
-                        await apiRequest(`/api/dashboard/newsletters/${dispatch.id}`, {
-                            method: 'PATCH',
-                            body: { read: true },
-                        });
+                        await apiRequest(endpoint, { method: 'PATCH', body: { read: true } });
                     } catch (error) {
                         showToast(error.message, 'error');
                     }
@@ -2482,18 +2528,20 @@ const CHECKLIST_ITEMS = [
         });
 
         $('#toggleReadButton')?.addEventListener('click', async () => {
-            const dispatch = newsletters().find((item) => item.id === selectedNewsletterId);
-            if (!dispatch) return;
+            const feedItem = notificationFeedItems().find((row) => row.id === selectedNewsletterId);
+            if (!feedItem) return;
+            const endpoint = feedItem.kind === 'notification'
+                ? `/api/dashboard/notifications/${feedItem.id}`
+                : `/api/dashboard/newsletters/${feedItem.id}`;
             try {
-                await apiRequest(`/api/dashboard/newsletters/${dispatch.id}`, {
-                    method: 'PATCH',
-                    body: { read: !dispatch.read },
-                });
-                showToast(dispatch.read ? 'Marked unread.' : 'Marked read.');
+                await apiRequest(endpoint, { method: 'PATCH', body: { read: !feedItem.read } });
+                showToast(feedItem.read ? 'Marked unread.' : 'Marked read.');
             } catch (error) {
                 showToast(error.message, 'error');
             }
         });
+
+        $('#notificationsMarkAllReadBtn')?.addEventListener('click', markAllNotificationsRead);
 
         $('#newsletterSubscribe')?.addEventListener('change', async (event) => {
             // currentTarget is null after the await — read it up front.

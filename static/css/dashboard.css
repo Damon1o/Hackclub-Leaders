@@ -242,6 +242,15 @@ body.dark-mode .dashboard-sidebar {
     box-shadow: 0 6px 16px rgba(236, 55, 80, 0.4);
 }
 
+#sidebarNotificationsLink {
+    position: relative;
+}
+
+#sidebarNotificationsLink .notification-badge {
+    top: 4px;
+    right: 4px;
+}
+
 .sidebar-profile {
     display: block;
     width: 42px;

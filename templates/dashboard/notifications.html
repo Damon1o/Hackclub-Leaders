@@ -27,6 +27,10 @@
                 <h2 data-i18n="newsletters.leaderDispatches">Leader dispatches</h2>
                 <p data-i18n="newsletters.dispatchesDesc">Open, mark, and draft updates from one archive.</p>
             </div>
+            <button class="icon-button" type="button" id="notificationsMarkAllReadBtn" aria-label="Mark all as read"
+                data-i18n-attr="aria-label:notifications.markAllRead">
+                {{ sidebar_icon('checkmark-all', 16) }}
+            </button>
             {% if is_leader %}
             <label class="toggle-compact">
                 <span data-i18n="newsletters.subscribed">Subscribed</span>

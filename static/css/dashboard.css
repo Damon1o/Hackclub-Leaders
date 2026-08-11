@@ -3371,6 +3371,23 @@ img.thumb-preview[src=""] {
 .timeline-item.is-upcoming   { border-left: 4px solid var(--hackclub-cyan);   padding-left: 15px; }
 .timeline-item.is-past       { border-left: 4px solid var(--dash-border);     padding-left: 15px; }
 
+.timeline-item.is-past {
+    position: relative;
+    filter: grayscale(1);
+}
+
+.timeline-item.is-past::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image:
+        linear-gradient(to bottom right, transparent calc(50% - 3px), var(--dash-ink) calc(50% - 3px), var(--dash-ink) calc(50% + 3px), transparent calc(50% + 3px)),
+        linear-gradient(to bottom left, transparent calc(50% - 3px), var(--dash-ink) calc(50% - 3px), var(--dash-ink) calc(50% + 3px), transparent calc(50% + 3px));
+    opacity: 0.55;
+}
+
 .timeline-item.is-today::after {
     content: "";
     position: absolute;

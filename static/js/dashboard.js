@@ -2836,88 +2836,17 @@ const CHECKLIST_ITEMS = [
     }
 
     // ── Notification Center ──────────────────────────────────────────────────────
-    let notificationCenterOpen = false;
     let notifications = [];
 
     // Read from the live state rather than re-parsing the server-rendered
     // <script id="dashboard-state">, which never changes after page load and so
-    // left the bell showing a stale count after every refresh.
+    // left the badge showing a stale count after every refresh.
     function loadNotifications() {
         notifications = Array.isArray(dashboardState.notifications)
             ? dashboardState.notifications
             : [];
-        updateNotificationBadge();
-        // Sidebar badge, unlike the header bell above, needs to stay current on
-        // every dashboard page, not just while the reader is open — the link it
-        // decorates lives in the shared sidebar, not the notifications page.
         updateNotificationsNavBadge(notificationFeedItems());
-        if (notificationCenterOpen) renderNotificationCenter();
-    }
-
-    function updateNotificationBadge() {
-        const badge = $('#notificationBadge');
-        const bell = $('#notificationBell');
-        const unread = notifications.filter(n => !n.read).length;
-        if (bell) {
-            // The badge is aria-hidden, so the count has to reach assistive
-            // tech through the button's own label.
-            bell.setAttribute(
-                'aria-label',
-                unread ? `Notifications (${unread} unread)` : 'Notifications');
-        }
-        if (!badge) return;
-        badge.textContent = unread > 9 ? '9+' : String(unread);
-        badge.style.display = unread > 0 ? 'flex' : 'none';
-    }
-
-    function renderNotificationCenter() {
-        const list = $('#notificationCenterList');
-        if (!list) return;
-
-        if (!notifications.length) {
-            list.innerHTML = `
-                <div class="notification-center-empty">
-                    <p data-i18n="notifications.noNotifications">No notifications yet.</p>
-                </div>
-            `;
-            return;
-        }
-
-        list.innerHTML = notifications.slice(0, 50).map(notif => `
-            <button class="notification-item${notif.read ? ' is-read' : ''}" type="button" data-notification-id="${escapeHtml(notif.id)}">
-                <div class="notification-icon">
-                    ${getNotificationIcon(notif.type)}
-                </div>
-                <div class="notification-content">
-                    <div class="notification-header">
-                        <span class="notification-title">${escapeHtml(notif.title)}</span>
-                        <time class="notification-time" datetime="${escapeHtml(notif.createdAt)}">${formatRelativeTime(notif.createdAt)}</time>
-                    </div>
-                    <p class="notification-message">${escapeHtml(notif.message)}</p>
-                </div>
-                ${!notif.read ? '<span class="notification-unread-dot" aria-hidden="true"></span>' : ''}
-            </button>
-        `).join('');
-
-        // Add click handlers
-        list.querySelectorAll('.notification-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const id = item.dataset.notificationId;
-                markNotificationRead(id);
-            });
-        });
-    }
-
-    function getNotificationIcon(type) {
-        const icons = {
-            'event_reminder': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
-            'event_rsvp': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
-            'order_placed': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
-            'project_submitted': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
-            'member_invited': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-            'default': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
-        };
-        return icons[type] || icons.default;
+        if (page === 'notifications') renderNotificationFeed();
     }
 
     function formatRelativeTime(iso) {
@@ -2937,68 +2866,6 @@ const CHECKLIST_ITEMS = [
         return date.toLocaleDateString();
     }
 
-    function openNotificationCenter() {
-        const center = $('#notificationCenter');
-        const backdrop = $('#notificationCenterBackdrop');
-        if (!center) return;
-
-        center.classList.add('is-open');
-        center.setAttribute('aria-hidden', 'false');
-        if (backdrop) backdrop.classList.add('is-open');
-        notificationCenterOpen = true;
-
-        loadNotifications();
-        renderNotificationCenter();
-        // Focus first item
-        const firstItem = center.querySelector('.notification-item');
-        firstItem?.focus();
-
-        // Trap focus
-        document.addEventListener('keydown', handleNotificationCenterKeydown);
-    }
-
-    function closeNotificationCenter() {
-        const center = $('#notificationCenter');
-        const backdrop = $('#notificationCenterBackdrop');
-        if (!center) return;
-
-        center.classList.remove('is-open');
-        center.setAttribute('aria-hidden', 'true');
-        if (backdrop) backdrop.classList.remove('is-open');
-        notificationCenterOpen = false;
-        // Send focus back to the control that opened the panel.
-        $('#notificationBell')?.focus();
-
-        document.removeEventListener('keydown', handleNotificationCenterKeydown);
-    }
-
-    function handleNotificationCenterKeydown(event) {
-        if (event.key === 'Escape') {
-            closeNotificationCenter();
-        }
-    }
-
-    function markNotificationRead(notificationId) {
-        const notif = notifications.find(n => n.id === notificationId);
-        if (!notif || notif.read) return;
-
-        notif.read = true;
-        updateNotificationBadge();
-        renderNotificationCenter();
-
-        // Sync with server, rolling the optimistic update back on failure so
-        // the badge can't drift away from what is actually stored.
-        apiRequest(`/api/dashboard/notifications/${encodeURIComponent(notificationId)}`, {
-            method: 'PATCH',
-            body: { read: true },
-        }).catch((error) => {
-            notif.read = false;
-            updateNotificationBadge();
-            renderNotificationCenter();
-            showToast(error.message || 'Could not mark that as read.', 'error');
-        });
-    }
-
     function markAllNotificationsRead() {
         const wasUnread = new Set();
         notifications.forEach(notif => {
@@ -3010,8 +2877,7 @@ const CHECKLIST_ITEMS = [
         const changed = wasUnread.size > 0;
 
         if (!changed) return;
-        updateNotificationBadge();
-        renderNotificationCenter();
+        renderNotificationFeed();
 
         apiRequest('/api/dashboard/notifications/mark-all-read', {
             method: 'PATCH',
@@ -3020,37 +2886,12 @@ const CHECKLIST_ITEMS = [
             notifications.forEach((notif) => {
                 if (wasUnread.has(notif.id)) notif.read = false;
             });
-            updateNotificationBadge();
-            renderNotificationCenter();
+            renderNotificationFeed();
             showToast(error.message || 'Could not mark all as read.', 'error');
         });
     }
 
-    function initNotificationCenter() {
-        const bell = $('#notificationBell');
-        const backdrop = $('#notificationCenterBackdrop');
-        const markAllReadBtn = $('#markAllReadBtn');
-
-        if (bell) {
-            bell.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (notificationCenterOpen) {
-                    closeNotificationCenter();
-                } else {
-                    openNotificationCenter();
-                }
-            });
-        }
-
-        if (backdrop) {
-            backdrop.addEventListener('click', closeNotificationCenter);
-        }
-
-        if (markAllReadBtn) {
-            markAllReadBtn.addEventListener('click', markAllNotificationsRead);
-        }
-
-        // Load initial notifications
+    function initNotificationData() {
         loadNotifications();
     }
 
@@ -3077,7 +2918,7 @@ const CHECKLIST_ITEMS = [
         // The chat module is a separate file; renderPage()'s renderChat() call
         // above no-ops until it lands, so paint chat again once it has.
         if (page === 'chat') loadChat().then((loaded) => loaded && renderChat());
-        initNotificationCenter();
+        initNotificationData();
     }
 
     if (document.readyState === 'loading') {

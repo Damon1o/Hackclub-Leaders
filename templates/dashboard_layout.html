@@ -231,13 +231,6 @@
                             data-i18n="home.welcomeDot">.</span>{% endblock %}</p>
                 </div>
                 <div class="dashboard-header-right">
-                    {% if current_user %}
-                    <button class="icon-button notification-bell" id="notificationBell" type="button"
-                        aria-label="Notifications" data-i18n-attr="aria-label:notifications.title">
-                        {{ sidebar_icon('bell') }}
-                        <span class="notification-badge" id="notificationBadge" aria-hidden="true"></span>
-                    </button>
-                    {% endif %}
                 </div>
                 {% block header_right %}{% endblock %}
             </header>
@@ -270,20 +263,6 @@
         <a href="https://hackclub.com/slack/"><span data-i18n="footer.slack">Slack</span></a>
         <span data-i18n="footer.copyright">2026 Hack Club</span>
     </footer>
-
-    <!-- Notification Center -->
-    <div class="notification-center" id="notificationCenter" aria-hidden="true" role="dialog"
-        aria-label="Notifications">
-        <div class="notification-center-header">
-            <h2 data-i18n="notifications.title">Notifications</h2>
-            <button class="icon-button" type="button" id="markAllReadBtn" aria-label="Mark all as read"
-                data-i18n-attr="aria-label:notifications.markAllRead">
-                {{ sidebar_icon('checkmark-all', 16) }}
-            </button>
-        </div>
-        <div class="notification-center-list" id="notificationCenterList"></div>
-    </div>
-    <div class="notification-center-backdrop" id="notificationCenterBackdrop" aria-hidden="true"></div>
 
     <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
     <script id="dashboard-state" type="application/json">{{ dashboard_state | default({}) | tojson }}</script>

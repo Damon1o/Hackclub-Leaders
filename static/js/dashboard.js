@@ -846,20 +846,26 @@
             input.value = '';
             return;
         }
-        const cta = $('#projectThumbUpload .image-upload-cta');
-        if (cta) cta.textContent = 'Uploading…';
-        const form = $('#projectForm');
-        try {
-            const url = await uploadProjectImage(file);
-            if (form) form.elements.thumbnail.value = url;
-            updateThumbPreview(url);
-            refreshProjectRequirements();
-        } catch (error) {
-            setFormError('projectThumbError', error.message);
-            updateThumbPreview(form ? form.elements.thumbnail.value : '');
-        } finally {
-            input.value = '';  // let the same file be re-selected after an error
-        }
+        input.value = '';  // let the same file be re-picked later regardless of outcome
+
+        openCropModal({
+            file,
+            aspect: 16 / 9,
+            onCropped: async (blob) => {
+                const cta = $('#projectThumbUpload .image-upload-cta');
+                if (cta) cta.textContent = 'Uploading…';
+                const form = $('#projectForm');
+                try {
+                    const url = await uploadProjectImage(blob);
+                    if (form) form.elements.thumbnail.value = url;
+                    updateThumbPreview(url);
+                    refreshProjectRequirements();
+                } catch (error) {
+                    setFormError('projectThumbError', error.message);
+                    updateThumbPreview(form ? form.elements.thumbnail.value : '');
+                }
+            },
+        });
     }
 
     function initAvatarUploads() {

@@ -2760,6 +2760,48 @@ img.thumb-preview[src=""] {
     display: none;
 }
 
+.crop-frame-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.crop-frame {
+    position: relative;
+    width: 280px;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid var(--dash-border);
+    background: var(--dash-fill);
+    cursor: grab;
+    touch-action: none;
+}
+
+.crop-frame.is-dragging {
+    cursor: grabbing;
+}
+
+.crop-frame img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    max-width: none;
+    max-height: none;
+    transform-origin: center;
+    user-select: none;
+    pointer-events: none;
+}
+
+.crop-zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.crop-zoom-row input[type="range"] {
+    flex: 1;
+}
+
 /* Gated submit button — `.btn-primary:disabled` (defined above) already dims
    and blocks it; mirror that for any control marked with [disabled] so the
    Submit-for-Review button reads as inert until the checklist is satisfied. */

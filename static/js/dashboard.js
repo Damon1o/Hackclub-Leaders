@@ -645,6 +645,173 @@
         if (cta) cta.textContent = url ? 'Change image…' : 'Choose image…';
     }
 
+    // Shared crop/zoom step between "file picked" and "upload". `aspect` is
+    // width/height for the crop frame (1 = square, 16/9 = project thumbnail).
+    // `onCropped` receives the exported Blob; nothing is uploaded here.
+    let cropState = null;
+
+    function openCropModal({ file, aspect, onCropped }) {
+        const frame = $('#cropFrame');
+        const img = $('#cropImage');
+        const slider = $('#cropZoomSlider');
+        if (!frame || !img || !slider) return;
+
+        const frameWidth = 280;
+        const frameHeight = Math.round(frameWidth / aspect);
+        frame.style.height = `${frameHeight}px`;
+
+        const objectUrl = URL.createObjectURL(file);
+        cropState = {
+            objectUrl, aspect, onCropped,
+            naturalWidth: 0, naturalHeight: 0,
+            scale: 1, minScale: 1,
+            offsetX: 0, offsetY: 0,
+            dragging: false, dragStartX: 0, dragStartY: 0, dragOffsetX: 0, dragOffsetY: 0,
+        };
+
+        img.onload = function () {
+            cropState.naturalWidth = img.naturalWidth;
+            cropState.naturalHeight = img.naturalHeight;
+            // The smallest scale that still fully covers the frame in both dimensions.
+            cropState.minScale = Math.max(frameWidth / img.naturalWidth, frameHeight / img.naturalHeight);
+            cropState.scale = cropState.minScale;
+            cropState.offsetX = 0;
+            cropState.offsetY = 0;
+            slider.min = String(cropState.minScale);
+            slider.max = String(cropState.minScale * 3);
+            slider.step = String(cropState.minScale / 100);
+            slider.value = String(cropState.minScale);
+            applyCropTransform();
+        };
+        img.src = objectUrl;
+
+        setFormError('cropModalError', '');
+        openModal('imageCropModal');
+    }
+
+    function applyCropTransform() {
+        const img = $('#cropImage');
+        if (!img || !cropState) return;
+        const w = cropState.naturalWidth * cropState.scale;
+        const h = cropState.naturalHeight * cropState.scale;
+        img.style.width = `${w}px`;
+        img.style.height = `${h}px`;
+        img.style.transform =
+            `translate(-50%, -50%) translate(${cropState.offsetX}px, ${cropState.offsetY}px)`;
+    }
+
+    function clampCropOffsets() {
+        if (!cropState) return;
+        const frame = $('#cropFrame');
+        if (!frame) return;
+        const frameWidth = frame.clientWidth;
+        const frameHeight = frame.clientHeight;
+        const w = cropState.naturalWidth * cropState.scale;
+        const h = cropState.naturalHeight * cropState.scale;
+        const maxX = Math.max(0, (w - frameWidth) / 2);
+        const maxY = Math.max(0, (h - frameHeight) / 2);
+        cropState.offsetX = Math.min(maxX, Math.max(-maxX, cropState.offsetX));
+        cropState.offsetY = Math.min(maxY, Math.max(-maxY, cropState.offsetY));
+    }
+
+    function exportCroppedBlob() {
+        return new Promise((resolve, reject) => {
+            const frame = $('#cropFrame');
+            if (!cropState || !frame) return reject(new Error('Nothing to crop.'));
+            const frameWidth = frame.clientWidth;
+            const frameHeight = frame.clientHeight;
+            const outputWidth = cropState.aspect === 1 ? 512 : 800;
+            const outputHeight = Math.round(outputWidth / cropState.aspect);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = outputWidth;
+            canvas.height = outputHeight;
+            const ctx = canvas.getContext('2d');
+
+            // Map frame-space (what's visible) to the source image's natural pixels.
+            const visibleLeft = (cropState.naturalWidth * cropState.scale - frameWidth) / 2 - cropState.offsetX;
+            const visibleTop = (cropState.naturalHeight * cropState.scale - frameHeight) / 2 - cropState.offsetY;
+            const sx = visibleLeft / cropState.scale;
+            const sy = visibleTop / cropState.scale;
+            const sw = frameWidth / cropState.scale;
+            const sh = frameHeight / cropState.scale;
+
+            const img = $('#cropImage');
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
+            canvas.toBlob((blob) => {
+                if (!blob) return reject(new Error('Could not export image.'));
+                resolve(blob);
+            }, 'image/jpeg', 0.9);
+        });
+    }
+
+    function closeCropModal() {
+        if (cropState) {
+            URL.revokeObjectURL(cropState.objectUrl);
+            cropState = null;
+        }
+        closeModal('imageCropModal');
+    }
+
+    function initCropModal() {
+        const frame = $('#cropFrame');
+        const slider = $('#cropZoomSlider');
+        const saveButton = $('#cropSaveButton');
+        const modal = $('#imageCropModal');
+        if (!frame || !slider || !saveButton || !modal) return;
+
+        frame.addEventListener('pointerdown', (event) => {
+            if (!cropState) return;
+            cropState.dragging = true;
+            frame.classList.add('is-dragging');
+            frame.setPointerCapture(event.pointerId);
+            cropState.dragStartX = event.clientX;
+            cropState.dragStartY = event.clientY;
+            cropState.dragOffsetX = cropState.offsetX;
+            cropState.dragOffsetY = cropState.offsetY;
+        });
+        frame.addEventListener('pointermove', (event) => {
+            if (!cropState || !cropState.dragging) return;
+            cropState.offsetX = cropState.dragOffsetX + (event.clientX - cropState.dragStartX);
+            cropState.offsetY = cropState.dragOffsetY + (event.clientY - cropState.dragStartY);
+            clampCropOffsets();
+            applyCropTransform();
+        });
+        frame.addEventListener('pointerup', () => {
+            if (!cropState) return;
+            cropState.dragging = false;
+            frame.classList.remove('is-dragging');
+        });
+
+        slider.addEventListener('input', () => {
+            if (!cropState) return;
+            cropState.scale = Number(slider.value);
+            clampCropOffsets();
+            applyCropTransform();
+        });
+
+        saveButton.addEventListener('click', async () => {
+            if (!cropState) return;
+            const onCropped = cropState.onCropped;
+            try {
+                const blob = await exportCroppedBlob();
+                closeCropModal();
+                onCropped(blob);
+            } catch (error) {
+                setFormError('cropModalError', error.message);
+            }
+        });
+
+        // The modal's own [data-modal-close]/backdrop-click handlers are wired
+        // generically in setupGlobalEvents() via [data-modal-close]; hook the
+        // object-URL cleanup onto that same generic path.
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal || event.target.closest('[data-modal-close]')) {
+                closeCropModal();
+            }
+        });
+    }
+
     const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 
     // Send the picked file to the server, which stores it in Vercel Blob and
@@ -2901,6 +3068,7 @@ const CHECKLIST_ITEMS = [
         applyDarkModeDefault();
         applyLanguageDefault();
         initBackground();
+        initCropModal();
         initHeroSpotlight();
         // Club-data pages ship an empty shell; admin pages have their own data.
         const clientDataPage = !hadEmbeddedData && page

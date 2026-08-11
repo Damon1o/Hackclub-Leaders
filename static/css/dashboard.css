@@ -283,6 +283,72 @@ body.dark-mode .dashboard-sidebar {
     font-weight: bold;
 }
 
+.sidebar-profile-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 0 12px;
+}
+
+.sidebar-profile-card {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    transition: max-width 0.22s ease 0.05s, opacity 0.18s ease 0.08s;
+}
+
+.dashboard-sidebar:hover .sidebar-profile-card {
+    max-width: 200px;
+    opacity: 1;
+}
+
+.sidebar-profile-name {
+    margin: 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.sidebar-profile-sub {
+    margin: 2px 0 8px;
+    font-size: 12px;
+    color: #9a9fa6;
+}
+
+.sidebar-profile-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.sidebar-coin-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.sidebar-coin-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.sidebar-signout {
+    width: 30px;
+    height: 30px;
+    color: #9a9fa6;
+}
+
+.sidebar-signout:hover {
+    color: #fff;
+}
+
 /* ── Main column ──────────────────────────────────────────────────────────── */
 
 .dashboard-main {

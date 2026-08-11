@@ -232,8 +232,8 @@ def test_dashboard_layout_has_coin_balance_chip(auth_client, monkeypatch):
         }
     response = auth_client.get('/dashboard')
     assert response.status_code == 200
-    assert b'id="coinBalanceChip"' in response.data
     assert b'id="coinBalanceAmount"' in response.data
+    assert b'sidebar-profile-card' in response.data
 
 
 def test_shop_page_has_cart_subtotal_shell(auth_client, monkeypatch):

@@ -187,7 +187,8 @@
                     <span class="sidebar-label" data-i18n="side.admin">Admin</span>
                 </a>
                 {% endif %}
-                <a href="/dashboard/profile" id="sidebarProfile"
+                <div class="sidebar-profile-wrap">
+                  <a href="/dashboard/profile" id="sidebarProfile"
                     class="sidebar-profile {% if current_path == '/dashboard/profile' %}active{% endif %}"
                     title="Your profile" aria-label="Your profile"
                     data-i18n-attr="title:side.profile;aria-label:side.profile">
@@ -198,7 +199,24 @@
                         {{ current_user.name[0] | upper if current_user else 'U' }}
                     </div>
                     {% endif %}
-                </a>
+                  </a>
+                  {% if current_user %}
+                  <div class="sidebar-profile-card">
+                    <p class="sidebar-profile-name">{{ current_user.name }}</p>
+                    <p class="sidebar-profile-sub">{{ dashboard_state.settings.clubName if dashboard_state and dashboard_state.settings else '' }} &middot; {{ viewer_role }}</p>
+                    <div class="sidebar-profile-meta">
+                        <span class="sidebar-coin-pill">
+                            <img src="{{ url_for('static', filename='images/hackclub-site/coin.svg') }}" alt="" class="sidebar-coin-icon">
+                            <span id="coinBalanceAmount">0</span>
+                        </span>
+                        <a href="{{ url_for('sign_out') }}" class="icon-button sidebar-signout" aria-label="Sign out"
+                            data-i18n-attr="aria-label:nav.signOut">
+                            {{ sidebar_icon('exit', 16) }}
+                        </a>
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
             </nav>
           </div>
         </aside>
@@ -219,12 +237,6 @@
                         {{ sidebar_icon('bell') }}
                         <span class="notification-badge" id="notificationBadge" aria-hidden="true"></span>
                     </button>
-                    {% endif %}
-                    {% if current_user %}
-                    <div class="coin-balance-chip" id="coinBalanceChip" aria-label="Club coins balance">
-                        {{ sidebar_icon('coin', 16) }}
-                        <span id="coinBalanceAmount">0</span>
-                    </div>
                     {% endif %}
                 </div>
                 {% block header_right %}{% endblock %}

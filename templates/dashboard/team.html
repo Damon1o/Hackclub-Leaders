@@ -15,17 +15,17 @@
 {% block content %}
 <div class="dashboard-page" data-dashboard-page="team">
     <div class="skeleton-block" data-skeleton="team" style="padding:20px;">
-      <div class="skeleton skeleton-heading"></div>
-      <div style="display:flex; gap:12px; margin:16px 0;">
-        <div class="skeleton skeleton-metric"></div>
-        <div class="skeleton skeleton-metric"></div>
-        <div class="skeleton skeleton-metric"></div>
-      </div>
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <div class="skeleton skeleton-card" style="width:200px;"></div>
-        <div class="skeleton skeleton-card" style="width:200px;"></div>
-        <div class="skeleton skeleton-card" style="width:200px;"></div>
-      </div>
+        <div class="skeleton skeleton-heading"></div>
+        <div style="display:flex; gap:12px; margin:16px 0;">
+            <div class="skeleton skeleton-metric"></div>
+            <div class="skeleton skeleton-metric"></div>
+            <div class="skeleton skeleton-metric"></div>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <div class="skeleton skeleton-card" style="width:200px;"></div>
+            <div class="skeleton skeleton-card" style="width:200px;"></div>
+            <div class="skeleton skeleton-card" style="width:200px;"></div>
+        </div>
     </div>
     <section class="dashboard-metrics">
         <article class="metric-tile">
@@ -51,12 +51,15 @@
             </div>
         </div>
         <div class="join-link-row">
-            <code class="join-link-code" id="joinLinkCode"><span data-i18n="team.joinLinkPlaceholder">leaders.example/join/…</span></code>
+            <code class="join-link-code"
+                id="joinLinkCode"><span data-i18n="team.joinLinkPlaceholder">leaders.example/join/…</span></code>
             <button class="btn-secondary small" type="button" id="copyJoinLink">
-                <span data-hc-icon="copy" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span> <span data-i18n="team.copyLink">Copy link</span>
+                <span data-hc-icon="copy" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span>
+                <span data-i18n="team.copyLink">Copy link</span>
             </button>
             <button class="btn-secondary small" type="button" id="refreshJoinLink">
-                <span data-hc-icon="view-reload" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span> <span data-i18n="team.refreshLink">Refresh link</span>
+                <span data-hc-icon="view-reload" data-hc-size="16" data-hc-color="currentColor"
+                    aria-hidden="true"></span> <span data-i18n="team.refreshLink">Refresh link</span>
             </button>
         </div>
     </section>
@@ -75,7 +78,8 @@
             <h3 data-i18n="team.emptyTitle">No members yet</h3>
             <p data-i18n="team.emptyDesc">Invite your first member to start building the club roster.</p>
             {% if is_leader %}
-            <button class="btn-primary" type="button" data-open-modal="memberModal" data-i18n="team.inviteMember">Invite member</button>
+            <button class="btn-primary" type="button" data-open-modal="memberModal" data-i18n="team.inviteMember">Invite
+                member</button>
             {% endif %}
         </div>
     </section>
@@ -85,7 +89,9 @@
     <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="memberModalTitle">
         <header class="modal-header">
             <h2 id="memberModalTitle" data-i18n="team.inviteMember">Invite member</h2>
-            <button class="icon-button" type="button" data-modal-close aria-label="Close" data-i18n-attr="aria-label:common.close"><span aria-hidden="true" data-i18n="common.closeX">×</span></button>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close"
+                data-i18n-attr="aria-label:common.close"><span aria-hidden="true"
+                    data-i18n="common.closeX">×</span></button>
         </header>
         <form class="modal-form" id="memberForm">
             <input type="hidden" name="id">
@@ -107,7 +113,8 @@
             </label>
             <label class="form-group">
                 <span class="form-label" data-i18n="team.avatarUrl">Avatar URL</span>
-                <input class="form-input" type="url" name="avatar" data-i18n-attr="placeholder:team.avatarPlaceholder" placeholder="https://...">
+                <input class="form-input" type="url" name="avatar" data-i18n-attr="placeholder:team.avatarPlaceholder"
+                    placeholder="https://...">
             </label>
             <label class="form-group" id="memberStatusGroup">
                 <span class="form-label" data-i18n="team.status">Status</span>
@@ -118,7 +125,8 @@
             </label>
             <p class="form-error" id="memberFormError" hidden></p>
             <div class="modal-actions">
-                <button class="btn-secondary" type="button" id="deleteMemberButton" hidden data-i18n="team.remove">Remove</button>
+                <button class="btn-secondary" type="button" id="deleteMemberButton" hidden
+                    data-i18n="team.remove">Remove</button>
                 <button class="btn-secondary" type="button" data-modal-close data-i18n="team.cancel">Cancel</button>
                 <button class="btn-primary" type="submit" data-i18n="team.saveMember">Save member</button>
             </div>

@@ -15,14 +15,14 @@
 {% block content %}
 <div class="dashboard-page" data-dashboard-page="events">
     <div class="skeleton-block" data-skeleton="events" style="padding:20px;">
-      <div class="skeleton skeleton-heading"></div>
-      <div style="display:flex; gap:12px; margin:16px 0;">
-        <div class="skeleton skeleton-metric"></div>
-        <div class="skeleton skeleton-metric"></div>
-        <div class="skeleton skeleton-metric"></div>
-      </div>
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card" style="margin-top:12px;"></div>
+        <div class="skeleton skeleton-heading"></div>
+        <div style="display:flex; gap:12px; margin:16px 0;">
+            <div class="skeleton skeleton-metric"></div>
+            <div class="skeleton skeleton-metric"></div>
+            <div class="skeleton skeleton-metric"></div>
+        </div>
+        <div class="skeleton skeleton-card"></div>
+        <div class="skeleton skeleton-card" style="margin-top:12px;"></div>
     </div>
     <section class="dashboard-metrics">
         <article class="metric-tile">
@@ -51,7 +51,8 @@
             <h3 data-i18n="events.emptyTitle">No events scheduled</h3>
             <p data-i18n="events.emptyDesc">Create a workshop, meeting, or demo day for your club.</p>
             {% if is_leader %}
-            <button class="btn-primary" type="button" data-open-modal="eventModal" data-i18n="events.newEvent">New event</button>
+            <button class="btn-primary" type="button" data-open-modal="eventModal" data-i18n="events.newEvent">New
+                event</button>
             {% endif %}
         </div>
     </section>
@@ -61,7 +62,9 @@
     <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
         <header class="modal-header">
             <h2 id="eventModalTitle" data-i18n="events.newEvent">New event</h2>
-            <button class="icon-button" type="button" data-modal-close aria-label="Close" data-i18n-attr="aria-label:common.close"><span aria-hidden="true" data-i18n="common.closeX">×</span></button>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close"
+                data-i18n-attr="aria-label:common.close"><span aria-hidden="true"
+                    data-i18n="common.closeX">×</span></button>
         </header>
         <form class="modal-form" id="eventForm">
             <input type="hidden" name="id">
@@ -86,7 +89,8 @@
             <div class="form-row">
                 <label class="form-group">
                     <span class="form-label" data-i18n="events.type">Type</span>
-                    <input class="form-input" type="text" name="type" value="Workshop" data-i18n-attr="value:events.workshop">
+                    <input class="form-input" type="text" name="type" value="Workshop"
+                        data-i18n-attr="value:events.workshop">
                 </label>
                 <label class="form-group">
                     <span class="form-label" data-i18n="events.expected">Expected</span>
@@ -116,7 +120,8 @@
             </label>
             <p class="form-error" id="eventFormError" hidden></p>
             <div class="modal-actions">
-                <button class="btn-secondary" type="button" id="deleteEventButton" hidden data-i18n="events.delete">Delete</button>
+                <button class="btn-secondary" type="button" id="deleteEventButton" hidden
+                    data-i18n="events.delete">Delete</button>
                 <button class="btn-secondary" type="button" data-modal-close data-i18n="events.cancel">Cancel</button>
                 <button class="btn-primary" type="submit" data-i18n="events.saveEvent">Save event</button>
             </div>

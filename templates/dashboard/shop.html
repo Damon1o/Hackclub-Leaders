@@ -1,7 +1,8 @@
 {% extends "dashboard_layout.html" %}
 
 {% block page_title %}<span data-i18n="side.shop">Shop</span>{% endblock %}
-{% block page_subtitle %}<span data-i18n="shop.subtitle">Order stickers, posters, and hardware for your club.</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="shop.subtitle">Order stickers, posters, and hardware for your club.</span>{%
+endblock %}
 
 {% block header_right %}
 <button class="btn-secondary" type="button" id="viewCartButton">
@@ -12,19 +13,19 @@
 {% block content %}
 <div class="dashboard-page shop-layout" data-dashboard-page="shop">
     <div class="skeleton-block" data-skeleton="shop" style="padding:20px;">
-      <div class="skeleton skeleton-heading"></div>
-      <div class="skeleton skeleton-text medium"></div>
-      <div style="display:flex; gap:8px; margin:16px 0;">
-        <div class="skeleton skeleton-badge"></div>
-        <div class="skeleton skeleton-badge"></div>
-        <div class="skeleton skeleton-badge"></div>
-      </div>
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <div class="skeleton skeleton-card" style="width:180px;"></div>
-        <div class="skeleton skeleton-card" style="width:180px;"></div>
-        <div class="skeleton skeleton-card" style="width:180px;"></div>
-        <div class="skeleton skeleton-card" style="width:180px;"></div>
-      </div>
+        <div class="skeleton skeleton-heading"></div>
+        <div class="skeleton skeleton-text medium"></div>
+        <div style="display:flex; gap:8px; margin:16px 0;">
+            <div class="skeleton skeleton-badge"></div>
+            <div class="skeleton skeleton-badge"></div>
+            <div class="skeleton skeleton-badge"></div>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <div class="skeleton skeleton-card" style="width:180px;"></div>
+            <div class="skeleton skeleton-card" style="width:180px;"></div>
+            <div class="skeleton skeleton-card" style="width:180px;"></div>
+            <div class="skeleton skeleton-card" style="width:180px;"></div>
+        </div>
     </div>
     <section class="card-modern dashboard-panel shop-catalog">
         <div class="panel-heading">
@@ -33,7 +34,8 @@
                 <p data-i18n="shop.swagDesc">Add items to your cart and check out for your club.</p>
             </div>
         </div>
-        <div class="shop-filters" id="shopFilters" role="tablist" aria-label="Filter shop items" data-i18n-attr="aria-label:shop.filterAria"></div>
+        <div class="shop-filters" id="shopFilters" role="tablist" aria-label="Filter shop items"
+            data-i18n-attr="aria-label:shop.filterAria"></div>
         <div class="item-grid" id="shopGrid"></div>
         <div class="empty-state tight" id="shopEmpty" hidden>
             <h3 data-i18n="shop.emptyTitle">Nothing here yet</h3>
@@ -57,7 +59,8 @@
             <h3 data-i18n="shop.cartEmptyTitle">Your cart is empty</h3>
             <p data-i18n="shop.cartEmptyDesc">Add items from the shop to get started.</p>
         </div>
-        <button class="btn-primary full-width" type="button" id="checkoutButton" data-i18n="shop.placeOrder">Place order</button>
+        <button class="btn-primary full-width" type="button" id="checkoutButton" data-i18n="shop.placeOrder">Place
+            order</button>
         <div class="order-history" id="orderHistory"></div>
 
         <div class="request-item-block">
@@ -71,15 +74,20 @@
                 <div class="request-item-fields">
                     <label class="form-group">
                         <span class="form-label" data-i18n="shop.itemName">Item name</span>
-                        <input class="form-input" type="text" name="name" data-i18n-attr="placeholder:shop.itemNamePlaceholder" placeholder="e.g. Soldering iron kit" required>
+                        <input class="form-input" type="text" name="name"
+                            data-i18n-attr="placeholder:shop.itemNamePlaceholder" placeholder="e.g. Soldering iron kit"
+                            required>
                     </label>
                     <label class="form-group request-item-reason">
                         <span class="form-label" data-i18n="shop.itemReason">Why do you need it? (optional)</span>
-                        <textarea class="form-input" name="note" rows="3" data-i18n-attr="placeholder:shop.itemReasonPlaceholder" placeholder="A quick note on how this would help your club."></textarea>
+                        <textarea class="form-input" name="note" rows="3"
+                            data-i18n-attr="placeholder:shop.itemReasonPlaceholder"
+                            placeholder="A quick note on how this would help your club."></textarea>
                     </label>
                 </div>
                 <p class="form-error" id="itemRequestFormError" hidden></p>
-                <button class="btn-secondary full-width" type="submit" data-i18n="shop.submitRequest">Submit request</button>
+                <button class="btn-secondary full-width" type="submit" data-i18n="shop.submitRequest">Submit
+                    request</button>
             </form>
             <div class="request-item-list" id="itemRequestList"></div>
         </div>

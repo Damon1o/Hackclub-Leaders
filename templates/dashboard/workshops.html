@@ -1,7 +1,8 @@
 {% extends "dashboard_layout.html" %}
 
 {% block page_title %}<span data-i18n="side.workshops">Workshops</span>{% endblock %}
-{% block page_subtitle %}<span data-i18n="workshops.subtitle">Propose a topic, or apply to run one someone else suggested.</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="workshops.subtitle">Propose a topic, or apply to run one someone else
+    suggested.</span>{% endblock %}
 
 {% block header_right %}
 <button class="btn-primary" type="button" data-open-modal="workshopProposeModal">
@@ -13,17 +14,17 @@
 {% block content %}
 <div class="dashboard-page" data-dashboard-page="workshops">
     <div class="skeleton-block" data-skeleton="workshops" style="padding:20px;">
-      <div class="skeleton skeleton-heading"></div>
-      <div style="display:flex; gap:8px; margin:16px 0;">
-        <div class="skeleton skeleton-badge"></div>
-        <div class="skeleton skeleton-badge"></div>
-        <div class="skeleton skeleton-badge"></div>
-      </div>
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <div class="skeleton skeleton-card" style="width:220px;"></div>
-        <div class="skeleton skeleton-card" style="width:220px;"></div>
-        <div class="skeleton skeleton-card" style="width:220px;"></div>
-      </div>
+        <div class="skeleton skeleton-heading"></div>
+        <div style="display:flex; gap:8px; margin:16px 0;">
+            <div class="skeleton skeleton-badge"></div>
+            <div class="skeleton skeleton-badge"></div>
+            <div class="skeleton skeleton-badge"></div>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <div class="skeleton skeleton-card" style="width:220px;"></div>
+            <div class="skeleton skeleton-card" style="width:220px;"></div>
+            <div class="skeleton skeleton-card" style="width:220px;"></div>
+        </div>
     </div>
 
     <section class="card-modern dashboard-panel dashboard-panel-full">
@@ -33,7 +34,8 @@
                 <p data-i18n="workshops.catalogDesc">Propose a topic for your club, or apply to run one that's open.</p>
             </div>
         </div>
-        <div class="shop-filters" id="workshopFilters" role="tablist" aria-label="Filter workshops" data-i18n-attr="aria-label:workshops.filterAria"></div>
+        <div class="shop-filters" id="workshopFilters" role="tablist" aria-label="Filter workshops"
+            data-i18n-attr="aria-label:workshops.filterAria"></div>
         <div class="item-grid" id="workshopGrid"></div>
         <div class="empty-state tight" id="workshopsEmpty" hidden>
             <h3 data-i18n="workshops.emptyTitle">No workshops yet</h3>
@@ -46,7 +48,9 @@
     <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="workshopProposeModalTitle">
         <header class="modal-header">
             <h2 id="workshopProposeModalTitle" data-i18n="workshops.proposeTitle">Propose a workshop</h2>
-            <button class="icon-button" type="button" data-modal-close aria-label="Close" data-i18n-attr="aria-label:common.close"><span aria-hidden="true" data-i18n="common.closeX">×</span></button>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close"
+                data-i18n-attr="aria-label:common.close"><span aria-hidden="true"
+                    data-i18n="common.closeX">×</span></button>
         </header>
         <form class="modal-form" id="workshopProposeForm">
             <label class="form-group">
@@ -59,7 +63,8 @@
             </label>
             <p class="form-error" id="workshopProposeFormError" hidden></p>
             <div class="modal-actions">
-                <button class="btn-secondary" type="button" data-modal-close data-i18n="workshops.cancel">Cancel</button>
+                <button class="btn-secondary" type="button" data-modal-close
+                    data-i18n="workshops.cancel">Cancel</button>
                 <button class="btn-primary" type="submit" data-i18n="workshops.submitProposal">Submit proposal</button>
             </div>
         </form>
@@ -70,7 +75,9 @@
     <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="workshopDetailTitle">
         <header class="modal-header">
             <h2 id="workshopDetailTitle"></h2>
-            <button class="icon-button" type="button" data-modal-close aria-label="Close" data-i18n-attr="aria-label:common.close"><span aria-hidden="true" data-i18n="common.closeX">×</span></button>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close"
+                data-i18n-attr="aria-label:common.close"><span aria-hidden="true"
+                    data-i18n="common.closeX">×</span></button>
         </header>
         <div class="modal-scroll-body" id="workshopDetailBody"></div>
         <div class="modal-actions" id="workshopDetailActions"></div>
@@ -81,7 +88,9 @@
     <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="workshopScheduleModalTitle">
         <header class="modal-header">
             <h2 id="workshopScheduleModalTitle" data-i18n="workshops.scheduleTitle">Schedule this workshop</h2>
-            <button class="icon-button" type="button" data-modal-close aria-label="Close" data-i18n-attr="aria-label:common.close"><span aria-hidden="true" data-i18n="common.closeX">×</span></button>
+            <button class="icon-button" type="button" data-modal-close aria-label="Close"
+                data-i18n-attr="aria-label:common.close"><span aria-hidden="true"
+                    data-i18n="common.closeX">×</span></button>
         </header>
         <form class="modal-form" id="workshopScheduleForm">
             <input type="hidden" name="workshopId">
@@ -103,8 +112,10 @@
             </label>
             <p class="form-error" id="workshopScheduleFormError" hidden></p>
             <div class="modal-actions">
-                <button class="btn-secondary" type="button" data-modal-close data-i18n="workshops.cancel">Cancel</button>
-                <button class="btn-primary" type="submit" data-i18n="workshops.confirmSchedule">Confirm schedule</button>
+                <button class="btn-secondary" type="button" data-modal-close
+                    data-i18n="workshops.cancel">Cancel</button>
+                <button class="btn-primary" type="submit" data-i18n="workshops.confirmSchedule">Confirm
+                    schedule</button>
             </div>
         </form>
     </section>

@@ -88,137 +88,134 @@
 
     <div class="dashboard-wrapper">
         <aside class="dashboard-sidebar">
-          <div class="dashboard-sidebar-panel">
-            <nav class="dashboard-sidebar-nav" aria-label="Dashboard" data-i18n-attr="aria-label:side.navLabel">
-                {% set current_path = request.path %}
-                <a href="/dashboard"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard' %}active{% endif %}" title="Home"
-                    aria-label="Home" data-i18n-attr="title:side.home;aria-label:side.home">
-                    {{ sidebar_icon('home') }}
-                    <span class="sidebar-label" data-i18n="side.home">Home</span>
-                </a>
-                <a href="/dashboard/team"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/team' %}active{% endif %}"
-                    title="Team" aria-label="Team" data-i18n-attr="title:side.team;aria-label:side.team">
-                    {{ sidebar_icon('people-3') }}
-                    <span class="sidebar-label" data-i18n="side.team">Team</span>
-                </a>
-                <a href="/dashboard/events"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/events' %}active{% endif %}"
-                    title="Events" aria-label="Events" data-i18n-attr="title:side.events;aria-label:side.events">
-                    {{ sidebar_icon('event-add') }}
-                    <span class="sidebar-label" data-i18n="side.events">Events</span>
-                </a>
-                <a href="/dashboard/workshops"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/workshops' %}active{% endif %}"
-                    title="Workshops" aria-label="Workshops" data-i18n-attr="title:side.workshops;aria-label:side.workshops">
-                    {{ sidebar_icon('workshop') }}
-                    <span class="sidebar-label" data-i18n="side.workshops">Workshops</span>
-                </a>
-                <a href="/dashboard/ships"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/ships' %}active{% endif %}"
-                    title="Ships" aria-label="Ships" data-i18n-attr="title:side.ships;aria-label:side.ships">
-                    {{ sidebar_icon('rocket') }}
-                    <span class="sidebar-label" data-i18n="side.ships">Ships</span>
-                </a>
-                <a href="/dashboard/projects"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/projects' %}active{% endif %}"
-                    title="Projects" aria-label="Projects"
-                    data-i18n-attr="title:side.projects;aria-label:side.projects">
-                    {{ sidebar_icon('package') }}
-                    <span class="sidebar-label" data-i18n="side.projects">Projects</span>
-                </a>
-                <a href="/dashboard/levels"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/levels' %}active{% endif %}"
-                    title="Levels" aria-label="Levels" data-i18n-attr="title:side.levels;aria-label:side.levels">
-                    {{ sidebar_icon('trophy') }}
-                    <span class="sidebar-label" data-i18n="side.levels">Levels</span>
-                </a>
-                {% if is_leader %}
-                <a href="/dashboard/shop"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/shop' %}active{% endif %}"
-                    title="Shop" aria-label="Shop" data-i18n-attr="title:side.shop;aria-label:side.shop">
-                    {{ sidebar_icon('bag') }}
-                    <span class="sidebar-label" data-i18n="side.shop">Shop</span>
-                </a>
-                {% endif %}
-                <a href="/dashboard/notifications" id="sidebarNotificationsLink"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/notifications' %}active{% endif %}"
-                    title="Notification" aria-label="Notification"
-                    data-i18n-attr="title:side.notifications;aria-label:side.notifications">
-                    {{ sidebar_icon('email') }}
-                    <span class="sidebar-label" data-i18n="side.notifications">Notification</span>
-                </a>
-                <a href="/dashboard/chat"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/chat' %}active{% endif %}"
-                    title="Chat" aria-label="Chat" data-i18n-attr="title:side.chat;aria-label:side.chat">
-                    {{ sidebar_icon('message') }}
-                    <span class="sidebar-label" data-i18n="side.chat">Chat</span>
-                </a>
-            </nav>
-            <nav class="dashboard-sidebar-nav dashboard-sidebar-bottom" aria-label="Dashboard utilities"
-                data-i18n-attr="aria-label:side.utilLabel">
-                <a href="/dashboard/map"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/map' %}active{% endif %}"
-                    title="Club Map" aria-label="Club Map" data-i18n-attr="title:side.map;aria-label:side.map">
-                    {{ sidebar_icon('map-app') }}
-                    <span class="sidebar-label" data-i18n="side.map">Club Map</span>
-                </a>
-                {% if is_leader %}
-                <a href="/dashboard/tools"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/tools' %}active{% endif %}"
-                    title="Tools" aria-label="Tools" data-i18n-attr="title:side.tools;aria-label:side.tools">
-                    {{ sidebar_icon('tools') }}
-                    <span class="sidebar-label" data-i18n="side.tools">Tools</span>
-                </a>
-                <a href="/dashboard/settings"
-                    class="dashboard-sidebar-link {% if current_path == '/dashboard/settings' %}active{% endif %}"
-                    title="Club Settings" aria-label="Club Settings"
-                    data-i18n-attr="title:side.settings;aria-label:side.settings">
-                    {{ sidebar_icon('settings') }}
-                    <span class="sidebar-label" data-i18n="side.settings">Club Settings</span>
-                </a>
-                {% endif %}
-                {% if is_admin %}
-                <a href="/dashboard/admin"
-                    class="dashboard-sidebar-link sidebar-admin-link {% if current_path.startswith('/dashboard/admin') %}active{% endif %}"
-                    title="Admin" aria-label="Admin" data-i18n-attr="title:side.admin;aria-label:side.admin">
-                    {{ sidebar_icon('admin') }}
-                    <span class="sidebar-label" data-i18n="side.admin">Admin</span>
-                </a>
-                {% endif %}
-                <div class="sidebar-profile-wrap">
-                  <a href="/dashboard/profile" id="sidebarProfile"
-                    class="sidebar-profile {% if current_path == '/dashboard/profile' %}active{% endif %}"
-                    title="Your profile" aria-label="Your profile"
-                    data-i18n-attr="title:side.profile;aria-label:side.profile">
-                    {% if current_user and current_user.avatar %}
-                    <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
-                    {% else %}
-                    <div class="sidebar-profile-fallback">
-                        {{ current_user.name[0] | upper if current_user else 'U' }}
-                    </div>
+            <div class="dashboard-sidebar-panel">
+                <nav class="dashboard-sidebar-nav" aria-label="Dashboard" data-i18n-attr="aria-label:side.navLabel">
+                    {% set current_path = request.path %}
+                    <a href="/dashboard"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard' %}active{% endif %}"
+                        title="Home" aria-label="Home" data-i18n-attr="title:side.home;aria-label:side.home">
+                        {{ sidebar_icon('home') }}
+                        <span class="sidebar-label" data-i18n="side.home">Home</span>
+                    </a>
+                    <a href="/dashboard/team"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/team' %}active{% endif %}"
+                        title="Team" aria-label="Team" data-i18n-attr="title:side.team;aria-label:side.team">
+                        {{ sidebar_icon('people-3') }}
+                        <span class="sidebar-label" data-i18n="side.team">Team</span>
+                    </a>
+                    <a href="/dashboard/events"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/events' %}active{% endif %}"
+                        title="Events" aria-label="Events" data-i18n-attr="title:side.events;aria-label:side.events">
+                        {{ sidebar_icon('event-add') }}
+                        <span class="sidebar-label" data-i18n="side.events">Events</span>
+                    </a>
+                    <a href="/dashboard/workshops"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/workshops' %}active{% endif %}"
+                        title="Workshops" aria-label="Workshops"
+                        data-i18n-attr="title:side.workshops;aria-label:side.workshops">
+                        {{ sidebar_icon('workshop') }}
+                        <span class="sidebar-label" data-i18n="side.workshops">Workshops</span>
+                    </a>
+                    <a href="/dashboard/ships"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/ships' %}active{% endif %}"
+                        title="Ships" aria-label="Ships" data-i18n-attr="title:side.ships;aria-label:side.ships">
+                        {{ sidebar_icon('rocket') }}
+                        <span class="sidebar-label" data-i18n="side.ships">Ships</span>
+                    </a>
+                    <a href="/dashboard/projects"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/projects' %}active{% endif %}"
+                        title="Projects" aria-label="Projects"
+                        data-i18n-attr="title:side.projects;aria-label:side.projects">
+                        {{ sidebar_icon('package') }}
+                        <span class="sidebar-label" data-i18n="side.projects">Projects</span>
+                    </a>
+                    <a href="/dashboard/levels"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/levels' %}active{% endif %}"
+                        title="Levels" aria-label="Levels" data-i18n-attr="title:side.levels;aria-label:side.levels">
+                        {{ sidebar_icon('trophy') }}
+                        <span class="sidebar-label" data-i18n="side.levels">Levels</span>
+                    </a>
+                    {% if is_leader %}
+                    <a href="/dashboard/shop"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/shop' %}active{% endif %}"
+                        title="Shop" aria-label="Shop" data-i18n-attr="title:side.shop;aria-label:side.shop">
+                        {{ sidebar_icon('bag') }}
+                        <span class="sidebar-label" data-i18n="side.shop">Shop</span>
+                    </a>
                     {% endif %}
-                  </a>
-                  {% if current_user %}
-                  <div class="sidebar-profile-card">
-                    <p class="sidebar-profile-name">{{ current_user.name }}</p>
-                    <p class="sidebar-profile-sub">{{ dashboard_state.settings.clubName if dashboard_state and dashboard_state.settings else '' }} &middot; {{ viewer_role }}</p>
-                    <div class="sidebar-profile-meta">
-                        <span class="sidebar-coin-pill">
-                            <img src="{{ url_for('static', filename='images/hackclub-site/coin.svg') }}" alt="" class="sidebar-coin-icon">
-                            <span id="coinBalanceAmount">0</span>
-                        </span>
-                        <a href="{{ url_for('sign_out') }}" class="icon-button sidebar-signout" aria-label="Sign out"
-                            data-i18n-attr="aria-label:nav.signOut">
-                            {{ sidebar_icon('exit', 16) }}
+                    <a href="/dashboard/notifications" id="sidebarNotificationsLink"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/notifications' %}active{% endif %}"
+                        title="Notification" aria-label="Notification"
+                        data-i18n-attr="title:side.notifications;aria-label:side.notifications">
+                        {{ sidebar_icon('email') }}
+                        <span class="sidebar-label" data-i18n="side.notifications">Notification</span>
+                    </a>
+                    <a href="/dashboard/chat"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/chat' %}active{% endif %}"
+                        title="Chat" aria-label="Chat" data-i18n-attr="title:side.chat;aria-label:side.chat">
+                        {{ sidebar_icon('message') }}
+                        <span class="sidebar-label" data-i18n="side.chat">Chat</span>
+                    </a>
+                </nav>
+                <nav class="dashboard-sidebar-nav dashboard-sidebar-bottom" aria-label="Dashboard utilities"
+                    data-i18n-attr="aria-label:side.utilLabel">
+                    {% if is_leader %}
+                    <a href="/dashboard/tools"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/tools' %}active{% endif %}"
+                        title="Tools" aria-label="Tools" data-i18n-attr="title:side.tools;aria-label:side.tools">
+                        {{ sidebar_icon('tools') }}
+                        <span class="sidebar-label" data-i18n="side.tools">Tools</span>
+                    </a>
+                    <a href="/dashboard/settings"
+                        class="dashboard-sidebar-link {% if current_path == '/dashboard/settings' %}active{% endif %}"
+                        title="Club Settings" aria-label="Club Settings"
+                        data-i18n-attr="title:side.settings;aria-label:side.settings">
+                        {{ sidebar_icon('settings') }}
+                        <span class="sidebar-label" data-i18n="side.settings">Club Settings</span>
+                    </a>
+                    {% endif %}
+                    {% if is_admin %}
+                    <a href="/dashboard/admin"
+                        class="dashboard-sidebar-link sidebar-admin-link {% if current_path.startswith('/dashboard/admin') %}active{% endif %}"
+                        title="Admin" aria-label="Admin" data-i18n-attr="title:side.admin;aria-label:side.admin">
+                        {{ sidebar_icon('admin') }}
+                        <span class="sidebar-label" data-i18n="side.admin">Admin</span>
+                    </a>
+                    {% endif %}
+                    <div class="sidebar-profile-wrap">
+                        <a href="/dashboard/profile" id="sidebarProfile"
+                            class="sidebar-profile {% if current_path == '/dashboard/profile' %}active{% endif %}"
+                            title="Your profile" aria-label="Your profile"
+                            data-i18n-attr="title:side.profile;aria-label:side.profile">
+                            {% if current_user and current_user.avatar %}
+                            <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}">
+                            {% else %}
+                            <div class="sidebar-profile-fallback">
+                                {{ current_user.name[0] | upper if current_user else 'U' }}
+                            </div>
+                            {% endif %}
                         </a>
+                        {% if current_user %}
+                        <div class="sidebar-profile-card">
+                            <p class="sidebar-profile-name">{{ current_user.name }}</p>
+                            <p class="sidebar-profile-sub">{{ dashboard_state.settings.clubName if dashboard_state and
+                                dashboard_state.settings else '' }} &middot; {{ viewer_role }}</p>
+                            <div class="sidebar-profile-meta">
+                                <span class="sidebar-coin-pill">
+                                    <img src="{{ url_for('static', filename='images/hackclub-site/coin.svg') }}" alt=""
+                                        class="sidebar-coin-icon">
+                                    <span id="coinBalanceAmount">0</span>
+                                </span>
+                                <a href="{{ url_for('sign_out') }}" class="icon-button sidebar-signout"
+                                    aria-label="Sign out" data-i18n-attr="aria-label:nav.signOut">
+                                    {{ sidebar_icon('exit', 16) }}
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
-                  </div>
-                  {% endif %}
-                </div>
-            </nav>
-          </div>
+                </nav>
+            </div>
         </aside>
 
         <main class="dashboard-main" id="dashboardMain">
@@ -270,7 +267,9 @@
         <section class="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="imageCropModalTitle">
             <header class="modal-header">
                 <h2 id="imageCropModalTitle" data-i18n="upload.cropTitle">Adjust image</h2>
-                <button class="icon-button" type="button" data-modal-close aria-label="Close" data-i18n-attr="aria-label:common.close"><span aria-hidden="true" data-i18n="common.closeX">×</span></button>
+                <button class="icon-button" type="button" data-modal-close aria-label="Close"
+                    data-i18n-attr="aria-label:common.close"><span aria-hidden="true"
+                        data-i18n="common.closeX">×</span></button>
             </header>
             <div class="crop-frame-wrap">
                 <div class="crop-frame" id="cropFrame">

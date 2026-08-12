@@ -19,9 +19,11 @@
     <section class="navigation-bar">
 
         <input type="checkbox" id="nav-toggle" class="nav-toggle">
-        <label for="nav-toggle" class="nav-hamburger" data-i18n-attr="aria-label:pub.toggleMenu"><span></span><span></span><span></span></label>
+        <label for="nav-toggle" class="nav-hamburger"
+            data-i18n-attr="aria-label:pub.toggleMenu"><span></span><span></span><span></span></label>
         <div class="animated-nav-logo">
-            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" data-i18n-attr="alt:pub.navLogo" alt="Hack Club">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}"
+                data-i18n-attr="alt:pub.navLogo" alt="Hack Club">
         </div>
         <div class="nav-bar-text">
             <a href="/" data-i18n="pub.navBrand">Hack Club Leaders</a>
@@ -29,7 +31,7 @@
         <div class="apply-now-container">
             {% if current_user %}
             <a href="{{ url_for('dashboard') }}" class="apply-now-link">
-                    <p class="apply-now-text" data-i18n="nav.dashboard">Dashboard</p>
+                <p class="apply-now-text" data-i18n="nav.dashboard">Dashboard</p>
             </a>
             {% else %}
             <a href="{{ url_for('sign_in') }}" class="sign-in-link">
@@ -53,15 +55,18 @@
                 Share it with members so they know where to find your club.
                 Keep your roster current from the Team page.
             </p>
-            <a href="{{ url_for('dashboard_team') }}" class="sign-in-hc-btn" data-i18n="join.openTeam">Open the Team page</a>
+            <a href="{{ url_for('dashboard_team') }}" class="sign-in-hc-btn" data-i18n="join.openTeam">Open the Team
+                page</a>
             {% else %}
-            <h1><span data-hc-icon="party" data-hc-size="24" data-hc-color="currentColor" aria-hidden="true"></span> <span data-i18n="join.invitedHeading">You're invited to a Hack Club!</span></h1>
+            <h1><span data-hc-icon="party" data-hc-size="24" data-hc-color="currentColor" aria-hidden="true"></span>
+                <span data-i18n="join.invitedHeading">You're invited to a Hack Club!</span></h1>
             {% if not shared_backend %}
             <p class="sign-in-subtitle" data-i18n="join.demoText">
                 This site is running in local demo mode, so joining by code
                 isn't available here. Ask your club leader for meeting details.
             </p>
-            <a href="https://hackclub.com/" class="sign-in-hc-btn" target="_blank" rel="noopener noreferrer" data-i18n="join.exploreHC">
+            <a href="https://hackclub.com/" class="sign-in-hc-btn" target="_blank" rel="noopener noreferrer"
+                data-i18n="join.exploreHC">
                 Explore Hack Club
             </a>
             {% elif signed_in %}
@@ -85,13 +90,14 @@
             </a>
             {% endif %}
             <p class="sign-in-footer-note">
-                <span data-i18n="join.leadingYourself">Leading a club yourself? <a href="{{ url_for('sign_in') }}">Sign in to the Leaders Portal</a>.</span>
+                <span data-i18n="join.leadingYourself">Leading a club yourself? <a href="{{ url_for('sign_in') }}">Sign
+                        in to the Leaders Portal</a>.</span>
             </p>
             {% endif %}
         </div>
     </section>
 
-<script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n-langs.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
@@ -99,4 +105,5 @@
     <script defer src="{{ url_for('static', filename='js/hc-icons.js') }}"></script>
 
 </body>
+
 </html>

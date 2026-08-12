@@ -294,11 +294,19 @@ body.dark-mode .dashboard-sidebar {
 
 .sidebar-profile-wrap {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    width: 46px;
+    justify-content: center;
+    transition: width 0.22s ease, padding 0.22s ease;
+}
+
+.dashboard-sidebar:hover .sidebar-profile-wrap {
     width: 100%;
+    justify-content: flex-start;
     padding: 0 12px;
+    gap: 10px;
 }
 
 .sidebar-profile-card {
@@ -1756,12 +1764,10 @@ body.dark-mode .leaflet-popup-tip {
 .product-purple { background: linear-gradient(135deg, #a633d6, #338eda); }
 
 .shop-price {
-    color: #188362;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     font-weight: bold;
-}
-
-body.dark-mode .shop-price {
-    color: #4be3b4;
 }
 
 .cart-list {

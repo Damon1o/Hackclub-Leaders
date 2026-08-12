@@ -11,11 +11,13 @@
 <section class="navigation-bar">
 
     <input type="checkbox" id="nav-toggle" class="nav-toggle">
-    <label for="nav-toggle" class="nav-hamburger" data-i18n-attr="aria-label:pub.toggleMenu"><span></span><span></span><span></span></label>
+    <label for="nav-toggle" class="nav-hamburger"
+        data-i18n-attr="aria-label:pub.toggleMenu"><span></span><span></span><span></span></label>
 
     <div class="animated-nav-logo">
 
-        <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" data-i18n-attr="alt:pub.navLogo" alt="Hack Club">
+        <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}"
+            data-i18n-attr="alt:pub.navLogo" alt="Hack Club">
 
     </div>
 
@@ -37,7 +39,8 @@
 
             <li class="nav-link dropdown">
                 <a href="#"><span data-i18n="nav.tools">Tools</span>
-                    <span data-hc-icon="down-caret" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span>
+                    <span data-hc-icon="down-caret" data-hc-size="16" data-hc-color="currentColor"
+                        aria-hidden="true"></span>
                 </a>
                 <div class="dropdown-menu">
                     <a href="https://apply.hackclub.com/" data-i18n="nav.startClub">Start a Club</a>
@@ -57,15 +60,15 @@
         <button class="mode-switch-button" id="toggleBtn">
 
             <svg class="icon icon-first" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
-                stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" data-i18n-attr="aria-label:pub.moonIcon" viewBox="0 0 32 32"
-                preserveAspectRatio="xMidYMid meet" fill="currentColor" width="16" height="16">
+                stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" data-i18n-attr="aria-label:pub.moonIcon"
+                viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet" fill="currentColor" width="16" height="16">
                 <path
                     d="M22.5317 23.4697C22.5313 23.4697 22.5308 23.4697 22.5303 23.4697C14.7983 23.4697 8.53027 17.2017 8.53027 9.46974C8.53027 9.46925 8.53027 9.46876 8.53027 9.46827C7.2733 11.1407 6.53027 13.2183 6.53027 15.4697C6.53027 20.9926 11.0074 25.4697 16.5303 25.4697C18.7817 25.4697 20.8593 24.7267 22.5317 23.4697ZM24.9529 21.2251C25.8563 21.0399 26.6747 21.9485 26.1197 22.6849C23.9298 25.591 20.4494 27.4697 16.5303 27.4697C9.90286 27.4697 4.53027 22.0972 4.53027 15.4697C4.53027 11.5506 6.40906 8.07026 9.3151 5.88028C10.0515 5.32532 10.9601 6.14376 10.7749 7.04709C10.6145 7.82957 10.5303 8.63981 10.5303 9.46974C10.5303 16.0972 15.9029 21.4697 22.5303 21.4697C23.3602 21.4697 24.1704 21.3855 24.9529 21.2251Z" />
             </svg>
 
             <svg class="icon icon-second" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round"
-                stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" data-i18n-attr="aria-label:pub.sunIcon" viewBox="0 0 32 32"
-                preserveAspectRatio="xMidYMid meet" fill="currentColor" width="16" height="16">
+                stroke-miterlimit="1.414" xmlns="http://www.w3.org/2000/svg" data-i18n-attr="aria-label:pub.sunIcon"
+                viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet" fill="currentColor" width="16" height="16">
                 <path
                     d="M15.001 5C15.001 4.448 15.449 4 16.001 4C16.553 4 17.001 4.448 17.001 5V7C17.001 7.552 16.553 8 16.001 8C15.449 8 15.001 7.552 15.001 7V5ZM9.12203 7.707C8.73203 7.317 8.09903 7.317 7.70803 7.707C7.31803 8.098 7.31803 8.731 7.70803 9.121L9.12203 10.536C9.51303 10.926 10.146 10.926 10.537 10.536C10.927 10.145 10.927 9.512 10.537 9.121L9.12203 7.707ZM24.536 7.707C24.146 7.317 23.513 7.317 23.122 7.707L21.708 9.121C21.318 9.512 21.318 10.145 21.708 10.536C22.099 10.926 22.732 10.926 23.122 10.536L24.537 9.121C24.927 8.731 24.926 8.098 24.536 7.707Z" />
                 <path
@@ -85,7 +88,7 @@
 
         {% if current_user %}
         <a href="{{ url_for('dashboard') }}" class="apply-now-link">
-                <p class="apply-now-text" data-i18n="nav.dashboard">Dashboard</p>
+            <p class="apply-now-text" data-i18n="nav.dashboard">Dashboard</p>
         </a>
         {% else %}
         <a href="{{ url_for('sign_in') }}" class="apply-now-link">
@@ -95,7 +98,7 @@
 
         {% if current_user %}
         <a href="{{ url_for('sign_out') }}" class="sign-in-link">
-                <p class="sign-in-text" data-i18n="nav.signOut">Sign out</p>
+            <p class="sign-in-text" data-i18n="nav.signOut">Sign out</p>
         </a>
         {% else %}
         <a href="{{ url_for('sign_in') }}" class="sign-in-link">

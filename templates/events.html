@@ -31,7 +31,8 @@
     <section class="events-main">
 
         <div class="events-main-background">
-            <img alt="" decoding="async" loading="lazy" src="{{ url_for('static', filename='images/hackclub-site/background.webp')}}"
+            <img alt="" decoding="async" loading="lazy"
+                src="{{ url_for('static', filename='images/hackclub-site/background.webp')}}"
                 style="position: absolute; top: -60px; left: 0px; width: 100%; height: auto; transform: scaleY(-1) translate3d(var(--amb-px, 0px), var(--amb-py, 0px), 0) scale(1.04); opacity: 0.15; pointer-events: none; z-index: 0;">
             <div class="ambient-bg" aria-hidden="true">
                 <span class="ambient-blob ambient-blob-red"></span>
@@ -45,14 +46,16 @@
 
             <h1 data-i18n="events.title">Hack Club Events</h1>
 
-            <p data-i18n="events.subtitle">Explore current Hack Club events, hackathons, and YSWS programs from Toolbox.</p>
+            <p data-i18n="events.subtitle">Explore current Hack Club events, hackathons, and YSWS programs from Toolbox.
+            </p>
 
         </div>
 
         <div class="events-search">
 
             <form id="events-search-form" action="">
-                <input type="text" id="search-input" data-i18n-attr="placeholder:events.searchPlaceholder" placeholder="Search events&hellip;" autocomplete="off">
+                <input type="text" id="search-input" data-i18n-attr="placeholder:events.searchPlaceholder"
+                    placeholder="Search events&hellip;" autocomplete="off">
                 <button type="submit" data-i18n="events.search">Search</button>
             </form>
 

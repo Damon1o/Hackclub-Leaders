@@ -141,10 +141,11 @@
             .replace(/'/g, '&#039;');
     }
 
-    const COIN_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" class="coin-icon" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 6.5v11"/><path d="M15 9a3 3 0 0 0-3-1h-.5a2 2 0 0 0 0 4h1a2 2 0 0 1 0 4H12a3 3 0 0 1-3-1"/></svg>';
+    const COIN_ICON_SVG = '<img src="/static/images/hackclub-site/coin.svg" alt="" width="14" height="14" class="coin-icon">';
 
     function coinLabel(cost) {
         if (cost === null || cost === undefined) return 'TBD';
+        if (Number(cost) === 0) return `${COIN_ICON_SVG}<span>Free</span>`;
         return `${COIN_ICON_SVG}<span>${Number(cost)}</span>`;
     }
 

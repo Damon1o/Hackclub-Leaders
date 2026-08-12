@@ -1,31 +1,34 @@
 {% extends "dashboard_layout.html" %}
 
 {% block page_title %}<span data-i18n="side.home">Home</span>{% endblock %}
-{% block page_subtitle %}<span data-i18n="home.subtitle">Welcome back, <strong>{{ current_user.name if current_user else 'User' }}</strong>! Here's what's happening at your club.</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="home.subtitle">Welcome back, <strong>{{ current_user.name if current_user else
+        'User' }}</strong>! Here's what's happening at your club.</span>{% endblock %}
 
 {% block content %}
 <div class="dashboard-page home-grid" data-dashboard-page="home">
 
     <div class="skeleton-block" data-skeleton="home" style="padding:20px;">
-      <div class="skeleton skeleton-heading"></div>
-      <div class="skeleton skeleton-text short"></div>
-      <div style="display:flex; gap:12px; margin:16px 0;">
-        <div class="skeleton skeleton-metric"></div>
-        <div class="skeleton skeleton-metric"></div>
-        <div class="skeleton skeleton-metric"></div>
-        <div class="skeleton skeleton-metric"></div>
-      </div>
-      <div class="skeleton skeleton-progress" style="margin:16px 0;"></div>
-      <div style="display:flex; gap:12px;">
-        <div class="skeleton skeleton-card" style="flex:1;"></div>
-        <div class="skeleton skeleton-card" style="flex:1;"></div>
-      </div>
+        <div class="skeleton skeleton-heading"></div>
+        <div class="skeleton skeleton-text short"></div>
+        <div style="display:flex; gap:12px; margin:16px 0;">
+            <div class="skeleton skeleton-metric"></div>
+            <div class="skeleton skeleton-metric"></div>
+            <div class="skeleton skeleton-metric"></div>
+            <div class="skeleton skeleton-metric"></div>
+        </div>
+        <div class="skeleton skeleton-progress" style="margin:16px 0;"></div>
+        <div style="display:flex; gap:12px;">
+            <div class="skeleton skeleton-card" style="flex:1;"></div>
+            <div class="skeleton skeleton-card" style="flex:1;"></div>
+        </div>
     </div>
 
     <section class="card-modern home-hero">
         <p class="home-eyebrow" data-i18n="home.eyebrow">Club HQ</p>
-        <h2 class="home-hero-title"><span class="marker-highlight" id="homeClubName" data-i18n="home.yourClub">Your club</span></h2>
-        <p class="home-hero-meta"><strong id="homeMemberTotal">0</strong> <span id="homeClubMeta" data-i18n="home.membersStrong">members strong</span>
+        <h2 class="home-hero-title"><span class="marker-highlight" id="homeClubName" data-i18n="home.yourClub">Your
+                club</span></h2>
+        <p class="home-hero-meta"><strong id="homeMemberTotal">0</strong> <span id="homeClubMeta"
+                data-i18n="home.membersStrong">members strong</span>
         </p>
         <div class="sticker-row">
             <div class="sticker sticker-orange">

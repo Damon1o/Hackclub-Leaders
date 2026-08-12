@@ -19,9 +19,11 @@
     <section class="navigation-bar">
 
         <input type="checkbox" id="nav-toggle" class="nav-toggle">
-        <label for="nav-toggle" class="nav-hamburger" data-i18n-attr="aria-label:pub.toggleMenu"><span></span><span></span><span></span></label>
+        <label for="nav-toggle" class="nav-hamburger"
+            data-i18n-attr="aria-label:pub.toggleMenu"><span></span><span></span><span></span></label>
         <div class="animated-nav-logo">
-            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}" data-i18n-attr="alt:pub.navLogo" alt="Hack Club">
+            <img src="{{ url_for('static', filename='images/hackclub-site/hack-club-banner.svg') }}"
+                data-i18n-attr="alt:pub.navLogo" alt="Hack Club">
         </div>
         <div class="nav-bar-text">
             <a href="/" data-i18n="pub.navBrand">Hack Club Leaders</a>
@@ -52,21 +54,25 @@
             {% endwith %}
 
             {% if target_name %}
-            <h1><span data-i18n="welcome.joinQ">Join</span> {{ target_name }}<span data-i18n="welcome.joinQEnd">?</span></h1>
+            <h1><span data-i18n="welcome.joinQ">Join</span> {{ target_name }}<span data-i18n="welcome.joinQEnd">?</span>
+            </h1>
             {% if is_switch %}
             <p class="sign-in-subtitle">
-                <span data-i18n="welcome.moveClub">You're currently in</span> {{ current_name or 'another club' }}<span data-i18n="welcome.moveClubMid">. Joining</span>
+                <span data-i18n="welcome.moveClub">You're currently in</span> {{ current_name or 'another club' }}<span
+                    data-i18n="welcome.moveClubMid">. Joining</span>
                 {{ target_name }}<span data-i18n="welcome.moveClubEnd"> will move you there &mdash; an account can only
-                belong to one club at a time.</span>
+                    belong to one club at a time.</span>
             </p>
             {% else %}
             <p class="sign-in-subtitle">
-                <span data-i18n="welcome.confirmCode">Confirm the code below to join</span> {{ target_name }}<span data-i18n="welcome.confirmCodeEnd"> and appear on
-                its roster.</span>
+                <span data-i18n="welcome.confirmCode">Confirm the code below to join</span> {{ target_name }}<span
+                    data-i18n="welcome.confirmCodeEnd"> and appear on
+                    its roster.</span>
             </p>
             {% endif %}
             {% else %}
-            <h1><span data-i18n="welcome.hi">Hi</span> {{ current_user.name.split(' ')[0] if current_user and current_user.name else 'there' }}<span data-i18n="welcome.findClub">, find your club</span></h1>
+            <h1><span data-i18n="welcome.hi">Hi</span> {{ current_user.name.split(' ')[0] if current_user and
+                current_user.name else 'there' }}<span data-i18n="welcome.findClub">, find your club</span></h1>
             <p class="sign-in-subtitle" data-i18n="welcome.noClub">
                 Your account isn't part of a club yet. Enter the join code your
                 club leader shared with you, or start a brand-new club.
@@ -75,11 +81,12 @@
 
             <form class="welcome-join-form" method="post" action="{{ url_for('dashboard_welcome_join') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <input type="text" class="welcome-code-input" name="joinCode"
-                    value="{{ prefill_code }}" data-i18n-attr="placeholder:welcome.joinCodePlaceholder" placeholder="Join code (e.g. a1b2c3)"
+                <input type="text" class="welcome-code-input" name="joinCode" value="{{ prefill_code }}"
+                    data-i18n-attr="placeholder:welcome.joinCodePlaceholder" placeholder="Join code (e.g. a1b2c3)"
                     autocomplete="off" autocapitalize="off" spellcheck="false" required>
                 <button type="submit" class="sign-in-hc-btn">
-                    {% if is_switch %}Switch to {{ target_name }}{% elif target_name %}Join {{ target_name }}{% else %}Join your club{% endif %}
+                    {% if is_switch %}Switch to {{ target_name }}{% elif target_name %}Join {{ target_name }}{% else
+                    %}Join your club{% endif %}
                 </button>
             </form>
 
@@ -94,12 +101,13 @@
 
             <form method="post" action="{{ url_for('dashboard_welcome_create') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <button type="submit" class="welcome-create-btn" data-i18n="welcome.startClub">Start a new club as its leader</button>
+                <button type="submit" class="welcome-create-btn" data-i18n="welcome.startClub">Start a new club as its
+                    leader</button>
             </form>
         </div>
     </section>
 
-<script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n-langs.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
@@ -107,4 +115,5 @@
     <script defer src="{{ url_for('static', filename='js/hc-icons.js') }}"></script>
 
 </body>
+
 </html>

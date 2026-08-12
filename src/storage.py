@@ -143,7 +143,16 @@ NOTIFICATION_FIELDS: Final[list[tuple[str, str]]] = [
 
 SETTINGS_FIELDS: Final[list[tuple[str, str]]] = [
     ('clubName', 'Club Name'),
+    ('venue', 'Venue'),
     ('location', 'Location'),
+    ('addressLine1', 'Address Line 1'),
+    ('addressLine2', 'Address Line 2'),
+    ('city', 'City'),
+    ('state', 'State'),
+    ('zip', 'Zip'),
+    ('country', 'Country'),
+    ('meetingDay', 'Meeting Day'),
+    ('clubBio', 'Club Bio'),
     ('website', 'Website'),
     ('avatar', 'Avatar'),
     ('joinCode', 'Join Code'),

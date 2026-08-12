@@ -73,7 +73,7 @@ def _save_settings(auth_client, monkeypatch, **overrides):
                 'members': [],
             },
         )
-    payload = {'clubName': 'Test Club', 'location': 'Testville'}
+    payload = {'clubName': 'Test Club', 'venue': 'Test Venue', 'location': 'Testville'}
     payload.update(overrides)
     return auth_client.patch(
         '/api/dashboard/settings', json=payload, headers={'X-CSRF-Token': 'test-csrf-token'}
@@ -97,3 +97,63 @@ def test_settings_rejects_unsupported_language(auth_client, monkeypatch):
     assert response.status_code == 200
     # Unsupported codes fall back to English rather than being stored raw.
     assert response.get_json()['state']['settings']['language'] == 'en'
+
+
+def _save_settings_v2(auth_client, monkeypatch, **overrides):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['csrf_token'] = 'test-csrf-token'
+        sess.setdefault(
+            'dashboard_state',
+            {'settings': {'clubName': 'Test Club', 'location': 'Testville'}, 'members': []},
+        )
+    payload = {
+        'clubName': 'Test Club',
+        'venue': 'Lincoln High School',
+        'website': '',
+        'avatar': '',
+        'meetingDay': 'Wednesday',
+        'addressLine1': '100 Main St',
+        'addressLine2': '',
+        'city': 'Burlington',
+        'state': 'VT',
+        'zip': '05401',
+        'country': 'US',
+        'clubBio': 'We build cool stuff.',
+    }
+    payload.update(overrides)
+    return auth_client.patch(
+        '/api/dashboard/settings', json=payload, headers={'X-CSRF-Token': 'test-csrf-token'}
+    )
+
+
+def test_settings_saves_structured_address_fields(auth_client, monkeypatch):
+    response = _save_settings_v2(auth_client, monkeypatch)
+    assert response.status_code == 200
+    settings = response.get_json()['state']['settings']
+    assert settings['venue'] == 'Lincoln High School'
+    assert settings['meetingDay'] == 'Wednesday'
+    assert settings['addressLine1'] == '100 Main St'
+    assert settings['city'] == 'Burlington'
+    assert settings['state'] == 'VT'
+    assert settings['zip'] == '05401'
+    assert settings['country'] == 'US'
+    assert settings['clubBio'] == 'We build cool stuff.'
+
+
+def test_settings_derives_location_from_city_state(auth_client, monkeypatch):
+    response = _save_settings_v2(auth_client, monkeypatch, city='Burlington', state='VT')
+    assert response.status_code == 200
+    assert response.get_json()['state']['settings']['location'] == 'Burlington, VT'
+
+
+def test_settings_derives_location_with_only_city(auth_client, monkeypatch):
+    response = _save_settings_v2(auth_client, monkeypatch, city='Burlington', state='')
+    assert response.status_code == 200
+    assert response.get_json()['state']['settings']['location'] == 'Burlington'
+
+
+def test_settings_derives_empty_location_when_no_address(auth_client, monkeypatch):
+    response = _save_settings_v2(auth_client, monkeypatch, city='', state='')
+    assert response.status_code == 200
+    assert response.get_json()['state']['settings']['location'] == ''

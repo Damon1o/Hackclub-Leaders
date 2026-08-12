@@ -109,24 +109,43 @@ def register(app, HACKATIME_CLIENT_ID):
 
         payload = json_payload()
         club_name = clean_text(payload.get('clubName'))
-        location = clean_text(payload.get('location'))
+        venue = clean_text(payload.get('venue'), max_len=120)
         website = clean_text(payload.get('website'))
         avatar = clean_text(payload.get('avatar'))
+        meeting_day = clean_text(payload.get('meetingDay'), max_len=20)
+        address_line1 = clean_text(payload.get('addressLine1'), max_len=120)
+        address_line2 = clean_text(payload.get('addressLine2'), max_len=120)
+        city = clean_text(payload.get('city'), max_len=80)
+        state_field = clean_text(payload.get('state'), max_len=80)
+        zip_code = clean_text(payload.get('zip'), max_len=20)
+        country = clean_text(payload.get('country'), max_len=80)
+        club_bio = clean_text(payload.get('clubBio'), max_len=500)
 
         if not club_name:
             return json_error('Club name is required.')
-        if not location:
-            return json_error('School or location is required.')
+        if not venue:
+            return json_error('School or venue is required.')
         if website and not website.startswith(('http://', 'https://')):
             return json_error('Club website must start with http:// or https://.')
         if avatar and not avatar.startswith(('http://', 'https://')):
             return json_error('Avatar URL must start with http:// or https://.')
 
+        location = ', '.join(filter(None, [city, state_field]))
+
         state = get_dashboard_state()
         state['settings'].update(
             {
                 'clubName': club_name,
+                'venue': venue,
                 'location': location,
+                'addressLine1': address_line1,
+                'addressLine2': address_line2,
+                'city': city,
+                'state': state_field,
+                'zip': zip_code,
+                'country': country,
+                'meetingDay': meeting_day,
+                'clubBio': club_bio,
                 'website': website,
                 'avatar': avatar,
                 'publicDirectory': parse_bool(payload.get('publicDirectory')),

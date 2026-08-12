@@ -153,7 +153,16 @@ class Message(TypedDict):
 class Settings(TypedDict):
     joinCode: str
     clubName: str
+    venue: str
     location: str
+    addressLine1: str
+    addressLine2: str
+    city: str
+    state: str
+    zip: str
+    country: str
+    meetingDay: str
+    clubBio: str
     website: str
     avatar: str
     publicDirectory: bool
@@ -597,7 +606,16 @@ def default_dashboard_state() -> DashboardState:
         'settings': {
             'joinCode': generate_join_code(),
             'clubName': f"{leader_name}'s Hack Club",
+            'venue': '',
             'location': '',
+            'addressLine1': '',
+            'addressLine2': '',
+            'city': '',
+            'state': '',
+            'zip': '',
+            'country': '',
+            'meetingDay': '',
+            'clubBio': '',
             'website': '',
             'avatar': '',
             'publicDirectory': True,
@@ -627,7 +645,16 @@ def playtest_state() -> DashboardState:
         'settings': {
             'joinCode': 'PLAYTEST',
             'clubName': 'Playtest Hack Club',
+            'venue': 'Playtest High School',
             'location': 'Burlington, VT',
+            'addressLine1': '',
+            'addressLine2': '',
+            'city': 'Burlington',
+            'state': 'VT',
+            'zip': '',
+            'country': 'US',
+            'meetingDay': 'Wednesday',
+            'clubBio': '',
             'website': 'https://hackclub.com',
             'avatar': '',
             'publicDirectory': True,

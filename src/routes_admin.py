@@ -85,6 +85,15 @@ def register(app):
         club_name = clean_text(payload.get('clubName'))
         website = clean_text(payload.get('website'))
         avatar = clean_text(payload.get('avatar'))
+        venue = clean_text(payload.get('venue'), max_len=120)
+        meeting_day = clean_text(payload.get('meetingDay'), max_len=20)
+        address_line1 = clean_text(payload.get('addressLine1'), max_len=120)
+        address_line2 = clean_text(payload.get('addressLine2'), max_len=120)
+        city = clean_text(payload.get('city'), max_len=80)
+        state_field = clean_text(payload.get('state'), max_len=80)
+        zip_code = clean_text(payload.get('zip'), max_len=20)
+        country = clean_text(payload.get('country'), max_len=80)
+        club_bio = clean_text(payload.get('clubBio'), max_len=500)
         if not club_name:
             return json_error('Club name is required.')
         if website and not website.startswith(('http://', 'https://')):
@@ -94,7 +103,16 @@ def register(app):
 
         settings = state.setdefault('settings', {})
         settings['clubName'] = club_name
-        settings['location'] = clean_text(payload.get('location'))
+        settings['venue'] = venue
+        settings['location'] = ', '.join(filter(None, [city, state_field]))
+        settings['addressLine1'] = address_line1
+        settings['addressLine2'] = address_line2
+        settings['city'] = city
+        settings['state'] = state_field
+        settings['zip'] = zip_code
+        settings['country'] = country
+        settings['meetingDay'] = meeting_day
+        settings['clubBio'] = club_bio
         settings['website'] = website
         settings['avatar'] = avatar
         if 'publicDirectory' in payload:

@@ -2909,13 +2909,7 @@ img.thumb-preview[src=""] {
     transform: translateY(6px);
 }
 
-/* ── Notification centre ──────────────────────────────────────────────────── */
-/* The markup shipped in dashboard_layout.html with no styles at all, so the
-   panel rendered as plain text at the bottom of every page. */
-
-.notification-bell {
-    position: relative;
-}
+/* ── Notification badge ───────────────────────────────────────────────────── */
 
 .notification-badge {
     position: absolute;
@@ -2942,206 +2936,8 @@ img.thumb-preview[src=""] {
     to   { transform: scale(1);   opacity: 1; }
 }
 
-.notification-center {
-    position: fixed;
-    top: 92px;
-    right: 18px;
-    z-index: 1900;
-    width: min(380px, calc(100vw - 36px));
-    max-height: min(560px, calc(100vh - 120px));
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 1px solid var(--dash-border, #e0e6ed);
-    border-radius: 16px;
-    background: var(--dash-card, #fff);
-    box-shadow: var(--dash-shadow-lg, 0 14px 32px rgba(20, 45, 78, 0.11));
-    font-family: var(--hackclub-body-font), system-ui, sans-serif;
-    /* Hidden by default; `visibility` (not `display`) so it can transition. */
-    visibility: hidden;
-    opacity: 0;
-    transform: translateY(-10px) scale(0.985);
-    transition:
-        opacity 0.24s ease,
-        transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-        visibility 0.28s;
-}
-
-.notification-center.is-open {
-    visibility: visible;
-    opacity: 1;
-    transform: none;
-}
-
-.notification-center-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--dash-border, #e0e6ed);
-}
-
-.notification-center-header h2 {
-    margin: 0;
-    font-size: 15px;
-    font-weight: bold;
-    color: var(--dash-ink, #1f2d3d);
-}
-
-.notification-center-list {
-    overflow-y: auto;
-    padding: 6px;
-}
-
-.notification-center-empty {
-    padding: 32px 16px;
-    text-align: center;
-    color: var(--dash-muted, #8492a6);
-    font-size: 14px;
-}
-
-.notification-center-empty p {
-    margin: 0;
-}
-
-.notification-item {
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    width: 100%;
-    padding: 11px 26px 11px 12px;
-    border: 0;
-    border-radius: 10px;
-    background: transparent;
-    text-align: left;
-    cursor: pointer;
-    color: inherit;
-    font: inherit;
-    animation: notification-item-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
-    transition: background-color 0.18s ease;
-}
-
-/* Stagger the first few; past that a delay stops reading as intentional. */
-.notification-item:nth-child(1) { animation-delay: 0ms; }
-.notification-item:nth-child(2) { animation-delay: 40ms; }
-.notification-item:nth-child(3) { animation-delay: 80ms; }
-.notification-item:nth-child(4) { animation-delay: 120ms; }
-.notification-item:nth-child(5) { animation-delay: 160ms; }
-
-@keyframes notification-item-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: none; }
-}
-
-.notification-item:hover,
-.notification-item:focus-visible {
-    background: var(--dash-fill, #f6f8fb);
-}
-
-.notification-item.is-read {
-    opacity: 0.62;
-}
-
-.notification-icon {
-    flex: 0 0 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 9px;
-    background: var(--dash-fill, #f6f8fb);
-    color: var(--hackclub-red, #ec3750);
-}
-
-.notification-content {
-    min-width: 0;
-    flex: 1;
-}
-
-.notification-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.notification-title {
-    font-size: 13.5px;
-    font-weight: bold;
-    color: var(--dash-ink, #1f2d3d);
-    overflow-wrap: anywhere;
-}
-
-.notification-time {
-    flex: none;
-    font-size: 11.5px;
-    color: var(--dash-muted, #8492a6);
-}
-
-.notification-message {
-    margin: 3px 0 0;
-    font-size: 13px;
-    line-height: 1.45;
-    color: var(--dash-slate, #3c4858);
-    overflow-wrap: anywhere;
-}
-
-.notification-unread-dot {
-    position: absolute;
-    top: 15px;
-    right: 12px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--hackclub-red, #ec3750);
-    animation: notification-pulse 2.4s ease-in-out infinite;
-}
-
-@keyframes notification-pulse {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: 0.45; }
-}
-
-.notification-center-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 1850;
-    background: rgba(18, 18, 23, 0.28);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.24s ease, visibility 0.24s;
-}
-
-.notification-center-backdrop.is-open {
-    opacity: 1;
-    visibility: visible;
-}
-
-@media (max-width: 560px) {
-    .notification-center {
-        top: auto;
-        bottom: 0;
-        right: 0;
-        left: 0;
-        width: 100%;
-        max-height: 70vh;
-        border-radius: 16px 16px 0 0;
-        transform: translateY(16px);
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
-    .notification-center,
-    .notification-center-backdrop {
-        transition: none;
-    }
-
-    .notification-item,
-    .notification-badge,
-    .notification-unread-dot {
+    .notification-badge {
         animation: none;
     }
 }
@@ -3238,6 +3034,43 @@ img.thumb-preview[src=""] {
         right: 0;
         justify-content: space-around;
         z-index: 1000;
+    }
+
+    .dashboard-sidebar-panel {
+        position: static;
+        width: 100%;
+        height: 100%;
+        flex-direction: row;
+        align-items: center;
+        overflow: visible;
+        padding: 0;
+    }
+
+    .dashboard-sidebar:hover .dashboard-sidebar-panel {
+        width: 100%;
+    }
+
+    .sidebar-label,
+    .dashboard-sidebar:hover .sidebar-label,
+    .sidebar-profile-card,
+    .dashboard-sidebar:hover .sidebar-profile-card {
+        max-width: 0;
+        opacity: 0;
+        margin-left: 0;
+    }
+
+    .dashboard-sidebar:hover .dashboard-sidebar-link {
+        width: 44px;
+        justify-content: center;
+        padding-left: 0;
+    }
+
+    .sidebar-profile-wrap {
+        width: auto;
+        padding: 0;
+        flex-direction: row;
+        align-items: center;
+        gap: 0;
     }
 
     .dashboard-sidebar-nav {
@@ -3459,7 +3292,7 @@ img.thumb-preview[src=""] {
 .dashboard-sidebar-link:not(.active)[href="/dashboard/projects"]:hover   { color: var(--hackclub-cyan); }
 .dashboard-sidebar-link:not(.active)[href="/dashboard/levels"]:hover     { color: var(--hackclub-red); }
 .dashboard-sidebar-link:not(.active)[href="/dashboard/shop"]:hover       { color: var(--hackclub-purple); }
-.dashboard-sidebar-link:not(.active)[href="/dashboard/newsletters"]:hover { color: var(--hackclub-yellow); }
+.dashboard-sidebar-link:not(.active)[href="/dashboard/notifications"]:hover { color: var(--hackclub-yellow); }
 .dashboard-sidebar-link:not(.active)[href="/dashboard/map"]:hover        { color: var(--hackclub-cyan); }
 .dashboard-sidebar-link:not(.active)[href="/dashboard/tools"]:hover      { color: var(--hackclub-orange); }
 .dashboard-sidebar-link:not(.active)[href="/dashboard/settings"]:hover   { color: var(--hackclub-blue); }

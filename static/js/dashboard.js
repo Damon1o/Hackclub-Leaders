@@ -3053,24 +3053,39 @@ const CHECKLIST_ITEMS = [
     }
 
     function markAllNotificationsRead() {
-        const wasUnread = new Set();
+        const wasUnreadNotifs = new Set();
         notifications.forEach(notif => {
             if (!notif.read) {
                 notif.read = true;
-                wasUnread.add(notif.id);
+                wasUnreadNotifs.add(notif.id);
             }
         });
-        const changed = wasUnread.size > 0;
+        const wasUnreadDispatches = new Set();
+        newsletters().forEach(dispatch => {
+            if (!dispatch.read) {
+                dispatch.read = true;
+                wasUnreadDispatches.add(dispatch.id);
+            }
+        });
 
-        if (!changed) return;
+        if (!wasUnreadNotifs.size && !wasUnreadDispatches.size) return;
         renderNotificationFeed();
 
-        apiRequest('/api/dashboard/notifications/mark-all-read', {
-            method: 'PATCH',
-        }).catch((error) => {
+        const requests = [];
+        if (wasUnreadNotifs.size) {
+            requests.push(apiRequest('/api/dashboard/notifications/mark-all-read', { method: 'PATCH' }));
+        }
+        wasUnreadDispatches.forEach((id) => {
+            requests.push(apiRequest(`/api/dashboard/newsletters/${id}`, { method: 'PATCH', body: { read: true } }));
+        });
+
+        Promise.all(requests).catch((error) => {
             // Put the unread flags back rather than leaving the badge lying.
             notifications.forEach((notif) => {
-                if (wasUnread.has(notif.id)) notif.read = false;
+                if (wasUnreadNotifs.has(notif.id)) notif.read = false;
+            });
+            newsletters().forEach((dispatch) => {
+                if (wasUnreadDispatches.has(dispatch.id)) dispatch.read = false;
             });
             renderNotificationFeed();
             showToast(error.message || 'Could not mark all as read.', 'error');

@@ -31,7 +31,12 @@
                 data-i18n="projects.openHackTime">Open HackTime →</a>
         </div>
         <div id="hacktimeBody" class="hacktime-body">
-            <p class="hacktime-loading" data-i18n="projects.loadingCodingTime">Loading your coding time…</p>
+            <div aria-hidden="true">
+                <div class="skeleton skeleton-heading" style="width:120px;margin-bottom:10px;"></div>
+                <div class="skeleton skeleton-text short"></div>
+                <div class="skeleton skeleton-text medium"></div>
+                <div class="skeleton skeleton-bar" style="margin-top:8px;"></div>
+            </div>
         </div>
     </section>
 
@@ -117,8 +122,12 @@
                 <p class="form-hint" data-i18n="projects.hackatimeProjectHint">Link the project you tracked your coding
                     time on.</p>
                 <div class="hacktime-picker" id="hackatimePicker">
-                    <p class="hacktime-picker-loading" data-i18n="projects.loadingHackatimeProjects">Loading your
-                        Hackatime projects…</p>
+                    <div class="hacktime-picker-skeleton" aria-hidden="true"
+                        style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <div class="skeleton skeleton-badge" style="width:140px;"></div>
+                        <div class="skeleton skeleton-badge" style="width:96px;"></div>
+                        <div class="skeleton skeleton-badge" style="width:160px;"></div>
+                    </div>
                 </div>
                 <input type="hidden" name="hackatimeProject" value="">
             </div>

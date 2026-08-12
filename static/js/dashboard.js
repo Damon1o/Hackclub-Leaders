@@ -329,8 +329,14 @@
         const name = escapeHtml(person.name || settings().clubName || 'User');
         if (person.avatar) {
             // Rosters can run long; only the avatars actually scrolled into
-            // view are worth a request.
-            return `<img src="${escapeHtml(person.avatar)}" class="${className}" alt="${name}" loading="lazy" decoding="async">`;
+            // view are worth a request. A shimmer placeholder sits behind the
+            // image until it decodes.
+            return `<span class="avatar-img-wrap" style="position:relative;display:inline-flex;">
+                <span class="skeleton" style="position:absolute;inset:0;border-radius:14px;" aria-hidden="true"></span>
+                <img src="${escapeHtml(person.avatar)}" class="${className}" alt="${name}" loading="lazy" decoding="async" style="position:relative;"
+                    onload="this.parentElement.querySelector('.skeleton')?.remove()"
+                    onerror="this.parentElement.querySelector('.skeleton')?.remove()">
+            </span>`;
         }
         return `<div class="${className} avatar-fallback">${escapeHtml(initials(person.name))}</div>`;
     }
@@ -626,6 +632,15 @@
 
     // A project may only be submitted for review once all four are set.
     const PROJECT_REQUIREMENTS = ['repoUrl', 'demoUrl', 'hackatimeProject'];
+
+    // Shimmer pills shown while the Hackatime project list loads; mirrors the
+    // initial markup in projects.html.
+    const HACKTIME_PICKER_SKELETON = `
+        <div class="hacktime-picker-skeleton" aria-hidden="true" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="skeleton skeleton-badge" style="width:140px;"></div>
+            <div class="skeleton skeleton-badge" style="width:96px;"></div>
+            <div class="skeleton skeleton-badge" style="width:160px;"></div>
+        </div>`;
     // Cached per session so reopening the modal doesn't refetch. `null` = not
     // loaded yet, `[]` = loaded and empty, array = loaded projects.
     let hacktimeProjectsCache = null;
@@ -988,7 +1003,7 @@
             renderHacktimePicker(hacktimeProjectsCache, selected);
             return;
         }
-        picker.innerHTML = '<p class="hacktime-picker-loading">Loading your Hackatime projects…</p>';
+        picker.innerHTML = HACKTIME_PICKER_SKELETON;
         try {
             const data = await apiRequest('/api/dashboard/hackatime/projects');
             hacktimeProjectsCache = data.projects || [];
@@ -1240,8 +1255,11 @@
                 : shopItems().filter((item) => item.filter === shopFilter);
             grid.innerHTML = visibleItems.map((item, index) => `
                 <article class="item-card shop-card" style="--card-index: ${index}">
-                    <div class="shop-card-media">
-                        <img src="${escapeHtml(item['image-src'] || '')}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">
+                    <div class="shop-card-media" style="position:relative;">
+                        <span class="skeleton" style="position:absolute;inset:0;border-radius:10px;" aria-hidden="true"></span>
+                        <img src="${escapeHtml(item['image-src'] || '')}" alt="${escapeHtml(item.name)}" loading="lazy" style="position:relative;"
+                            onload="this.previousElementSibling?.remove()"
+                            onerror="this.previousElementSibling?.remove(); this.style.display='none'">
                     </div>
                     <h3>${escapeHtml(item.name)}</h3>
                     <div class="card-footer-line">

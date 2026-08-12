@@ -1,97 +1,377 @@
 {
-  ".mcp.json": {
-    "mtime": 1783128125.1355438,
-    "ast_hash": "d3580801aaedc2f6887fcec2c491cfb4",
-    "semantic_hash": "d3580801aaedc2f6887fcec2c491cfb4"
-  },
   "app.py": {
-    "mtime": 1783386792.9848754,
-    "ast_hash": "47f7f585390ce8cb09f51b6c240eadbf",
-    "semantic_hash": "47f7f585390ce8cb09f51b6c240eadbf"
-  },
-  "helpers.py": {
-    "mtime": 1783386763.832212,
-    "ast_hash": "b3ceec87efd44785bebaa80b7957e640",
-    "semantic_hash": "b3ceec87efd44785bebaa80b7957e640"
+    "mtime": 1786410931.5372095,
+    "ast_hash": "fb4147abb09ccc56c132b4ed94223015",
+    "semantic_hash": ""
   },
   "pyproject.toml": {
-    "mtime": 1783386555.878474,
-    "ast_hash": "0e3cb7b9061e9d291251874ae49045b5",
-    "semantic_hash": "0e3cb7b9061e9d291251874ae49045b5"
-  },
-  "routes_admin.py": {
-    "mtime": 1783386749.5506952,
-    "ast_hash": "97af8404df6bbf9d8f6350a2e9d0d4f1",
-    "semantic_hash": "97af8404df6bbf9d8f6350a2e9d0d4f1"
-  },
-  "routes_api.py": {
-    "mtime": 1783389296.378053,
-    "ast_hash": "b760e16121b23fe6f887b7dd7170a75b",
-    "semantic_hash": "b760e16121b23fe6f887b7dd7170a75b"
-  },
-  "routes_auth.py": {
-    "mtime": 1783388460.4159286,
-    "ast_hash": "e6ca99278442db30a961b60fe2df8d24",
-    "semantic_hash": "e6ca99278442db30a961b60fe2df8d24"
-  },
-  "routes_club.py": {
-    "mtime": 1783386766.766181,
-    "ast_hash": "1d62e480438ebf2382ed0c6d24a07cb0",
-    "semantic_hash": "1d62e480438ebf2382ed0c6d24a07cb0"
-  },
-  "routes_web.py": {
-    "mtime": 1783388623.876176,
-    "ast_hash": "2f48c8e945f2240186a1e8193442aa8e",
-    "semantic_hash": "2f48c8e945f2240186a1e8193442aa8e"
+    "mtime": 1785535094.9752524,
+    "ast_hash": "b867c53e6880825fa9e64116a18b4200",
+    "semantic_hash": ""
   },
   "scripts/check_airtable.py": {
-    "mtime": 1783196461.867348,
-    "ast_hash": "e77d89186a69758418a931d557e3c708",
-    "semantic_hash": "e77d89186a69758418a931d557e3c708"
+    "mtime": 1784482327.6713226,
+    "ast_hash": "b9a12259507e0c7cfd419d82fafb8475",
+    "semantic_hash": ""
   },
   "scripts/cleanup_test_data.py": {
-    "mtime": 1783196469.694605,
-    "ast_hash": "8571bfb3c6418d6c42f30f0399240531",
-    "semantic_hash": "8571bfb3c6418d6c42f30f0399240531"
-  },
-  "shop.json": {
-    "mtime": 1783299726.039182,
-    "ast_hash": "51ba3c9932e75ccaad5eabddf471a0ba",
-    "semantic_hash": "51ba3c9932e75ccaad5eabddf471a0ba"
-  },
-  "storage.py": {
-    "mtime": 1783388302.1687102,
-    "ast_hash": "b8998900be2b74796682eb0ab391b818",
-    "semantic_hash": "b8998900be2b74796682eb0ab391b818"
+    "mtime": 1784482327.6723235,
+    "ast_hash": "c1d5419112a8ddfec0394422610ac9ea",
+    "semantic_hash": ""
   },
   "tests/__init__.py": {
-    "mtime": 1783386585.3015592,
+    "mtime": 1783468605.0216558,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "tests/conftest.py": {
-    "mtime": 1783386749.5486975,
-    "ast_hash": "4b21eca04dde7d1268e1c7649fa89f31",
-    "semantic_hash": "4b21eca04dde7d1268e1c7649fa89f31"
+    "mtime": 1784482327.7236564,
+    "ast_hash": "364dfaac1d05a409ecde563af9c8791c",
+    "semantic_hash": ""
   },
   "tests/test_api.py": {
-    "mtime": 1783386749.5486975,
-    "ast_hash": "8297bc65ba8909cbb705153f2df71c06",
-    "semantic_hash": "8297bc65ba8909cbb705153f2df71c06"
+    "mtime": 1784482327.7258854,
+    "ast_hash": "6b71fb2bdc3441ab11faf59c103fdcea",
+    "semantic_hash": ""
   },
   "tests/test_auth.py": {
-    "mtime": 1783386579.2457292,
-    "ast_hash": "7416034d7ac8a428980d2f9e47e1ce77",
-    "semantic_hash": "7416034d7ac8a428980d2f9e47e1ce77"
+    "mtime": 1784482327.7258854,
+    "ast_hash": "55cb4ffa46385c7645039fdde08f48c8",
+    "semantic_hash": ""
   },
   "tests/test_public.py": {
-    "mtime": 1783386711.3995042,
-    "ast_hash": "1592dd7a4afa805558f618bf58b4e4bd",
-    "semantic_hash": "1592dd7a4afa805558f618bf58b4e4bd"
+    "mtime": 1786545166.884117,
+    "ast_hash": "d642ec13a546da65592f48657fe4a286",
+    "semantic_hash": ""
   },
   "vercel.json": {
-    "mtime": 1783091719.922308,
-    "ast_hash": "29c020d2f4a0c66f435cec412c6f549d",
-    "semantic_hash": "29c020d2f4a0c66f435cec412c6f549d"
+    "mtime": 1783468605.0242555,
+    "ast_hash": "a06a361d0bd00457f3dccbab64df101c",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/assets/music/happy-beats-business-moves-vol-1-by-ende-dot-app.music-cues.json": {
+    "mtime": 1783475423.2299063,
+    "ast_hash": "53bebef85049060e8bb8ebec6fc553f0",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/hyperframes.json": {
+    "mtime": 1783475396.1334393,
+    "ast_hash": "c577e1703920c6b439dc845c86caa040",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/meta.json": {
+    "mtime": 1783475396.1334393,
+    "ast_hash": "321f4aee089dcdf732009b5cebc52fa6",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/package.json": {
+    "mtime": 1783475396.1344395,
+    "ast_hash": "fe71c2b45fccda84f66e46b3fe1f0f69",
+    "semantic_hash": ""
+  },
+  "scripts/import_mongo_from_csv.py": {
+    "mtime": 1786400803.4091575,
+    "ast_hash": "518894192d6bab3bdc868fae4458f73e",
+    "semantic_hash": ""
+  },
+  "scripts/seed_mongo.py": {
+    "mtime": 1785520261.1584249,
+    "ast_hash": "a654f669babf0718551a70c0858f8f94",
+    "semantic_hash": ""
+  },
+  "scripts/setup_chat_tables.py": {
+    "mtime": 1784482327.6733222,
+    "ast_hash": "fcffd443229652dbc5c9f0f8e61b468a",
+    "semantic_hash": ""
+  },
+  "scripts/split_i18n_data.py": {
+    "mtime": 1785520819.5902987,
+    "ast_hash": "940873bbbc486cd96824ed4df76db895",
+    "semantic_hash": ""
+  },
+  "src/__init__.py": {
+    "mtime": 1783553989.1426492,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "src/email.py": {
+    "mtime": 1786404455.2439637,
+    "ast_hash": "c3ff27257fc3fc97068fa0242b04f5be",
+    "semantic_hash": ""
+  },
+  "src/helpers.py": {
+    "mtime": 1786545166.8762877,
+    "ast_hash": "660ac4d367a2afc7014f1788a51ab941",
+    "semantic_hash": ""
+  },
+  "src/notifications.py": {
+    "mtime": 1786404717.7498007,
+    "ast_hash": "bb42dc161312d1433341ec5d532fd344",
+    "semantic_hash": ""
+  },
+  "src/routes_admin.py": {
+    "mtime": 1786404552.042742,
+    "ast_hash": "11111f4a91738b7d0f624deedf29632c",
+    "semantic_hash": ""
+  },
+  "src/routes_api.py": {
+    "mtime": 1786377865.963323,
+    "ast_hash": "dcc4566a4a33d704e609375814f0f236",
+    "semantic_hash": ""
+  },
+  "src/routes_auth.py": {
+    "mtime": 1784482327.6793697,
+    "ast_hash": "c5a54ac225c7296ca338f9855c6bb3aa",
+    "semantic_hash": ""
+  },
+  "src/routes_chat.py": {
+    "mtime": 1785520560.3221385,
+    "ast_hash": "cd944f01f55087ab96bf07da96e7d106",
+    "semantic_hash": ""
+  },
+  "src/routes_club.py": {
+    "mtime": 1784482327.6813695,
+    "ast_hash": "536d557cce3bf9d252a029982bfcf21e",
+    "semantic_hash": ""
+  },
+  "src/routes_web.py": {
+    "mtime": 1786545166.8768024,
+    "ast_hash": "6462e03bf11ad33b473c452e60f9c75b",
+    "semantic_hash": ""
+  },
+  "src/storage.py": {
+    "mtime": 1786377865.9654014,
+    "ast_hash": "a6bb0388c2765030d7f821cc20d76dbc",
+    "semantic_hash": ""
+  },
+  "src/storage_mongo.py": {
+    "mtime": 1786377865.965922,
+    "ast_hash": "e001a660080c5da1fb178ca894411a90",
+    "semantic_hash": ""
+  },
+  "tests/test_admin_shop.py": {
+    "mtime": 1786404717.7498007,
+    "ast_hash": "cdfc6c373af39fe794d6a9abedafc924",
+    "semantic_hash": ""
+  },
+  "tests/test_chat.py": {
+    "mtime": 1784482332.4340029,
+    "ast_hash": "d4cf6c457b37ff712991be2fefee7775",
+    "semantic_hash": ""
+  },
+  "tests/test_coins.py": {
+    "mtime": 1786285889.5266752,
+    "ast_hash": "6205ea8121737d1623336f810cc2f006",
+    "semantic_hash": ""
+  },
+  "tests/test_notifications.py": {
+    "mtime": 1786404717.7498007,
+    "ast_hash": "df1400d0f3a0a44a459103ccfd8865f3",
+    "semantic_hash": ""
+  },
+  "tests/test_pagination.py": {
+    "mtime": 1785535127.6000044,
+    "ast_hash": "55a279ca44d1c80226e9b6646de21f06",
+    "semantic_hash": ""
+  },
+  "tests/test_storage_mongo.py": {
+    "mtime": 1785535345.0234418,
+    "ast_hash": "166bb27358cc9bcbc30ff0d65a226cbb",
+    "semantic_hash": ""
+  },
+  "tests/test_workshops.py": {
+    "mtime": 1786377865.9775083,
+    "ast_hash": "1d84dc100fba52bd8f8f6cdd9bf43d01",
+    "semantic_hash": ""
+  },
+  ".github/dependabot.yml": {
+    "mtime": 1784482327.6638114,
+    "ast_hash": "9dfef20f6ab18267c7f486f9c9bad0e1",
+    "semantic_hash": ""
+  },
+  ".github/workflows/ci.yml": {
+    "mtime": 1784482327.6638114,
+    "ast_hash": "cba270c6c5b28d5f2ac18837280ff5b3",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/progress.md": {
+    "mtime": 1784078101.1119313,
+    "ast_hash": "18229aa1f22566635644a4b65be8328e",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-1-brief.md": {
+    "mtime": 1783997186.7114532,
+    "ast_hash": "281c055e582608ef9e96dcce146dabe1",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-1-report.md": {
+    "mtime": 1783997280.740211,
+    "ast_hash": "55794709c9cf90ee6d097a178b0ca420",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-2-brief.md": {
+    "mtime": 1784076619.6743522,
+    "ast_hash": "1333fdf6f3012890d21e9445cad7db41",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-2-report.md": {
+    "mtime": 1784076815.3129532,
+    "ast_hash": "5ab125ffc1aa6e88433f494addcb6d7a",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-3-brief.md": {
+    "mtime": 1784077011.4991145,
+    "ast_hash": "7e24e7906caf5f1026fcd55d958aa44f",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-3-report.md": {
+    "mtime": 1784077494.564347,
+    "ast_hash": "170aa252de1d2c4361f245c9541541b0",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-4-brief.md": {
+    "mtime": 1784077593.1091416,
+    "ast_hash": "312f442850409fbb8331a7b02a434a03",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-4-report.md": {
+    "mtime": 1784077753.787554,
+    "ast_hash": "20732bf3e2a4ec9c38c9f1e0483bb7bf",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-5-brief.md": {
+    "mtime": 1784078101.3229141,
+    "ast_hash": "e0c398acf343f03334a2625e801e77e3",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-5-report.md": {
+    "mtime": 1784078230.3884919,
+    "ast_hash": "ee7228a8187d44c235ac2b2b7c461b2c",
+    "semantic_hash": ""
+  },
+  "brag-output/brag-plan.md": {
+    "mtime": 1783475214.1720378,
+    "ast_hash": "9e0c4f88d530a7792797d13cff99eaf8",
+    "semantic_hash": ""
+  },
+  "brag-output/composition-brief.md": {
+    "mtime": 1783475364.1233053,
+    "ast_hash": "b23cced0aa99447d7fe9a6485395cb6e",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/index.html": {
+    "mtime": 1783475969.2968657,
+    "ast_hash": "3cbc776882e46a70ec7095d731aa36b1",
+    "semantic_hash": ""
+  },
+  "brag-output/share-copy.txt": {
+    "mtime": 1783475976.7169044,
+    "ast_hash": "dd7858d75c8372884d76bbc2930b0e16",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-13-chat-sprint1.md": {
+    "mtime": 1784482327.6683238,
+    "ast_hash": "cb267ba65c7e5825f4dcbcf5b1017120",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-07-coins-spine.md": {
+    "mtime": 1786153745.8206844,
+    "ast_hash": "9b654577ff01636909dd314be3b92b1a",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-09-workshops.md": {
+    "mtime": 1786295833.49814,
+    "ast_hash": "129a1957ec206aa6bac843863c337335",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-10-nav-notifications-redesign.md": {
+    "mtime": 1786413370.1002097,
+    "ast_hash": "683b5b5d7d8ecb8911febb904aa02e83",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-10-photo-upload-crop.md": {
+    "mtime": 1786413203.0458288,
+    "ast_hash": "e6342e6b37bf88564a83eacc94124343",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-10-ship-review-coin-award.md": {
+    "mtime": 1786402787.075859,
+    "ast_hash": "7d9f2a594b686d53e2ac5363e1848eec",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-12-settings-page-redesign.md": {
+    "mtime": 1786564538.1807659,
+    "ast_hash": "b482e996d8405873d7189cbc26364ea9",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-13-chat-sprint1-design.md": {
+    "mtime": 1784482327.6693225,
+    "ast_hash": "96673e3d3099d6b520edd5dec423adec",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-07-coins-spine-design.md": {
+    "mtime": 1786136550.0664084,
+    "ast_hash": "27aedf12b24f234796c94193dce36a7a",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-09-workshops-design.md": {
+    "mtime": 1786294524.7652433,
+    "ast_hash": "47cc2c3c344e676e0be4ec8d3ccc5ce0",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-10-nav-notifications-design.md": {
+    "mtime": 1786412739.6776278,
+    "ast_hash": "4928d3a380b57be9cfeb44028870d12a",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-10-photo-upload-crop-design.md": {
+    "mtime": 1786412765.0899532,
+    "ast_hash": "36d463c39b62535e21880a7cd1a4627f",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-12-settings-page-design.md": {
+    "mtime": 1786555649.3131356,
+    "ast_hash": "24248c8b5f4b748f0a32a3679e221102",
+    "semantic_hash": ""
+  },
+  "ideas.md": {
+    "mtime": 1784482332.4280026,
+    "ast_hash": "5d51a958068caf22a5399414b33a8e59",
+    "semantic_hash": ""
+  },
+  "brag-output/brag.mp4": {
+    "mtime": 1783476108.8231208,
+    "ast_hash": "120c3040ce3ee2b3e95dbee282b68d7e",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/assets/music/happy-beats-business-moves-vol-1-by-ende-dot-app.mp3": {
+    "mtime": 1783475423.2049048,
+    "ast_hash": "2bb693f775fdd42a8c8da553c300840c",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/assets/sfx/click_002.ogg": {
+    "mtime": 1783475482.996797,
+    "ast_hash": "722ec540eb252470b8b0cf3577ceba27",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/assets/sfx/drop_001.ogg": {
+    "mtime": 1783475483.0167964,
+    "ast_hash": "fdb7c6bd1abf0e06c75f5ef3ee29d5a2",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/assets/sfx/impactSoft_heavy_001.ogg": {
+    "mtime": 1783475483.0809398,
+    "ast_hash": "923bb6cc607e94bbaef712af28e8ccb4",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/assets/sfx/select_008.ogg": {
+    "mtime": 1783475483.0418148,
+    "ast_hash": "9c01cfbd7213bc8c5f41177e926b1a08",
+    "semantic_hash": ""
+  },
+  "brag-output/composition/assets/sfx/switch_002.ogg": {
+    "mtime": 1783475483.0608134,
+    "ast_hash": "23878cdaa2bfaaa916173541626514e2",
+    "semantic_hash": ""
   }
 }

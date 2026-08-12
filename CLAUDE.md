@@ -13,3 +13,4 @@
 - NEVER commit secrets, credentials, or .env files
 - NEVER add `Co-Authored-By` trailers to commits
 - Keep files under 500 lines
+- ALWAYS use Rust Token Killer (`rtk`) for codebase searches and grep — never fall back to plain `grep`/`Select-String` when `rtk` is available

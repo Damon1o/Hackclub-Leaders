@@ -1783,8 +1783,10 @@ const CHECKLIST_ITEMS = [
         if (page !== 'settings') return;
         const prefs = settings();
         const avatar = $('#clubPreviewAvatar');
-        $('#clubPreviewName').textContent = prefs.clubName || 'Hack Club';
-        $('#clubPreviewLocation').textContent = prefs.location || 'Location TBD';
+        const previewName = $('#clubPreviewName');
+        if (previewName) previewName.textContent = prefs.clubName || 'Hack Club';
+        const previewLocation = $('#clubPreviewLocation');
+        if (previewLocation) previewLocation.textContent = prefs.location || 'Location TBD';
         if (avatar) {
             avatar.textContent = initials(prefs.clubName || 'Hack Club');
             const safeAvatar = String(prefs.avatar || '').replace(/\\/g, '%5C').replace(/"/g, '%22');

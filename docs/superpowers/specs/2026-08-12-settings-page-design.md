@@ -78,7 +78,10 @@ page — this section is not a replacement).
 
 - **Preferred name** — new field, real and editable, saved like other
   profile fields. "Shown on your profile card. Defaults to your first name."
-  Own Save button, scoped to just this field.
+  Own Save button, scoped to just this field. Persists in the new
+  cross-club Users record (see Danger zone) on Airtable/Mongo; on the
+  session backend it round-trips through `session['user']`, same as the
+  existing `name`/`bio`/`hackatimeId` fields.
 - **Full name, Email, Slack, Verification, Phone, Birthday, Mailing address**
   — rendered read-only, labeled "synced from Hack Club and can't be edited
   here." None of this data exists anywhere in the current app (confirmed: no
@@ -89,10 +92,6 @@ page — this section is not a replacement).
   Hack Club's identity API (auth.hackclub.com) is a follow-up spec.
 - **Hackatime** — reuses the existing connect/manual-ID block already on
   `/dashboard/profile` verbatim.
-
-**Data model change:** `preferredName` added to the new per-user record
-described in Danger zone below (needs to persist somewhere; there is no
-existing per-user table to add it to).
 
 ### 4. Appearance (real content)
 
@@ -112,24 +111,57 @@ Existing Email notifications + Newsletter subscription toggles, moved here.
 The mockup's "review comes back" / "workshop decision" notification rows
 have no backing feature yet — omitted, only the two existing toggles ship.
 
-### 7. Danger zone (real content, built for real)
+### 7. Danger zone (real content, gated by backend)
 
 "Sign out everywhere" — genuinely invalidates every other signed-in session,
-not just the current browser.
+not just the current browser. Only meaningful on a shared backend
+(Airtable/Mongo); the default session backend has no server-side session
+store and no concept of "other devices" (state lives entirely in that one
+browser's cookie). Gated the same way `join.html` already gates other
+multi-device features: `shared_backend=not isinstance(_storage(), SessionStorage)`.
+When `shared_backend` is false, the section shows the existing demo-mode
+messaging pattern instead of the button ("This site is running in local
+demo mode, so signing out other devices isn't available here.").
 
-Current sessions are plain Flask signed cookies with no server-side session
-store, so there is nothing today to invalidate against. New: a small
-per-user record (keyed by lowercased email) added to storage, following the
-existing table pattern in `storage.py` / `storage_mongo.py`, holding:
+**New storage concept — cross-club Users record.** Every other thing in
+`storage.py` is club-keyed (Clubs table by leader email, child tables by
+`Club Email`); there is no existing per-user table, and a user isn't
+guaranteed a row anywhere (a leader may not be on their own roster). This
+needs a new record keyed by the viewer's own lowercased email, independent
+of any club, holding:
 - `preferredName` (see Your account, above)
 - `sessionVersion` (int, starts at 0)
 
-The login flow stamps `sessionVersion` into the session cookie at sign-in.
-Every authenticated request checks the cookie's stamped version against the
-stored value for that email; a mismatch forces sign-out. Clicking "Sign out
-everywhere" bumps the stored `sessionVersion`, which invalidates every other
-cookie (different stamped version) on their next request, while the
-initiating browser gets a fresh session immediately after the bump.
+New storage interface methods (both shared backends only — not on
+`SessionStorage`, which never receives calls to them because the feature
+is gated off):
+- `get_user_record(email: str) -> dict` — `{preferredName, sessionVersion}`,
+  defaults if no row exists yet
+- `save_user_record(email: str, fields: dict) -> None`
+
+**Airtable:** new `Users` table (`Email*`, `Preferred Name`, `Session Version`),
+documented in the `storage.py` module docstring alongside the existing
+schema list, and added to `OPTIONAL_CHILD_KEYS`-style graceful handling —
+if the table doesn't exist yet in a given base, `get_user_record` returns
+the defaults (`sessionVersion=0`) and `save_user_record` raises a
+`StorageError` that the route surfaces as "Ask your Airtable base owner to
+add a Users table first," rather than silently pretending it worked.
+
+**Mongo:** new `users` collection, one document per lowercased email,
+indexed on `_id` (the email itself, consistent with how `storage_mongo.py`
+already keys other collections).
+
+**Login flow:** on sign-in, `hackclub_callback` (and the playtest login)
+reads the current `sessionVersion` via `get_user_record` (shared backends
+only) and stamps it into `session['user']['sessionVersion']`. A
+`before_request`-level check (alongside the existing membership gate in
+`routes_web.py`) compares the cookie's stamped version against the stored
+one on every authenticated request when `shared_backend` is true; a
+mismatch clears the session and redirects to sign-in. Clicking "Sign out
+everywhere" bumps the stored `sessionVersion` via `save_user_record`, which
+invalidates every other browser's cookie (stale version) on its next
+request, while the initiating browser's session is cleared and it's
+redirected to sign back in immediately.
 
 ## Error handling
 

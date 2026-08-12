@@ -4,5 +4,5 @@ werkzeug==3.1.4       # pinned explicitly; transitive dep of flask, kept for rep
 python-dotenv==1.1.1
 urllib3==2.6.0         # pinned explicitly; transitive dep of requests, kept for reproducibility
 flask-mail==0.10.0
-pymongo==4.9.2         # only needed when STORAGE_BACKEND=mongo; 4.10+ breaks mongomock's bulk_write
+pymongo==4.17.0         # only needed when STORAGE_BACKEND=mongo; 4.10+ breaks mongomock's bulk_write
 pillow==12.2.0         # scripts/convert_images.py (WebP pipeline)

@@ -175,3 +175,23 @@ def test_settings_page_renders_all_section_anchors(auth_client, monkeypatch):
     ):
         assert f'id="{anchor_id}"' in body
         assert f'href="#{anchor_id}"' in body
+
+
+def test_club_profile_section_renders_new_fields(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {
+            'settings': {
+                'clubName': 'Test Club', 'venue': 'Test High', 'meetingDay': 'Wednesday',
+                'addressLine1': '1 Main St', 'addressLine2': '', 'city': 'Burlington',
+                'state': 'VT', 'zip': '05401', 'country': 'US', 'clubBio': 'We build stuff.',
+                'website': '', 'avatar': '',
+            },
+            'members': [{'id': 'm1', 'name': 'Test Leader', 'email': 'leader@test.com', 'role': 'Leader', 'avatar': '', 'status': 'Active'}],
+        }
+    response = auth_client.get('/dashboard/settings')
+    body = response.get_data(as_text=True)
+    for field_name in ('venue', 'meetingDay', 'addressLine1', 'addressLine2', 'city', 'state', 'zip', 'country', 'clubBio'):
+        assert f'name="{field_name}"' in body
+    assert 'value="Test High"' in body
+    assert 'We build stuff.' in body

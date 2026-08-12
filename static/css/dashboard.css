@@ -1809,6 +1809,44 @@ body.dark-mode .leaflet-popup-tip {
     }
 }
 
+.settings-stub-block {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--dash-border);
+}
+
+.settings-stub-block h3 {
+    margin: 0 0 6px;
+    font-size: 15px;
+}
+
+.settings-stub-note {
+    margin: 0;
+    color: var(--dash-muted);
+    font-size: 14px;
+}
+
+.settings-stub-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--dash-border);
+}
+
+.settings-stub-row:last-child {
+    border-bottom: none;
+}
+
+.settings-stub-row-label {
+    font-weight: bold;
+    color: var(--dash-slate);
+}
+
+.settings-stub-row-value {
+    color: var(--dash-muted);
+}
+
 .product-mark {
     height: 140px;
     border-radius: 10px;

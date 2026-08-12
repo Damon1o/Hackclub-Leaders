@@ -195,3 +195,18 @@ def test_club_profile_section_renders_new_fields(auth_client, monkeypatch):
         assert f'name="{field_name}"' in body
     assert 'value="Test High"' in body
     assert 'We build stuff.' in body
+
+
+def test_members_section_renders_join_link_card_and_stub(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Test Club', 'venue': 'Test High'},
+            'members': [{'id': 'm1', 'name': 'Test Leader', 'email': 'leader@test.com', 'role': 'Leader', 'avatar': '', 'status': 'Active'}],
+        }
+    response = auth_client.get('/dashboard/settings')
+    body = response.get_data(as_text=True)
+    assert 'id="joinLinkCode"' in body
+    assert 'id="copyJoinLink"' in body
+    assert 'id="refreshJoinLink"' in body
+    assert 'No pending join requests' in body

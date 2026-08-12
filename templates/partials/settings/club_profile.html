@@ -7,13 +7,11 @@
 
 <form class="settings-form" id="settingsForm">
     <div class="avatar-upload-row">
-        <div class="club-preview-avatar" id="clubPreviewAvatar">
-            {% if settings.avatar %}<img src="{{ settings.avatar }}" alt="">{% endif %}
-        </div>
+        <div class="club-preview-avatar" id="clubPreviewAvatar"></div>
         <label class="form-group">
             <span class="form-label" data-i18n="settings.avatar">Club logo</span>
-            <input type="text" class="form-input" name="avatar" value="{{ settings.avatar }}" hidden>
-            <span class="avatar-upload-status" data-i18n="settings.avatarUploadHint">Click the logo to upload a new one.</span>
+            <input type="url" class="form-input" name="avatar" value="{{ settings.avatar }}"
+                data-i18n-attr="placeholder:common.urlPlaceholder" placeholder="https://...">
         </label>
     </div>
 

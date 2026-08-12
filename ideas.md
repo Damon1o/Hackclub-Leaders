@@ -4,16 +4,17 @@ Backend (src/routes_chat.py):
 - Channels: CRUD (leaders/mentors create/edit/delete; all members read)
 - Messages: List (paginated 50, since polling), Create (all members)
 - Channel deletion cascades messages
-- Stored in dashboard state (session cookie or Airtable)
-Frontend (static/js/dashboard.js):
+- Stored in dashboard state (session cookie, Airtable, or Mongo)
+Frontend (static/js/dashboard-chat.js):
 - Sidebar channel list with unread dots (localStorage per-device)
 - 4-second polling, pauses when tab hidden
 - Message composer (500 char limit)
 - Channel create/edit/delete modal
 - Message rendering with avatars, timestamps, "mine" styling
-Storage (src/storage.py):
+Storage (src/storage.py, src/storage_mongo.py):
 - SessionStorage: 30 message cap, 2.8KB cookie limit
 - AirtableStorage: Full history, concurrent sync
+- MongoStorage: Full history, MongoDB-backed
 100 Feature Ideas (Categorized)
 A. Core Messaging Enhancements (1–15)
 #	Idea	Why	How
@@ -197,7 +198,7 @@ POST   /api/dashboard/chat/upload      # multipart/form-data
 GET    /api/dashboard/chat/conversations  # DMs
 POST   /api/dashboard/chat/conversations  # create DM
 Frontend Architecture
-- Extract chat into static/js/chat.js (currently inline in dashboard.js)
+- Extract chat into static/js/chat.js (currently in dashboard-chat.js)
 - Add ChatStore class for state management
 - WebSocket manager with reconnection logic
 - Virtualized message list for performance (1000+ messages)

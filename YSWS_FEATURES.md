@@ -136,7 +136,7 @@ Features found across Hack Club's YSWS programs — events where teens build pro
 - **Pending ships count** — Metric showing how many projects are awaiting admin review
 - **CSRF protection** — All mutation endpoints require valid CSRF tokens
 - **Role-based authorization** — Leaders/Mentors create/edit/delete; Members can only RSVP and submit
-- **State persistence** — Session cookie (2.8KB cap) or Airtable (shared across club) for data storage
+- **State persistence** — Session cookie (2.8KB cap), Airtable, or Mongo (`STORAGE_BACKEND`) for data storage
 - **Stale-while-revalidate** — Client caches state in localStorage, refreshes from API in background
 
 ---

@@ -47,6 +47,8 @@ kept in the session by app.py).
 
 import json
 import os
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Final
 
@@ -565,10 +567,33 @@ class AirtableStorage:
         result.sort(key=lambda r: r['request'].get('date') or '', reverse=True)
         return result
 
+    # Cross-request memo for load()/load_lite(). Instances are per-request
+    # (built into flask.g), so the cache lives on the class. Entries expire
+    # after _LOAD_TTL seconds — a dashboard page load issues ~3 reads, and
+    # within the TTL window they collapse into one. save() clears the club's
+    # entries immediately; external Airtable edits show up within the TTL.
+    _LOAD_TTL: Final[float] = 10.0
+    _load_cache: dict[tuple[str, tuple[str, ...] | None], tuple[float, dict[str, Any] | None]] = {}
+    _load_cache_lock: threading.Lock = threading.Lock()
+
+    def _cached_load(self, key: tuple[str, tuple[str, ...] | None], uncached):
+        now = time.monotonic()
+        with self._load_cache_lock:
+            entry = self._load_cache.get(key)
+            if entry and now - entry[0] < self._LOAD_TTL:
+                return entry[1]
+        state = uncached()
+        with self._load_cache_lock:
+            self._load_cache[key] = (time.monotonic(), state)
+        return state
+
     def load_lite(self, club_key: str) -> dict[str, Any] | None:
         """Just the club settings + members — enough for the membership gate
         and role check. Two parallel queries instead of the full eight, so the
         page shell returns fast; the rest is fetched client-side."""
+        return self._cached_load((club_key, ('_lite',)), lambda: self._load_lite_uncached(club_key))
+
+    def _load_lite_uncached(self, club_key: str) -> dict[str, Any] | None:
         with ThreadPoolExecutor(max_workers=2) as pool:
             club_future = pool.submit(self._list, self.clubs_table, 'Leader Email', club_key)
             members_future = pool.submit(self._list, self.tables['members'], 'Club Email', club_key)
@@ -605,6 +630,10 @@ class AirtableStorage:
         section skips its Airtable round-trip entirely, so a page that only
         renders events doesn't pay for the club's whole chat history.
         """
+        key = (club_key, tuple(sorted(sections)) if sections is not None else None)
+        return self._cached_load(key, lambda: self._load_uncached(club_key, sections))
+
+    def _load_uncached(self, club_key: str, sections: list[str] | None = None) -> dict[str, Any] | None:
         wanted = {state_key for _s, _d, state_key, _f in self.CHILD_TABLES}
         if sections is not None:
             wanted &= set(sections)
@@ -718,6 +747,12 @@ class AirtableStorage:
                     if state_key in self.OPTIONAL_CHILD_KEYS:
                         continue  # table not created yet — skip persisting it
                     raise
+
+        # This app is the only writer, so drop this club's cached reads — the
+        # next load must see the freshly saved state.
+        with self._load_cache_lock:
+            for key in [k for k in self._load_cache if k[0] == club_key]:
+                del self._load_cache[key]
 
     # ── Sync helpers ─────────────────────────────────────────────────────────
 

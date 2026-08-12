@@ -55,8 +55,8 @@
         card.dataset.tags = event.tags.join(',');
 
         const style = event.backgroundColor !== 'N/A'
-            ? `style="--event-image-fit: ${event.imageFit}; background-color: ${event.backgroundColor};${event.image !== 'N/A' ? ` background-image: url('${event.image}');` : ''}"`
-            : `style="--event-image-fit: ${event.imageFit};${event.image !== 'N/A' ? ` background-image: url('${event.image}');` : ''}"`;
+            ? `style="--event-image-fit: ${event.imageFit}; background-color: ${event.backgroundColor};"`
+            : `style="--event-image-fit: ${event.imageFit};"`;
 
         if (event.borderColor !== 'N/A') {
             card.style.border = `2px solid ${event.borderColor}`;
@@ -93,6 +93,13 @@
                 <span class="event-card-register">${escapeHtml(event.cta)}</span>
             </div>
         `;
+
+        // Backgrounds are heavy (~100 KB - 2 MB each) — only apply them once
+        // the card is about to scroll into view. The background-color above
+        // keeps the card filled until then, so there's no layout shift.
+        if (event.image !== 'N/A') {
+            card.dataset.bg = event.image;
+        }
         return card;
     }
 
@@ -132,6 +139,23 @@
         const card = createCard(event);
         list.appendChild(card);
         cards.push(card);
+    });
+
+    // Reveal a card's deferred background once it nears the viewport.
+    const bgObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const card = entry.target;
+            const visual = card.querySelector('.event-card-visual');
+            if (visual && card.dataset.bg) {
+                visual.style.backgroundImage = `url('${card.dataset.bg}')`;
+            }
+            delete card.dataset.bg;
+            bgObserver.unobserve(card);
+        });
+    }, { rootMargin: '200px' });
+    cards.forEach(card => {
+        if (card.dataset.bg) bgObserver.observe(card);
     });
 
     filterTags.forEach(tag => {

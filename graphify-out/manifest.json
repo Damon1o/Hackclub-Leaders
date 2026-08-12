@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "src/storage.py": {
-    "mtime": 1786377865.9654014,
-    "ast_hash": "a6bb0388c2765030d7f821cc20d76dbc",
+    "mtime": 1786574765.4214163,
+    "ast_hash": "88fbacedbe0f951a065c58b92d99ad84",
     "semantic_hash": ""
   },
   "src/storage_mongo.py": {
@@ -372,6 +372,11 @@
   "brag-output/composition/assets/sfx/switch_002.ogg": {
     "mtime": 1783475483.0608134,
     "ast_hash": "23878cdaa2bfaaa916173541626514e2",
+    "semantic_hash": ""
+  },
+  "scripts/convert_images.py": {
+    "mtime": 1786574950.587248,
+    "ast_hash": "901c7088250f36a90076df40c3824062",
     "semantic_hash": ""
   }
 }

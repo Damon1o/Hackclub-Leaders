@@ -1,16 +1,16 @@
 # Graph Report - Hackclub Leaders  (2026-08-12)
 
 ## Corpus Check
-- 64 files · ~92,841 words
+- 65 files · ~93,381 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 854 nodes · 1632 edges · 51 communities (42 shown, 9 thin omitted)
+- 862 nodes · 1646 edges · 51 communities (42 shown, 9 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 46 edges (avg confidence: 0.55)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `aa870799`
+- Built from commit: `c6da7df9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -66,8 +66,8 @@
 ## God Nodes (most connected - your core abstractions)
 1. `_seed()` - 45 edges
 2. `StorageError` - 43 edges
-3. `SessionStorage` - 36 edges
-4. `AirtableStorage` - 36 edges
+3. `AirtableStorage` - 39 edges
+4. `SessionStorage` - 36 edges
 5. `MongoStorage` - 33 edges
 6. `register()` - 30 edges
 7. `get_dashboard_state()` - 25 edges
@@ -80,12 +80,12 @@
   tests/test_coins.py → src/helpers.py
 - `test_default_dashboard_state_seeds_empty_workshops()` --calls--> `default_dashboard_state()`  [EXTRACTED]
   tests/test_workshops.py → src/helpers.py
+- `test_error_handlers()` --calls--> `StateTooLarge`  [EXTRACTED]
+  tests/test_api.py → src/helpers.py
 - `test_add_in_app_notification_with_explicit_state_caps_at_100()` --calls--> `add_in_app_notification()`  [EXTRACTED]
   tests/test_notifications.py → src/notifications.py
 - `test_add_in_app_notification_with_explicit_state_skips_ambient_lookup()` --calls--> `add_in_app_notification()`  [EXTRACTED]
   tests/test_notifications.py → src/notifications.py
-- `test_missing_uri_raises()` --indirect_call--> `StorageError`  [INFERRED]
-  tests/test_storage_mongo.py → src/storage.py
 
 ## Import Cycles
 - None detected.
@@ -105,20 +105,20 @@ Cohesion: 0.10
 Nodes (53): reset_rate_limits(), _iso(), _make_channel(), _msg(), Chat (channels + messages) API coverage.  These exercise *successful* authenti, Append a pre-built message onto the seeded dashboard state., _reset_rate_limit(), _seed() (+45 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.06
-Nodes (100): inject_user(), _payload_too_large(), Exception, F, add_shop_item(), admin_required(), Channel, channel_from_payload() (+92 more)
+Cohesion: 0.05
+Nodes (102): inject_user(), _payload_too_large(), _html_to_text(), Email notification system for the Hack Club Leaders Portal., Render the email sent to a member once a leader schedules them to run a workshop, Send email in background thread., Render project submission notification email., Render the email sent to a member when their shipped project is approved. (+94 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.24
-Nodes (4): _save_settings(), test_default_state_has_language(), test_settings_persists_supported_language(), test_settings_rejects_unsupported_language()
+Cohesion: 0.21
+Nodes (5): _save_settings(), test_default_state_has_language(), test_error_handlers(), test_settings_persists_supported_language(), test_settings_rejects_unsupported_language()
 
 ### Community 5 - "Community 5"
 Cohesion: 0.05
 Nodes (4): _i18n_translations(), test_i18n_all_languages_cover_public_page_keys(), test_storage_error_on_dashboard_redirects_once_not_forever(), test_storage_error_on_index_degrades_instead_of_looping()
 
 ### Community 6 - "Community 6"
-Cohesion: 0.09
-Nodes (43): _html_to_text(), Email notification system for the Hack Club Leaders Portal., Render the email sent to a member once a leader schedules them to run a workshop, Send email in background thread., Render project submission notification email., Render the email sent to a member when their shipped project is approved., Send email using a template. Runs in background thread., Render the email sent to a member when their submitted project is sent back to D (+35 more)
+Cohesion: 0.50
+Nodes (4): convert_to_webp(), main(), Convert heavyweight raster images to WebP and rewrite local references.  Targets, Convert source_path to a sibling .webp. Returns the .webp path if     converted,
 
 ### Community 8 - "Community 8"
 Cohesion: 0.11
@@ -129,8 +129,8 @@ Cohesion: 0.67
 Nodes (3): fail(), main(), Airtable readiness check.  Run this after creating your base and setting AIRTA
 
 ### Community 13 - "test_coins.py"
-Cohesion: 0.12
-Nodes (24): award_coins(), coin_balance(), coins_spent(), Recompute the cached balance/spent totals in `settings` from the     ledger. Ca, Append a ledger transaction and refresh the balance/spent cache.      The only, reconcile_coins(), Regression for a pre-existing MongoDB-backed club whose stored     `settings` d, _seed_cart_club() (+16 more)
+Cohesion: 0.07
+Nodes (64): Exception, F, add_shop_item(), admin_required(), award_coins(), Channel, ClubState, ClubStateLite (+56 more)
 
 ### Community 14 - "test_workshops.py"
 Cohesion: 0.17
@@ -252,17 +252,17 @@ Nodes (5): 1. Sidebar hover-expand, 2. Notifications fold into a renamed "Notifi
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `StorageError` connect `Community 3` to `Community 0`, `Community 1`, `Community 5`, `Community 6`, `Community 8`?**
-  _High betweenness centrality (0.087) - this node is a cross-community bridge._
+- **Why does `StorageError` connect `test_coins.py` to `Community 0`, `Community 1`, `Community 3`, `Community 5`, `Community 8`?**
+  _High betweenness centrality (0.086) - this node is a cross-community bridge._
 - **Why does `reset_rate_limits()` connect `Community 2` to `Community 3`?**
-  _High betweenness centrality (0.068) - this node is a cross-community bridge._
+  _High betweenness centrality (0.067) - this node is a cross-community bridge._
 - **Why does `AirtableStorage` connect `Community 1` to `Community 0`, `Community 5`, `test_coins.py`, `test_workshops.py`?**
-  _High betweenness centrality (0.056) - this node is a cross-community bridge._
+  _High betweenness centrality (0.059) - this node is a cross-community bridge._
 - **Are the 19 inferred relationships involving `StorageError` (e.g. with `Channel` and `ClubState`) actually correct?**
   _`StorageError` has 19 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 21 inferred relationships involving `SessionStorage` (e.g. with `Channel` and `ClubState`) actually correct?**
-  _`SessionStorage` has 21 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `AirtableStorage` (e.g. with `MongoStorage` and `test_storage_error_on_dashboard_redirects_once_not_forever()`) actually correct?**
   _`AirtableStorage` has 3 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 21 inferred relationships involving `SessionStorage` (e.g. with `Channel` and `ClubState`) actually correct?**
+  _`SessionStorage` has 21 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `MongoStorage` (e.g. with `AirtableStorage` and `StorageError`) actually correct?**
   _`MongoStorage` has 3 INFERRED edges - model-reasoned connections that need verification._

@@ -157,3 +157,21 @@ def test_settings_derives_empty_location_when_no_address(auth_client, monkeypatc
     response = _save_settings_v2(auth_client, monkeypatch, city='', state='')
     assert response.status_code == 200
     assert response.get_json()['state']['settings']['location'] == ''
+
+
+def test_settings_page_renders_all_section_anchors(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Test Club', 'venue': 'Test Venue'},
+            'members': [{'id': 'm1', 'name': 'Test Leader', 'email': 'leader@test.com', 'role': 'Leader', 'avatar': '', 'status': 'Active'}],
+        }
+    response = auth_client.get('/dashboard/settings')
+    assert response.status_code == 200
+    body = response.get_data(as_text=True)
+    for anchor_id in (
+        'club-profile', 'members', 'your-account', 'appearance',
+        'explore-privacy', 'notifications', 'danger-zone',
+    ):
+        assert f'id="{anchor_id}"' in body
+        assert f'href="#{anchor_id}"' in body

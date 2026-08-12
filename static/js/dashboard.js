@@ -957,6 +957,42 @@
         img.classList.toggle('has-image', Boolean(url));
     }
 
+    function initSettingsScrollspy() {
+        const nav = $('#settingsNav');
+        const sections = document.querySelectorAll('[data-settings-section]');
+        if (!nav || !sections.length || !window.IntersectionObserver) return;
+
+        const links = new Map();
+        nav.querySelectorAll('.settings-nav-link').forEach((link) => {
+            links.set(link.getAttribute('href').slice(1), link);
+        });
+
+        const setActive = (id) => {
+            links.forEach((link, sectionId) => {
+                link.classList.toggle('active', sectionId === id);
+            });
+        };
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const visible = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+                if (visible.length) setActive(visible[0].target.id);
+            },
+            { rootMargin: '-96px 0px -60% 0px', threshold: 0.01 }
+        );
+        sections.forEach((section) => observer.observe(section));
+
+        nav.querySelectorAll('.settings-nav-link').forEach((link) => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const target = document.getElementById(link.getAttribute('href').slice(1));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    }
+
     function renderHacktimePicker(list, selected) {
         const picker = $('#hackatimePicker');
         if (!picker) return;
@@ -3116,6 +3152,7 @@ const CHECKLIST_ITEMS = [
         renderPage();
         initHacktime();
         initAvatarUploads();
+        initSettingsScrollspy();
         if (clientDataPage) refreshState();
         if (page === 'admin') renderAdminItemRequests();
         // The chat module is a separate file; renderPage()'s renderChat() call

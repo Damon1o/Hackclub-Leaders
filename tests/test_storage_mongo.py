@@ -258,6 +258,7 @@ def mongo_client(monkeypatch, storage):
             'email': 'leader@test.com',
             'avatar': '',
             'provider': 'hackclub',
+            'sessionVersion': 0,
         }
         sess['csrf_token'] = 'test-csrf-token'
     return client

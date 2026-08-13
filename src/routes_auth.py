@@ -6,6 +6,7 @@ import requests
 from flask import flash, redirect, request, session, url_for
 
 from .helpers import clean_text, login_required, playtest_state
+from .storage import SessionStorage, make_storage
 
 
 def register(
@@ -111,12 +112,18 @@ def register(
             flash('Could not retrieve your Hack Club profile. Please try again.', 'error')
             return redirect(url_for('sign_in'))
 
+        backend = make_storage(session)
+        session_version = 0
+        if not isinstance(backend, SessionStorage):
+            session_version = backend.get_user_record(user_data.get('email') or '').get('sessionVersion', 0)
+
         session['user'] = {
             'id': user_data.get('sub'),
             'name': user_data.get('name'),
             'email': user_data.get('email'),
             'avatar': user_data.get('picture'),
             'provider': 'hackclub',
+            'sessionVersion': session_version,
         }
 
         flash(f'Welcome, {user_data.get("name", "leader")}!', 'success')
@@ -159,6 +166,7 @@ def register(
                 'avatar': '',
                 'provider': 'playtest',
                 'hackatimeId': 'playtest',
+                'sessionVersion': 0,
             }
             session['dashboard_state'] = state
             flash('Signed in as a playtest leader!', 'success')
@@ -171,6 +179,7 @@ def register(
             'avatar': '',
             'provider': 'playtest',
             'hackatimeId': 'playtest',
+            'sessionVersion': 0,
         }
         session['dashboard_state'] = state
         session['pending_join_code'] = 'PLAYTEST'

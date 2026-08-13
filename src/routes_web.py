@@ -65,8 +65,19 @@ def register(app, HACKATIME_CLIENT_ID):
             return None
         if path.startswith('/dashboard/admin') or path.startswith('/api/admin'):
             return None
-        if not session.get('user'):
+        user = session.get('user')
+        if not user:
             return None
+
+        backend = _storage()
+        if not isinstance(backend, SessionStorage):
+            stored_version = backend.get_user_record(user.get('email') or '').get('sessionVersion', 0)
+            if int(user.get('sessionVersion', 0)) != int(stored_version):
+                session.clear()
+                if path.startswith('/api/'):
+                    return json_error('Your session was signed out from another device. Please sign in again.', 401)
+                return redirect(url_for('sign_in'))
+
         if is_admin() or viewer_club_lite() is not None:
             return None
         if path.startswith('/api/'):

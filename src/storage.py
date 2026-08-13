@@ -33,6 +33,9 @@ The Airtable schema this module expects (table names overridable via env):
   Ledger       App Id*, Delta, Kind, Ref, Note, At, Club Email
   Workshops    App Id*, Title, Description, Status, Proposer Email, Proposer Name,
                Applicants, Runner Email, Runner Name, Event Id, Created At, Club Email
+  Users        Email*, Preferred Name, Session Version — cross-club, one row per
+               person regardless of which club(s) they belong to; missing table
+               or row both degrade to defaults rather than erroring.
 
 A "ship" is just a Project with Status = "Shipped" (set when an admin approves a
 Submitted project) — there is no separate Ships table.
@@ -301,6 +304,7 @@ class AirtableStorage:
                 'Airtable backend selected but AIRTABLE_TOKEN or AIRTABLE_BASE_ID is missing.'
             )
         self.clubs_table = os.environ.get('AIRTABLE_TABLE_CLUBS', 'Clubs')
+        self.users_table = os.environ.get('AIRTABLE_TABLE_USERS', 'Users')
         self.tables: dict[str, str] = {
             key: os.environ.get(f'AIRTABLE_TABLE_{suffix}', default)
             for suffix, default, key, _ in self.CHILD_TABLES
@@ -811,6 +815,59 @@ class AirtableStorage:
             self._batch('patch', table, updates)
         if deletes:
             self._batch('delete', table, deletes)
+
+    # ── Cross-club user records ─────────────────────────────────────────────
+
+    def get_user_record(self, email: str) -> dict[str, Any]:
+        """Cross-club record for `email` — preferred display name and the
+        session-invalidation counter. Defaults if the Users table is missing
+        from this base, or the user has no row in it yet."""
+        email = (email or '').strip().lower()
+        defaults = {'preferredName': '', 'sessionVersion': 0}
+        if not email:
+            return defaults
+        try:
+            rows = self._list(self.users_table, 'Email', email)
+        except StorageError:
+            return defaults
+        if not rows:
+            return defaults
+        fields = rows[0].get('fields', {})
+        return {
+            'preferredName': fields.get('Preferred Name') or '',
+            'sessionVersion': int(fields.get('Session Version') or 0),
+        }
+
+    def save_user_record(self, email: str, fields: dict[str, Any]) -> None:
+        """Upsert `fields` (preferredName and/or sessionVersion) onto the
+        user's Users-table row. Raises StorageError (surfaced by the route as
+        a setup instruction) if this base has no Users table yet."""
+        email = (email or '').strip().lower()
+        if not email:
+            raise StorageError('Cannot save a user record without an email.')
+        airtable_fields: dict[str, Any] = {}
+        if 'preferredName' in fields:
+            airtable_fields['Preferred Name'] = str(fields['preferredName'] or '')
+        if 'sessionVersion' in fields:
+            airtable_fields['Session Version'] = int(fields['sessionVersion'] or 0)
+        try:
+            existing = self._list(self.users_table, 'Email', email)
+        except StorageError as exc:
+            raise StorageError(
+                'This club uses Airtable but has no Users table yet. '
+                'Ask your Airtable base owner to add a Users table first.'
+            ) from exc
+        if existing:
+            record_id = existing[0]['id']
+            self._request(
+                'patch',
+                self.users_table,
+                record_path=record_id,
+                json={'fields': airtable_fields},
+            )
+        else:
+            airtable_fields.setdefault('Email', email)
+            self._request('post', self.users_table, json={'fields': airtable_fields})
 
 
 def make_storage(session: dict[str, Any]) -> Any:

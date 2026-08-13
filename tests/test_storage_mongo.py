@@ -157,6 +157,30 @@ def test_clubs_are_isolated_from_each_other(storage):
     storage.save('b@test.com', _state(members=[{'id': 'm9', 'email': 'solo@test.com'}]))
     assert len(storage.load('a@test.com')['members']) == 2
     assert len(storage.load('b@test.com')['members']) == 1
+
+
+def test_get_user_record_defaults_when_missing(storage):
+    record = storage.get_user_record('nobody@example.com')
+    assert record == {'preferredName': '', 'sessionVersion': 0}
+
+
+def test_save_and_get_user_record_round_trips(storage):
+    storage.save_user_record('leader@example.com', {'preferredName': 'Ada', 'sessionVersion': 1})
+    record = storage.get_user_record('leader@example.com')
+    assert record == {'preferredName': 'Ada', 'sessionVersion': 1}
+
+
+def test_save_user_record_merges_partial_update(storage):
+    storage.save_user_record('leader@example.com', {'preferredName': 'Ada'})
+    storage.save_user_record('leader@example.com', {'sessionVersion': 2})
+    record = storage.get_user_record('leader@example.com')
+    assert record == {'preferredName': 'Ada', 'sessionVersion': 2}
+
+
+def test_get_user_record_lowercases_email(storage):
+    storage.save_user_record('Leader@Example.com', {'preferredName': 'Ada'})
+    record = storage.get_user_record('leader@example.com')
+    assert record['preferredName'] == 'Ada'
     for collection in CHILD_COLLECTIONS:
         for doc in storage.db[collection].find({}):
             assert doc['clubKey'] in ('a@test.com', 'b@test.com')

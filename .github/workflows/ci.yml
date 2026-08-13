@@ -75,7 +75,7 @@ jobs:
 
       - name: Upload Bandit results
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: bandit-report.json
           category: bandit
@@ -85,7 +85,7 @@ jobs:
 
       - name: Upload pip-audit results
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: pip-audit-report.json
           category: pip-audit

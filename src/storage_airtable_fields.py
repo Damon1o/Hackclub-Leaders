@@ -79,6 +79,7 @@ MESSAGE_FIELDS: Final[list[tuple[str, str]]] = [
     ('authorAvatar', 'Author Avatar'),
     ('body', 'Body'),
     ('createdAt', 'Created At'),
+    ('linkPreview', 'Metadata'),
 ]
 NOTIFICATION_FIELDS: Final[list[tuple[str, str]]] = [
     ('type', 'Type'),

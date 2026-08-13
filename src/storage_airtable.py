@@ -381,8 +381,26 @@ class AirtableStorage:
                             row[key_name] = json.loads(val or ('[]' if key_name != 'data' else '{}'))
                         except (ValueError, TypeError):
                             row[key_name] = [] if key_name != 'data' else {}
+                    elif key_name == 'linkPreview':
+                        if val:
+                            try:
+                                row[key_name] = json.loads(val)
+                            except ValueError:
+                                pass
                     else:
                         row[key_name] = val or ''
+                if state_key == 'messages':
+                    raw_attachments = f.get('Attachments') or []
+                    if raw_attachments:
+                        row['attachments'] = [
+                            {
+                                'url': att.get('url', ''),
+                                'filename': att.get('filename', ''),
+                                'type': att.get('type', ''),
+                                'size': att.get('size', 0),
+                            }
+                            for att in raw_attachments
+                        ]
                 out.append(row)
             return state_key, out
 
@@ -429,6 +447,8 @@ class AirtableStorage:
                     val = item_dict.get(key_name)
                     if key_name in ('items', 'data', 'applicants'):
                         row_fields[airtable_name] = json.dumps(val or ([] if key_name != 'data' else {}))
+                    elif key_name == 'linkPreview':
+                        row_fields[airtable_name] = json.dumps(val) if val else ''
                     else:
                         row_fields[airtable_name] = val
                 if app_id in existing_by_app_id:

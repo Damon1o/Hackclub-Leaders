@@ -6,6 +6,7 @@ would surface here as a 500 rather than slipping through the CSRF-only checks
 in test_api.py).
 """
 
+import json
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -493,3 +494,278 @@ def test_clear_missing_channel_404s(client):
     c, h = _seed(client, 'leader')
     resp = c.delete('/api/dashboard/chat/channels/nope/messages', headers=h)
     assert resp.status_code == 404
+
+
+# ── Feature flags ─────────────────────────────────────────────────────────────
+
+def test_feature_flags_default_on(monkeypatch):
+    from src.helpers import feature_enabled
+    monkeypatch.delenv('FEATURE_CHAT_UPLOADS', raising=False)
+    assert feature_enabled('FEATURE_CHAT_UPLOADS') is True
+
+
+@pytest.mark.parametrize('value', ['false', 'FALSE', '0', 'off', 'no', ' False '])
+def test_feature_flags_disabled_values(monkeypatch, value):
+    from src.helpers import feature_enabled
+    monkeypatch.setenv('FEATURE_CHAT_UPLOADS', value)
+    assert feature_enabled('FEATURE_CHAT_UPLOADS') is False
+
+
+def test_feature_flags_true_value(monkeypatch):
+    from src.helpers import feature_enabled
+    monkeypatch.setenv('FEATURE_CHAT_UPLOADS', 'true')
+    assert feature_enabled('FEATURE_CHAT_UPLOADS') is True
+
+
+# ── Storage round-trip for message extras ─────────────────────────────────────
+
+def _airtable():
+    from src.storage import AirtableStorage
+    return AirtableStorage(token='test-token', base_id='test-base')
+
+
+def _save_messages_and_capture(monkeypatch, s, messages):
+    captured = {}
+    monkeypatch.setattr(s, '_list', lambda table, field, value: [])
+    monkeypatch.setattr(
+        s, '_request',
+        lambda method, table, **kw: {'records': [{'id': 'clubrec'}]},
+    )
+    monkeypatch.setattr(
+        s, '_batch',
+        lambda method, table, records: captured.setdefault(table, records),
+    )
+    s.save('lead@x.com', {'settings': {}, 'messages': messages})
+    return captured[s.tables['messages']][0]['fields']
+
+
+def test_item_fields_serializes_link_preview(monkeypatch):
+    s = _airtable()
+    msg = {
+        'id': 'msg-1', 'channelId': 'c1', 'authorEmail': 'a@x.com',
+        'authorName': 'A', 'authorAvatar': '', 'body': 'hi', 'createdAt': 'now',
+        'linkPreview': {'url': 'https://e.com', 'title': 'E'},
+    }
+    fields = _save_messages_and_capture(monkeypatch, s, [msg])
+    assert json.loads(fields['Metadata']) == {'url': 'https://e.com', 'title': 'E'}
+    assert 'Attachments' not in fields  # never synced back (URLs expire)
+
+
+def test_item_fields_no_preview_writes_blank(monkeypatch):
+    s = _airtable()
+    msg = {'id': 'msg-1', 'channelId': 'c1', 'authorEmail': 'a@x.com',
+           'authorName': 'A', 'authorAvatar': '', 'body': 'hi', 'createdAt': 'now'}
+    fields = _save_messages_and_capture(monkeypatch, s, [msg])
+    assert fields['Metadata'] == ''
+
+
+def test_load_parses_message_metadata_and_attachments(monkeypatch):
+    s = _airtable()
+
+    def fake_list(table, field, value):
+        if table == s.clubs_table:
+            return [{'id': 'rec0', 'fields': {'Leader Email': 'lead@x.com'}}]
+        if table == s.tables['messages']:
+            return [{'id': 'rec1', 'fields': {
+                'App Id': 'msg-1', 'Channel Id': 'c1', 'Body': 'hi',
+                'Metadata': '{"url": "https://e.com", "title": "E"}',
+                'Attachments': [{'id': 'att1', 'url': 'https://cdn/x.png',
+                                 'filename': 'x.png', 'type': 'image/png', 'size': 3}],
+            }}]
+        return []
+
+    monkeypatch.setattr(s, '_list', fake_list)
+    state = s.load('lead@x.com')
+    msg = state['messages'][0]
+    assert msg['linkPreview'] == {'url': 'https://e.com', 'title': 'E'}
+    assert msg['attachments'] == [
+        {'url': 'https://cdn/x.png', 'filename': 'x.png', 'type': 'image/png', 'size': 3}
+    ]
+
+
+def test_load_message_without_extras(monkeypatch):
+    s = _airtable()
+
+    def fake_list(table, field, value):
+        if table == s.clubs_table:
+            return [{'id': 'rec0', 'fields': {'Leader Email': 'lead@x.com'}}]
+        if table == s.tables['messages']:
+            return [{'id': 'rec1', 'fields': {'App Id': 'msg-1', 'Channel Id': 'c1', 'Body': 'hi'}}]
+        return []
+
+    monkeypatch.setattr(s, '_list', fake_list)
+    msg = s.load('lead@x.com')['messages'][0]
+    assert 'linkPreview' not in msg
+    assert 'attachments' not in msg
+
+
+
+# ── Link preview fetcher ──────────────────────────────────────────────────────
+
+from src import routes_chat
+
+
+class _FakePreviewResponse:
+    def __init__(self, status=200, headers=None, body=b'', encoding='utf-8'):
+        self.status_code = status
+        self.headers = headers if headers is not None else {
+            'Content-Type': 'text/html; charset=utf-8'
+        }
+        self._body = body
+        self.encoding = encoding
+
+    def iter_content(self, size):
+        yield self._body
+
+
+_OG_HTML = (
+    b'<html><head>'
+    b'<meta property="og:title" content="Example Domain">'
+    b'<meta property="og:description" content="A demo page">'
+    b'<meta property="og:image" content="https://example.com/img.png">'
+    b'<title>Fallback Title</title>'
+    b'</head><body></body></html>'
+)
+
+
+@pytest.fixture
+def public_dns(monkeypatch):
+    monkeypatch.setattr(
+        routes_chat.socket, 'getaddrinfo',
+        lambda *a, **k: [(2, 1, 6, '', ('93.184.216.34', 0))],
+    )
+
+
+def test_first_url_extraction():
+    assert routes_chat.first_url('see https://a.dev/x?y=1 now') == 'https://a.dev/x?y=1'
+    assert routes_chat.first_url('no links here') == ''
+    assert routes_chat.first_url('') == ''
+
+
+def test_preview_happy_path(monkeypatch, public_dns):
+    monkeypatch.setattr(
+        routes_chat.requests, 'get', lambda *a, **k: _FakePreviewResponse(body=_OG_HTML)
+    )
+    preview = routes_chat.fetch_link_preview('https://example.com/page')
+    assert preview == {
+        'url': 'https://example.com/page',
+        'title': 'Example Domain',
+        'description': 'A demo page',
+        'image': 'https://example.com/img.png',
+    }
+
+
+def test_preview_title_fallback(monkeypatch, public_dns):
+    html = b'<html><head><title>Just A Title</title></head></html>'
+    monkeypatch.setattr(
+        routes_chat.requests, 'get', lambda *a, **k: _FakePreviewResponse(body=html)
+    )
+    preview = routes_chat.fetch_link_preview('https://example.com/')
+    assert preview['title'] == 'Just A Title'
+
+
+def test_preview_private_host_refused(monkeypatch):
+    monkeypatch.setattr(
+        routes_chat.socket, 'getaddrinfo',
+        lambda *a, **k: [(2, 1, 6, '', ('10.0.0.5', 0))],
+    )
+    calls = []
+    monkeypatch.setattr(routes_chat.requests, 'get', lambda *a, **k: calls.append(1))
+    assert routes_chat.fetch_link_preview('https://internal.corp/') is None
+    assert not calls  # never even connected
+
+
+def test_preview_redirect_to_private_refused(monkeypatch):
+    def fake_getaddrinfo(host, *a, **k):
+        ip = '93.184.216.34' if host == 'example.com' else '127.0.0.1'
+        return [(2, 1, 6, '', (ip, 0))]
+
+    monkeypatch.setattr(routes_chat.socket, 'getaddrinfo', fake_getaddrinfo)
+    calls = []
+
+    def fake_get(url, **k):
+        calls.append(url)
+        return _FakePreviewResponse(status=302, headers={'Location': 'http://localhost/x'})
+
+    monkeypatch.setattr(routes_chat.requests, 'get', fake_get)
+    assert routes_chat.fetch_link_preview('https://example.com/') is None
+    assert calls == ['https://example.com/']  # stopped before hitting localhost
+
+
+def test_preview_timeout_returns_none(monkeypatch, public_dns):
+    def boom(*a, **k):
+        raise routes_chat.requests.Timeout('slow')
+
+    monkeypatch.setattr(routes_chat.requests, 'get', boom)
+    assert routes_chat.fetch_link_preview('https://example.com/') is None
+
+
+def test_preview_non_html_skipped(monkeypatch, public_dns):
+    resp = _FakePreviewResponse(headers={'Content-Type': 'application/pdf'}, body=b'%PDF')
+    monkeypatch.setattr(routes_chat.requests, 'get', lambda *a, **k: resp)
+    assert routes_chat.fetch_link_preview('https://example.com/doc.pdf') is None
+
+
+def test_preview_bad_scheme_refused():
+    assert routes_chat.fetch_link_preview('ftp://example.com/') is None
+    assert routes_chat.fetch_link_preview('') is None
+
+
+# ── Link previews on message post ─────────────────────────────────────────────
+
+def test_message_gets_link_preview(client, monkeypatch):
+    monkeypatch.setattr(
+        'src.routes_chat.fetch_link_preview',
+        lambda url: {'url': url, 'title': 'Example', 'description': '', 'image': ''},
+    )
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'look at https://example.com'}, headers=h,
+    )
+    assert resp.status_code == 200
+    assert resp.get_json()['message']['linkPreview']['title'] == 'Example'
+    listing = c.get(f'/api/dashboard/chat/channels/{cid}/messages').get_json()
+    assert listing['messages'][-1]['linkPreview']['title'] == 'Example'
+
+
+def test_no_url_no_preview_fetch(client, monkeypatch):
+    monkeypatch.setattr(
+        'src.routes_chat.fetch_link_preview',
+        lambda url: pytest.fail('must not fetch when body has no URL'),
+    )
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'plain text'}, headers=h,
+    )
+    assert 'linkPreview' not in resp.get_json()['message']
+
+
+def test_link_preview_flag_off(client, monkeypatch):
+    monkeypatch.setenv('FEATURE_CHAT_LINK_PREVIEWS', 'false')
+    monkeypatch.setattr(
+        'src.routes_chat.fetch_link_preview',
+        lambda url: pytest.fail('must not fetch when flag is off'),
+    )
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'https://example.com'}, headers=h,
+    )
+    assert 'linkPreview' not in resp.get_json()['message']
+
+
+def test_failed_preview_message_still_posts(client, monkeypatch):
+    monkeypatch.setattr('src.routes_chat.fetch_link_preview', lambda url: None)
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'https://example.com'}, headers=h,
+    )
+    assert resp.status_code == 200
+    assert 'linkPreview' not in resp.get_json()['message']

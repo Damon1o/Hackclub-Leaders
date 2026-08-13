@@ -109,6 +109,7 @@ __all__ = [
     '_positive_int',
     'channel_from_payload',
     'clean_text',
+    'feature_enabled',
     'event_from_payload',
     'find_by_id',
     'json_error',
@@ -609,3 +610,6 @@ def _owned_project_or_error(
 
 MAX_MESSAGE_LEN: Final[int] = 500
 
+def feature_enabled(name: str) -> bool:
+    """Env-driven feature flag: on unless the env var is set to false/0/off/no."""
+    return os.environ.get(name, '').strip().lower() not in ('false', '0', 'off', 'no')

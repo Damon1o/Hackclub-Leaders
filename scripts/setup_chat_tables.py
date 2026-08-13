@@ -39,6 +39,8 @@ TABLES = {
         ('Author Avatar', 'singleLineText'),
         ('Body', 'multilineText'),
         ('Created At', 'singleLineText'),
+        ('Metadata', 'multilineText'),
+        ('Attachments', 'multipleAttachments'),
         ('Club Email', 'singleLineText'),
     ],
 }
@@ -61,11 +63,26 @@ def main():
             'or create the tables manually.'
         )
     resp.raise_for_status()
-    existing = {t['name'] for t in resp.json().get('tables', [])}
+    existing = {t['name']: t for t in resp.json().get('tables', [])}
 
     for name, fields in TABLES.items():
-        if name in existing:
-            print(f'= {name}: already exists, skipping')
+        table = existing.get(name)
+        if table is not None:
+            have = {f['name'] for f in table.get('fields', [])}
+            missing = [(fn, ft) for fn, ft in fields if fn not in have]
+            if not missing:
+                print(f'= {name}: already exists, skipping')
+                continue
+            for field_name, field_type in missing:
+                add = requests.post(
+                    f'{META_API}/{base_id}/tables/{table["id"]}/fields',
+                    headers=headers,
+                    json={'name': field_name, 'type': field_type},
+                    timeout=15,
+                )
+                if add.status_code >= 400:
+                    sys.exit(f'x {name}.{field_name}: add failed ({add.status_code}): {add.text[:300]}')
+                print(f'+ {name}: added field {field_name}')
             continue
         payload = {
             'name': name,

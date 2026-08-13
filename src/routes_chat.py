@@ -5,11 +5,17 @@ and messages ride the same dashboard state as everything else, so they persist
 through whichever storage backend is configured (session cookie or Airtable).
 """
 
+import ipaddress
 import math
+import re
+import socket
 import time
+import urllib.parse
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 
 import flask
+import requests
 from flask import request, session
 
 from .helpers import (
@@ -20,6 +26,7 @@ from .helpers import (
     _viewer_email,
     channel_from_payload,
     clean_text,
+    feature_enabled,
     find_by_id,
     get_dashboard_state,
     json_error,
@@ -73,6 +80,106 @@ def _rate_limit_retry_after(email):
         return max(1, math.ceil(RATE_LIMIT_WINDOW_SECONDS - (now - recent[0])))
     recent.append(now)
     _rate_buckets[email] = recent
+    return None
+
+
+# ── Link previews ─────────────────────────────────────────────────────────────
+# The server fetches user-posted URLs, so every request is SSRF-guarded:
+# http/https only, public IPs only (re-checked per redirect hop), 3s timeout,
+# 500KB read cap. Every failure path returns None — previews are best-effort.
+
+_URL_RE = re.compile(r'https?://[^\s<>"\']+')
+PREVIEW_TIMEOUT = 3
+PREVIEW_MAX_BYTES = 500 * 1024
+PREVIEW_MAX_REDIRECTS = 3
+
+
+def first_url(text):
+    match = _URL_RE.search(text or '')
+    return match.group(0) if match else ''
+
+
+def _host_is_public(hostname):
+    try:
+        infos = socket.getaddrinfo(hostname, None)
+    except OSError:
+        return False
+    if not infos:
+        return False
+    return all(ipaddress.ip_address(info[4][0]).is_global for info in infos)
+
+
+class _OgParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.og = {}
+        self.title = ''
+        self._in_title = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'meta':
+            attrs = dict(attrs)
+            prop = (attrs.get('property') or attrs.get('name') or '').lower()
+            if prop.startswith('og:') and attrs.get('content'):
+                self.og.setdefault(prop[3:], attrs['content'])
+        elif tag == 'title':
+            self._in_title = True
+
+    def handle_endtag(self, tag):
+        if tag == 'title':
+            self._in_title = False
+
+    def handle_data(self, data):
+        if self._in_title and len(self.title) < 300:
+            self.title += data
+
+
+def fetch_link_preview(url):
+    original = url
+    for _hop in range(PREVIEW_MAX_REDIRECTS + 1):
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme not in ('http', 'https') or not parsed.hostname:
+            return None
+        if not _host_is_public(parsed.hostname):
+            return None
+        try:
+            response = requests.get(
+                url,
+                timeout=PREVIEW_TIMEOUT,
+                stream=True,
+                allow_redirects=False,
+                headers={'User-Agent': 'HackclubLeaders/1.0 (+link-preview)'},
+            )
+        except requests.RequestException:
+            return None
+        if response.status_code in (301, 302, 303, 307, 308):
+            location = response.headers.get('Location', '')
+            if not location:
+                return None
+            url = urllib.parse.urljoin(url, location)
+            continue
+        if response.status_code != 200:
+            return None
+        if 'text/html' not in (response.headers.get('Content-Type') or ''):
+            return None
+        try:
+            chunk = next(response.iter_content(PREVIEW_MAX_BYTES), b'') or b''
+        except requests.RequestException:
+            return None
+        parser = _OgParser()
+        try:
+            parser.feed(chunk.decode(response.encoding or 'utf-8', 'replace'))
+        except Exception:
+            return None
+        title = clean_text(parser.og.get('title') or parser.title.strip(), max_len=200)
+        if not title:
+            return None
+        return {
+            'url': original,
+            'title': title,
+            'description': clean_text(parser.og.get('description'), max_len=300),
+            'image': clean_text(parser.og.get('image'), max_len=500),
+        }
     return None
 
 
@@ -275,6 +382,12 @@ def register(app):
             'body': body,
             'createdAt': created_at,
         }
+        if body and feature_enabled('FEATURE_CHAT_LINK_PREVIEWS'):
+            url = first_url(body)
+            if url:
+                preview = fetch_link_preview(url)
+                if preview:
+                    message['linkPreview'] = preview
         _messages(state).append(message)
         channel['lastMessageAt'] = created_at
         save_dashboard_state(state)

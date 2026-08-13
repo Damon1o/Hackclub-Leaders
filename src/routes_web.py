@@ -66,7 +66,11 @@ def register(app, HACKATIME_CLIENT_ID):
     @app.before_request
     def require_club_membership():
         path = request.path
-        if not (path.startswith('/dashboard') or path.startswith('/api/dashboard')):
+        if not (
+            path.startswith('/dashboard')
+            or path.startswith('/api/dashboard')
+            or path.startswith('/api/admin')
+        ):
             return None
         user = session.get('user')
         if not user:

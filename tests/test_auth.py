@@ -194,3 +194,33 @@ def test_stale_session_check_covers_admin_panel(client, monkeypatch):
     assert '/sign-in' in response.headers['Location']
     with client.session_transaction() as sess:
         assert 'user' not in sess
+
+
+def test_stale_session_check_covers_admin_api(client, monkeypatch):
+    import src.routes_web as routes_web_module
+
+    class FakeSharedBackend:
+        def resolve_club_key(self, email):
+            return email
+
+        def load_lite(self, club_key):
+            return {'settings': {'clubName': 'Test'}, 'members': [{'email': 'admin@test.com', 'role': 'Leader'}]}
+
+        def get_user_record(self, email, *, strict=False):
+            return {'preferredName': '', 'sessionVersion': 99}
+
+    monkeypatch.setattr(routes_web_module, '_storage', lambda: FakeSharedBackend())
+    monkeypatch.setenv('ADMIN_EMAILS', 'admin@test.com')
+    from src.helpers import ADMIN_EMAILS
+
+    ADMIN_EMAILS.clear()
+    ADMIN_EMAILS.add('admin@test.com')
+    with client.session_transaction() as sess:
+        sess['user'] = {'id': 'admin-user', 'name': 'Admin', 'email': 'admin@test.com', 'sessionVersion': 1}
+
+    # A stale/revoked session must not retain write access to admin API routes.
+    response = client.get('/api/admin/item-requests')
+    assert response.status_code == 401
+    assert 'error' in response.get_json()
+    with client.session_transaction() as sess:
+        assert 'user' not in sess

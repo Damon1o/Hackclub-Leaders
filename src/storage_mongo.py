@@ -139,8 +139,6 @@ class MongoStorage:
     sections so a page only pays for what it renders.
     """
 
-    supports_uploads = False
-
     def __init__(self, uri: str | None = None, db_name: str | None = None) -> None:
         uri = uri or os.environ.get('MONGODB_URI', '')
         if not uri:

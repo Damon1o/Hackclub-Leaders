@@ -1,6 +1,5 @@
 """Airtable storage backend for Hack Club Leaders Portal."""
 
-import base64
 import json
 import os
 import time
@@ -62,8 +61,6 @@ class StorageError(Exception):
 
 
 class AirtableStorage:
-    supports_uploads = True
-
     CHILD_TABLES: Final[list[tuple[str, str, str, list[tuple[str, str]]]]] = [
         ('MEMBERS', 'Members', 'members', MEMBER_FIELDS),
         ('EVENTS', 'Events', 'events', EVENT_FIELDS),
@@ -198,51 +195,6 @@ class AirtableStorage:
                 break
         self._member_club_cache[email] = found
         return found
-
-    def upload_attachment(
-        self, message_id: str, filename: str, content: bytes, content_type: str
-    ) -> dict[str, Any] | None:
-        """Attach `content` to a message row via Airtable's content-upload API.
-
-        Returns {'url','filename','type','size'} or None on any failure — the
-        caller posts the message regardless and reports the upload separately.
-        """
-        try:
-            records = self._list(self.tables['messages'], 'App Id', message_id)
-        except StorageError:
-            return None
-        if not records:
-            return None
-        record_id = records[0]['id']
-        url = (
-            f'https://content.airtable.com/v0/{self.base_id}/{record_id}'
-            '/Attachments/uploadAttachment'
-        )
-        payload = {
-            'contentType': content_type,
-            'filename': filename,
-            'file': base64.b64encode(content).decode('ascii'),
-        }
-        try:
-            response = requests.post(url, headers=self._headers(), json=payload, timeout=30)
-        except requests.RequestException:
-            return None
-        if response.status_code >= 400:
-            return None
-        try:
-            body = response.json()
-        except ValueError:
-            return None
-        attachments = (body.get('fields') or {}).get('Attachments') or []
-        if not attachments:
-            return None
-        uploaded = attachments[-1]
-        return {
-            'url': uploaded.get('url', ''),
-            'filename': uploaded.get('filename', filename),
-            'type': uploaded.get('type', content_type),
-            'size': uploaded.get('size', len(content)),
-        }
 
     def resolve_club_key(self, viewer_email: str) -> str:
         email = (viewer_email or '').strip().lower()

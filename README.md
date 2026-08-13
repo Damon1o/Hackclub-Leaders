@@ -1,6 +1,26 @@
+<div align="center">
+
+<img src="static/images/hack-club-banner.svg" alt="Hack Club" width="360">
+
 # Hack Club Leaders Portal
 
-A web portal for Hack Club leaders built with Flask. Sign in with your Hack Club identity to access your dashboard, upcoming events, the shop, newsletters, and settings.
+![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/flask-3-black?logo=flask&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Storage](https://img.shields.io/badge/storage-session%20%7C%20airtable%20%7C%20mongo-informational)
+
+**The dashboard club leaders actually run their club from.**
+Roster, events, ships, the shop, chat — one login, one place.
+
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=18&pause=1500&color=EC3750&center=true&vCenter=true&width=460&lines=roster+%2B+events+%2B+ships+%2B+shop+%2B+chat;built+by+leaders%2C+for+leaders;sign+in+once%2C+run+the+whole+club)](https://git.io/typing-svg)
+
+</div>
+
+Every Hack Club is run by teenagers doing this on top of homework, and most of them didn't sign up to be a sysadmin. This portal is the thing that lets a leader spend five minutes on club admin instead of fifty. Sign in with your Hack Club identity, no passwords to lose, and everything a club needs — team roster, events, ships, shop, chat, settings — lives behind one login.
+
+<div align="center">
+<img src="static/images/Stickers/hackers,_assemble!.webp" alt="" width="120">
+</div>
 
 ---
 
@@ -210,4 +230,9 @@ Deploying elsewhere (Railway, Render, a VPS) needs no config changes — just th
 
 ## License
 
-MIT
+MIT — go run a club with it.
+
+<div align="center">
+<sub>made by hack clubbers, for hack clubbers</sub><br>
+<img src="static/images/Stickers/logo.webp" alt="" width="60">
+</div>

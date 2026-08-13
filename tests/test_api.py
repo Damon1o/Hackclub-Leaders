@@ -97,3 +97,22 @@ def test_settings_rejects_unsupported_language(auth_client, monkeypatch):
     assert response.status_code == 200
     # Unsupported codes fall back to English rather than being stored raw.
     assert response.get_json()['state']['settings']['language'] == 'en'
+
+
+def test_appearance_privacy_notifications_sections_render_toggles(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {
+            'settings': {
+                'clubName': 'Test Club', 'venue': 'Test High',
+                'darkModeDefault': True, 'publicDirectory': False,
+                'emailNotifications': True, 'newsletterSubscribed': False,
+            },
+            'members': [{'id': 'm1', 'name': 'Test Leader', 'email': 'leader@test.com', 'role': 'Leader', 'avatar': '', 'status': 'Active'}],
+        }
+    response = auth_client.get('/dashboard/settings')
+    body = response.get_data(as_text=True)
+    assert 'name="darkModeDefault"' in body and 'form="settingsForm"' in body
+    assert 'name="publicDirectory"' in body
+    assert 'name="emailNotifications"' in body
+    assert 'name="newsletterSubscribed"' in body

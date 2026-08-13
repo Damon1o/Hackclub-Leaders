@@ -410,12 +410,17 @@ def get_sticker_files() -> list[str]:
     if _STICKER_FILES is None:
         sticker_dir = os.path.join(PROJECT_ROOT, 'static', 'images', 'Stickers')
         try:
-            _STICKER_FILES = sorted(
-                f
-                for f in os.listdir(sticker_dir)
-                if os.path.splitext(f)[1].lower()
-                in ('.png', '.svg', '.gif', '.webp', '.jpg', '.jpeg')
-            )
+            files = os.listdir(sticker_dir)
+            # Group by stem, prefer .webp over other formats
+            by_stem: dict[str, str] = {}
+            for f in sorted(files):
+                ext = os.path.splitext(f)[1].lower()
+                if ext not in ('.png', '.svg', '.gif', '.webp', '.jpg', '.jpeg'):
+                    continue
+                stem = os.path.splitext(f)[0]
+                if stem not in by_stem or ext == '.webp':
+                    by_stem[stem] = f
+            _STICKER_FILES = sorted(by_stem.values())
         except OSError:
             _STICKER_FILES = []
     return _STICKER_FILES

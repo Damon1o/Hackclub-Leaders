@@ -170,7 +170,7 @@ def test_settings_page_renders_all_section_anchors(auth_client, monkeypatch):
     assert response.status_code == 200
     body = response.get_data(as_text=True)
     for anchor_id in (
-        'club-profile', 'members', 'your-account', 'appearance',
+        'club-profile', 'members', 'appearance',
         'explore-privacy', 'notifications', 'danger-zone',
     ):
         assert f'id="{anchor_id}"' in body
@@ -231,50 +231,6 @@ def test_appearance_privacy_notifications_sections_render_toggles(auth_client, m
     assert 'name="newsletterSubscribed"' in body
 
 
-def test_preferred_name_round_trips_on_session_backend(auth_client, monkeypatch):
-    monkeypatch.setenv('STORAGE_BACKEND', 'session')
-    with auth_client.session_transaction() as sess:
-        sess['csrf_token'] = 'test-csrf-token'
-        sess['dashboard_state'] = {'settings': {'clubName': 'Test Club'}, 'members': []}
-    response = auth_client.patch(
-        '/api/dashboard/account/preferred-name',
-        json={'preferredName': 'Ada'},
-        headers={'X-CSRF-Token': 'test-csrf-token'},
-    )
-    assert response.status_code == 200
-    assert response.get_json()['preferredName'] == 'Ada'
-    with auth_client.session_transaction() as sess:
-        assert sess['user']['preferredName'] == 'Ada'
-
-
-def test_preferred_name_rejects_blank(auth_client, monkeypatch):
-    monkeypatch.setenv('STORAGE_BACKEND', 'session')
-    with auth_client.session_transaction() as sess:
-        sess['csrf_token'] = 'test-csrf-token'
-        sess['dashboard_state'] = {'settings': {'clubName': 'Test Club'}, 'members': []}
-    response = auth_client.patch(
-        '/api/dashboard/account/preferred-name',
-        json={'preferredName': '  '},
-        headers={'X-CSRF-Token': 'test-csrf-token'},
-    )
-    assert response.status_code == 400
-
-
-def test_your_account_section_renders_stub_rows(auth_client, monkeypatch):
-    monkeypatch.setenv('STORAGE_BACKEND', 'session')
-    with auth_client.session_transaction() as sess:
-        sess['dashboard_state'] = {
-            'settings': {'clubName': 'Test Club', 'venue': 'Test High'},
-            'members': [{'id': 'm1', 'name': 'Test Leader', 'email': 'leader@test.com', 'role': 'Leader', 'avatar': '', 'status': 'Active'}],
-        }
-    response = auth_client.get('/dashboard/settings')
-    body = response.get_data(as_text=True)
-    assert 'name="preferredName"' in body
-    for label in ('Full name', 'Slack', 'Verification', 'Phone', 'Birthday', 'Mailing address'):
-        assert label in body
-    assert 'Not available yet' in body
-
-
 def test_sign_out_everywhere_requires_shared_backend(auth_client, monkeypatch):
     monkeypatch.setenv('STORAGE_BACKEND', 'session')
     with auth_client.session_transaction() as sess:
@@ -296,7 +252,7 @@ def test_sign_out_everywhere_bumps_session_version_and_clears_session(auth_clien
             self.saved = None
 
         def get_user_record(self, email, *, strict=False):
-            return {'preferredName': '', 'sessionVersion': 3}
+            return {'sessionVersion': 3}
 
         def save_user_record(self, email, fields):
             self.saved = (email, fields)
@@ -335,45 +291,6 @@ def test_sign_out_everywhere_bumps_session_version_and_clears_session(auth_clien
         assert 'user' not in sess
 
 
-def test_preferred_name_update_surfaces_storage_error(auth_client, monkeypatch):
-    import src.helpers as helpers_module
-    from src.storage import StorageError
-
-    class BrokenSharedBackend:
-        def resolve_club_key(self, email):
-            return email
-
-        def load_lite(self, club_key):
-            return {'settings': {'clubName': 'Test'}, 'members': [
-                {'id': 'm1', 'email': 'leader@test.com', 'role': 'Leader'},
-            ]}
-
-        def get_user_record(self, email, *, strict=False):
-            return {'preferredName': '', 'sessionVersion': 0}
-
-        def save_user_record(self, email, fields):
-            raise StorageError(
-                'This club uses Airtable but has no Users table yet. '
-                'Ask your Airtable base owner to add a Users table first.'
-            )
-
-    # Same rationale as the sign-out-everywhere test above: patch
-    # make_storage so every _storage() call site (this route plus the
-    # before_request membership/staleness gate) shares the fake backend.
-    monkeypatch.setattr(helpers_module, 'make_storage', lambda session: BrokenSharedBackend())
-    with auth_client.session_transaction() as sess:
-        sess['csrf_token'] = 'test-csrf-token'
-        sess['user']['sessionVersion'] = 0
-
-    response = auth_client.patch(
-        '/api/dashboard/account/preferred-name',
-        json={'preferredName': 'Ada'},
-        headers={'X-CSRF-Token': 'test-csrf-token'},
-    )
-    assert response.status_code == 400
-    assert 'Users table' in response.get_json()['error']
-
-
 def test_sign_out_everywhere_surfaces_storage_error(auth_client, monkeypatch):
     import src.helpers as helpers_module
     from src.storage import StorageError
@@ -388,7 +305,7 @@ def test_sign_out_everywhere_surfaces_storage_error(auth_client, monkeypatch):
             ]}
 
         def get_user_record(self, email, *, strict=False):
-            return {'preferredName': '', 'sessionVersion': 0}
+            return {'sessionVersion': 0}
 
         def save_user_record(self, email, fields):
             raise StorageError('This club uses Airtable but has no Users table yet.')

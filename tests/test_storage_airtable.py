@@ -20,13 +20,13 @@ def test_get_user_record_defaults_when_table_missing(storage, monkeypatch):
 
     monkeypatch.setattr(storage, '_list', fake_list)
     record = storage.get_user_record('nobody@example.com')
-    assert record == {'preferredName': '', 'sessionVersion': 0}
+    assert record == {'sessionVersion': 0}
 
 
 def test_get_user_record_defaults_when_no_row(storage, monkeypatch):
     monkeypatch.setattr(storage, '_list', lambda table, field, value, fields=None: [])
     record = storage.get_user_record('nobody@example.com')
-    assert record == {'preferredName': '', 'sessionVersion': 0}
+    assert record == {'sessionVersion': 0}
 
 
 def test_get_user_record_reads_existing_row(storage, monkeypatch):
@@ -37,13 +37,13 @@ def test_get_user_record_reads_existing_row(storage, monkeypatch):
         return [
             {
                 'id': 'rec1',
-                'fields': {'Email': 'leader@example.com', 'Preferred Name': 'Ada', 'Session Version': 3},
+                'fields': {'Email': 'leader@example.com', 'Session Version': 3},
             }
         ]
 
     monkeypatch.setattr(storage, '_list', fake_list)
     record = storage.get_user_record('leader@example.com')
-    assert record == {'preferredName': 'Ada', 'sessionVersion': 3}
+    assert record == {'sessionVersion': 3}
 
 
 def test_get_user_record_lowercases_email(storage, monkeypatch):
@@ -64,7 +64,7 @@ def test_save_user_record_raises_when_table_missing(storage, monkeypatch):
 
     monkeypatch.setattr(storage, '_list', fake_list)
     with pytest.raises(StorageError, match='Users table'):
-        storage.save_user_record('leader@example.com', {'preferredName': 'Ada'})
+        storage.save_user_record('leader@example.com', {'sessionVersion': 1})
 
 
 def test_save_user_record_creates_new_row(storage, monkeypatch):
@@ -73,13 +73,12 @@ def test_save_user_record_creates_new_row(storage, monkeypatch):
     monkeypatch.setattr(
         storage, '_request', lambda method, table, **kwargs: calls.append((method, table, kwargs)) or {}
     )
-    storage.save_user_record('leader@example.com', {'preferredName': 'Ada', 'sessionVersion': 2})
+    storage.save_user_record('leader@example.com', {'sessionVersion': 2})
     assert len(calls) == 1
     method, table, kwargs = calls[0]
     assert method == 'post'
     assert table == storage.users_table
     assert kwargs['json']['fields'] == {
-        'Preferred Name': 'Ada',
         'Session Version': 2,
         'Email': 'leader@example.com',
     }
@@ -90,17 +89,17 @@ def test_save_user_record_updates_existing_row(storage, monkeypatch):
         storage,
         '_list',
         lambda table, field, value, fields=None: [
-            {'id': 'rec1', 'fields': {'Email': 'leader@example.com', 'Preferred Name': 'Old'}}
+            {'id': 'rec1', 'fields': {'Email': 'leader@example.com', 'Session Version': 1}}
         ],
     )
     calls = []
     monkeypatch.setattr(
         storage, '_request', lambda method, table, **kwargs: calls.append((method, table, kwargs)) or {}
     )
-    storage.save_user_record('leader@example.com', {'preferredName': 'Ada'})
+    storage.save_user_record('leader@example.com', {'sessionVersion': 2})
     assert len(calls) == 1
     method, table, kwargs = calls[0]
     assert method == 'patch'
     assert table == storage.users_table
     assert kwargs['record_path'] == 'rec1'
-    assert kwargs['json']['fields'] == {'Preferred Name': 'Ada'}
+    assert kwargs['json']['fields'] == {'Session Version': 2}

@@ -854,15 +854,15 @@ class AirtableStorage:
     # ── Cross-club user records ─────────────────────────────────────────────
 
     def get_user_record(self, email: str, *, strict: bool = False) -> dict[str, Any]:
-        """Cross-club record for `email` — preferred display name and the
-        session-invalidation counter. Defaults if the Users table is missing
-        from this base, or the user has no row in it yet.
+        """Cross-club record for `email` — the session-invalidation counter.
+        Defaults if the Users table is missing from this base, or the user
+        has no row in it yet.
 
         `strict=True` re-raises StorageError instead of degrading to
         defaults — for callers (the session-staleness gate) that need to
         tell "the version really is 0" apart from "couldn't check"."""
         email = (email or '').strip().lower()
-        defaults = {'preferredName': '', 'sessionVersion': 0}
+        defaults = {'sessionVersion': 0}
         if not email:
             return defaults
         try:
@@ -875,20 +875,17 @@ class AirtableStorage:
             return defaults
         fields = rows[0].get('fields', {})
         return {
-            'preferredName': fields.get('Preferred Name') or '',
             'sessionVersion': int(fields.get('Session Version') or 0),
         }
 
     def save_user_record(self, email: str, fields: dict[str, Any]) -> None:
-        """Upsert `fields` (preferredName and/or sessionVersion) onto the
-        user's Users-table row. Raises StorageError (surfaced by the route as
-        a setup instruction) if this base has no Users table yet."""
+        """Upsert `fields` (sessionVersion) onto the user's Users-table row.
+        Raises StorageError (surfaced by the route as a setup instruction) if
+        this base has no Users table yet."""
         email = (email or '').strip().lower()
         if not email:
             raise StorageError('Cannot save a user record without an email.')
         airtable_fields: dict[str, Any] = {}
-        if 'preferredName' in fields:
-            airtable_fields['Preferred Name'] = str(fields['preferredName'] or '')
         if 'sessionVersion' in fields:
             airtable_fields['Session Version'] = int(fields['sessionVersion'] or 0)
         try:

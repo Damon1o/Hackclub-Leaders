@@ -766,18 +766,6 @@ def _club_key() -> str:
     return g.club_key
 
 
-def get_preferred_name() -> str:
-    """The viewer's preferred display name. Session backend: round-trips
-    through session['user']['preferredName'] (same pattern as name/bio/
-    hackatimeId in api_profile_update). Shared backends: the cross-club
-    Users record."""
-    backend = _storage()
-    if isinstance(backend, SessionStorage):
-        return (session.get('user') or {}).get('preferredName') or ''
-    email = (session.get('user') or {}).get('email') or ''
-    return backend.get_user_record(email).get('preferredName') or ''
-
-
 # The state keys a backend stores per club. A page can ask for a subset of
 # these; anything outside the list (shopItems, cart) is filled in locally.
 STATE_SECTIONS: Final[tuple[str, ...]] = (

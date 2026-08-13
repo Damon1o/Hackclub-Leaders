@@ -426,14 +426,14 @@ class MongoStorage:
     # ── Cross-club user records ─────────────────────────────────────────────
 
     def get_user_record(self, email: str, *, strict: bool = False) -> dict[str, Any]:
-        """Cross-club record for `email` — preferred display name and the
-        session-invalidation counter. Defaults if no row exists yet.
+        """Cross-club record for `email` — the session-invalidation counter.
+        Defaults if no row exists yet.
 
         `strict=True` re-raises StorageError instead of degrading to
         defaults — for callers (the session-staleness gate) that need to
         tell "the version really is 0" apart from "couldn't check"."""
         email = (email or '').strip().lower()
-        defaults = {'preferredName': '', 'sessionVersion': 0}
+        defaults = {'sessionVersion': 0}
         if not email:
             return defaults
         try:
@@ -446,19 +446,16 @@ class MongoStorage:
             return defaults
         doc = docs[0]
         return {
-            'preferredName': doc.get('preferredName') or '',
             'sessionVersion': int(doc.get('sessionVersion') or 0),
         }
 
     def save_user_record(self, email: str, fields: dict[str, Any]) -> None:
-        """Upsert `fields` (preferredName and/or sessionVersion) onto the
-        user's cross-club record, merging onto whatever's already there."""
+        """Upsert `fields` (sessionVersion) onto the user's cross-club
+        record, merging onto whatever's already there."""
         email = (email or '').strip().lower()
         if not email:
             raise StorageError('Cannot save a user record without an email.')
         update: dict[str, Any] = {}
-        if 'preferredName' in fields:
-            update['preferredName'] = str(fields['preferredName'] or '')
         if 'sessionVersion' in fields:
             update['sessionVersion'] = int(fields['sessionVersion'] or 0)
         try:

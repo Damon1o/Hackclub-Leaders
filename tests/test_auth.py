@@ -68,7 +68,7 @@ def test_before_request_clears_stale_session_when_version_mismatches(client, mon
             return {'settings': {'clubName': 'Test'}, 'members': [{'email': 'leader@test.com', 'role': 'Leader'}]}
 
         def get_user_record(self, email, *, strict=False):
-            return {'preferredName': '', 'sessionVersion': 99}
+            return {'sessionVersion': 99}
 
     monkeypatch.setattr(routes_web_module, '_storage', lambda: FakeSharedBackend())
     with client.session_transaction() as sess:
@@ -99,7 +99,7 @@ def test_stale_session_check_is_throttled(client, monkeypatch):
             # A mismatched version that should only be noticed on the first
             # (unthrottled) check — subsequent requests within the window
             # must not call get_user_record again.
-            return {'preferredName': '', 'sessionVersion': 99}
+            return {'sessionVersion': 99}
 
     monkeypatch.setattr(routes_web_module, '_storage', lambda: FakeSharedBackend())
     with client.session_transaction() as sess:
@@ -177,7 +177,7 @@ def test_stale_session_check_covers_admin_panel(client, monkeypatch):
             return {'settings': {'clubName': 'Test'}, 'members': [{'email': 'admin@test.com', 'role': 'Leader'}]}
 
         def get_user_record(self, email, *, strict=False):
-            return {'preferredName': '', 'sessionVersion': 99}
+            return {'sessionVersion': 99}
 
     monkeypatch.setattr(routes_web_module, '_storage', lambda: FakeSharedBackend())
     monkeypatch.setenv('ADMIN_EMAILS', 'admin@test.com')
@@ -207,7 +207,7 @@ def test_stale_session_check_covers_admin_api(client, monkeypatch):
             return {'settings': {'clubName': 'Test'}, 'members': [{'email': 'admin@test.com', 'role': 'Leader'}]}
 
         def get_user_record(self, email, *, strict=False):
-            return {'preferredName': '', 'sessionVersion': 99}
+            return {'sessionVersion': 99}
 
     monkeypatch.setattr(routes_web_module, '_storage', lambda: FakeSharedBackend())
     monkeypatch.setenv('ADMIN_EMAILS', 'admin@test.com')

@@ -10,7 +10,6 @@ from .helpers import (
     clean_text,
     default_dashboard_state,
     get_dashboard_state,
-    get_preferred_name,
     is_admin,
     json_error,
     leader_required,
@@ -329,7 +328,6 @@ def register(app, HACKATIME_CLIENT_ID):
         return flask.render_template(
             'dashboard/settings.html',
             dashboard_state=get_dashboard_state(sections_for_request()),
-            preferred_name=get_preferred_name(),
             shared_backend=not isinstance(backend, SessionStorage),
             hackatime_connect_enabled=bool(HACKATIME_CLIENT_ID),
         )

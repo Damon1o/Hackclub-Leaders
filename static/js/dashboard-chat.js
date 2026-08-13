@@ -24,9 +24,11 @@ window.DashboardChat = function (ctx) {
     const removeSkeletons = ctx.removeSkeletons;
     const setFormError = ctx.setFormError;
     const showToast = ctx.showToast;
+    const $ = ctx.$;
 
     const CHAT_READS_KEY = 'hcl:chatReads';
-    const CHAT_POLL_MS = 4000;
+    const MESSAGE_POLL_MS = 500;
+    const CHANNEL_POLL_MS = 5000;
     const CHAT_GROUP_MS = 5 * 60 * 1000;   // same-author messages within 5min render grouped
     const chatBaseTitle = document.title;  // restored when the tab regains focus
 
@@ -495,21 +497,35 @@ window.DashboardChat = function (ctx) {
         }
     }
 
-    async function chatPoll() {
+    async function messagePoll() {
+        if (document.hidden || page !== 'chat' || !S.activeId || S.messagePollBusy) return;
+        S.messagePollBusy = true;
+        try {
+            await fetchMessages(S.activeId);
+        } finally {
+            S.messagePollBusy = false;
+        }
+    }
+
+    async function channelPoll() {
         if (document.hidden || page !== 'chat') return;
         await refreshChannels();
-        if (S.activeId) await fetchMessages(S.activeId);
     }
 
     function startChatPolling() {
         if (S.pollTimer || page !== 'chat') return;
-        S.pollTimer = window.setInterval(chatPoll, CHAT_POLL_MS);
+        S.pollTimer = window.setInterval(messagePoll, MESSAGE_POLL_MS);
+        S.channelPollTimer = window.setInterval(channelPoll, CHANNEL_POLL_MS);
     }
 
     function stopChatPolling() {
         if (S.pollTimer) {
             window.clearInterval(S.pollTimer);
             S.pollTimer = null;
+        }
+        if (S.channelPollTimer) {
+            window.clearInterval(S.channelPollTimer);
+            S.channelPollTimer = null;
         }
     }
 
@@ -523,7 +539,8 @@ window.DashboardChat = function (ctx) {
                 clearChatUnreadTitle();
                 if (page === 'chat') {
                     startChatPolling();
-                    chatPoll();
+                    channelPoll();
+                    messagePoll();
                 }
             }
         });

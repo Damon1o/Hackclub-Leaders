@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="static/images/hack-club-banner.svg" alt="Hack Club" width="360">
+<img src="static/images/hackclub-site/hack-club-banner.svg" alt="Hack Club" width="360">
 
 # Hack Club Leaders Portal
 

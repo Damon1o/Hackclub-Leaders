@@ -209,4 +209,4 @@ def test_members_section_renders_join_link_card_and_stub(auth_client, monkeypatc
     assert 'id="joinLinkCode"' in body
     assert 'id="copyJoinLink"' in body
     assert 'id="refreshJoinLink"' in body
-    assert 'No pending join requests' in body
+    assert 'Not available yet' in body

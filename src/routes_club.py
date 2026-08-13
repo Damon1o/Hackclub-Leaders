@@ -20,6 +20,7 @@ from .helpers import (
     save_dashboard_state,
     unique_join_code,
 )
+from .storage import SessionStorage, StorageError
 
 
 def register(app, HACKATIME_CLIENT_ID):
@@ -109,24 +110,43 @@ def register(app, HACKATIME_CLIENT_ID):
 
         payload = json_payload()
         club_name = clean_text(payload.get('clubName'))
-        location = clean_text(payload.get('location'))
+        venue = clean_text(payload.get('venue'), max_len=120)
         website = clean_text(payload.get('website'))
         avatar = clean_text(payload.get('avatar'))
+        meeting_day = clean_text(payload.get('meetingDay'), max_len=20)
+        address_line1 = clean_text(payload.get('addressLine1'), max_len=120)
+        address_line2 = clean_text(payload.get('addressLine2'), max_len=120)
+        city = clean_text(payload.get('city'), max_len=80)
+        state_field = clean_text(payload.get('state'), max_len=80)
+        zip_code = clean_text(payload.get('zip'), max_len=20)
+        country = clean_text(payload.get('country'), max_len=80)
+        club_bio = clean_text(payload.get('clubBio'), max_len=500)
 
         if not club_name:
             return json_error('Club name is required.')
-        if not location:
-            return json_error('School or location is required.')
+        if not venue:
+            return json_error('School or venue is required.')
         if website and not website.startswith(('http://', 'https://')):
             return json_error('Club website must start with http:// or https://.')
         if avatar and not avatar.startswith(('http://', 'https://')):
             return json_error('Avatar URL must start with http:// or https://.')
 
+        location = ', '.join(filter(None, [city, state_field]))
+
         state = get_dashboard_state()
         state['settings'].update(
             {
                 'clubName': club_name,
+                'venue': venue,
                 'location': location,
+                'addressLine1': address_line1,
+                'addressLine2': address_line2,
+                'city': city,
+                'state': state_field,
+                'zip': zip_code,
+                'country': country,
+                'meetingDay': meeting_day,
+                'clubBio': club_bio,
                 'website': website,
                 'avatar': avatar,
                 'publicDirectory': parse_bool(payload.get('publicDirectory')),
@@ -201,6 +221,31 @@ def register(app, HACKATIME_CLIENT_ID):
                 return flask.jsonify({'user': user, 'state': state})
 
         return flask.jsonify({'user': user})
+
+    @app.patch('/api/dashboard/account/preferred-name')
+    @login_required
+    def api_account_preferred_name_update():
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+
+        preferred_name = clean_text(json_payload().get('preferredName'), max_len=80)
+        if not preferred_name:
+            return json_error('Preferred name is required.')
+
+        backend = _storage()
+        if isinstance(backend, SessionStorage):
+            user = dict(session.get('user') or {})
+            user['preferredName'] = preferred_name
+            session['user'] = user
+        else:
+            email = (session.get('user') or {}).get('email') or ''
+            try:
+                backend.save_user_record(email, {'preferredName': preferred_name})
+            except StorageError as exc:
+                return json_error(str(exc))
+
+        return flask.jsonify({'preferredName': preferred_name})
 
     # ── Hackatime API ─────────────────────────────────────────────────────
 
@@ -278,3 +323,28 @@ def register(app, HACKATIME_CLIENT_ID):
         ]
         projects.sort(key=lambda p: p['hours'], reverse=True)
         return flask.jsonify({'projects': projects[:30]})
+
+    # ── Account danger zone ──────────────────────────────────────────────────
+
+    @app.post('/api/dashboard/account/sign-out-everywhere')
+    @login_required
+    def api_account_sign_out_everywhere():
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+
+        backend = _storage()
+        if isinstance(backend, SessionStorage):
+            return json_error(
+                'This site is running in local demo mode, so signing out other '
+                'devices is not available here.'
+            )
+
+        email = (session.get('user') or {}).get('email') or ''
+        try:
+            current_version = backend.get_user_record(email).get('sessionVersion', 0)
+            backend.save_user_record(email, {'sessionVersion': current_version + 1})
+        except StorageError as exc:
+            return json_error(str(exc))
+        session.clear()
+        return flask.jsonify({'signedOut': True})

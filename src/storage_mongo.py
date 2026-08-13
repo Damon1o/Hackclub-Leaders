@@ -30,6 +30,7 @@ from .storage import SHIPPED_STATUS, SUBMITTED_STATUS, StorageError
 DEFAULT_DB_NAME: Final[str] = 'hackclub_leaders'
 
 CLUBS_COLLECTION: Final[str] = 'clubs'
+USERS_COLLECTION: Final[str] = 'users'
 
 # State keys that live in their own collection, in the order load() assembles
 # them. Mirrors AirtableStorage.CHILD_TABLES.
@@ -61,6 +62,10 @@ INDEXES: Final[dict[str, list[tuple[list[tuple[str, int]], bool]]]] = {
         ([('clubKey', ASCENDING)], False),
         ([('email', ASCENDING)], False),
     ],
+    # get_user_record()/save_user_record() look a user up by their own email —
+    # _id IS the lowercased email, so no extra index is needed beyond the
+    # default _id index Mongo always creates. No INDEXES entry for
+    # USERS_COLLECTION on purpose.
     'events': [([('clubKey', ASCENDING), ('date', ASCENDING)], False)],
     'newsletters': [([('clubKey', ASCENDING), ('date', DESCENDING)], False)],
     'orders': [([('clubKey', ASCENDING), ('date', DESCENDING)], False)],
@@ -417,3 +422,48 @@ class MongoStorage:
         has_more = len(docs) > limit
         page = list(reversed(docs[:limit]))
         return [self._to_item(doc) for doc in page], has_more
+
+    # ── Cross-club user records ─────────────────────────────────────────────
+
+    def get_user_record(self, email: str, *, strict: bool = False) -> dict[str, Any]:
+        """Cross-club record for `email` — preferred display name and the
+        session-invalidation counter. Defaults if no row exists yet.
+
+        `strict=True` re-raises StorageError instead of degrading to
+        defaults — for callers (the session-staleness gate) that need to
+        tell "the version really is 0" apart from "couldn't check"."""
+        email = (email or '').strip().lower()
+        defaults = {'preferredName': '', 'sessionVersion': 0}
+        if not email:
+            return defaults
+        try:
+            docs = self._find(USERS_COLLECTION, {'_id': email}, limit=1)
+        except StorageError:
+            if strict:
+                raise
+            return defaults
+        if not docs:
+            return defaults
+        doc = docs[0]
+        return {
+            'preferredName': doc.get('preferredName') or '',
+            'sessionVersion': int(doc.get('sessionVersion') or 0),
+        }
+
+    def save_user_record(self, email: str, fields: dict[str, Any]) -> None:
+        """Upsert `fields` (preferredName and/or sessionVersion) onto the
+        user's cross-club record, merging onto whatever's already there."""
+        email = (email or '').strip().lower()
+        if not email:
+            raise StorageError('Cannot save a user record without an email.')
+        update: dict[str, Any] = {}
+        if 'preferredName' in fields:
+            update['preferredName'] = str(fields['preferredName'] or '')
+        if 'sessionVersion' in fields:
+            update['sessionVersion'] = int(fields['sessionVersion'] or 0)
+        try:
+            self.db[USERS_COLLECTION].update_one(
+                {'_id': email}, {'$set': update}, upsert=True
+            )
+        except PyMongoError as exc:
+            raise StorageError(f'MongoDB write on {USERS_COLLECTION} failed: {exc}') from exc

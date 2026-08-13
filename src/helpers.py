@@ -153,7 +153,16 @@ class Message(TypedDict):
 class Settings(TypedDict):
     joinCode: str
     clubName: str
+    venue: str
     location: str
+    addressLine1: str
+    addressLine2: str
+    city: str
+    state: str
+    zip: str
+    country: str
+    meetingDay: str
+    clubBio: str
     website: str
     avatar: str
     publicDirectory: bool
@@ -602,7 +611,16 @@ def default_dashboard_state() -> DashboardState:
         'settings': {
             'joinCode': generate_join_code(),
             'clubName': f"{leader_name}'s Hack Club",
+            'venue': '',
             'location': '',
+            'addressLine1': '',
+            'addressLine2': '',
+            'city': '',
+            'state': '',
+            'zip': '',
+            'country': '',
+            'meetingDay': '',
+            'clubBio': '',
             'website': '',
             'avatar': '',
             'publicDirectory': True,
@@ -632,7 +650,16 @@ def playtest_state() -> DashboardState:
         'settings': {
             'joinCode': 'PLAYTEST',
             'clubName': 'Playtest Hack Club',
+            'venue': 'Playtest High School',
             'location': 'Burlington, VT',
+            'addressLine1': '',
+            'addressLine2': '',
+            'city': 'Burlington',
+            'state': 'VT',
+            'zip': '',
+            'country': 'US',
+            'meetingDay': 'Wednesday',
+            'clubBio': '',
             'website': 'https://hackclub.com',
             'avatar': '',
             'publicDirectory': True,
@@ -737,6 +764,18 @@ def _club_key() -> str:
         email = (session.get('user') or {}).get('email') or ''
         g.club_key = _storage().resolve_club_key(email)
     return g.club_key
+
+
+def get_preferred_name() -> str:
+    """The viewer's preferred display name. Session backend: round-trips
+    through session['user']['preferredName'] (same pattern as name/bio/
+    hackatimeId in api_profile_update). Shared backends: the cross-club
+    Users record."""
+    backend = _storage()
+    if isinstance(backend, SessionStorage):
+        return (session.get('user') or {}).get('preferredName') or ''
+    email = (session.get('user') or {}).get('email') or ''
+    return backend.get_user_record(email).get('preferredName') or ''
 
 
 # The state keys a backend stores per club. A page can ask for a subset of

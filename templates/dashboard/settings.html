@@ -1,102 +1,49 @@
 {% extends "dashboard_layout.html" %}
 
 {% block page_title %}<span data-i18n="settings.title">Settings</span>{% endblock %}
-{% block page_subtitle %}<span data-i18n="settings.subtitle">Manage your profile and club information.</span>{% endblock
-%}
+{% block page_subtitle %}<span data-i18n="settings.subtitle">Manage your club and account.</span>{% endblock %}
 
 {% block content %}
 {% set settings = dashboard_state.settings %}
-<div class="dashboard-page settings-layout" data-dashboard-page="settings">
-    <section class="card-modern dashboard-panel settings-main">
-        <div class="panel-heading">
-            <div>
-                <h2 data-i18n="settings.clubProfile">Club profile</h2>
-                <p data-i18n="settings.clubProfileDesc">These details power the local dashboard session.</p>
-            </div>
-        </div>
+<div class="dashboard-page settings-shell" data-dashboard-page="settings">
+    <nav class="settings-nav" id="settingsNav" aria-label="Settings sections">
+        <a href="#club-profile" class="settings-nav-link" data-i18n="settings.navClubProfile">Club profile</a>
+        <a href="#members" class="settings-nav-link" data-i18n="settings.navMembers">Members</a>
+        <a href="#your-account" class="settings-nav-link" data-i18n="settings.navYourAccount">Your account</a>
+        <a href="#appearance" class="settings-nav-link" data-i18n="settings.navAppearance">Appearance</a>
+        <a href="#explore-privacy" class="settings-nav-link" data-i18n="settings.navExplorePrivacy">Explore &amp; privacy</a>
+        <a href="#notifications" class="settings-nav-link" data-i18n="settings.navNotifications">Notifications</a>
+        <a href="#danger-zone" class="settings-nav-link settings-nav-danger" data-i18n="settings.navDangerZone">Danger zone</a>
+    </nav>
 
-        <form class="settings-form" id="settingsForm">
-            <label class="form-group">
-                <span class="form-label" data-i18n="settings.clubName">Club name</span>
-                <input type="text" class="form-input" name="clubName" value="{{ settings.clubName }}" required>
-            </label>
-            <label class="form-group">
-                <span class="form-label" data-i18n="settings.location">School / location</span>
-                <input type="text" class="form-input" name="location" value="{{ settings.location }}" required>
-            </label>
-            <label class="form-group">
-                <span class="form-label" data-i18n="settings.website">Club website</span>
-                <input type="url" class="form-input" name="website" value="{{ settings.website }}"
-                    placeholder="https://..." data-i18n-attr="placeholder:common.urlPlaceholder">
-            </label>
-            <label class="form-group">
-                <span class="form-label" data-i18n="settings.avatar">Profile image URL</span>
-                <input type="url" class="form-input" name="avatar" value="{{ settings.avatar }}"
-                    placeholder="https://..." data-i18n-attr="placeholder:common.urlPlaceholder">
-            </label>
-            <input type="hidden" name="language" value="{{ settings.language|default('en') }}">
-            <p class="form-error" id="settingsFormError" hidden></p>
-            <div class="form-actions">
-                <button type="submit" class="btn-primary" data-i18n="settings.save">Save changes</button>
-                <span class="save-state" id="settingsSaveState" aria-live="polite"></span>
-            </div>
-        </form>
-    </section>
+    <div class="settings-sections" id="settingsSections">
+        <section class="card-modern dashboard-panel settings-section" id="club-profile" data-settings-section>
+            {% include "partials/settings/club_profile.html" %}
+        </section>
 
-    <aside class="card-modern dashboard-panel settings-side">
-        <div class="club-preview" id="clubPreview">
-            <div class="club-preview-avatar" id="clubPreviewAvatar">H</div>
-            <div>
-                <h2 id="clubPreviewName">{{ settings.clubName }}</h2>
-                <p id="clubPreviewLocation">{{ settings.location }}</p>
-            </div>
-        </div>
+        <section class="card-modern dashboard-panel settings-section" id="members" data-settings-section>
+            {% include "partials/settings/members.html" %}
+        </section>
 
-        <label class="toggle-row">
-            <span>
-                <strong data-i18n="settings.publicDirectory">Public directory</strong>
-                <small data-i18n="settings.publicDirectoryDesc">Show the club on the Hack Club map.</small>
-            </span>
-            <span class="toggle-switch">
-                <input type="checkbox" name="publicDirectory" form="settingsForm" {% if settings.publicDirectory
-                    %}checked{% endif %}>
-                <span class="toggle-slider"></span>
-            </span>
-        </label>
-        <label class="toggle-row">
-            <span>
-                <strong data-i18n="settings.emailNotifications">Email notifications</strong>
-                <small data-i18n="settings.emailNotificationsDesc">Receive HQ dispatches and reminders.</small>
-            </span>
-            <span class="toggle-switch">
-                <input type="checkbox" name="emailNotifications" form="settingsForm" {% if settings.emailNotifications
-                    %}checked{% endif %}>
-                <span class="toggle-slider"></span>
-            </span>
-        </label>
+        <section class="card-modern dashboard-panel settings-section" id="your-account" data-settings-section>
+            {% include "partials/settings/your_account.html" %}
+        </section>
 
-        <label class="toggle-row">
-            <span>
-                <strong data-i18n="settings.darkMode">Dark mode default</strong>
-                <small data-i18n="settings.darkModeDesc">Load this dashboard in the dark theme.</small>
-            </span>
-            <span class="toggle-switch">
-                <input type="checkbox" name="darkModeDefault" form="settingsForm" {% if settings.darkModeDefault
-                    %}checked{% endif %}>
-                <span class="toggle-slider"></span>
-            </span>
-        </label>
-        <label class="toggle-row">
-            <span>
-                <strong data-i18n="settings.newsletter">Newsletter subscription</strong>
-                <small data-i18n="settings.newsletterDesc">Keep leader dispatches enabled.</small>
-            </span>
-            <span class="toggle-switch">
-                <input type="checkbox" name="newsletterSubscribed" form="settingsForm" {% if
-                    settings.newsletterSubscribed %}checked{% endif %}>
-                <span class="toggle-slider"></span>
-            </span>
-        </label>
-    </aside>
+        <section class="card-modern dashboard-panel settings-section" id="appearance" data-settings-section>
+            {% include "partials/settings/appearance.html" %}
+        </section>
+
+        <section class="card-modern dashboard-panel settings-section" id="explore-privacy" data-settings-section>
+            {% include "partials/settings/explore_privacy.html" %}
+        </section>
+
+        <section class="card-modern dashboard-panel settings-section" id="notifications" data-settings-section>
+            {% include "partials/settings/notifications.html" %}
+        </section>
+
+        <section class="card-modern dashboard-panel settings-section" id="danger-zone" data-settings-section>
+            {% include "partials/settings/danger_zone.html" %}
+        </section>
+    </div>
 </div>
 {% endblock %}

@@ -94,9 +94,35 @@ def register(app):
 
         settings = state.setdefault('settings', {})
         settings['clubName'] = club_name
-        settings['location'] = clean_text(payload.get('location'))
         settings['website'] = website
         settings['avatar'] = avatar
+
+        # Structured-address fields aren't in the admin form yet, so only
+        # touch keys the payload actually sends — otherwise a plain
+        # clubName/website/avatar save from admin_club.html would blank out
+        # venue/address/bio the leader already entered via settings.
+        text_fields = {
+            'venue': 120,
+            'addressLine1': 120,
+            'addressLine2': 120,
+            'city': 80,
+            'state': 80,
+            'zip': 20,
+            'country': 80,
+            'meetingDay': 20,
+            'clubBio': 500,
+        }
+        for key, max_len in text_fields.items():
+            if key in payload:
+                settings[key] = clean_text(payload.get(key), max_len=max_len)
+
+        if 'city' in payload or 'state' in payload:
+            settings['location'] = ', '.join(
+                filter(None, [settings.get('city', ''), settings.get('state', '')])
+            )
+        elif 'location' in payload:
+            settings['location'] = clean_text(payload.get('location'))
+
         if 'publicDirectory' in payload:
             settings['publicDirectory'] = parse_bool(payload.get('publicDirectory'))
         _persist_club(backend, club_key, state)

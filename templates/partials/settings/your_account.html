@@ -1,0 +1,71 @@
+<div class="panel-heading">
+    <div>
+        <h2 data-i18n="settings.yourAccount">Your account</h2>
+        <p data-i18n="settings.yourAccountDesc">Personal details tied to you, not your club.</p>
+    </div>
+</div>
+
+<form class="settings-form" id="preferredNameForm">
+    <label class="form-group">
+        <span class="form-label" data-i18n="settings.preferredName">Preferred name</span>
+        <input type="text" class="form-input" name="preferredName" value="{{ preferred_name }}" required>
+        <small class="form-hint" data-i18n="settings.preferredNameHint">Shown on your profile card. Defaults to your first name.</small>
+    </label>
+    <p class="form-error" id="preferredNameFormError" hidden></p>
+    <div class="form-actions">
+        <button type="submit" class="btn-primary" data-i18n="settings.save">Save changes</button>
+        <span class="save-state" id="preferredNameSaveState" aria-live="polite"></span>
+    </div>
+</form>
+
+<div class="settings-stub-block">
+    <h3 data-i18n="settings.syncedFromHackClub">Synced from Hack Club</h3>
+    <p class="settings-stub-note" data-i18n="settings.syncedFromHackClubDesc">These can't be edited here.</p>
+    <div class="settings-stub-row">
+        <span class="settings-stub-row-label" data-i18n="settings.fullName">Full name</span>
+        <span class="settings-stub-row-value">{{ current_user.name or 'Not available yet' }}</span>
+    </div>
+    <div class="settings-stub-row">
+        <span class="settings-stub-row-label" data-i18n="settings.email">Email</span>
+        <span class="settings-stub-row-value">{{ current_user.email or 'Not available yet' }}</span>
+    </div>
+    <div class="settings-stub-row">
+        <span class="settings-stub-row-label" data-i18n="settings.slack">Slack</span>
+        <span class="settings-stub-row-value" data-i18n="common.notAvailableYet">Not available yet</span>
+    </div>
+    <div class="settings-stub-row">
+        <span class="settings-stub-row-label" data-i18n="settings.verification">Verification</span>
+        <span class="settings-stub-row-value" data-i18n="common.notAvailableYet">Not available yet</span>
+    </div>
+    <div class="settings-stub-row">
+        <span class="settings-stub-row-label" data-i18n="settings.phone">Phone</span>
+        <span class="settings-stub-row-value" data-i18n="common.notAvailableYet">Not available yet</span>
+    </div>
+    <div class="settings-stub-row">
+        <span class="settings-stub-row-label" data-i18n="settings.birthday">Birthday</span>
+        <span class="settings-stub-row-value" data-i18n="common.notAvailableYet">Not available yet</span>
+    </div>
+    <div class="settings-stub-row">
+        <span class="settings-stub-row-label" data-i18n="settings.mailingAddress">Mailing address</span>
+        <span class="settings-stub-row-value" data-i18n="common.notAvailableYet">Not available yet</span>
+    </div>
+</div>
+
+<div class="settings-stub-block">
+    <h3 data-i18n="profile.hackatime">Hackatime</h3>
+    <div class="hackatime-connect">
+        {% if current_user.hackatimeId %}
+        <span class="hackatime-connected">
+            <span class="hackatime-dot" aria-hidden="true"></span>
+            <span data-i18n="profile.connected">Connected · ID {{ current_user.hackatimeId }}</span>
+        </span>
+        {% if hackatime_connect_enabled %}
+        <a class="btn-secondary small" href="{{ url_for('hackatime_login') }}" data-i18n="profile.reconnect">Reconnect</a>
+        {% endif %}
+        {% elif hackatime_connect_enabled %}
+        <a class="btn-primary small" href="{{ url_for('hackatime_login') }}">
+            <span class="button-icon" aria-hidden="true"><span data-hc-icon="bolt" data-hc-size="16" data-hc-color="currentColor" aria-hidden="true"></span></span> <span data-i18n="profile.connectHackatime">Connect Hackatime</span>
+        </a>
+        {% endif %}
+    </div>
+</div>

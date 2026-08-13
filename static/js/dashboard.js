@@ -972,6 +972,42 @@
         img.classList.toggle('has-image', Boolean(url));
     }
 
+    function initSettingsScrollspy() {
+        const nav = $('#settingsNav');
+        const sections = document.querySelectorAll('[data-settings-section]');
+        if (!nav || !sections.length || !window.IntersectionObserver) return;
+
+        const links = new Map();
+        nav.querySelectorAll('.settings-nav-link').forEach((link) => {
+            links.set(link.getAttribute('href').slice(1), link);
+        });
+
+        const setActive = (id) => {
+            links.forEach((link, sectionId) => {
+                link.classList.toggle('active', sectionId === id);
+            });
+        };
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const visible = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+                if (visible.length) setActive(visible[0].target.id);
+            },
+            { rootMargin: '-96px 0px -60% 0px', threshold: 0.01 }
+        );
+        sections.forEach((section) => observer.observe(section));
+
+        nav.querySelectorAll('.settings-nav-link').forEach((link) => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const target = document.getElementById(link.getAttribute('href').slice(1));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    }
+
     function renderHacktimePicker(list, selected) {
         const picker = $('#hackatimePicker');
         if (!picker) return;
@@ -1765,8 +1801,10 @@ const CHECKLIST_ITEMS = [
         if (page !== 'settings') return;
         const prefs = settings();
         const avatar = $('#clubPreviewAvatar');
-        $('#clubPreviewName').textContent = prefs.clubName || 'Hack Club';
-        $('#clubPreviewLocation').textContent = prefs.location || 'Location TBD';
+        const previewName = $('#clubPreviewName');
+        if (previewName) previewName.textContent = prefs.clubName || 'Hack Club';
+        const previewLocation = $('#clubPreviewLocation');
+        if (previewLocation) previewLocation.textContent = prefs.location || 'Location TBD';
         if (avatar) {
             avatar.textContent = initials(prefs.clubName || 'Hack Club');
             const safeAvatar = String(prefs.avatar || '').replace(/\\/g, '%5C').replace(/"/g, '%22');
@@ -2702,6 +2740,20 @@ const CHECKLIST_ITEMS = [
             }
         });
 
+        $('#signOutEverywhereBtn')?.addEventListener('click', async () => {
+            const ok = window.confirm(
+                'Sign out of every device, including this one? '
+                + "You'll need to sign in again."
+            );
+            if (!ok) return;
+            try {
+                await apiRequest('/api/dashboard/account/sign-out-everywhere', { method: 'POST' });
+                window.location.href = '/sign-in';
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+
         $('#checkoutButton')?.addEventListener('click', async () => {
             try {
                 await apiRequest('/api/dashboard/checkout', { method: 'POST' });
@@ -2836,6 +2888,24 @@ const CHECKLIST_ITEMS = [
                 showToast('Profile saved.');
             } catch (error) {
                 setFormError('profileFormError', error.message);
+                if (stateLabel) stateLabel.textContent = '';
+            }
+        });
+
+        $('#preferredNameForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const stateLabel = $('#preferredNameSaveState');
+            setFormError('preferredNameFormError', '');
+            if (stateLabel) stateLabel.textContent = 'Saving...';
+            try {
+                await apiRequest('/api/dashboard/account/preferred-name', {
+                    method: 'PATCH',
+                    body: formObject(event.currentTarget),
+                });
+                if (stateLabel) stateLabel.textContent = 'Saved';
+                showToast('Preferred name saved.');
+            } catch (error) {
+                setFormError('preferredNameFormError', error.message);
                 if (stateLabel) stateLabel.textContent = '';
             }
         });
@@ -3134,6 +3204,7 @@ const CHECKLIST_ITEMS = [
         renderPage();
         initHacktime();
         initAvatarUploads();
+        initSettingsScrollspy();
         if (clientDataPage) refreshState();
         if (page === 'admin') renderAdminItemRequests();
         // The chat module is a separate file; renderPage()'s renderChat() call

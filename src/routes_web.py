@@ -1,4 +1,5 @@
 import secrets
+import time
 
 import flask
 from flask import flash, redirect, request, session, url_for
@@ -9,6 +10,7 @@ from .helpers import (
     clean_text,
     default_dashboard_state,
     get_dashboard_state,
+    get_preferred_name,
     is_admin,
     json_error,
     leader_required,
@@ -17,7 +19,13 @@ from .helpers import (
     sections_for_request,
     viewer_club_lite,
 )
-from .storage import SessionStorage
+from .storage import SessionStorage, StorageError
+
+# How often (seconds) the shared-backend session-staleness check re-hits the
+# Users table. Below this, we trust the last check — the chat UI polls
+# /api/dashboard* every 4s, and hitting Airtable that often is unnecessary
+# cost/latency for a value that rarely changes.
+SESSION_VERSION_CHECK_INTERVAL = 60
 
 
 def register(app, HACKATIME_CLIENT_ID):
@@ -58,14 +66,53 @@ def register(app, HACKATIME_CLIENT_ID):
     @app.before_request
     def require_club_membership():
         path = request.path
-        if not (path.startswith('/dashboard') or path.startswith('/api/dashboard')):
+        if not (
+            path.startswith('/dashboard')
+            or path.startswith('/api/dashboard')
+            or path.startswith('/api/admin')
+        ):
             return None
+        user = session.get('user')
+        if not user:
+            return None
+
+        # Staleness check runs for EVERY matched path, including admin and
+        # welcome — a stale/revoked session must not keep access to the
+        # admin panel just because it's exempt from the membership check
+        # below. Throttled to once per SESSION_VERSION_CHECK_INTERVAL so the
+        # 4s-polling chat UI doesn't hit the shared backend on every request.
+        backend = _storage()
+        if not isinstance(backend, SessionStorage):
+            last_checked = session.get('_sv_checked_at')
+            now = time.time()
+            if last_checked is None or now - last_checked >= SESSION_VERSION_CHECK_INTERVAL:
+                try:
+                    stored_version = backend.get_user_record(
+                        user.get('email') or '', strict=True
+                    ).get('sessionVersion', 0)
+                except StorageError:
+                    # Availability failure, not a real version mismatch —
+                    # fail open rather than force-signing-out every user on
+                    # a transient Airtable blip. Don't stamp _sv_checked_at
+                    # so the next request retries rather than trusting a
+                    # skipped check for a full interval.
+                    stored_version = None
+                if stored_version is not None:
+                    session['_sv_checked_at'] = now
+                    if int(user.get('sessionVersion', 0)) != int(stored_version):
+                        session.clear()
+                        if path.startswith('/api/'):
+                            return json_error(
+                                'Your session was signed out from another device. Please sign in again.',
+                                401,
+                            )
+                        return redirect(url_for('sign_in'))
+
         if path.startswith('/dashboard/welcome'):
             return None
         if path.startswith('/dashboard/admin') or path.startswith('/api/admin'):
             return None
-        if not session.get('user'):
-            return None
+
         if is_admin() or viewer_club_lite() is not None:
             return None
         if path.startswith('/api/'):
@@ -278,8 +325,13 @@ def register(app, HACKATIME_CLIENT_ID):
     @app.route('/dashboard/settings')
     @leader_required
     def dashboard_settings():
+        backend = _storage()
         return flask.render_template(
-            'dashboard/settings.html', dashboard_state=get_dashboard_state(sections_for_request())
+            'dashboard/settings.html',
+            dashboard_state=get_dashboard_state(sections_for_request()),
+            preferred_name=get_preferred_name(),
+            shared_backend=not isinstance(backend, SessionStorage),
+            hackatime_connect_enabled=bool(HACKATIME_CLIENT_ID),
         )
 
     @app.route('/dashboard/profile')

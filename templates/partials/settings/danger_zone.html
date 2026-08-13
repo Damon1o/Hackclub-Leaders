@@ -1,0 +1,19 @@
+<div class="panel-heading">
+    <div>
+        <h2 class="danger-heading" data-i18n="settings.dangerZone">Danger zone</h2>
+    </div>
+</div>
+
+{% if shared_backend %}
+<div class="danger-row">
+    <div>
+        <strong data-i18n="settings.signOutEverywhere">Sign out everywhere</strong>
+        <p data-i18n="settings.signOutEverywhereDesc">Sign out of every device where you're currently signed in, including this one.</p>
+    </div>
+    <button class="btn-danger" type="button" id="signOutEverywhereBtn" data-i18n="settings.signOutEverywhereBtn">Sign out everywhere</button>
+</div>
+{% else %}
+<p class="settings-stub-note" data-i18n="settings.signOutEverywhereDemoMode">
+    This site is running in local demo mode, so signing out other devices isn't available here.
+</p>
+{% endif %}

@@ -1747,6 +1747,106 @@ body.dark-mode .leaflet-popup-tip {
     top: 104px;
 }
 
+.settings-shell {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.settings-nav {
+    position: sticky;
+    top: 104px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.settings-nav-link {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--dash-slate);
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.settings-nav-link:hover {
+    background: var(--dash-fill);
+}
+
+.settings-nav-link.active {
+    background: var(--hackclub-red);
+    color: #fff;
+}
+
+.settings-nav-danger.active {
+    background: #a8122a;
+}
+
+.settings-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+}
+
+.settings-section {
+    scroll-margin-top: 96px;
+}
+
+@media (max-width: 900px) {
+    .settings-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-nav {
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+        top: auto;
+    }
+}
+
+.settings-stub-block {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--dash-border);
+}
+
+.settings-stub-block h3 {
+    margin: 0 0 6px;
+    font-size: 15px;
+}
+
+.settings-stub-note {
+    margin: 0;
+    color: var(--dash-muted);
+    font-size: 14px;
+}
+
+.settings-stub-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--dash-border);
+}
+
+.settings-stub-row:last-child {
+    border-bottom: none;
+}
+
+.settings-stub-row-label {
+    font-weight: bold;
+    color: var(--dash-slate);
+}
+
+.settings-stub-row-value {
+    color: var(--dash-muted);
+}
+
 .product-mark {
     height: 140px;
     border-radius: 10px;
@@ -3965,4 +4065,33 @@ body.dark-mode .dashboard-wrapper {
     .chat-sidebar {
         transition: none;
     }
+}
+
+.danger-heading {
+    color: #a8122a;
+}
+
+.danger-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.btn-danger {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1.5px solid #a8122a;
+    background: transparent;
+    color: #a8122a;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-danger:hover {
+    background: #a8122a;
+    color: #fff;
 }

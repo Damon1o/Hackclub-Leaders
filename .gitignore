@@ -28,6 +28,9 @@ ruvector.db
 
 # Accidental shell-redirect artifacts (stray files from malformed commands)
 /$(({}))
+
+# Subagent-driven-development scratch (progress ledger, review packages)
+.superpowers/
 /$(wc
 /.modal-actions
 /0.05

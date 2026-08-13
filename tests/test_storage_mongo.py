@@ -162,6 +162,30 @@ def test_clubs_are_isolated_from_each_other(storage):
             assert doc['clubKey'] in ('a@test.com', 'b@test.com')
 
 
+def test_get_user_record_defaults_when_missing(storage):
+    record = storage.get_user_record('nobody@example.com')
+    assert record == {'preferredName': '', 'sessionVersion': 0}
+
+
+def test_save_and_get_user_record_round_trips(storage):
+    storage.save_user_record('leader@example.com', {'preferredName': 'Ada', 'sessionVersion': 1})
+    record = storage.get_user_record('leader@example.com')
+    assert record == {'preferredName': 'Ada', 'sessionVersion': 1}
+
+
+def test_save_user_record_merges_partial_update(storage):
+    storage.save_user_record('leader@example.com', {'preferredName': 'Ada'})
+    storage.save_user_record('leader@example.com', {'sessionVersion': 2})
+    record = storage.get_user_record('leader@example.com')
+    assert record == {'preferredName': 'Ada', 'sessionVersion': 2}
+
+
+def test_get_user_record_lowercases_email(storage):
+    storage.save_user_record('Leader@Example.com', {'preferredName': 'Ada'})
+    record = storage.get_user_record('leader@example.com')
+    assert record['preferredName'] == 'Ada'
+
+
 def _messages(count):
     return [
         {
@@ -234,6 +258,7 @@ def mongo_client(monkeypatch, storage):
             'email': 'leader@test.com',
             'avatar': '',
             'provider': 'hackclub',
+            'sessionVersion': 0,
         }
         sess['csrf_token'] = 'test-csrf-token'
     return client

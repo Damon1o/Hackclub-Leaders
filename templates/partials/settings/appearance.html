@@ -1,1 +1,16 @@
-<h2 data-i18n="settings.appearance">Appearance</h2>
+<div class="panel-heading">
+    <div>
+        <h2 data-i18n="settings.appearance">Appearance</h2>
+        <p data-i18n="settings.appearanceDesc">Choose how the dashboard looks when you sign in.</p>
+    </div>
+</div>
+<label class="toggle-row">
+    <span>
+        <strong data-i18n="settings.darkMode">Dark mode default</strong>
+        <small data-i18n="settings.darkModeDesc">Load this dashboard in the dark theme.</small>
+    </span>
+    <span class="toggle-switch">
+        <input type="checkbox" name="darkModeDefault" form="settingsForm" {% if settings.darkModeDefault %}checked{% endif %}>
+        <span class="toggle-slider"></span>
+    </span>
+</label>

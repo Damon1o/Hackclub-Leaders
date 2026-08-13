@@ -1,1 +1,16 @@
-<h2 data-i18n="settings.explorePrivacy">Explore &amp; privacy</h2>
+<div class="panel-heading">
+    <div>
+        <h2 data-i18n="settings.explorePrivacy">Explore &amp; privacy</h2>
+        <p data-i18n="settings.explorePrivacyDesc">Control what other Hack Clubbers can see about your club.</p>
+    </div>
+</div>
+<label class="toggle-row">
+    <span>
+        <strong data-i18n="settings.publicDirectory">Public directory</strong>
+        <small data-i18n="settings.publicDirectoryDesc">Show the club on the Hack Club map.</small>
+    </span>
+    <span class="toggle-switch">
+        <input type="checkbox" name="publicDirectory" form="settingsForm" {% if settings.publicDirectory %}checked{% endif %}>
+        <span class="toggle-slider"></span>
+    </span>
+</label>

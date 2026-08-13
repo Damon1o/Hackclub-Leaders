@@ -1,1 +1,26 @@
-<h2 data-i18n="settings.notifications">Notifications</h2>
+<div class="panel-heading">
+    <div>
+        <h2 data-i18n="settings.notifications">Notifications</h2>
+        <p data-i18n="settings.notificationsDesc">Choose what you hear about.</p>
+    </div>
+</div>
+<label class="toggle-row">
+    <span>
+        <strong data-i18n="settings.emailNotifications">Email notifications</strong>
+        <small data-i18n="settings.emailNotificationsDesc">Receive HQ dispatches and reminders.</small>
+    </span>
+    <span class="toggle-switch">
+        <input type="checkbox" name="emailNotifications" form="settingsForm" {% if settings.emailNotifications %}checked{% endif %}>
+        <span class="toggle-slider"></span>
+    </span>
+</label>
+<label class="toggle-row">
+    <span>
+        <strong data-i18n="settings.newsletter">Newsletter subscription</strong>
+        <small data-i18n="settings.newsletterDesc">Keep leader dispatches enabled.</small>
+    </span>
+    <span class="toggle-switch">
+        <input type="checkbox" name="newsletterSubscribed" form="settingsForm" {% if settings.newsletterSubscribed %}checked{% endif %}>
+        <span class="toggle-slider"></span>
+    </span>
+</label>

@@ -55,7 +55,7 @@ MAX_TOPIC_LEN = 120
 # Sliding window of recent post timestamps, keyed by author email. This is a
 # single-process app, so a module-level dict is enough; reset_rate_limits()
 # makes it trivially clearable between tests.
-_rate_buckets = {}
+_rate_buckets: dict[str, list[float]] = {}
 
 
 def reset_rate_limits():
@@ -137,11 +137,12 @@ def register(app):
             return json_error(error)
 
         state = get_dashboard_state()
-        channel = {
+        channel: dict[str, str] = {
             'id': _item_id('channel'),
             'createdBy': _viewer_email(),
             'lastMessageAt': '',
-            **fields,
+            'name': (fields or {}).get('name', ''),
+            'description': (fields or {}).get('description', ''),
         }
         _channels(state).append(channel)
         save_dashboard_state(state)

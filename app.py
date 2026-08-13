@@ -1,5 +1,6 @@
 import os
 import secrets
+from typing import Any
 
 import flask
 from dotenv import load_dotenv
@@ -25,7 +26,7 @@ from src.helpers import (  # noqa: E402
 from src.storage import StorageError  # noqa: E402
 
 app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # type: ignore[method-assign]
 
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
@@ -58,7 +59,7 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_IMAGE_BYTES + 512 * 1024
 
 
 @app.errorhandler(StateTooLarge)
-def handle_state_too_large(_error):
+def handle_state_too_large(_error: Exception) -> tuple[flask.Response, int]:
     return flask.jsonify(
         {
             'error': 'Your club data is full — this demo stores everything in a browser cookie. '
@@ -68,7 +69,7 @@ def handle_state_too_large(_error):
 
 
 @app.errorhandler(StorageError)
-def handle_storage_error(error):
+def handle_storage_error(error: Exception) -> Any:
     if request.path.startswith('/api/'):
         return flask.jsonify({'error': f'Database error: {error}'}), 502
     flash(f'Database error: {error}', 'error')
@@ -76,7 +77,7 @@ def handle_storage_error(error):
 
 
 @app.errorhandler(413)
-def _payload_too_large(_error):
+def _payload_too_large(_error: Exception) -> tuple[flask.Response, int]:
     return json_error('That file is too large — images must be 4 MB or smaller.', 413)
 
 
@@ -84,7 +85,7 @@ def _payload_too_large(_error):
 
 
 @app.context_processor
-def inject_user():
+def inject_user() -> dict[str, Any]:
     signed_in = bool(session.get('user'))
     role, is_leader, dashboard_state = '', False, None
     if signed_in:

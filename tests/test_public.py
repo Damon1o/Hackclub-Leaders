@@ -201,7 +201,7 @@ def _i18n_translations():
     blocks = re.split(r'^ {8}(\w+): \{$', src, flags=re.M)
     return {
         lang: set(re.findall(r"^ {12}'([\w.]+)':", body, flags=re.M))
-        for lang, body in zip(blocks[1::2], blocks[2::2])
+        for lang, body in zip(blocks[1::2], blocks[2::2], strict=False)
     }
 
 

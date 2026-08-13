@@ -218,7 +218,7 @@ def main() -> int:
     verb = 'Migrated' if apply_changes else 'Would migrate'
     print(f'\n{verb} {migrated}/{len(club_keys)} club(s).')
     if skipped:
-        print(f'\nRows skipped (no matching club or missing App Id):')
+        print('\nRows skipped (no matching club or missing App Id):')
         for table, count in skipped.items():
             print(f'  {table}.csv: {count} row(s) skipped')
     if failures:

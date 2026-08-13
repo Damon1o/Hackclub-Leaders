@@ -82,34 +82,25 @@ ignore_missing_imports = true
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
-module = "src.routes_web"
+module = [
+    "src.routes_web",
+    "src.routes_api",
+    "src.routes_api_projects",
+    "src.routes_api_workshops",
+    "src.routes_auth",
+    "src.routes_admin",
+    "src.routes_chat",
+    "src.routes_club",
+    "src.notifications",
+    "src.email",
+    "src.helpers_validation",
+    "app",
+]
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
-
-[[tool.mypy.overrides]]
-module = "src.routes_api"
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-
-[[tool.mypy.overrides]]
-module = "src.routes_auth"
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-
-[[tool.mypy.overrides]]
-module = "src.routes_admin"
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-
-[[tool.mypy.overrides]]
-module = "src.routes_chat"
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-
-[[tool.mypy.overrides]]
-module = "src.routes_club"
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+warn_return_any = false
 
 [tool.bandit]
 exclude_dirs = ["tests", "scripts"]

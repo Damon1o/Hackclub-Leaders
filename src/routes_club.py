@@ -1,10 +1,12 @@
 from datetime import date
+from typing import cast
 
 import flask
 import requests
 from flask import request, session
 
 from .helpers import (
+    Newsletter,
     _item_id,
     _storage,
     clean_text,
@@ -50,15 +52,18 @@ def register(app, HACKATIME_CLIENT_ID):
             return json_error('Dispatch body is required.')
 
         state = get_dashboard_state()
-        newsletter = {
-            'id': _item_id('dispatch'),
-            'title': title,
-            'excerpt': excerpt,
-            'body': body,
-            'date': date.today().isoformat(),
-            'readTime': read_time,
-            'read': False,
-        }
+        newsletter = cast(
+            Newsletter,
+            {
+                'id': _item_id('dispatch'),
+                'title': title,
+                'excerpt': excerpt,
+                'body': body,
+                'date': date.today().isoformat(),
+                'readTime': read_time,
+                'read': False,
+            },
+        )
         state['newsletters'].insert(0, newsletter)
         save_dashboard_state(state)
         return flask.jsonify({'newsletter': newsletter, 'state': state})
@@ -153,7 +158,7 @@ def register(app, HACKATIME_CLIENT_ID):
                 'emailNotifications': parse_bool(payload.get('emailNotifications')),
                 'darkModeDefault': parse_bool(payload.get('darkModeDefault')),
                 'newsletterSubscribed': parse_bool(payload.get('newsletterSubscribed')),
-                'language': parse_language(payload.get('language')),
+                'language': parse_language(payload.get('language') or ''),
             }
         )
         save_dashboard_state(state)

@@ -1,5 +1,6 @@
 import secrets
 import time
+from typing import Any, cast
 
 import flask
 from flask import flash, redirect, request, session, url_for
@@ -145,7 +146,8 @@ def register(app, HACKATIME_CLIENT_ID):
             email = (session.get('user') or {}).get('email') or ''
             if backend.resolve_club_key(email) != target_key:
                 is_switch = True
-                current_name = ((viewer_club_lite() or {}).get('settings') or {}).get('clubName')
+                lite = cast(dict[str, Any], viewer_club_lite() or {})
+                current_name = (lite.get('settings') or {}).get('clubName')
 
         return flask.render_template(
             'welcome.html',
@@ -241,7 +243,7 @@ def register(app, HACKATIME_CLIENT_ID):
         if session.get('user'):
             club = viewer_club_lite()
             if club:
-                settings = club.get('settings') or {}
+                settings: dict[str, Any] = cast(dict[str, Any], club.get('settings')) or {}
                 if settings.get('joinCode') == code:
                     own_link = True
                     club_name = settings.get('clubName')

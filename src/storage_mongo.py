@@ -103,10 +103,10 @@ INDEXES: Final[dict[str, list[tuple[list[tuple[str, int]], bool]]]] = {
 # Item keys that are stored as-is but must never leak Mongo's own bookkeeping.
 _INTERNAL_KEYS: Final[set[str]] = {'_id', 'clubKey'}
 
-_client: MongoClient | None = None
+_client: MongoClient[Any] | None = None
 
 
-def _get_client(uri: str) -> MongoClient:
+def _get_client(uri: str) -> MongoClient[Any]:
     """One pooled client per process — reconnecting per request would cost
     more than every query it serves."""
     global _client
@@ -372,7 +372,7 @@ class MongoStorage:
 
     def _sync_children(self, collection: str, club_key: str, items: list[dict[str, Any]]) -> None:
         keep: set[str] = set()
-        operations: list[ReplaceOne] = []
+        operations: list[ReplaceOne[Any]] = []
         for item in items:
             app_id = str(item.get('id') or '')
             doc_id = self._doc_id(club_key, app_id)

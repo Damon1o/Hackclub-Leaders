@@ -78,7 +78,7 @@ def register(app):
         club_key = (club_key or '').strip().lower()
         backend = _storage()
         state, error = _load_admin_club(backend, club_key)
-        if error:
+        if error or state is None:
             return error
 
         payload = json_payload()
@@ -143,6 +143,7 @@ def register(app):
             state, club_key = _find_club_by_project(backend, project_id)
             if state is None:
                 return error
+        assert state is not None  # nosec B101
 
         project = find_by_id(state.get('projects') or [], project_id)
         if not project:
@@ -198,7 +199,7 @@ def register(app):
         club_key = (club_key or '').strip().lower()
         backend = _storage()
         state, error = _load_admin_club(backend, club_key)
-        if error:
+        if error or state is None:
             return error
 
         requests_list = state.get('itemRequests') or []

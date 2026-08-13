@@ -30,7 +30,7 @@ WEBP_QUALITY = 80
 def convert_to_webp(source_path: str, min_kb: int) -> str | None:
     """Convert source_path to a sibling .webp. Returns the .webp path if
     converted, None if skipped (too small, unsupported, or already fresh)."""
-    if not os.path.splitext(source_path)[1].lower() in ('.png', '.jpg', '.jpeg'):
+    if os.path.splitext(source_path)[1].lower() not in ('.png', '.jpg', '.jpeg'):
         return None
     if os.path.getsize(source_path) < min_kb * 1024:
         return None

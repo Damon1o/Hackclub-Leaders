@@ -1,5 +1,5 @@
-import os
 from datetime import date
+from typing import cast
 
 import flask
 from flask import current_app, request, session
@@ -7,15 +7,10 @@ from flask import current_app, request, session
 from .helpers import (
     STATE_SECTIONS,
     Event,
+    ItemRequest,
+    Member,
     Order,
-    Workshop,
     _item_id,
-    _join_missing,
-    _owned_project_or_error,
-    _slugify,
-    _sniff_image,
-    _upload_to_blob,
-    _viewer_email,
     award_coins,
     clean_text,
     coin_balance,
@@ -30,18 +25,14 @@ from .helpers import (
     require_dashboard_csrf,
     require_leader_api,
     save_dashboard_state,
-    utc_iso,
     viewer_is_leader,
-    workshop_from_payload,
 )
 from .notifications import (
-    notify_admins_of_project_submission,
     notify_leaders_of_event_rsvp,
-    notify_leaders_of_workshop_application,
-    notify_runner_of_workshop_selection,
     send_event_rsvp_confirmation,
 )
-from .storage import StorageError
+from .routes_api_projects import register_project_routes
+from .routes_api_workshops import register_workshop_routes
 
 
 def register(app, MAX_IMAGE_BYTES):
@@ -185,7 +176,7 @@ def register(app, MAX_IMAGE_BYTES):
             return json_error('Choose Leader, Member, or Mentor.')
 
         state = get_dashboard_state()
-        member = {
+        member: Member = {
             'id': _item_id('member'),
             'name': name,
             'email': email,
@@ -279,11 +270,11 @@ def register(app, MAX_IMAGE_BYTES):
             return role_error
 
         event_data, error = event_from_payload(json_payload())
-        if error:
-            return json_error(error)
+        if error or event_data is None:
+            return json_error(error or 'Invalid event.')
 
         state = get_dashboard_state()
-        event = {'id': _item_id('event'), **event_data}
+        event = cast(Event, {'id': _item_id('event'), **event_data})
         state['events'].append(event)
         state['events'].sort(key=lambda item: (item.get('date', ''), item.get('time', '')))
         save_dashboard_state(state)
@@ -308,8 +299,8 @@ def register(app, MAX_IMAGE_BYTES):
 
         old_rsvp = event.get('rsvp', False)
         event_data, error = event_from_payload(payload, event)
-        if error:
-            return json_error(error)
+        if error or event_data is None:
+            return json_error(error or 'Invalid event.')
 
         new_rsvp = event_data.get('rsvp', old_rsvp)
         rsvp_changed = old_rsvp != new_rsvp
@@ -349,160 +340,8 @@ def register(app, MAX_IMAGE_BYTES):
         save_dashboard_state(state)
         return flask.jsonify({'state': state})
 
-    # ── Workshops ──────────────────────────────────────────────────────────
+    register_workshop_routes(app)
 
-    @app.post('/api/dashboard/workshops')
-    @login_required
-    def api_workshops_add():
-        csrf_error = require_dashboard_csrf()
-        if csrf_error:
-            return csrf_error
-
-        workshop_data, error = workshop_from_payload(json_payload())
-        if workshop_data is None:
-            return json_error(error or 'Invalid workshop.')
-
-        user = session.get('user') or {}
-        state = get_dashboard_state()
-        workshop: Workshop = {
-            'id': _item_id('workshop'),
-            'title': workshop_data['title'],
-            'description': workshop_data['description'],
-            'status': 'Proposed',
-            'proposerEmail': _viewer_email(),
-            'proposerName': user.get('name', 'A member'),
-            'applicants': [],
-            'runnerEmail': '',
-            'runnerName': '',
-            'eventId': '',
-            'createdAt': utc_iso(),
-        }
-        state['workshops'].insert(0, workshop)
-        save_dashboard_state(state)
-        return flask.jsonify({'workshop': workshop, 'state': state})
-
-    @app.patch('/api/dashboard/workshops/<workshop_id>')
-    @login_required
-    def api_workshops_update(workshop_id):
-        csrf_error = require_dashboard_csrf()
-        if csrf_error:
-            return csrf_error
-
-        payload = json_payload()
-        is_apply_only = set(payload.keys()) <= {'applying'}
-        if not is_apply_only:
-            role_error = require_leader_api()
-            if role_error:
-                return role_error
-
-        state = get_dashboard_state()
-        workshop = find_by_id(state['workshops'], workshop_id)
-        if not workshop:
-            return json_error('Workshop not found.', 404)
-
-        if is_apply_only:
-            if workshop['status'] != 'Proposed':
-                return json_error('This workshop is no longer open to applicants.')
-            applying = parse_bool(payload.get('applying'))
-            viewer_email = _viewer_email()
-            already_applied = viewer_email in workshop['applicants']
-            if applying == already_applied:
-                return flask.jsonify({'workshop': workshop, 'state': state})
-            if applying:
-                workshop['applicants'].append(viewer_email)
-            else:
-                workshop['applicants'].remove(viewer_email)
-            save_dashboard_state(state)
-
-            user = session.get('user') or {}
-            try:
-                notify_leaders_of_workshop_application(
-                    workshop, viewer_email, user.get('name', 'A member'), applying
-                )
-            except Exception as e:
-                current_app.logger.warning(f'Failed to send workshop application notification: {e}')
-            return flask.jsonify({'workshop': workshop, 'state': state})
-
-        new_status = payload.get('status')
-        if new_status == 'Scheduled':
-            if workshop['status'] != 'Proposed':
-                return json_error('This workshop has already been scheduled.')
-            runner_email = clean_text(payload.get('runnerEmail')).lower()
-            if runner_email not in workshop['applicants']:
-                return json_error('Pick an applicant who actually applied to run this.')
-            event_date = clean_text(payload.get('date'))
-            event_time = clean_text(payload.get('time'))
-            location = clean_text(payload.get('location'))
-            try:
-                date.fromisoformat(event_date)
-            except ValueError:
-                return json_error('Choose a valid date.')
-            if not event_time:
-                return json_error('Event time is required.')
-            if not location:
-                return json_error('Event location is required.')
-
-            runner = next(
-                (m for m in state['members'] if (m.get('email') or '').lower() == runner_email),
-                None,
-            )
-            runner_name = runner.get('name', 'A member') if runner else 'A member'
-
-            new_event: Event = {
-                'id': _item_id('event'),
-                'title': workshop['title'],
-                'date': event_date,
-                'time': event_time,
-                'location': location,
-                'type': 'Workshop',
-                'repeat': '',
-                'rsvp': False,
-                'attendees': 0,
-            }
-            state['events'].append(new_event)
-            state['events'].sort(key=lambda item: (item.get('date', ''), item.get('time', '')))
-
-            workshop['status'] = 'Scheduled'
-            workshop['runnerEmail'] = runner_email
-            workshop['runnerName'] = runner_name
-            workshop['eventId'] = new_event['id']
-            save_dashboard_state(state)
-
-            try:
-                notify_runner_of_workshop_selection(workshop, runner_email, runner_name)
-            except Exception as e:
-                current_app.logger.warning(f'Failed to send workshop selection notification: {e}')
-
-            return flask.jsonify({'workshop': workshop, 'state': state})
-
-        if new_status == 'Run':
-            if workshop['status'] != 'Scheduled':
-                return json_error('Only a scheduled workshop can be marked as run.')
-            workshop['status'] = 'Run'
-            save_dashboard_state(state)
-            return flask.jsonify({'workshop': workshop, 'state': state})
-
-        return json_error('Unsupported update.')
-
-    @app.delete('/api/dashboard/workshops/<workshop_id>')
-    @login_required
-    def api_workshops_delete(workshop_id):
-        csrf_error = require_dashboard_csrf()
-        if csrf_error:
-            return csrf_error
-        role_error = require_leader_api()
-        if role_error:
-            return role_error
-
-        state = get_dashboard_state()
-        workshop = find_by_id(state['workshops'], workshop_id)
-        if not workshop:
-            return json_error('Workshop not found.', 404)
-        if workshop['status'] != 'Proposed':
-            return json_error('Only a proposed (not yet scheduled) workshop can be deleted.')
-        state['workshops'] = [w for w in state['workshops'] if w.get('id') != workshop_id]
-        save_dashboard_state(state)
-        return flask.jsonify({'state': state})
 
     # ── Cart ────────────────────────────────────────────────────────────────
 
@@ -638,13 +477,16 @@ def register(app, MAX_IMAGE_BYTES):
             return json_error('What item would you like added?')
 
         state = get_dashboard_state()
-        item_request = {
-            'id': _item_id('itemreq'),
-            'name': name,
-            'note': note,
-            'date': date.today().isoformat(),
-            'status': 'Submitted',
-        }
+        item_request = cast(
+            ItemRequest,
+            {
+                'id': _item_id('itemreq'),
+                'name': name,
+                'note': note,
+                'date': date.today().isoformat(),
+                'status': 'Submitted',
+            },
+        )
         state.setdefault('itemRequests', []).insert(0, item_request)
         save_dashboard_state(state)
         return flask.jsonify({'itemRequest': item_request, 'state': state})
@@ -668,180 +510,5 @@ def register(app, MAX_IMAGE_BYTES):
         save_dashboard_state(state)
         return flask.jsonify({'state': state})
 
-    # ── Projects ────────────────────────────────────────────────────────────
+    register_project_routes(app, MAX_IMAGE_BYTES)
 
-    def _handle_image_upload(folder, default_stem):
-        csrf_error = require_dashboard_csrf()
-        if csrf_error:
-            return csrf_error
-
-        file = request.files.get('image')
-        if file is None or not file.filename:
-            return json_error('Choose an image to upload.')
-        data = file.read(MAX_IMAGE_BYTES + 1)
-        if not data:
-            return json_error('That image is empty.')
-        if len(data) > MAX_IMAGE_BYTES:
-            return json_error('Image must be 4 MB or smaller.')
-
-        content_type, ext = _sniff_image(data)
-        if not content_type:
-            return json_error('Only PNG, JPEG, WebP, or GIF images are allowed.')
-
-        stem = _slugify(os.path.splitext(file.filename)[0]) or default_stem
-        try:
-            url = _upload_to_blob(f'{folder}/{stem}.{ext}', data, content_type)
-        except StorageError as exc:
-            return json_error(str(exc), 502)
-        if not url:
-            return json_error('Upload succeeded but no URL was returned.', 502)
-        return flask.jsonify({'url': url})
-
-    @app.post('/api/dashboard/projects/upload-image')
-    @login_required
-    def api_project_upload_image():
-        return _handle_image_upload('projects', 'image')
-
-    @app.post('/api/dashboard/upload-image')
-    @login_required
-    def api_upload_avatar():
-        return _handle_image_upload('avatars', 'avatar')
-
-    @app.post('/api/dashboard/projects')
-    @login_required
-    def api_project_add():
-        csrf_error = require_dashboard_csrf()
-        if csrf_error:
-            return csrf_error
-
-        payload = json_payload()
-        name = clean_text(payload.get('name'), max_len=120)
-        description = clean_text(payload.get('description'), max_len=500)
-        url = clean_text(payload.get('url'))
-        repo_url = clean_text(payload.get('repoUrl'))
-        demo_url = clean_text(payload.get('demoUrl'))
-        thumbnail = clean_text(payload.get('thumbnail'))
-        hackatime_project = clean_text(payload.get('hackatimeProject'), max_len=120)
-        if not name:
-            return json_error('Project name is required.')
-        if url and not url.startswith(('http://', 'https://')):
-            return json_error('Project URL must start with http:// or https://.')
-        if repo_url and not repo_url.startswith(('http://', 'https://')):
-            return json_error('Repository URL must start with http:// or https://.')
-        if demo_url and not demo_url.startswith(('http://', 'https://')):
-            return json_error('Demo URL must start with http:// or https://.')
-        if thumbnail and not thumbnail.startswith(('http://', 'https://')):
-            return json_error('Thumbnail URL must start with http:// or https://.')
-
-        if demo_url:
-            url = demo_url
-
-        user = session.get('user') or {}
-        state = get_dashboard_state()
-        project = {
-            'id': _item_id('project'),
-            'name': name,
-            'description': description,
-            'url': url,
-            'repoUrl': repo_url,
-            'demoUrl': demo_url,
-            'thumbnail': thumbnail,
-            'hackatimeProject': hackatime_project,
-            'status': 'Draft',
-            'ownerEmail': _viewer_email(),
-            'ownerName': user.get('name') or _viewer_email(),
-            'date': date.today().isoformat(),
-        }
-        state.setdefault('projects', []).insert(0, project)
-        save_dashboard_state(state)
-        return flask.jsonify({'project': project, 'state': state})
-
-    @app.patch('/api/dashboard/projects/<project_id>')
-    @login_required
-    def api_project_update(project_id):
-        csrf_error = require_dashboard_csrf()
-        if csrf_error:
-            return csrf_error
-
-        state = get_dashboard_state()
-        project, error = _owned_project_or_error(state, project_id)
-        if error:
-            return error
-
-        payload = json_payload()
-        if 'name' in payload:
-            name = clean_text(payload.get('name'), project.get('name', ''), max_len=120)
-            if not name:
-                return json_error('Project name is required.')
-            project['name'] = name
-        if 'description' in payload:
-            project['description'] = clean_text(
-                payload.get('description'), project.get('description', ''), max_len=500
-            )
-        if 'url' in payload:
-            url = clean_text(payload.get('url'), project.get('url', ''))
-            if url and not url.startswith(('http://', 'https://')):
-                return json_error('Project URL must start with http:// or https://.')
-            project['url'] = url
-        if 'repoUrl' in payload:
-            repo_url = clean_text(payload.get('repoUrl'), project.get('repoUrl', ''))
-            if repo_url and not repo_url.startswith(('http://', 'https://')):
-                return json_error('Repository URL must start with http:// or https://.')
-            project['repoUrl'] = repo_url
-        if 'demoUrl' in payload:
-            demo_url = clean_text(payload.get('demoUrl'), project.get('demoUrl', ''))
-            if demo_url and not demo_url.startswith(('http://', 'https://')):
-                return json_error('Demo URL must start with http:// or https://.')
-            project['demoUrl'] = demo_url
-            if demo_url:
-                project['url'] = demo_url
-        if 'thumbnail' in payload:
-            thumbnail = clean_text(payload.get('thumbnail'), project.get('thumbnail', ''))
-            if thumbnail and not thumbnail.startswith(('http://', 'https://')):
-                return json_error('Thumbnail URL must start with http:// or https://.')
-            project['thumbnail'] = thumbnail
-        if 'hackatimeProject' in payload:
-            project['hackatimeProject'] = clean_text(
-                payload.get('hackatimeProject'), project.get('hackatimeProject', ''), max_len=120
-            )
-        if 'status' in payload:
-            status = clean_text(payload.get('status'), project.get('status', 'Draft')).title()
-            if status not in {'Draft', 'Submitted'}:
-                return json_error('Status must be Draft or Submitted.')
-            was_draft = project.get('status') == 'Draft'
-            if status == 'Submitted':
-                missing = []
-                if not (project.get('repoUrl') or '').strip():
-                    missing.append('a repository URL')
-                if not (project.get('demoUrl') or '').strip():
-                    missing.append('a demo URL')
-                if not (project.get('hackatimeProject') or '').strip():
-                    missing.append('a Hackatime project')
-                if missing:
-                    return json_error('Add ' + _join_missing(missing) + ' before submitting.', 400)
-            project['status'] = status
-
-            # Notify admins when project is submitted
-            if status == 'Submitted' and was_draft:
-                try:
-                    notify_admins_of_project_submission(project)
-                except Exception as e:
-                    current_app.logger.error(f'Failed to send project submission notification: {e}')
-
-        save_dashboard_state(state)
-        return flask.jsonify({'project': project, 'state': state})
-
-    @app.delete('/api/dashboard/projects/<project_id>')
-    @login_required
-    def api_project_delete(project_id):
-        csrf_error = require_dashboard_csrf()
-        if csrf_error:
-            return csrf_error
-
-        state = get_dashboard_state()
-        _project, error = _owned_project_or_error(state, project_id)
-        if error:
-            return error
-        state['projects'] = [p for p in state.get('projects') or [] if p.get('id') != project_id]
-        save_dashboard_state(state)
-        return flask.jsonify({'state': state})

@@ -190,7 +190,7 @@ def register(
     # ── Hackatime OAuth ─────────────────────────────────────────────────────
 
     HACKATIME_AUTHORIZE_URL = 'https://hackatime.hackclub.com/oauth/authorize'  # noqa: N806
-    HACKATIME_TOKEN_URL = 'https://hackatime.hackclub.com/oauth/token'  # noqa: N806
+    HACKATIME_TOKEN_URL = 'https://hackatime.hackclub.com/oauth/token'  # nosec B105  # noqa: N806
     HACKATIME_ME_URL = 'https://hackatime.hackclub.com/api/v1/authenticated/me'  # noqa: N806
 
     def _hackatime_redirect_uri():

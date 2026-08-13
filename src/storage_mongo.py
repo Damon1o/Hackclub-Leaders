@@ -432,7 +432,10 @@ class MongoStorage:
         defaults = {'preferredName': '', 'sessionVersion': 0}
         if not email:
             return defaults
-        docs = self._find(USERS_COLLECTION, {'_id': email}, limit=1)
+        try:
+            docs = self._find(USERS_COLLECTION, {'_id': email}, limit=1)
+        except PyMongoError:
+            return defaults
         if not docs:
             return defaults
         doc = docs[0]

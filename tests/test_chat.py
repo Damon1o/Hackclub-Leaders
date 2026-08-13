@@ -657,6 +657,34 @@ def test_upload_attachment_http_error(monkeypatch):
     assert s.upload_attachment('msg-1', 'f.png', b'x', 'image/png') is None
 
 
+def test_upload_attachment_list_storage_error(monkeypatch):
+    from src.storage import StorageError
+    s = _airtable()
+
+    def raise_storage_error(*a):
+        raise StorageError('Airtable GET Messages failed (503): down')
+
+    monkeypatch.setattr(s, '_list', raise_storage_error)
+    assert s.upload_attachment('msg-1', 'f.png', b'x', 'image/png') is None
+
+
+def test_upload_attachment_malformed_json_body(monkeypatch):
+    s = _airtable()
+    monkeypatch.setattr(
+        s, '_list', lambda *a: [{'id': 'recABC', 'fields': {'App Id': 'msg-1'}}]
+    )
+
+    class FakeResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            raise ValueError('No JSON object could be decoded')
+
+    monkeypatch.setattr('src.storage_airtable.requests.post', lambda url, **k: FakeResponse())
+    assert s.upload_attachment('msg-1', 'f.png', b'x', 'image/png') is None
+
+
 def test_storage_upload_capability_flags():
     from src.storage import SessionStorage
     assert _airtable().supports_uploads is True

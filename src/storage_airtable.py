@@ -207,7 +207,10 @@ class AirtableStorage:
         Returns {'url','filename','type','size'} or None on any failure — the
         caller posts the message regardless and reports the upload separately.
         """
-        records = self._list(self.tables['messages'], 'App Id', message_id)
+        try:
+            records = self._list(self.tables['messages'], 'App Id', message_id)
+        except StorageError:
+            return None
         if not records:
             return None
         record_id = records[0]['id']
@@ -226,7 +229,11 @@ class AirtableStorage:
             return None
         if response.status_code >= 400:
             return None
-        attachments = (response.json().get('fields') or {}).get('Attachments') or []
+        try:
+            body = response.json()
+        except ValueError:
+            return None
+        attachments = (body.get('fields') or {}).get('Attachments') or []
         if not attachments:
             return None
         uploaded = attachments[-1]

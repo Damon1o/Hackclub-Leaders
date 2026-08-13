@@ -818,10 +818,14 @@ class AirtableStorage:
 
     # ── Cross-club user records ─────────────────────────────────────────────
 
-    def get_user_record(self, email: str) -> dict[str, Any]:
+    def get_user_record(self, email: str, *, strict: bool = False) -> dict[str, Any]:
         """Cross-club record for `email` — preferred display name and the
         session-invalidation counter. Defaults if the Users table is missing
-        from this base, or the user has no row in it yet."""
+        from this base, or the user has no row in it yet.
+
+        `strict=True` re-raises StorageError instead of degrading to
+        defaults — for callers (the session-staleness gate) that need to
+        tell "the version really is 0" apart from "couldn't check"."""
         email = (email or '').strip().lower()
         defaults = {'preferredName': '', 'sessionVersion': 0}
         if not email:
@@ -829,6 +833,8 @@ class AirtableStorage:
         try:
             rows = self._list(self.users_table, 'Email', email)
         except StorageError:
+            if strict:
+                raise
             return defaults
         if not rows:
             return defaults

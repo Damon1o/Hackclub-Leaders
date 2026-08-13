@@ -60,6 +60,7 @@
         <label class="form-group">
             <span class="form-label" data-i18n="settings.country">Country</span>
             <select class="form-input" name="country">
+                <option value="" {% if not settings.country %}selected{% endif %}>Select a country…</option>
                 {% for code, label in [('US', 'United States'), ('CA', 'Canada'), ('GB', 'United Kingdom'), ('AU', 'Australia'), ('other', 'Other')] %}
                 <option value="{{ code }}" {% if settings.country == code %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}

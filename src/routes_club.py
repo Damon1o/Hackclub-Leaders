@@ -20,7 +20,7 @@ from .helpers import (
     save_dashboard_state,
     unique_join_code,
 )
-from .storage import SessionStorage
+from .storage import SessionStorage, StorageError
 
 
 def register(app, HACKATIME_CLIENT_ID):
@@ -240,7 +240,10 @@ def register(app, HACKATIME_CLIENT_ID):
             session['user'] = user
         else:
             email = (session.get('user') or {}).get('email') or ''
-            backend.save_user_record(email, {'preferredName': preferred_name})
+            try:
+                backend.save_user_record(email, {'preferredName': preferred_name})
+            except StorageError as exc:
+                return json_error(str(exc))
 
         return flask.jsonify({'preferredName': preferred_name})
 
@@ -338,7 +341,10 @@ def register(app, HACKATIME_CLIENT_ID):
             )
 
         email = (session.get('user') or {}).get('email') or ''
-        current_version = backend.get_user_record(email).get('sessionVersion', 0)
-        backend.save_user_record(email, {'sessionVersion': current_version + 1})
+        try:
+            current_version = backend.get_user_record(email).get('sessionVersion', 0)
+            backend.save_user_record(email, {'sessionVersion': current_version + 1})
+        except StorageError as exc:
+            return json_error(str(exc))
         session.clear()
         return flask.jsonify({'signedOut': True})

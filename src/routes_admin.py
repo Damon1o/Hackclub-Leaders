@@ -85,15 +85,6 @@ def register(app):
         club_name = clean_text(payload.get('clubName'))
         website = clean_text(payload.get('website'))
         avatar = clean_text(payload.get('avatar'))
-        venue = clean_text(payload.get('venue'), max_len=120)
-        meeting_day = clean_text(payload.get('meetingDay'), max_len=20)
-        address_line1 = clean_text(payload.get('addressLine1'), max_len=120)
-        address_line2 = clean_text(payload.get('addressLine2'), max_len=120)
-        city = clean_text(payload.get('city'), max_len=80)
-        state_field = clean_text(payload.get('state'), max_len=80)
-        zip_code = clean_text(payload.get('zip'), max_len=20)
-        country = clean_text(payload.get('country'), max_len=80)
-        club_bio = clean_text(payload.get('clubBio'), max_len=500)
         if not club_name:
             return json_error('Club name is required.')
         if website and not website.startswith(('http://', 'https://')):
@@ -103,18 +94,35 @@ def register(app):
 
         settings = state.setdefault('settings', {})
         settings['clubName'] = club_name
-        settings['venue'] = venue
-        settings['location'] = ', '.join(filter(None, [city, state_field]))
-        settings['addressLine1'] = address_line1
-        settings['addressLine2'] = address_line2
-        settings['city'] = city
-        settings['state'] = state_field
-        settings['zip'] = zip_code
-        settings['country'] = country
-        settings['meetingDay'] = meeting_day
-        settings['clubBio'] = club_bio
         settings['website'] = website
         settings['avatar'] = avatar
+
+        # Structured-address fields aren't in the admin form yet, so only
+        # touch keys the payload actually sends — otherwise a plain
+        # clubName/website/avatar save from admin_club.html would blank out
+        # venue/address/bio the leader already entered via settings.
+        text_fields = {
+            'venue': 120,
+            'addressLine1': 120,
+            'addressLine2': 120,
+            'city': 80,
+            'state': 80,
+            'zip': 20,
+            'country': 80,
+            'meetingDay': 20,
+            'clubBio': 500,
+        }
+        for key, max_len in text_fields.items():
+            if key in payload:
+                settings[key] = clean_text(payload.get(key), max_len=max_len)
+
+        if 'city' in payload or 'state' in payload:
+            settings['location'] = ', '.join(
+                filter(None, [settings.get('city', ''), settings.get('state', '')])
+            )
+        elif 'location' in payload:
+            settings['location'] = clean_text(payload.get('location'))
+
         if 'publicDirectory' in payload:
             settings['publicDirectory'] = parse_bool(payload.get('publicDirectory'))
         _persist_club(backend, club_key, state)

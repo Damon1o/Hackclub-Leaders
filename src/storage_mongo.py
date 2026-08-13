@@ -425,16 +425,22 @@ class MongoStorage:
 
     # ── Cross-club user records ─────────────────────────────────────────────
 
-    def get_user_record(self, email: str) -> dict[str, Any]:
+    def get_user_record(self, email: str, *, strict: bool = False) -> dict[str, Any]:
         """Cross-club record for `email` — preferred display name and the
-        session-invalidation counter. Defaults if no row exists yet."""
+        session-invalidation counter. Defaults if no row exists yet.
+
+        `strict=True` re-raises StorageError instead of degrading to
+        defaults — for callers (the session-staleness gate) that need to
+        tell "the version really is 0" apart from "couldn't check"."""
         email = (email or '').strip().lower()
         defaults = {'preferredName': '', 'sessionVersion': 0}
         if not email:
             return defaults
         try:
             docs = self._find(USERS_COLLECTION, {'_id': email}, limit=1)
-        except PyMongoError:
+        except StorageError:
+            if strict:
+                raise
             return defaults
         if not docs:
             return defaults

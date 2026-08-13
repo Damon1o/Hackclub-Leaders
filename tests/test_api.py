@@ -295,7 +295,7 @@ def test_sign_out_everywhere_bumps_session_version_and_clears_session(auth_clien
         def __init__(self):
             self.saved = None
 
-        def get_user_record(self, email):
+        def get_user_record(self, email, *, strict=False):
             return {'preferredName': '', 'sessionVersion': 3}
 
         def save_user_record(self, email, fields):
@@ -333,3 +333,127 @@ def test_sign_out_everywhere_bumps_session_version_and_clears_session(auth_clien
     assert fake_backend.saved == ('leader@test.com', {'sessionVersion': 4})
     with auth_client.session_transaction() as sess:
         assert 'user' not in sess
+
+
+def test_preferred_name_update_surfaces_storage_error(auth_client, monkeypatch):
+    import src.helpers as helpers_module
+    from src.storage import StorageError
+
+    class BrokenSharedBackend:
+        def resolve_club_key(self, email):
+            return email
+
+        def load_lite(self, club_key):
+            return {'settings': {'clubName': 'Test'}, 'members': [
+                {'id': 'm1', 'email': 'leader@test.com', 'role': 'Leader'},
+            ]}
+
+        def get_user_record(self, email, *, strict=False):
+            return {'preferredName': '', 'sessionVersion': 0}
+
+        def save_user_record(self, email, fields):
+            raise StorageError(
+                'This club uses Airtable but has no Users table yet. '
+                'Ask your Airtable base owner to add a Users table first.'
+            )
+
+    # Same rationale as the sign-out-everywhere test above: patch
+    # make_storage so every _storage() call site (this route plus the
+    # before_request membership/staleness gate) shares the fake backend.
+    monkeypatch.setattr(helpers_module, 'make_storage', lambda session: BrokenSharedBackend())
+    with auth_client.session_transaction() as sess:
+        sess['csrf_token'] = 'test-csrf-token'
+        sess['user']['sessionVersion'] = 0
+
+    response = auth_client.patch(
+        '/api/dashboard/account/preferred-name',
+        json={'preferredName': 'Ada'},
+        headers={'X-CSRF-Token': 'test-csrf-token'},
+    )
+    assert response.status_code == 400
+    assert 'Users table' in response.get_json()['error']
+
+
+def test_sign_out_everywhere_surfaces_storage_error(auth_client, monkeypatch):
+    import src.helpers as helpers_module
+    from src.storage import StorageError
+
+    class BrokenSharedBackend:
+        def resolve_club_key(self, email):
+            return email
+
+        def load_lite(self, club_key):
+            return {'settings': {'clubName': 'Test'}, 'members': [
+                {'id': 'm1', 'email': 'leader@test.com', 'role': 'Leader'},
+            ]}
+
+        def get_user_record(self, email, *, strict=False):
+            return {'preferredName': '', 'sessionVersion': 0}
+
+        def save_user_record(self, email, fields):
+            raise StorageError('This club uses Airtable but has no Users table yet.')
+
+    monkeypatch.setattr(helpers_module, 'make_storage', lambda session: BrokenSharedBackend())
+    with auth_client.session_transaction() as sess:
+        sess['csrf_token'] = 'test-csrf-token'
+        sess['user']['sessionVersion'] = 0
+
+    response = auth_client.post(
+        '/api/dashboard/account/sign-out-everywhere',
+        headers={'X-CSRF-Token': 'test-csrf-token'},
+    )
+    assert response.status_code == 400
+    assert 'error' in response.get_json()
+    # The session must survive an availability failure — clearing it on a
+    # storage error would sign the user out without ever bumping the
+    # version, which is not what "sign out everywhere" failing should do.
+    with auth_client.session_transaction() as sess:
+        assert 'user' in sess
+
+
+def test_admin_club_update_partial_payload_preserves_address_fields(admin_client, monkeypatch):
+    # The admin form (admin_club.html) only submits clubName/website/avatar —
+    # it has no address/venue/bio inputs. A partial payload like that must
+    # not blank out the structured address fields a leader already saved
+    # via the settings page (Critical finding #1).
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with admin_client.session_transaction() as sess:
+        sess['csrf_token'] = 'test-csrf-token'
+        sess['dashboard_state'] = {
+            'settings': {
+                'clubName': 'Test Club',
+                'website': 'https://old.example.com',
+                'avatar': '',
+                'venue': 'Lincoln High School',
+                'meetingDay': 'Wednesday',
+                'addressLine1': '100 Main St',
+                'addressLine2': '',
+                'city': 'Burlington',
+                'state': 'VT',
+                'zip': '05401',
+                'country': 'US',
+                'clubBio': 'We build cool stuff.',
+                'location': 'Burlington, VT',
+            },
+            'members': [],
+        }
+    response = admin_client.patch(
+        '/api/admin/clubs/test-club',
+        json={'clubName': 'Renamed Club', 'website': 'https://new.example.com', 'avatar': ''},
+        headers={'X-CSRF-Token': 'test-csrf-token'},
+    )
+    assert response.status_code == 200
+    settings = response.get_json()['club']['settings']
+    assert settings['clubName'] == 'Renamed Club'
+    assert settings['website'] == 'https://new.example.com'
+    # None of the address/venue/bio fields were in the payload, so they
+    # must survive untouched rather than being blanked.
+    assert settings['venue'] == 'Lincoln High School'
+    assert settings['meetingDay'] == 'Wednesday'
+    assert settings['addressLine1'] == '100 Main St'
+    assert settings['city'] == 'Burlington'
+    assert settings['state'] == 'VT'
+    assert settings['zip'] == '05401'
+    assert settings['country'] == 'US'
+    assert settings['clubBio'] == 'We build cool stuff.'
+    assert settings['location'] == 'Burlington, VT'

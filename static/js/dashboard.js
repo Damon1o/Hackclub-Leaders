@@ -2722,6 +2722,20 @@ const CHECKLIST_ITEMS = [
             }
         });
 
+        $('#signOutEverywhereBtn')?.addEventListener('click', async () => {
+            const ok = window.confirm(
+                'Sign out of every device, including this one? '
+                + "You'll need to sign in again."
+            );
+            if (!ok) return;
+            try {
+                await apiRequest('/api/dashboard/account/sign-out-everywhere', { method: 'POST' });
+                window.location.href = '/sign-in';
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+
         $('#checkoutButton')?.addEventListener('click', async () => {
             try {
                 await apiRequest('/api/dashboard/checkout', { method: 'POST' });

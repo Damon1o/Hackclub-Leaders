@@ -320,3 +320,25 @@ def register(app, HACKATIME_CLIENT_ID):
         ]
         projects.sort(key=lambda p: p['hours'], reverse=True)
         return flask.jsonify({'projects': projects[:30]})
+
+    # ── Account danger zone ──────────────────────────────────────────────────
+
+    @app.post('/api/dashboard/account/sign-out-everywhere')
+    @login_required
+    def api_account_sign_out_everywhere():
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+
+        backend = _storage()
+        if isinstance(backend, SessionStorage):
+            return json_error(
+                'This site is running in local demo mode, so signing out other '
+                'devices is not available here.'
+            )
+
+        email = (session.get('user') or {}).get('email') or ''
+        current_version = backend.get_user_record(email).get('sessionVersion', 0)
+        backend.save_user_record(email, {'sessionVersion': current_version + 1})
+        session.clear()
+        return flask.jsonify({'signedOut': True})

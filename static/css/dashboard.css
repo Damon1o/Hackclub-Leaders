@@ -4066,3 +4066,32 @@ body.dark-mode .dashboard-wrapper {
         transition: none;
     }
 }
+
+.danger-heading {
+    color: #a8122a;
+}
+
+.danger-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.btn-danger {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1.5px solid #a8122a;
+    background: transparent;
+    color: #a8122a;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-danger:hover {
+    background: #a8122a;
+    color: #fff;
+}

@@ -273,3 +273,63 @@ def test_your_account_section_renders_stub_rows(auth_client, monkeypatch):
     for label in ('Full name', 'Slack', 'Verification', 'Phone', 'Birthday', 'Mailing address'):
         assert label in body
     assert 'Not available yet' in body
+
+
+def test_sign_out_everywhere_requires_shared_backend(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['csrf_token'] = 'test-csrf-token'
+        sess['dashboard_state'] = {'settings': {'clubName': 'Test Club'}, 'members': []}
+    response = auth_client.post(
+        '/api/dashboard/account/sign-out-everywhere',
+        headers={'X-CSRF-Token': 'test-csrf-token'},
+    )
+    assert response.status_code == 400
+    assert 'demo mode' in response.get_json()['error'].lower()
+
+
+def test_sign_out_everywhere_bumps_session_version_and_clears_session(auth_client, monkeypatch):
+    import src.helpers as helpers_module
+
+    class FakeSharedBackend:
+        def __init__(self):
+            self.saved = None
+
+        def get_user_record(self, email):
+            return {'preferredName': '', 'sessionVersion': 3}
+
+        def save_user_record(self, email, fields):
+            self.saved = (email, fields)
+
+        def resolve_club_key(self, email):
+            return 'club-1'
+
+        def load_lite(self, club_key):
+            return {'settings': {'clubName': 'Test Club'}, 'members': [
+                {'id': 'm1', 'name': 'Test Leader', 'email': 'leader@test.com', 'role': 'Leader'},
+            ]}
+
+    fake_backend = FakeSharedBackend()
+    # helpers._storage() always resolves the backend via helpers.make_storage
+    # (cached per-request on flask.g), and every module — routes_club's
+    # endpoint under test, plus routes_web's before_request club-membership/
+    # staleness gate from Task 8, plus viewer_club_lite/_club_key — calls the
+    # *same* underlying _storage function object, which closes over helpers'
+    # own module-global `make_storage`. Patching make_storage here (rather
+    # than each module's separately-imported `_storage` name) is what makes
+    # every one of those call sites see the same fake backend within the
+    # request, instead of the real Airtable backend .env configures.
+    monkeypatch.setattr(helpers_module, 'make_storage', lambda session: fake_backend)
+    with auth_client.session_transaction() as sess:
+        sess['csrf_token'] = 'test-csrf-token'
+        sess['user']['sessionVersion'] = 3
+
+    response = auth_client.post(
+        '/api/dashboard/account/sign-out-everywhere',
+        headers={'X-CSRF-Token': 'test-csrf-token'},
+    )
+    assert response.status_code == 200
+    assert response.get_json()['signedOut'] is True
+    assert fake_backend.saved == ('leader@test.com', {'sessionVersion': 4})
+    with auth_client.session_transaction() as sess:
+        assert 'user' not in sess

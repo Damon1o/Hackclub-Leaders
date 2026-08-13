@@ -3,18 +3,18 @@
     'use strict';
 
     const LANGUAGES = [
-        { code: 'en', label: 'English',    dir: 'ltr' },
-        { code: 'es', label: 'Español',    dir: 'ltr' },
-        { code: 'fr', label: 'Français',   dir: 'ltr' },
-        { code: 'de', label: 'Deutsch',    dir: 'ltr' },
-        { code: 'pt', label: 'Português',  dir: 'ltr' },
-        { code: 'it', label: 'Italiano',   dir: 'ltr' },
-        { code: 'ru', label: 'Русский',    dir: 'ltr' },
-        { code: 'hi', label: 'हिन्दी',      dir: 'ltr' },
-        { code: 'zh', label: '中文',        dir: 'ltr' },
-        { code: 'ja', label: '日本語',      dir: 'ltr' },
-        { code: 'ko', label: '한국어',      dir: 'ltr' },
-        { code: 'ar', label: 'العربية',    dir: 'rtl' },
+        { code: 'en', label: "English", dir: "ltr" },
+        { code: 'es', label: "Español", dir: "ltr" },
+        { code: 'fr', label: "Français", dir: "ltr" },
+        { code: 'de', label: "Deutsch", dir: "ltr" },
+        { code: 'pt', label: "Português", dir: "ltr" },
+        { code: 'it', label: "Italiano", dir: "ltr" },
+        { code: 'ru', label: "Русский", dir: "ltr" },
+        { code: 'hi', label: "हिन्दी", dir: "ltr" },
+        { code: 'zh', label: "中文", dir: "ltr" },
+        { code: 'ja', label: "日本語", dir: "ltr" },
+        { code: 'ko', label: "한국어", dir: "ltr" },
+        { code: 'ar', label: "العربية", dir: "rtl" },
     ];
 
     global.I18N = global.I18N || { LANGUAGES: [], TRANSLATIONS: {} };

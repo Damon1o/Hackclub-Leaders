@@ -229,3 +229,47 @@ def test_appearance_privacy_notifications_sections_render_toggles(auth_client, m
     assert 'name="publicDirectory"' in body
     assert 'name="emailNotifications"' in body
     assert 'name="newsletterSubscribed"' in body
+
+
+def test_preferred_name_round_trips_on_session_backend(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['csrf_token'] = 'test-csrf-token'
+        sess['dashboard_state'] = {'settings': {'clubName': 'Test Club'}, 'members': []}
+    response = auth_client.patch(
+        '/api/dashboard/account/preferred-name',
+        json={'preferredName': 'Ada'},
+        headers={'X-CSRF-Token': 'test-csrf-token'},
+    )
+    assert response.status_code == 200
+    assert response.get_json()['preferredName'] == 'Ada'
+    with auth_client.session_transaction() as sess:
+        assert sess['user']['preferredName'] == 'Ada'
+
+
+def test_preferred_name_rejects_blank(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['csrf_token'] = 'test-csrf-token'
+        sess['dashboard_state'] = {'settings': {'clubName': 'Test Club'}, 'members': []}
+    response = auth_client.patch(
+        '/api/dashboard/account/preferred-name',
+        json={'preferredName': '  '},
+        headers={'X-CSRF-Token': 'test-csrf-token'},
+    )
+    assert response.status_code == 400
+
+
+def test_your_account_section_renders_stub_rows(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Test Club', 'venue': 'Test High'},
+            'members': [{'id': 'm1', 'name': 'Test Leader', 'email': 'leader@test.com', 'role': 'Leader', 'avatar': '', 'status': 'Active'}],
+        }
+    response = auth_client.get('/dashboard/settings')
+    body = response.get_data(as_text=True)
+    assert 'name="preferredName"' in body
+    for label in ('Full name', 'Slack', 'Verification', 'Phone', 'Birthday', 'Mailing address'):
+        assert label in body
+    assert 'Not available yet' in body

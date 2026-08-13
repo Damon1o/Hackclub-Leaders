@@ -20,6 +20,7 @@ from .helpers import (
     save_dashboard_state,
     unique_join_code,
 )
+from .storage import SessionStorage
 
 
 def register(app, HACKATIME_CLIENT_ID):
@@ -220,6 +221,28 @@ def register(app, HACKATIME_CLIENT_ID):
                 return flask.jsonify({'user': user, 'state': state})
 
         return flask.jsonify({'user': user})
+
+    @app.patch('/api/dashboard/account/preferred-name')
+    @login_required
+    def api_account_preferred_name_update():
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+
+        preferred_name = clean_text(json_payload().get('preferredName'), max_len=80)
+        if not preferred_name:
+            return json_error('Preferred name is required.')
+
+        backend = _storage()
+        if isinstance(backend, SessionStorage):
+            user = dict(session.get('user') or {})
+            user['preferredName'] = preferred_name
+            session['user'] = user
+        else:
+            email = (session.get('user') or {}).get('email') or ''
+            backend.save_user_record(email, {'preferredName': preferred_name})
+
+        return flask.jsonify({'preferredName': preferred_name})
 
     # ── Hackatime API ─────────────────────────────────────────────────────
 

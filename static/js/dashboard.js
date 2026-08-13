@@ -2860,6 +2860,24 @@ const CHECKLIST_ITEMS = [
             }
         });
 
+        $('#preferredNameForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const stateLabel = $('#preferredNameSaveState');
+            setFormError('preferredNameFormError', '');
+            if (stateLabel) stateLabel.textContent = 'Saving...';
+            try {
+                await apiRequest('/api/dashboard/account/preferred-name', {
+                    method: 'PATCH',
+                    body: formObject(event.currentTarget),
+                });
+                if (stateLabel) stateLabel.textContent = 'Saved';
+                showToast('Preferred name saved.');
+            } catch (error) {
+                setFormError('preferredNameFormError', error.message);
+                if (stateLabel) stateLabel.textContent = '';
+            }
+        });
+
         $('#adminClubForm')?.addEventListener('submit', async (event) => {
             event.preventDefault();
             const form = event.currentTarget;

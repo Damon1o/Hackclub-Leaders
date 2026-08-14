@@ -937,3 +937,136 @@ def test_mentions_persist_on_message_listing(client):
            json={'body': 'ping @Bob Lee'}, headers=h)
     listing = c.get('/api/dashboard/chat/channels/chan-1/messages').get_json()
     assert listing['messages'][-1]['mentions'] == ['bob@test.com']
+
+
+# ── Read receipts ─────────────────────────────────────────────────────────────
+
+
+def test_mark_channel_read_creates_row(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+
+    resp = c.post(f'/api/dashboard/chat/channels/{cid}/read', json={}, headers=h)
+    assert resp.status_code == 200
+    read = resp.get_json()['read']
+    assert read['channelId'] == cid
+    assert read['lastReadAt']
+
+    with c.session_transaction() as sess:
+        rows = sess['dashboard_state'].get('chatReads', [])
+    assert len(rows) == 1
+    assert rows[0]['email'] == 'leader@test.com'
+
+
+def test_mark_channel_read_upserts_not_duplicates(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+
+    c.post(f'/api/dashboard/chat/channels/{cid}/read',
+           json={'readAt': '2026-08-13T10:00:00Z'}, headers=h)
+    resp = c.post(f'/api/dashboard/chat/channels/{cid}/read',
+                  json={'readAt': '2026-08-13T12:00:00Z'}, headers=h)
+    assert resp.get_json()['read']['lastReadAt'] == '2026-08-13T12:00:00Z'
+
+    with c.session_transaction() as sess:
+        rows = sess['dashboard_state'].get('chatReads', [])
+    assert len(rows) == 1
+
+
+def test_mark_channel_read_never_rewinds(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+
+    c.post(f'/api/dashboard/chat/channels/{cid}/read',
+           json={'readAt': '2026-08-13T12:00:00Z'}, headers=h)
+    resp = c.post(f'/api/dashboard/chat/channels/{cid}/read',
+                  json={'readAt': '2026-08-13T10:00:00Z'}, headers=h)
+    assert resp.get_json()['read']['lastReadAt'] == '2026-08-13T12:00:00Z'
+
+
+def test_mark_channel_read_requires_csrf(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(f'/api/dashboard/chat/channels/{cid}/read', json={})
+    assert resp.status_code == 403
+
+
+def test_mark_channel_read_missing_channel(client):
+    c, h = _seed(client, 'leader')
+    resp = c.post('/api/dashboard/chat/channels/nope/read', json={}, headers=h)
+    assert resp.status_code == 404
+
+
+def test_channel_list_unread_flag(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+
+    channels = c.get('/api/dashboard/chat/channels').get_json()['channels']
+    assert channels[0]['unread'] is False
+
+    c.post(f'/api/dashboard/chat/channels/{cid}/messages',
+           json={'body': 'hi'}, headers=h)
+    channels = c.get('/api/dashboard/chat/channels').get_json()['channels']
+    assert channels[0]['unread'] is True
+
+    c.post(f'/api/dashboard/chat/channels/{cid}/read', json={}, headers=h)
+    channels = c.get('/api/dashboard/chat/channels').get_json()['channels']
+    assert channels[0]['unread'] is False
+
+
+def test_get_reads_returns_all_member_cursors(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    c.post(f'/api/dashboard/chat/channels/{cid}/read',
+           json={'readAt': '2026-08-13T10:00:00Z'}, headers=h)
+
+    resp = c.get(f'/api/dashboard/chat/channels/{cid}/reads')
+    assert resp.status_code == 200
+    assert resp.get_json()['reads'] == {'leader@test.com': '2026-08-13T10:00:00Z'}
+
+
+def test_get_reads_scoped_to_channel(client):
+    c, h = _seed(client, 'leader')
+    cid1 = _make_channel(c, h, 'general').get_json()['channel']['id']
+    cid2 = _make_channel(c, h, 'random').get_json()['channel']['id']
+    c.post(f'/api/dashboard/chat/channels/{cid1}/read', json={}, headers=h)
+
+    reads2 = c.get(f'/api/dashboard/chat/channels/{cid2}/reads').get_json()['reads']
+    assert reads2 == {}
+
+
+def test_delete_channel_drops_chat_reads(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    c.post(f'/api/dashboard/chat/channels/{cid}/read', json={}, headers=h)
+
+    resp = c.delete(f'/api/dashboard/chat/channels/{cid}', headers=h)
+    assert resp.status_code == 200
+    with c.session_transaction() as sess:
+        rows = sess['dashboard_state'].get('chatReads', [])
+    assert rows == []
+
+
+def _switch_user(client, name, email):
+    with client.session_transaction() as sess:
+        sess['user'] = {'id': 'u-' + email, 'name': name, 'email': email,
+                        'avatar': '', 'provider': 'hackclub'}
+
+
+def test_second_member_unread_clears_after_read(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    c.post(f'/api/dashboard/chat/channels/{cid}/messages',
+           json={'body': 'hi'}, headers=h)
+
+    _add_member(c, 'Bob Lee', 'bob@test.com')
+    _switch_user(c, 'Bob Lee', 'bob@test.com')
+    channels = c.get('/api/dashboard/chat/channels').get_json()['channels']
+    assert channels[0]['unread'] is True
+
+    c.post(f'/api/dashboard/chat/channels/{cid}/read', json={}, headers=h)
+    channels = c.get('/api/dashboard/chat/channels').get_json()['channels']
+    assert channels[0]['unread'] is False
+
+    reads = c.get(f'/api/dashboard/chat/channels/{cid}/reads').get_json()['reads']
+    assert set(reads) == {'bob@test.com'}   # the leader never marked it read

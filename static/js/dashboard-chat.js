@@ -29,6 +29,7 @@ window.DashboardChat = function (ctx) {
     const CHAT_READS_KEY = 'hcl:chatReads';
     const MESSAGE_POLL_MS = 500;
     const CHANNEL_POLL_MS = 5000;
+    const READ_SYNC_MS = 2000;
     const CHAT_GROUP_MS = 5 * 60 * 1000;   // same-author messages within 5min render grouped
     const chatBaseTitle = document.title;  // restored when the tab regains focus
 
@@ -54,6 +55,21 @@ window.DashboardChat = function (ctx) {
         }
     }
 
+    // Debounce the server-side cursor write: a burst of incoming messages
+    // while already at the bottom must not fire one request per message.
+    function syncChannelRead(id, iso) {
+        S.readTimers = S.readTimers || {};
+        S.readPending = S.readPending || {};
+        S.readPending[id] = iso || new Date().toISOString();
+        if (S.readTimers[id]) return;
+        S.readTimers[id] = window.setTimeout(() => {
+            delete S.readTimers[id];
+            apiRequest(`/api/dashboard/chat/channels/${encodeURIComponent(id)}/read`,
+                { method: 'POST', body: { readAt: S.readPending[id] } })
+                .catch(() => { /* the next scroll-to-bottom retries */ });
+        }, READ_SYNC_MS);
+    }
+
     const CHAT_MUTES_KEY = 'hcl:chatMutes';
 
     function chatMutes() {
@@ -71,6 +87,9 @@ window.DashboardChat = function (ctx) {
     function channelUnread(channel) {
         if (!channel.lastMessageAt || channel.id === S.activeId) return false;
         if (isChannelMuted(channel.id)) return false;
+        // The server's cursor is authoritative; the localStorage copy only
+        // clears the dot optimistically while the POST is still in flight.
+        if (channel.unread === false) return false;
         const seen = chatReads()[channel.id];
         return !seen || channel.lastMessageAt > seen;
     }
@@ -519,6 +538,7 @@ window.DashboardChat = function (ctx) {
                 showJumpButton();
             }
             markChannelRead(id, S.lastFetch);
+            if (initial || nearBottom) syncChannelRead(id, S.lastFetch);
             const channel = S.channels.find((item) => item.id === id);
             if (channel) channel.lastMessageAt = S.lastFetch;
             renderChannelList();
@@ -555,6 +575,49 @@ window.DashboardChat = function (ctx) {
     async function channelPoll() {
         if (document.hidden || page !== 'chat') return;
         await refreshChannels();
+        await refreshSeenBy();
+    }
+
+    async function refreshSeenBy() {
+        const id = S.activeId;
+        if (!id) return;
+        try {
+            const payload = await apiRequest(
+                `/api/dashboard/chat/channels/${encodeURIComponent(id)}/reads`);
+            if (id !== S.activeId) return;
+            renderSeenBy(payload.reads || {});
+        } catch (error) {
+            /* transient — retry next tick */
+        }
+    }
+
+    function renderSeenBy(reads) {
+        const box = document.getElementById('chatMessages');
+        if (!box) return;
+        const existing = box.querySelector('.chat-seen-by');
+        if (existing) existing.remove();
+        const lastAt = S.lastFetch;
+        if (!lastAt || !box.querySelector('.chat-message')) return;
+
+        const byEmail = {};
+        clubMembers().forEach((member) => {
+            if (member && member.email) byEmail[String(member.email).toLowerCase()] = member;
+        });
+        const seen = Object.keys(reads).filter((email) => {
+            const key = String(email).toLowerCase();
+            return key !== viewerEmail && reads[email] >= lastAt;
+        });
+        if (!seen.length) return;
+
+        const row = document.createElement('div');
+        row.className = 'chat-seen-by';
+        row.innerHTML = '<span class="chat-seen-by-label">Seen by</span>'
+            + seen.map((email) => {
+                const member = byEmail[String(email).toLowerCase()] || {};
+                const name = member.name || email;
+                return `<span class="chat-seen-by-person" title="${escapeHtml(name)}">${avatarMarkup({ name, avatar: member.avatar }, 'avatar-sm')}</span>`;
+            }).join('');
+        box.appendChild(row);
     }
 
     function startChatPolling() {

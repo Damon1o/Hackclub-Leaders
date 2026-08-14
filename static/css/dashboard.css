@@ -3912,6 +3912,27 @@ body.dark-mode .dashboard-wrapper {
     font-size: 14px;
 }
 
+.chat-seen-by {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px 8px;
+    font-size: 12px;
+    color: var(--dash-muted);
+}
+
+.chat-seen-by .avatar-sm {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dash-fill);
+}
+
 .chat-message-body {
     min-width: 0;
 }

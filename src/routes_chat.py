@@ -193,6 +193,17 @@ def _messages(state):
     return state.setdefault('messages', [])
 
 
+def _chat_reads(state):
+    return state.setdefault('chatReads', [])
+
+
+def _find_chat_read(state, channel_id, email):
+    for row in _chat_reads(state):
+        if row.get('channelId') == channel_id and row.get('email') == email:
+            return row
+    return None
+
+
 def _find_message(state, channel_id, message_id):
     message = find_by_id(_messages(state), message_id)
     if message and message.get('channelId') == channel_id:
@@ -264,7 +275,14 @@ def register(app):
     @login_required
     def api_chat_channels():
         state = get_dashboard_state()
-        return flask.jsonify({'channels': _channels(state)})
+        email = _viewer_email()
+        channels = _channels(state)
+        for channel in channels:
+            last_message_at = channel.get('lastMessageAt') or ''
+            row = _find_chat_read(state, channel['id'], email)
+            last_read = (row or {}).get('lastReadAt') or ''
+            channel['unread'] = bool(last_message_at) and last_message_at > last_read
+        return flask.jsonify({'channels': channels})
 
     @app.post('/api/dashboard/chat/channels')
     @login_required
@@ -339,6 +357,9 @@ def register(app):
             return json_error('Channel not found.', 404)
         # Drop the channel's messages too, so they don't linger orphaned.
         state['messages'] = [m for m in _messages(state) if m.get('channelId') != channel_id]
+        state['chatReads'] = [
+            r for r in _chat_reads(state) if r.get('channelId') != channel_id
+        ]
         save_dashboard_state(state)
         return flask.jsonify({'state': state})
 
@@ -452,6 +473,56 @@ def register(app):
         # Deliberately omit full state: the client polls messages separately,
         # and returning state here would trigger a heavy full-page re-render.
         return flask.jsonify({'message': message})
+
+    @app.post('/api/dashboard/chat/channels/<channel_id>/read')
+    @login_required
+    def api_chat_mark_read(channel_id):
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+
+        state = get_dashboard_state()
+        if not find_by_id(_channels(state), channel_id):
+            return json_error('Channel not found.', 404)
+
+        raw_read_at = json_payload().get('readAt')
+        try:
+            datetime.fromisoformat((raw_read_at or '').replace('Z', '+00:00'))
+            read_at = raw_read_at
+        except (TypeError, ValueError):
+            read_at = utc_iso()
+
+        email = _viewer_email()
+        row = _find_chat_read(state, channel_id, email)
+        if row is None:
+            row = {
+                'id': _item_id('read'),
+                'channelId': channel_id,
+                'email': email,
+                'lastReadAt': read_at,
+            }
+            _chat_reads(state).append(row)
+        elif read_at > (row.get('lastReadAt') or ''):
+            # Monotonic: a stale client retry must never rewind the cursor.
+            row['lastReadAt'] = read_at
+
+        save_dashboard_state(state)
+        return flask.jsonify({'read': {
+            'channelId': channel_id, 'lastReadAt': row['lastReadAt'],
+        }})
+
+    @app.get('/api/dashboard/chat/channels/<channel_id>/reads')
+    @login_required
+    def api_chat_channel_reads(channel_id):
+        state = get_dashboard_state()
+        if not find_by_id(_channels(state), channel_id):
+            return json_error('Channel not found.', 404)
+        reads = {
+            row['email']: row['lastReadAt']
+            for row in _chat_reads(state)
+            if row.get('channelId') == channel_id
+        }
+        return flask.jsonify({'reads': reads})
 
     @app.delete('/api/dashboard/chat/channels/<channel_id>/messages')
     @login_required

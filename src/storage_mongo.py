@@ -87,6 +87,10 @@ INDEXES: Final[dict[str, list[tuple[list[tuple[str, int]], bool]]]] = {
         ([('clubKey', ASCENDING), ('channelId', ASCENDING), ('createdAt', ASCENDING)], False),
         ([('clubKey', ASCENDING), ('createdAt', ASCENDING)], False),
     ],
+    # One read cursor per (channel, member) — upserted, never duplicated.
+    'chatReads': [
+        ([('clubKey', ASCENDING), ('channelId', ASCENDING), ('email', ASCENDING)], True),
+    ],
     # The bell menu reads newest-first and counts unread.
     'notifications': [
         ([('clubKey', ASCENDING), ('createdAt', DESCENDING)], False),

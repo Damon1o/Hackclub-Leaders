@@ -232,6 +232,30 @@ def test_page_messages_scoped_to_one_channel(storage):
     assert len(page) == 3
 
 
+def _thread(count, parent_id='msg-0'):
+    return [
+        dict(m, id=f'reply-{i}', parentId=parent_id)
+        for i, m in enumerate(_messages(count))
+    ]
+
+
+def test_page_messages_default_excludes_replies(storage):
+    storage.save('leader@test.com', _state(messages=_messages(3) + _thread(2)))
+    page, _ = storage.page_messages('leader@test.com', 'c1', limit=10)
+    assert [m['id'] for m in page] == ['msg-0', 'msg-1', 'msg-2']
+
+
+def test_page_messages_parent_id_returns_only_that_thread(storage):
+    other = _thread(1, parent_id='msg-1')
+    other[0]['id'] = 'other-reply'
+    storage.save(
+        'leader@test.com', _state(messages=_messages(3) + _thread(2) + other))
+    page, has_more = storage.page_messages(
+        'leader@test.com', 'c1', limit=10, parent_id='msg-0')
+    assert [m['id'] for m in page] == ['reply-0', 'reply-1']
+    assert has_more is False
+
+
 # ── Section-scoped loading through the app ────────────────────────────────────
 
 

@@ -71,6 +71,22 @@
                 <button class="btn-primary" type="submit" data-i18n="chat.send">Send</button>
             </form>
         </main>
+
+        <aside class="chat-thread-panel" id="chatThreadPanel" hidden aria-label="Thread">
+            <div class="chat-thread-panel-head">
+                <h2 data-i18n="chat.thread">Thread</h2>
+                <button class="icon-button" type="button" data-close-thread
+                    aria-label="Close thread" data-i18n-attr="aria-label:chat.closeThread">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="chat-thread-messages" aria-live="polite"></div>
+            <form class="chat-thread-reply-form" autocomplete="off">
+                <input class="chat-thread-reply-input" type="text" maxlength="500"
+                    data-i18n-attr="placeholder:chat.replyPlaceholder" placeholder="Reply…" aria-label="Reply message">
+                <button class="btn-primary small" type="submit" data-i18n="chat.send">Send</button>
+            </form>
+        </aside>
     </div>
 </div>
 

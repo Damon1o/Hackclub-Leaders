@@ -1070,3 +1070,230 @@ def test_second_member_unread_clears_after_read(client):
 
     reads = c.get(f'/api/dashboard/chat/channels/{cid}/reads').get_json()['reads']
     assert set(reads) == {'bob@test.com'}   # the leader never marked it read
+
+
+# ── Threads / replies ─────────────────────────────────────────────────────────
+
+
+def test_reply_sets_parent_id_and_increments_parent_count(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    parent = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'top level'}, headers=h,
+    ).get_json()['message']
+
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'a reply', 'parentId': parent['id']}, headers=h,
+    )
+    assert resp.status_code == 200
+    reply = resp.get_json()['message']
+    assert reply['parentId'] == parent['id']
+
+    with c.session_transaction() as sess:
+        messages = sess['dashboard_state']['messages']
+    stored_parent = next(m for m in messages if m['id'] == parent['id'])
+    assert stored_parent['replyCount'] == 1
+    assert stored_parent['lastReplyAt'] == reply['createdAt']
+
+
+def test_second_reply_increments_reply_count_again(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    parent = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'top level'}, headers=h,
+    ).get_json()['message']
+
+    for _ in range(2):
+        c.post(
+            f'/api/dashboard/chat/channels/{cid}/messages',
+            json={'body': 'a reply', 'parentId': parent['id']}, headers=h,
+        )
+
+    with c.session_transaction() as sess:
+        messages = sess['dashboard_state']['messages']
+    stored_parent = next(m for m in messages if m['id'] == parent['id'])
+    assert stored_parent['replyCount'] == 2
+
+
+def test_reply_to_missing_parent_rejected(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'a reply', 'parentId': 'nope'}, headers=h,
+    )
+    assert resp.status_code == 404
+    assert resp.get_json()['error'] == 'Message not found.'
+
+
+def test_reply_to_message_in_other_channel_rejected(client):
+    c, h = _seed(client, 'leader')
+    cid1 = _make_channel(c, h, 'general').get_json()['channel']['id']
+    cid2 = _make_channel(c, h, 'random').get_json()['channel']['id']
+    parent = c.post(
+        f'/api/dashboard/chat/channels/{cid1}/messages',
+        json={'body': 'top level'}, headers=h,
+    ).get_json()['message']
+
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid2}/messages',
+        json={'body': 'a reply', 'parentId': parent['id']}, headers=h,
+    )
+    assert resp.status_code == 404
+
+
+def test_reply_to_a_reply_rejected(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    parent = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'top level'}, headers=h,
+    ).get_json()['message']
+    reply = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'a reply', 'parentId': parent['id']}, headers=h,
+    ).get_json()['message']
+
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'nested reply', 'parentId': reply['id']}, headers=h,
+    )
+    assert resp.status_code == 400
+    assert resp.get_json()['error'] == 'Replies can only be added to a top-level message.'
+
+
+def test_reply_to_deleted_parent_rejected(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    parent = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'top level'}, headers=h,
+    ).get_json()['message']
+    c.delete(
+        f'/api/dashboard/chat/channels/{cid}/messages/{parent["id"]}', headers=h,
+    )
+
+    resp = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'a reply', 'parentId': parent['id']}, headers=h,
+    )
+    assert resp.status_code == 409
+    assert resp.get_json()['error'] == 'This message was deleted.'
+
+
+def test_get_messages_excludes_replies_by_default(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    parent = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'top level'}, headers=h,
+    ).get_json()['message']
+    c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'a reply', 'parentId': parent['id']}, headers=h,
+    )
+
+    resp = c.get(f'/api/dashboard/chat/channels/{cid}/messages')
+    ids = [m['id'] for m in resp.get_json()['messages']]
+    assert ids == [parent['id']]
+
+
+def test_get_messages_with_parent_id_returns_only_that_thread(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    parent = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'top level'}, headers=h,
+    ).get_json()['message']
+    other_parent = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'another top level'}, headers=h,
+    ).get_json()['message']
+    reply1 = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'reply one', 'parentId': parent['id']}, headers=h,
+    ).get_json()['message']
+    reply2 = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'reply two', 'parentId': parent['id']}, headers=h,
+    ).get_json()['message']
+    c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'reply on other', 'parentId': other_parent['id']}, headers=h,
+    )
+
+    resp = c.get(
+        f'/api/dashboard/chat/channels/{cid}/messages?parentId={parent["id"]}')
+    ids = [m['id'] for m in resp.get_json()['messages']]
+    assert ids == [reply1['id'], reply2['id']]
+
+
+def test_get_messages_parent_id_respects_limit(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    parent = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'top level'}, headers=h,
+    ).get_json()['message']
+    for i in range(3):
+        c.post(
+            f'/api/dashboard/chat/channels/{cid}/messages',
+            json={'body': f'reply {i}', 'parentId': parent['id']}, headers=h,
+        )
+
+    resp = c.get(
+        f'/api/dashboard/chat/channels/{cid}/messages'
+        f'?parentId={parent["id"]}&limit=2')
+    payload = resp.get_json()
+    assert len(payload['messages']) == 2
+    assert payload['hasMore'] is True
+
+
+def test_full_thread_flow_reply_count_and_scoped_fetch(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    parent = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'top level'}, headers=h,
+    ).get_json()['message']
+    c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'reply one', 'parentId': parent['id']}, headers=h,
+    )
+    c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'reply two', 'parentId': parent['id']}, headers=h,
+    )
+
+    channel_view = c.get(
+        f'/api/dashboard/chat/channels/{cid}/messages').get_json()['messages']
+    assert len(channel_view) == 1
+    assert channel_view[0]['replyCount'] == 2
+
+    thread_view = c.get(
+        f'/api/dashboard/chat/channels/{cid}/messages'
+        f'?parentId={parent["id"]}').get_json()['messages']
+    assert len(thread_view) == 2
+
+
+def test_delete_channel_drops_replies_too(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    parent = c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'top level'}, headers=h,
+    ).get_json()['message']
+    c.post(
+        f'/api/dashboard/chat/channels/{cid}/messages',
+        json={'body': 'a reply', 'parentId': parent['id']}, headers=h,
+    )
+
+    resp = c.delete(f'/api/dashboard/chat/channels/{cid}', headers=h)
+    assert resp.status_code == 200
+
+    with c.session_transaction() as sess:
+        messages = sess['dashboard_state']['messages']
+    assert messages == []

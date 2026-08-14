@@ -182,6 +182,7 @@ window.DashboardChat = function (ctx) {
         }
         startChatPolling();
         bindChatVisibility();
+        bindThreadPanel();
         ensureJumpButton();
         setupMentionAutocomplete();
     }
@@ -208,6 +209,7 @@ window.DashboardChat = function (ctx) {
 
     function selectChannel(id) {
         if (id === S.activeId) return;
+        closeThreadPanel();
         S.activeId = id;
         S.lastFetch = null;
         S.lastMsgMeta = null;
@@ -239,6 +241,7 @@ window.DashboardChat = function (ctx) {
     }
 
     function closeChatThread() {
+        closeThreadPanel();
         const msgs = document.getElementById('chatMessages');
         const head = document.getElementById('chatThreadHead');
         const composer = document.getElementById('chatComposer');
@@ -294,10 +297,11 @@ window.DashboardChat = function (ctx) {
             ? '<p class="chat-message-text chat-message-deleted"><em>Message deleted</em></p>'
             : `<p class="chat-message-text">${mentionBodyHtml(message)}</p>${grouped ? edited : ''}`)
             + (message.deleted ? '' : reactionsMarkup(message));
+        const threadLink = message.deleted ? '' : threadAffordanceMarkup(message);
         if (grouped) {
             row.innerHTML = `
             <div class="chat-message-body">
-                ${bodyHtml}
+                ${bodyHtml}${threadLink}
             </div>${actions}`;
         } else {
             row.innerHTML = `
@@ -308,7 +312,7 @@ window.DashboardChat = function (ctx) {
                     <span class="chat-message-time" title="${escapeHtml(chatFullTime(message.createdAt))}">${escapeHtml(chatTime(message.createdAt))}</span>
                     ${edited}
                 </div>
-                ${bodyHtml}
+                ${bodyHtml}${threadLink}
             </div>${actions}`;
         }
         box.appendChild(row);
@@ -373,19 +377,28 @@ window.DashboardChat = function (ctx) {
         return `<div class="chat-reactions">${pills}</div>`;
     }
 
+    function threadAffordanceMarkup(message) {
+        const count = message.replyCount || 0;
+        if (!count) return '';
+        const label = count === 1 ? '1 reply' : `${count} replies`;
+        return `<button class="chat-thread-open" type="button" data-open-thread="${escapeHtml(String(message.id))}">💬 ${escapeHtml(label)}</button>`;
+    }
+
     // Edit is own-message-only (the API rejects leaders editing others'); delete
     // is available to authors and to leaders on any message. Anyone can react.
     function messageActionsMarkup(message, mine) {
         if (message.deleted) return '';
         const reactBtns = REACTION_EMOJI.map((emoji) =>
             `<button class="chat-msg-action" type="button" data-react="${emoji}" aria-label="React ${emoji}">${emoji}</button>`).join('');
+        const replyBtn = message.parentId ? ''
+            : `<button class="chat-msg-action" type="button" data-open-thread="${escapeHtml(String(message.id))}" aria-label="Reply in thread">Reply</button>`;
         const editBtn = mine
             ? '<button class="chat-msg-action" type="button" data-edit-msg aria-label="Edit message">Edit</button>'
             : '';
         const deleteBtn = (mine || isLeader)
             ? '<button class="chat-msg-action" type="button" data-delete-msg aria-label="Delete message">Delete</button>'
             : '';
-        return `<span class="chat-message-actions">${reactBtns}${editBtn}${deleteBtn}</span>`;
+        return `<span class="chat-message-actions">${reactBtns}${replyBtn}${editBtn}${deleteBtn}</span>`;
     }
 
     function editedBadgeMarkup(message) {
@@ -634,6 +647,123 @@ window.DashboardChat = function (ctx) {
         if (S.channelPollTimer) {
             window.clearInterval(S.channelPollTimer);
             S.channelPollTimer = null;
+        }
+    }
+
+    // ── Thread panel ─────────────────────────────────────────────────────────
+    // A side panel scoped to one parent message. It reuses appendMessage()'s
+    // row renderer and runs its own poll on the same cadence as the channel.
+
+    function threadPanel() {
+        return document.getElementById('chatThreadPanel');
+    }
+
+    function openThreadPanel(parentId) {
+        const panel = threadPanel();
+        if (!panel) return;
+        S.threadParentId = parentId;
+        S.threadLastFetch = null;
+        S.threadLastMsgMeta = null;
+        const box = panel.querySelector('.chat-thread-messages');
+        if (box) box.innerHTML = '';
+        panel.hidden = false;
+        loadThreadMessages(parentId);
+        stopThreadPolling();
+        S.threadPollTimer = window.setInterval(() => threadPoll(parentId), MESSAGE_POLL_MS);
+    }
+
+    function closeThreadPanel() {
+        const panel = threadPanel();
+        if (panel) panel.hidden = true;
+        S.threadParentId = null;
+        stopThreadPolling();
+    }
+
+    function stopThreadPolling() {
+        if (S.threadPollTimer) {
+            window.clearInterval(S.threadPollTimer);
+            S.threadPollTimer = null;
+        }
+    }
+
+    async function threadPoll(parentId) {
+        if (document.hidden || page !== 'chat'
+            || S.threadParentId !== parentId || S.threadPollBusy) return;
+        S.threadPollBusy = true;
+        try {
+            await loadThreadMessages(parentId);
+        } finally {
+            S.threadPollBusy = false;
+        }
+    }
+
+    async function loadThreadMessages(parentId) {
+        try {
+            let query = `?parentId=${encodeURIComponent(parentId)}`;
+            if (S.threadLastFetch) {
+                query += `&since=${encodeURIComponent(S.threadLastFetch)}`;
+            }
+            const payload = await apiRequest(
+                `/api/dashboard/chat/channels/${encodeURIComponent(S.activeId)}/messages${query}`);
+            if (S.threadParentId !== parentId) return;   // panel switched threads mid-flight
+            const incoming = payload.messages || [];
+            if (!incoming.length) return;
+            const panel = threadPanel();
+            const box = panel && panel.querySelector('.chat-thread-messages');
+            if (!box) return;
+            // appendMessage() renders into #chatMessages and groups against
+            // S.lastMsgMeta; borrow both, then hand the rows to the panel.
+            const savedMeta = S.lastMsgMeta;
+            S.lastMsgMeta = S.threadLastMsgMeta || null;
+            incoming.forEach((message) => {
+                const row = appendMessage(message);
+                if (row) box.appendChild(row);
+            });
+            S.threadLastMsgMeta = S.lastMsgMeta;
+            S.lastMsgMeta = savedMeta;
+            S.threadLastFetch = incoming[incoming.length - 1].createdAt || S.threadLastFetch;
+            box.scrollTop = box.scrollHeight;
+        } catch (error) {
+            /* keep showing what we have; the next poll retries */
+        }
+    }
+
+    async function sendThreadReply(form) {
+        const input = form.querySelector('.chat-thread-reply-input');
+        const body = (input.value || '').trim();
+        if (!body || !S.activeId || !S.threadParentId) return;
+        const submitBtn = form.querySelector('[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+        try {
+            await apiRequest(
+                `/api/dashboard/chat/channels/${encodeURIComponent(S.activeId)}/messages`,
+                { method: 'POST', body: { body, parentId: S.threadParentId } });
+            input.value = '';
+        } catch (error) {
+            showToast(error.message, 'error');
+            if (error && error.status === 409) closeThreadPanel();
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    }
+
+    function bindThreadPanel() {
+        if (S.threadPanelBound) return;
+        S.threadPanelBound = true;
+        document.addEventListener('click', (event) => {
+            const btn = event.target.closest('[data-open-thread]');
+            if (btn) openThreadPanel(btn.dataset.openThread);
+        });
+        const panel = threadPanel();
+        if (!panel) return;
+        const closeBtn = panel.querySelector('[data-close-thread]');
+        if (closeBtn) closeBtn.addEventListener('click', closeThreadPanel);
+        const form = panel.querySelector('.chat-thread-reply-form');
+        if (form) {
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                sendThreadReply(form);
+            });
         }
     }
 

@@ -373,6 +373,9 @@ def register(app):
         ?since=<iso>   everything newer than this timestamp (the poll path)
         ?before=<iso>  the page immediately older than this timestamp
         ?limit=<n>     page size, capped at MAX_MESSAGE_PAGE_SIZE
+        ?parentId=<id> return only replies to this message instead of the
+                       channel's top-level view (replies are otherwise
+                       excluded from the default, parent-less view)
 
         `hasMore` reports whether older messages exist before the page
         returned, which is what the client's scroll-up loader keys off.
@@ -380,6 +383,7 @@ def register(app):
         since = clean_text(request.args.get('since'), max_len=40)
         before = clean_text(request.args.get('before'), max_len=40)
         limit = _page_limit(request.args.get('limit'))
+        parent_id = clean_text(request.args.get('parentId'), max_len=40)
 
         backend = _storage()
         pager = getattr(backend, 'page_messages', None)
@@ -389,14 +393,20 @@ def register(app):
             state = get_dashboard_state(['members', 'channels'])
             if not find_by_id(_channels(state), channel_id):
                 return json_error('Channel not found.', 404)
-            messages, has_more = pager(_club_key(), channel_id, limit, before, since)
+            messages, has_more = pager(
+                _club_key(), channel_id, limit, before, since, parent_id)
             return flask.jsonify({'messages': messages, 'hasMore': has_more})
 
         state = get_dashboard_state()
         if not find_by_id(_channels(state), channel_id):
             return json_error('Channel not found.', 404)
 
-        thread = [m for m in _messages(state) if m.get('channelId') == channel_id]
+        if parent_id:
+            thread = [m for m in _messages(state)
+                      if m.get('parentId') == parent_id]
+        else:
+            thread = [m for m in _messages(state)
+                      if m.get('channelId') == channel_id and not m.get('parentId')]
         thread.sort(key=lambda m: m.get('createdAt') or '')
         if since:
             thread = [m for m in thread if (m.get('createdAt') or '') > since]
@@ -429,6 +439,18 @@ def register(app):
                 'retryAfter': retry_after,
             }), 429
 
+        parent = None
+        parent_id = clean_text(json_payload().get('parentId'), max_len=40)
+        if parent_id:
+            parent = _find_message(state, channel_id, parent_id)
+            if not parent:
+                return json_error('Message not found.', 404)
+            if parent.get('parentId'):
+                return json_error(
+                    'Replies can only be added to a top-level message.')
+            if parent.get('deleted'):
+                return json_error('This message was deleted.', 409)
+
         user = session.get('user') or {}
         created_at = utc_iso()
         message = {
@@ -440,6 +462,8 @@ def register(app):
             'body': body,
             'createdAt': created_at,
         }
+        if parent_id:
+            message['parentId'] = parent_id
         mention_emails, mentions_everyone = resolve_mentions(
             body, state.get('members', []), _viewer_email(), viewer_is_leader()
         )
@@ -452,6 +476,9 @@ def register(app):
                 if preview:
                     message['linkPreview'] = preview
         _messages(state).append(message)
+        if parent is not None:
+            parent['replyCount'] = parent.get('replyCount', 0) + 1
+            parent['lastReplyAt'] = created_at
         channel['lastMessageAt'] = created_at
 
         recipients = set(mention_emails)

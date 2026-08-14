@@ -86,6 +86,7 @@ INDEXES: Final[dict[str, list[tuple[list[tuple[str, int]], bool]]]] = {
     'messages': [
         ([('clubKey', ASCENDING), ('channelId', ASCENDING), ('createdAt', ASCENDING)], False),
         ([('clubKey', ASCENDING), ('createdAt', ASCENDING)], False),
+        ([('clubKey', ASCENDING), ('parentId', ASCENDING), ('createdAt', ASCENDING)], False),
     ],
     # One read cursor per (channel, member) — upserted, never duplicated.
     'chatReads': [
@@ -403,14 +404,25 @@ class MongoStorage:
         limit: int,
         before: str = '',
         since: str = '',
+        parent_id: str | None = None,
     ) -> tuple[list[dict[str, Any]], bool]:
-        """One page of a channel's thread, oldest-first, plus whether older
-        messages remain. Served entirely by the
-        (clubKey, channelId, createdAt) index — the app never loads a whole
-        channel to slice the tail off it.
+        """One page of messages, oldest-first, plus whether older messages
+        remain. `parent_id` set scopes to that thread's replies (matched by
+        `parentId` alone — a reply's own `channelId` already equals its
+        parent's); unset returns the channel's top-level view, excluding
+        replies. Served entirely by one of two (clubKey, ..., createdAt)
+        indexes — the app never loads a whole channel or thread to slice the
+        tail off it.
         """
         self._ensure_indexes_once()
-        query: dict[str, Any] = {'clubKey': club_key, 'channelId': channel_id}
+        if parent_id:
+            query: dict[str, Any] = {'clubKey': club_key, 'parentId': parent_id}
+        else:
+            query = {
+                'clubKey': club_key,
+                'channelId': channel_id,
+                'parentId': {'$exists': False},
+            }
         if since:
             query['createdAt'] = {'$gt': since}
             docs = self._find('messages', query, sort=[('createdAt', ASCENDING)])

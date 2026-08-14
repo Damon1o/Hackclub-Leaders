@@ -1861,6 +1861,8 @@ const CHECKLIST_ITEMS = [
         jumpCount: 0,       // new messages accumulated while scrolled up
         scrollBound: false,
         cmdMenu: null,     // command autocomplete menu element (created lazily)
+        typingThrottleUntil: 0,   // Date.now() ms before which notifyTyping() is a no-op
+        onlineMembers: [],        // emails online per the last GET .../channels poll
     };
     const S = chatState;
 
@@ -1913,6 +1915,7 @@ const CHECKLIST_ITEMS = [
     function hideCmdMenu(...args) { return chat && chat.hideCmdMenu(...args); }
     function hideEphemeral(...args) { return chat && chat.hideEphemeral(...args); }
     function markChannelRead(...args) { return chat && chat.markChannelRead(...args); }
+    function notifyTyping(...args) { return chat && chat.notifyTyping(...args); }
     function prepareEditChannel(...args) { return chat && chat.prepareEditChannel(...args); }
     function prepareNewChannel(...args) { return chat && chat.prepareNewChannel(...args); }
     function reactionsMarkup(...args) { return chat && chat.reactionsMarkup(...args); }
@@ -2469,7 +2472,10 @@ const CHECKLIST_ITEMS = [
     function setupForms() {
         const chatComposerInput = $('#chatComposer')?.elements.body;
         if (chatComposerInput) {
-            chatComposerInput.addEventListener('input', () => updateCmdMenu(chatComposerInput.value));
+            chatComposerInput.addEventListener('input', () => {
+                updateCmdMenu(chatComposerInput.value);
+                notifyTyping();
+            });
             chatComposerInput.addEventListener('blur', () => window.setTimeout(hideCmdMenu, 150));
             chatComposerInput.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape' && S.cmdMenu && !S.cmdMenu.hidden) {

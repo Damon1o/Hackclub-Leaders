@@ -84,6 +84,22 @@ def _rate_limit_retry_after(email):
     return None
 
 
+# Typing: channelId -> {email: expiry_monotonic_seconds}. Presence:
+# email -> last_seen_monotonic_seconds. Same "single-process app, module-level
+# dict is enough" reasoning as _rate_buckets above — both are lost on
+# restart, which is an accepted tradeoff.
+_typing_state: dict[str, dict[str, float]] = {}
+TYPING_TTL_SECONDS = 5.0
+
+_presence: dict[str, float] = {}
+PRESENCE_TTL_SECONDS = 15.0   # 3x the 5s channel-poll cadence
+
+
+def reset_typing_presence():
+    _typing_state.clear()
+    _presence.clear()
+
+
 # ── Link previews ─────────────────────────────────────────────────────────────
 # The server fetches user-posted URLs, so every request is SSRF-guarded:
 # http/https only, public IPs only (re-checked per redirect hop), 3s timeout,
@@ -232,6 +248,31 @@ def _within_window(created_at, seconds):
     return (datetime.now(timezone.utc) - dt).total_seconds() <= seconds
 
 
+def _typing_payload(channel_id, viewer_email, members):
+    """Members currently typing in `channel_id`, excluding `viewer_email`.
+
+    Lazily prunes any entry whose TTL has passed on every read, so no
+    background sweep is needed — the same pattern _rate_limit_retry_after
+    uses for its own bucket.
+    """
+    bucket = _typing_state.get(channel_id)
+    if not bucket:
+        return []
+    now = time.monotonic()
+    expired = [email for email, expiry in bucket.items() if expiry <= now]
+    for email in expired:
+        del bucket[email]
+    names_by_email = {
+        (m.get('email') or '').strip().lower(): m.get('name') or m.get('email')
+        for m in members
+    }
+    return [
+        {'email': email, 'name': names_by_email.get(email, email)}
+        for email in bucket
+        if email != viewer_email
+    ]
+
+
 _EVERYONE_RE = re.compile(r'(?<![\w@])@everyone(?![\w])')
 
 
@@ -282,7 +323,21 @@ def register(app):
             row = _find_chat_read(state, channel['id'], email)
             last_read = (row or {}).get('lastReadAt') or ''
             channel['unread'] = bool(last_message_at) and last_message_at > last_read
-        return flask.jsonify({'channels': channels})
+
+        # This poll is every member's most frequent chat request while the
+        # page is open (every 5s) — it doubles as the presence heartbeat, so
+        # no separate "I'm here" call is needed.
+        _presence[email] = time.monotonic()
+        member_emails = {
+            (m.get('email') or '').strip().lower() for m in state.get('members', [])
+        }
+        now = time.monotonic()
+        online_members = sorted(
+            e for e in member_emails
+            if e in _presence and now - _presence[e] < PRESENCE_TTL_SECONDS
+        )
+        return flask.jsonify(
+            {'channels': channels, 'onlineMembers': online_members})
 
     @app.post('/api/dashboard/chat/channels')
     @login_required
@@ -379,6 +434,7 @@ def register(app):
 
         `hasMore` reports whether older messages exist before the page
         returned, which is what the client's scroll-up loader keys off.
+        `typing` reports who else is currently typing in this channel.
         """
         since = clean_text(request.args.get('since'), max_len=40)
         before = clean_text(request.args.get('before'), max_len=40)
@@ -395,12 +451,16 @@ def register(app):
                 return json_error('Channel not found.', 404)
             messages, has_more = pager(
                 _club_key(), channel_id, limit, before, since, parent_id)
-            return flask.jsonify({'messages': messages, 'hasMore': has_more})
+            typing = _typing_payload(
+                channel_id, _viewer_email(), state.get('members', []))
+            return flask.jsonify(
+                {'messages': messages, 'hasMore': has_more, 'typing': typing})
 
         state = get_dashboard_state()
         if not find_by_id(_channels(state), channel_id):
             return json_error('Channel not found.', 404)
 
+        typing = _typing_payload(channel_id, _viewer_email(), state.get('members', []))
         if parent_id:
             thread = [m for m in _messages(state)
                       if m.get('parentId') == parent_id]
@@ -410,11 +470,13 @@ def register(app):
         thread.sort(key=lambda m: m.get('createdAt') or '')
         if since:
             thread = [m for m in thread if (m.get('createdAt') or '') > since]
-            return flask.jsonify({'messages': thread, 'hasMore': False})
+            return flask.jsonify(
+                {'messages': thread, 'hasMore': False, 'typing': typing})
         if before:
             thread = [m for m in thread if (m.get('createdAt') or '') < before]
         has_more = len(thread) > limit
-        return flask.jsonify({'messages': thread[-limit:], 'hasMore': has_more})
+        return flask.jsonify(
+            {'messages': thread[-limit:], 'hasMore': has_more, 'typing': typing})
 
     @app.post('/api/dashboard/chat/channels/<channel_id>/messages')
     @login_required
@@ -500,6 +562,18 @@ def register(app):
         # Deliberately omit full state: the client polls messages separately,
         # and returning state here would trigger a heavy full-page re-render.
         return flask.jsonify({'message': message})
+
+    @app.post('/api/dashboard/chat/channels/<channel_id>/typing')
+    @login_required
+    def api_chat_typing(channel_id):
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+
+        _typing_state.setdefault(channel_id, {})[_viewer_email()] = (
+            time.monotonic() + TYPING_TTL_SECONDS
+        )
+        return flask.jsonify({'ok': True})
 
     @app.post('/api/dashboard/chat/channels/<channel_id>/read')
     @login_required

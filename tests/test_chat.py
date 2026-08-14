@@ -7,6 +7,7 @@ in test_api.py).
 """
 
 import json
+import time
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -28,6 +29,19 @@ def _reset_rate_limit():
     try:
         from src.routes_chat import reset_rate_limits
         reset_rate_limits()
+    except ImportError:
+        pass
+    yield
+
+
+@pytest.fixture(autouse=True)
+def _reset_typing_presence():
+    # _typing_state / _presence are process-global dicts (see routes_chat.py);
+    # clear them between tests so one test's typing/presence signals don't
+    # leak into the next.
+    try:
+        from src.routes_chat import reset_typing_presence
+        reset_typing_presence()
     except ImportError:
         pass
     yield
@@ -1297,3 +1311,123 @@ def test_delete_channel_drops_replies_too(client):
     with c.session_transaction() as sess:
         messages = sess['dashboard_state']['messages']
     assert messages == []
+
+
+# ── Typing indicators + presence ─────────────────────────────────────────────
+
+
+def test_post_typing_requires_csrf(client):
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+    resp = c.post(f'/api/dashboard/chat/channels/{cid}/typing', json={})
+    assert resp.status_code == 403
+
+
+def test_post_typing_records_entry(client):
+    from src.routes_chat import _typing_state
+
+    c, h = _seed(client, 'leader')
+    cid = _make_channel(c, h).get_json()['channel']['id']
+
+    resp = c.post(f'/api/dashboard/chat/channels/{cid}/typing', json={}, headers=h)
+    assert resp.status_code == 200
+    assert resp.get_json() == {'ok': True}
+    assert 'leader@test.com' in _typing_state.get(cid, {})
+
+
+def test_post_typing_does_not_require_existing_channel(client):
+    c, h = _seed(client, 'leader')
+    # A fire-and-forget ephemeral signal shouldn't 404 on a stale channel id.
+    resp = c.post(
+        '/api/dashboard/chat/channels/nonexistent-channel/typing', json={}, headers=h)
+    assert resp.status_code == 200
+
+
+def test_typing_included_in_messages_excludes_self(client):
+    from src.routes_chat import _typing_state
+
+    c, h = _seed(client, 'leader')
+    with c.session_transaction() as sess:
+        state = sess['dashboard_state']
+        state['members'].append({
+            'id': 'm2', 'name': 'Bob Lee', 'email': 'bob@test.com',
+            'role': 'Member', 'avatar': '', 'status': 'Active',
+        })
+        sess['dashboard_state'] = state
+    cid = _make_channel(c, h).get_json()['channel']['id']
+
+    c.post(f'/api/dashboard/chat/channels/{cid}/typing', json={}, headers=h)  # leader typing
+    _typing_state.setdefault(cid, {})['bob@test.com'] = time.monotonic() + 5.0
+
+    resp = c.get(f'/api/dashboard/chat/channels/{cid}/messages', headers=h)
+    assert resp.status_code == 200
+    # leader (the viewer) is excluded even though they also posted a typing signal
+    assert resp.get_json()['typing'] == [{'email': 'bob@test.com', 'name': 'Bob Lee'}]
+
+
+def test_typing_entry_expires_and_is_pruned(client, monkeypatch):
+    from src.routes_chat import _typing_state
+
+    c, h = _seed(client, 'leader')
+    with c.session_transaction() as sess:
+        state = sess['dashboard_state']
+        state['members'].append({
+            'id': 'm2', 'name': 'Bob Lee', 'email': 'bob@test.com',
+            'role': 'Member', 'avatar': '', 'status': 'Active',
+        })
+        sess['dashboard_state'] = state
+    cid = _make_channel(c, h).get_json()['channel']['id']
+
+    fake_now = [1000.0]
+    monkeypatch.setattr('src.routes_chat.time.monotonic', lambda: fake_now[0])
+    _typing_state[cid] = {'bob@test.com': fake_now[0] + 5.0}   # expires at t=1005
+
+    resp = c.get(f'/api/dashboard/chat/channels/{cid}/messages', headers=h)
+    assert resp.get_json()['typing'] == [{'email': 'bob@test.com', 'name': 'Bob Lee'}]
+
+    fake_now[0] = 1006.0   # past expiry
+    resp = c.get(f'/api/dashboard/chat/channels/{cid}/messages', headers=h)
+    assert resp.get_json()['typing'] == []
+    assert 'bob@test.com' not in _typing_state.get(cid, {})   # lazily pruned on read
+
+
+def test_online_members_includes_viewer_after_heartbeat(client):
+    c, h = _seed(client, 'leader')
+    resp = c.get('/api/dashboard/chat/channels', headers=h)
+    assert resp.status_code == 200
+    assert resp.get_json()['onlineMembers'] == ['leader@test.com']
+
+
+def test_online_members_excludes_stale_member(client, monkeypatch):
+    from src.routes_chat import _presence
+
+    c, h = _seed(client, 'leader')
+    with c.session_transaction() as sess:
+        state = sess['dashboard_state']
+        state['members'].append({
+            'id': 'm2', 'name': 'Bob Lee', 'email': 'bob@test.com',
+            'role': 'Member', 'avatar': '', 'status': 'Active',
+        })
+        sess['dashboard_state'] = state
+    fake_now = [1000.0]
+    monkeypatch.setattr('src.routes_chat.time.monotonic', lambda: fake_now[0])
+    _presence['bob@test.com'] = 1000.0
+
+    resp = c.get('/api/dashboard/chat/channels', headers=h)
+    assert set(resp.get_json()['onlineMembers']) == {'leader@test.com', 'bob@test.com'}
+
+    fake_now[0] = 1000.0 + 16.0   # past PRESENCE_TTL_SECONDS (15s); bob ages out
+    resp = c.get('/api/dashboard/chat/channels', headers=h)
+    # leader's own heartbeat refreshes on this very call, so only bob drops off
+    assert resp.get_json()['onlineMembers'] == ['leader@test.com']
+
+
+def test_online_members_never_leaks_across_clubs(client):
+    from src.routes_chat import _presence
+
+    # A stale global entry left behind by some other club's viewer.
+    _presence['ghost@other-club.com'] = time.monotonic()
+
+    c, h = _seed(client, 'leader')
+    resp = c.get('/api/dashboard/chat/channels', headers=h)
+    assert 'ghost@other-club.com' not in resp.get_json()['onlineMembers']

@@ -3912,6 +3912,23 @@ body.dark-mode .dashboard-wrapper {
     font-size: 14px;
 }
 
+.chat-avatar-presence {
+    position: relative;
+    display: inline-flex;
+}
+
+.chat-avatar-presence.is-online::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--hackclub-green);
+    border: 2px solid var(--dash-bg);
+}
+
 .chat-seen-by {
     display: flex;
     align-items: center;
@@ -4077,6 +4094,14 @@ body.dark-mode .dashboard-wrapper {
 .chat-composer-input:focus {
     outline: 2px solid var(--hackclub-red);
     outline-offset: 1px;
+}
+
+.chat-typing-indicator {
+    padding: 2px 18px 8px;
+    color: var(--dash-muted);
+    font-size: 0.78rem;
+    font-style: italic;
+    min-height: 1em;
 }
 
 .chat-reactions {

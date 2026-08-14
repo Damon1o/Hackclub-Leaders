@@ -31,6 +31,7 @@ window.DashboardChat = function (ctx) {
     const CHANNEL_POLL_MS = 5000;
     const READ_SYNC_MS = 2000;
     const CHAT_GROUP_MS = 5 * 60 * 1000;   // same-author messages within 5min render grouped
+    const TYPING_THROTTLE_MS = 2000;       // client-side floor between POST .../typing calls
     const chatBaseTitle = document.title;  // restored when the tab regains focus
 
     // ── Chat (polling) ───────────────────────────────────────────────────────
@@ -250,6 +251,7 @@ window.DashboardChat = function (ctx) {
         if (msgs) { msgs.hidden = true; msgs.innerHTML = ''; }
         if (composer) composer.hidden = true;
         if (empty) empty.hidden = false;
+        renderTypingIndicator([]);
         S.lastFetch = null;
         S.lastMsgMeta = null;
         resetJumpButton();
@@ -304,8 +306,12 @@ window.DashboardChat = function (ctx) {
                 ${bodyHtml}${threadLink}
             </div>${actions}`;
         } else {
+            const authorEmail = (message.authorEmail || '').toLowerCase();
+            const online = (S.onlineMembers || []).includes(authorEmail) ? ' is-online' : '';
             row.innerHTML = `
-            ${avatarMarkup(person, 'avatar-sm')}
+            <span class="chat-avatar-presence${online}" data-presence-email="${escapeHtml(authorEmail)}">
+                ${avatarMarkup(person, 'avatar-sm')}
+            </span>
             <div class="chat-message-body">
                 <div class="chat-message-meta">
                     <span class="chat-message-author">${escapeHtml(message.authorName || message.authorEmail || 'Member')}</span>
@@ -520,12 +526,46 @@ window.DashboardChat = function (ctx) {
         if (actions) actions.remove();
     }
 
+    function notifyTyping() {
+        if (!S.activeId) return;
+        const now = Date.now();
+        if (now < S.typingThrottleUntil) return;
+        S.typingThrottleUntil = now + TYPING_THROTTLE_MS;
+        apiRequest(`/api/dashboard/chat/channels/${encodeURIComponent(S.activeId)}/typing`,
+            { method: 'POST', body: {} }).catch(() => {
+                /* fire-and-forget: a dropped signal just means the peer's
+                   indicator lags by up to TYPING_THROTTLE_MS */
+            });
+    }
+
+    function renderTypingIndicator(typing) {
+        const el = document.getElementById('chatTypingIndicator');
+        if (!el) return;
+        if (!typing || !typing.length) {
+            el.hidden = true;
+            el.textContent = '';
+            return;
+        }
+        const names = typing.map((person) => person.name || person.email);
+        let text;
+        if (names.length === 1) {
+            text = `${names[0]} is typing…`;
+        } else if (names.length === 2) {
+            text = `${names[0]} and ${names[1]} are typing…`;
+        } else {
+            text = `${names[0]} and ${names.length - 1} others are typing…`;
+        }
+        el.textContent = text;   // textContent, not innerHTML — names are unescaped
+        el.hidden = false;
+    }
+
     async function fetchMessages(id, initial) {
         try {
             const query = S.lastFetch ? `?since=${encodeURIComponent(S.lastFetch)}` : '';
             const payload = await apiRequest(
                 `/api/dashboard/chat/channels/${encodeURIComponent(id)}/messages${query}`);
             if (id !== S.activeId) return;   // user switched channels mid-flight
+            renderTypingIndicator(payload.typing);
             const incoming = payload.messages || [];
             if (!incoming.length) return;
             const box = document.getElementById('chatMessages');
@@ -560,10 +600,20 @@ window.DashboardChat = function (ctx) {
         }
     }
 
+    function applyPresence(onlineEmails) {
+        const online = new Set((onlineEmails || []).map((email) => (email || '').toLowerCase()));
+        document.querySelectorAll('#chatMessages .chat-avatar-presence[data-presence-email]')
+            .forEach((el) => {
+                el.classList.toggle('is-online', online.has(el.dataset.presenceEmail));
+            });
+    }
+
     async function refreshChannels() {
         try {
             const payload = await apiRequest('/api/dashboard/chat/channels');
             S.channels = payload.channels || S.channels;
+            S.onlineMembers = payload.onlineMembers || [];
+            applyPresence(S.onlineMembers);
             renderChannelList();
             if (S.activeId && !S.channels.some((channel) => channel.id === S.activeId)) {
                 S.activeId = null;
@@ -1113,6 +1163,7 @@ window.DashboardChat = function (ctx) {
             hideCmdMenu: hideCmdMenu,
             hideEphemeral: hideEphemeral,
             markChannelRead: markChannelRead,
+            notifyTyping: notifyTyping,
             prepareEditChannel: prepareEditChannel,
             prepareNewChannel: prepareNewChannel,
             reactionsMarkup: reactionsMarkup,

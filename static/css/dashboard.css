@@ -4126,13 +4126,22 @@ body.dark-mode .dashboard-wrapper {
 }
 
 .chat-cmd-option:hover,
-.chat-cmd-option:focus {
+.chat-cmd-option:focus,
+.chat-cmd-option.is-active {
     background: var(--dash-border);
 }
 
 .chat-cmd-option span {
     color: var(--dash-muted);
     font-size: 0.78rem;
+}
+
+.mention {
+    padding: 0 2px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--dash-accent) 14%, transparent);
+    color: var(--dash-accent);
+    font-weight: 600;
 }
 
 .chat-ephemeral .chat-message-text {

@@ -38,6 +38,7 @@ from .helpers import (
     utc_iso,
     viewer_is_leader,
 )
+from .notifications import add_in_app_notification
 
 # Cap for a no-cursor message fetch, so opening a long channel stays light.
 MESSAGE_PAGE_SIZE = 50
@@ -220,6 +221,42 @@ def _within_window(created_at, seconds):
     return (datetime.now(timezone.utc) - dt).total_seconds() <= seconds
 
 
+_EVERYONE_RE = re.compile(r'(?<![\w@])@everyone(?![\w])')
+
+
+def resolve_mentions(body, members, author_email, author_is_leader):
+    """Resolve @-mentions in `body` against the club's member list.
+
+    Returns (sorted emails to notify, excluding the author; whether
+    @everyone was honored). A name only matches when preceded by a literal
+    '@' with no other word character immediately before it, so
+    "jane@test.com" does not match a member named "Jane".
+    """
+    author_email = (author_email or '').strip().lower()
+    text = body or ''
+    matched_emails = set()
+
+    # Longest name first, blanking each match out of the text as it is
+    # consumed, so "@Jane Doe" resolves to Jane Doe and never also to a
+    # separate member literally named "Jane".
+    emails_by_name: dict[str, list[str]] = {}
+    for member in members:
+        name, email = member.get('name'), member.get('email')
+        if name and email:
+            emails_by_name.setdefault(name, []).append(email.strip().lower())
+
+    for name in sorted(emails_by_name, key=len, reverse=True):
+        pattern = re.compile(r'(?<![\w@])@' + re.escape(name) + r'(?![\w])')
+        text, hits = pattern.subn('\x00', text)
+        if hits:
+            matched_emails.update(emails_by_name[name])
+
+    matched_emails.discard(author_email)
+
+    mentions_everyone = bool(author_is_leader and _EVERYONE_RE.search(text))
+    return sorted(matched_emails), mentions_everyone
+
+
 def register(app):
     # ── Channels ────────────────────────────────────────────────────────────
 
@@ -382,6 +419,11 @@ def register(app):
             'body': body,
             'createdAt': created_at,
         }
+        mention_emails, mentions_everyone = resolve_mentions(
+            body, state.get('members', []), _viewer_email(), viewer_is_leader()
+        )
+        message['mentions'] = mention_emails
+        message['mentionsEveryone'] = mentions_everyone
         if body and feature_enabled('FEATURE_CHAT_LINK_PREVIEWS'):
             url = first_url(body)
             if url:
@@ -390,6 +432,22 @@ def register(app):
                     message['linkPreview'] = preview
         _messages(state).append(message)
         channel['lastMessageAt'] = created_at
+
+        recipients = set(mention_emails)
+        if mentions_everyone:
+            recipients.update((m.get('email') or '').strip().lower()
+                              for m in state.get('members', []))
+        recipients.discard(_viewer_email())
+        channel_name = channel.get('name') or 'the channel'
+        for recipient in sorted(filter(None, recipients)):
+            add_in_app_notification(
+                recipient,
+                'chat_mention',
+                f"{message['authorName']} mentioned you in #{channel_name}",
+                body[:200],
+                {'channelId': channel_id, 'messageId': message['id']},
+                state=state,
+            )
         save_dashboard_state(state)
         # Deliberately omit full state: the client polls messages separately,
         # and returning state here would trigger a heavy full-page re-render.

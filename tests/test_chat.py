@@ -769,3 +769,171 @@ def test_failed_preview_message_still_posts(client, monkeypatch):
     )
     assert resp.status_code == 200
     assert 'linkPreview' not in resp.get_json()['message']
+
+
+# ── Mention resolution ────────────────────────────────────────────────────────
+
+from src.routes_chat import resolve_mentions
+
+
+def test_resolve_mentions_single_match():
+    members = [
+        {'name': 'Jane Doe', 'email': 'jane@test.com'},
+        {'name': 'Bob Lee', 'email': 'bob@test.com'},
+    ]
+    mentions, everyone = resolve_mentions(
+        'hey @Jane Doe check this out', members, 'bob@test.com', False
+    )
+    assert mentions == ['jane@test.com']
+    assert everyone is False
+
+
+def test_resolve_mentions_multiple_matches_sorted():
+    members = [
+        {'name': 'Jane Doe', 'email': 'jane@test.com'},
+        {'name': 'Bob Lee', 'email': 'bob@test.com'},
+    ]
+    mentions, _ = resolve_mentions(
+        '@Bob Lee and @Jane Doe both please look', members, 'someone@test.com', False
+    )
+    assert mentions == ['bob@test.com', 'jane@test.com']
+
+
+def test_resolve_mentions_longest_name_wins():
+    # "Jane" is a prefix of "Jane Doe" — the longer name must match first so
+    # a member named plain "Jane" doesn't falsely absorb "@Jane Doe" text.
+    members = [
+        {'name': 'Jane Doe', 'email': 'jane.doe@test.com'},
+        {'name': 'Jane', 'email': 'jane@test.com'},
+    ]
+    mentions, _ = resolve_mentions('@Jane Doe hi', members, 'x@test.com', False)
+    assert mentions == ['jane.doe@test.com']
+
+
+def test_resolve_mentions_excludes_self():
+    members = [{'name': 'Jane Doe', 'email': 'jane@test.com'}]
+    mentions, _ = resolve_mentions('@Jane Doe talking to myself', members, 'jane@test.com', False)
+    assert mentions == []
+
+
+def test_resolve_mentions_duplicate_names_both_notified():
+    members = [
+        {'name': 'Sam Kim', 'email': 'sam1@test.com'},
+        {'name': 'Sam Kim', 'email': 'sam2@test.com'},
+    ]
+    mentions, _ = resolve_mentions('@Sam Kim ping', members, 'x@test.com', False)
+    assert mentions == ['sam1@test.com', 'sam2@test.com']
+
+
+def test_resolve_mentions_no_match():
+    members = [{'name': 'Jane Doe', 'email': 'jane@test.com'}]
+    mentions, everyone = resolve_mentions('no mentions here', members, 'x@test.com', False)
+    assert mentions == []
+    assert everyone is False
+
+
+def test_resolve_mentions_everyone_by_leader():
+    mentions, everyone = resolve_mentions('@everyone standup in 5', [], 'leader@test.com', True)
+    assert everyone is True
+
+
+def test_resolve_mentions_everyone_by_non_leader_ignored():
+    mentions, everyone = resolve_mentions('@everyone standup in 5', [], 'member@test.com', False)
+    assert everyone is False
+
+
+def test_resolve_mentions_false_positive_inside_email_avoided():
+    # A bare "@Jane" substring inside an unrelated word/address shouldn't
+    # match without the full display name following it.
+    members = [{'name': 'Jane Doe', 'email': 'jane@test.com'}]
+    mentions, _ = resolve_mentions('contact jane@test.com directly', members, 'x@test.com', False)
+    assert mentions == []
+
+
+# ── Mentions on message post ──────────────────────────────────────────────────
+
+def _add_member(client, name, email):
+    with client.session_transaction() as sess:
+        state = sess['dashboard_state']
+        state['members'].append({
+            'id': 'm-' + email, 'name': name, 'email': email,
+            'role': 'Member', 'avatar': '', 'status': 'Active',
+        })
+        sess['dashboard_state'] = state
+
+
+def _notifications(client):
+    with client.session_transaction() as sess:
+        return sess['dashboard_state'].get('notifications', [])
+
+
+def test_message_with_mention_notifies_recipient(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _add_member(c, 'Bob Lee', 'bob@test.com')
+
+    resp = c.post(
+        '/api/dashboard/chat/channels/chan-1/messages',
+        json={'body': 'hey @Bob Lee check this'}, headers=h,
+    )
+    assert resp.status_code == 200
+    message = resp.get_json()['message']
+    assert message['mentions'] == ['bob@test.com']
+    assert message['mentionsEveryone'] is False
+
+    assert any(
+        n['type'] == 'chat_mention' and n['data'].get('messageId') == message['id']
+        for n in _notifications(c)
+    )
+
+
+def test_message_without_mentions_has_empty_fields(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    resp = c.post('/api/dashboard/chat/channels/chan-1/messages',
+                  json={'body': 'nothing to see'}, headers=h)
+    message = resp.get_json()['message']
+    assert message['mentions'] == []
+    assert message['mentionsEveryone'] is False
+    assert _notifications(c) == []
+
+
+def test_message_self_mention_not_notified(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    resp = c.post(
+        '/api/dashboard/chat/channels/chan-1/messages',
+        json={'body': 'note to self @Test Leader'}, headers=h,
+    )
+    assert resp.get_json()['message']['mentions'] == []
+    assert not any(n['type'] == 'chat_mention' for n in _notifications(c))
+
+
+def test_everyone_mention_by_leader_notifies_all_other_members(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _add_member(c, 'Bob Lee', 'bob@test.com')
+    resp = c.post(
+        '/api/dashboard/chat/channels/chan-1/messages',
+        json={'body': '@everyone standup now'}, headers=h,
+    )
+    assert resp.get_json()['message']['mentionsEveryone'] is True
+    # bob notified, the leader who sent it excluded
+    mention_notifs = [n for n in _notifications(c) if n['type'] == 'chat_mention']
+    assert len(mention_notifs) == 1
+
+
+def test_everyone_mention_by_member_not_honored(client):
+    c, h = _seed(client, 'member', channels=[dict(_SEED_CHANNEL)])
+    _add_member(c, 'Bob Lee', 'bob@test.com')
+    resp = c.post(
+        '/api/dashboard/chat/channels/chan-1/messages',
+        json={'body': '@everyone anyone around?'}, headers=h,
+    )
+    assert resp.get_json()['message']['mentionsEveryone'] is False
+    assert not any(n['type'] == 'chat_mention' for n in _notifications(c))
+
+
+def test_mentions_persist_on_message_listing(client):
+    c, h = _seed(client, 'leader', channels=[dict(_SEED_CHANNEL)])
+    _add_member(c, 'Bob Lee', 'bob@test.com')
+    c.post('/api/dashboard/chat/channels/chan-1/messages',
+           json={'body': 'ping @Bob Lee'}, headers=h)
+    listing = c.get('/api/dashboard/chat/channels/chan-1/messages').get_json()
+    assert listing['messages'][-1]['mentions'] == ['bob@test.com']

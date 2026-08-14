@@ -164,6 +164,7 @@ window.DashboardChat = function (ctx) {
         startChatPolling();
         bindChatVisibility();
         ensureJumpButton();
+        setupMentionAutocomplete();
     }
 
     function renderChannelList() {
@@ -272,7 +273,7 @@ window.DashboardChat = function (ctx) {
         const edited = message.editedAt && !message.deleted ? editedBadgeMarkup(message) : '';
         const bodyHtml = (message.deleted
             ? '<p class="chat-message-text chat-message-deleted"><em>Message deleted</em></p>'
-            : `<p class="chat-message-text">${escapeHtml(message.body)}</p>${grouped ? edited : ''}`)
+            : `<p class="chat-message-text">${mentionBodyHtml(message)}</p>${grouped ? edited : ''}`)
             + (message.deleted ? '' : reactionsMarkup(message));
         if (grouped) {
             row.innerHTML = `
@@ -294,6 +295,50 @@ window.DashboardChat = function (ctx) {
         box.appendChild(row);
         S.lastMsgMeta = { key: authorKey, time: Number.isFinite(msgTime) ? msgTime : Date.now() };
         return row;
+    }
+
+    // ── Mentions ─────────────────────────────────────────────────────────────
+    // The server resolved and persisted `mentions`/`mentionsEveryone`; the
+    // client only paints them (and offers the "@…" picker as a typing aid).
+
+    function clubMembers() {
+        return ctx.getState().members || [];
+    }
+
+    function mentionNames(message) {
+        const byEmail = {};
+        clubMembers().forEach((member) => {
+            if (member && member.email && member.name) {
+                byEmail[String(member.email).toLowerCase()] = member.name;
+            }
+        });
+        const names = (message.mentions || [])
+            .map((email) => byEmail[String(email).toLowerCase()])
+            .filter(Boolean);
+        if (message.mentionsEveryone) names.push('everyone');
+        // Longest first so the alternation below prefers "@Jane Doe" over "@Jane".
+        return names.sort((a, b) => b.length - a.length);
+    }
+
+    function mentionBodyHtml(message) {
+        const body = message.body || '';
+        const names = mentionNames(message);
+        if (!names.length) return escapeHtml(body);
+        const alternation = names
+            .map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+            .join('|');
+        // Match on the raw body and escape each slice, so the wrapping markup
+        // is never itself re-scanned by a later, shorter name.
+        const pattern = new RegExp('(?<![\\w@])@(' + alternation + ')(?![\\w])', 'g');
+        let html = '';
+        let last = 0;
+        let match;
+        while ((match = pattern.exec(body)) !== null) {
+            html += escapeHtml(body.slice(last, match.index))
+                + `<span class="mention">@${escapeHtml(match[1])}</span>`;
+            last = match.index + match[0].length;
+        }
+        return html + escapeHtml(body.slice(last));
     }
 
     const REACTION_EMOJI = ['👍', '❤️', '😂', '🎉'];
@@ -725,6 +770,121 @@ window.DashboardChat = function (ctx) {
                 <strong>${c.usage}</strong><span>${c.desc}${c.leaders ? ' (leaders only)' : ''}</span>
             </button>`).join('');
         menu.hidden = false;
+    }
+
+    // ── Mention autocomplete: member picker above the composer on "@…". ──────
+
+    const MENTION_MENU_MAX = 6;
+    // The "@word…" the caret currently sits inside. Names contain spaces, so
+    // the term runs to the caret; a term that matches nobody just closes the menu.
+    const MENTION_TERM_RE = /(?:^|[^\w@])@([^@]{0,40})$/;
+
+    function composerInput() {
+        const form = document.getElementById('chatComposer');
+        return form ? form.elements.body : null;
+    }
+
+    function ensureMentionMenu() {
+        if (S.mentionMenu) return S.mentionMenu;
+        const form = document.getElementById('chatComposer');
+        if (!form) return null;
+        const menu = document.createElement('div');
+        menu.className = 'chat-cmd-menu chat-mention-menu';
+        menu.hidden = true;
+        menu.addEventListener('mousedown', (event) => {
+            const option = event.target.closest('[data-mention]');
+            if (!option) return;
+            event.preventDefault();   // keep composer focus
+            applyMention(option.dataset.mention);
+        });
+        form.appendChild(menu);
+        S.mentionMenu = menu;
+        return menu;
+    }
+
+    function hideMentionMenu() {
+        if (S.mentionMenu) S.mentionMenu.hidden = true;
+        S.mentionIndex = 0;
+        S.mentionOptions = [];
+    }
+
+    function mentionCandidates(term) {
+        const lower = term.toLowerCase();
+        const names = clubMembers()
+            .filter((member) => member && member.name && member.email
+                && member.name.toLowerCase().startsWith(lower))
+            .map((member) => member.name);
+        // @everyone only notifies when a leader sends it, so only offer it to one.
+        if (isLeader && 'everyone'.startsWith(lower)) names.unshift('everyone');
+        return names.slice(0, MENTION_MENU_MAX);
+    }
+
+    function updateMentionMenu() {
+        const input = composerInput();
+        const menu = ensureMentionMenu();
+        if (!input || !menu) return;
+        const match = MENTION_TERM_RE.exec((input.value || '').slice(0, input.selectionStart));
+        const options = match ? mentionCandidates(match[1]) : [];
+        if (!options.length) {
+            hideMentionMenu();
+            return;
+        }
+        S.mentionOptions = options;
+        S.mentionIndex = Math.min(S.mentionIndex || 0, options.length - 1);
+        menu.innerHTML = options.map((name, index) => `
+            <button class="chat-cmd-option${index === S.mentionIndex ? ' is-active' : ''}"
+                type="button" data-mention="${escapeHtml(name)}">
+                <strong>@${escapeHtml(name)}</strong>
+            </button>`).join('');
+        menu.hidden = false;
+    }
+
+    function applyMention(name) {
+        const input = composerInput();
+        if (!input || !name) return;
+        const cursor = input.selectionStart;
+        const before = (input.value || '').slice(0, cursor);
+        const match = MENTION_TERM_RE.exec(before);
+        if (!match) {
+            hideMentionMenu();
+            return;
+        }
+        const at = before.length - match[1].length - 1;
+        // Insert the name verbatim — the server matches on the exact display name.
+        const insert = '@' + name + ' ';
+        input.value = before.slice(0, at) + insert + (input.value || '').slice(cursor);
+        const caret = at + insert.length;
+        input.focus();
+        input.setSelectionRange(caret, caret);
+        hideMentionMenu();
+    }
+
+    function mentionKeydown(event) {
+        const options = S.mentionOptions || [];
+        if (!S.mentionMenu || S.mentionMenu.hidden || !options.length) return;
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            const step = event.key === 'ArrowDown' ? 1 : -1;
+            S.mentionIndex = (S.mentionIndex + step + options.length) % options.length;
+            updateMentionMenu();
+        } else if (event.key === 'Enter' || event.key === 'Tab') {
+            event.preventDefault();
+            event.stopPropagation();   // don't let Enter submit the composer
+            applyMention(options[S.mentionIndex]);
+        } else if (event.key === 'Escape') {
+            event.stopPropagation();
+            hideMentionMenu();
+        }
+    }
+
+    function setupMentionAutocomplete() {
+        const input = composerInput();
+        if (!input || S.mentionsBound) return;
+        S.mentionsBound = true;
+        hideMentionMenu();
+        input.addEventListener('input', updateMentionMenu);
+        input.addEventListener('keydown', mentionKeydown);
+        input.addEventListener('blur', () => window.setTimeout(hideMentionMenu, 150));
     }
 
     function prepareNewChannel() {

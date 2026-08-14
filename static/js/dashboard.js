@@ -847,22 +847,46 @@
         return payload.url;
     }
 
-    async function handleThumbFileChange(event) {
+    // Wires dragover/dragleave/drop on `dropzone` so dropping an image file
+    // behaves like picking one via the hidden file input. `onFile` receives
+    // the single dropped File.
+    function wireDropzone(dropzone, onFile) {
+        if (!dropzone) return;
+        ['dragenter', 'dragover'].forEach((type) => {
+            dropzone.addEventListener(type, (event) => {
+                event.preventDefault();
+                dropzone.classList.add('drag-over');
+            });
+        });
+        ['dragleave', 'dragend'].forEach((type) => {
+            dropzone.addEventListener(type, () => dropzone.classList.remove('drag-over'));
+        });
+        dropzone.addEventListener('drop', (event) => {
+            event.preventDefault();
+            dropzone.classList.remove('drag-over');
+            const file = event.dataTransfer?.files?.[0];
+            if (file) onFile(file);
+        });
+    }
+
+    function handleThumbFileChange(event) {
         const input = event.target;
         const file = input.files && input.files[0];
+        input.value = '';  // let the same file be re-picked later regardless of outcome
         if (!file) return;
+        processThumbFile(file);
+    }
+
+    function processThumbFile(file) {
         setFormError('projectThumbError', '');
         if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
             setFormError('projectThumbError', 'Only PNG, JPEG, WebP, or GIF images are allowed.');
-            input.value = '';
             return;
         }
         if (file.size > 4 * 1024 * 1024) {
             setFormError('projectThumbError', 'Image must be 4 MB or smaller.');
-            input.value = '';
             return;
         }
-        input.value = '';  // let the same file be re-picked later regardless of outcome
 
         openCropModal({
             file,
@@ -908,10 +932,7 @@
 
             uploadBtn.addEventListener('click', function () { fileInput.click(); });
 
-            fileInput.addEventListener('change', function () {
-                const file = fileInput.files && fileInput.files[0];
-                fileInput.value = '';
-                if (!file) return;
+            function processAvatarFile(file) {
                 if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
                     statusText.textContent = 'Only PNG, JPEG, WebP, or GIF.';
                     return;
@@ -949,7 +970,14 @@
                         }
                     },
                 });
+            }
+
+            fileInput.addEventListener('change', function () {
+                const file = fileInput.files && fileInput.files[0];
+                fileInput.value = '';
+                if (file) processAvatarFile(file);
             });
+            wireDropzone(row, processAvatarFile);
 
             row.appendChild(uploadBtn);
             row.appendChild(fileInput);
@@ -2658,6 +2686,7 @@ const CHECKLIST_ITEMS = [
 
         // Upload the picked thumbnail file, then fill the hidden thumbnail URL.
         $('#projectThumbFile')?.addEventListener('change', handleThumbFileChange);
+        wireDropzone($('#projectThumbUpload'), processThumbFile);
 
         // "Save draft" — persist the fields; the draft transition is never gated.
         $('#projectForm')?.addEventListener('submit', async (event) => {

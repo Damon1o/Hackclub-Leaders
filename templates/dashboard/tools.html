@@ -5,46 +5,62 @@
 {% block page_subtitle %}<span data-i18n="tools.subtitle">Everything you need to run an amazing club.</span>{% endblock
 %}
 
+{% block header_right %}
+<button class="btn-secondary" type="button" id="toolsTourReplay" aria-label="Show tour" data-i18n-attr="aria-label:tools.showTour">
+    <span aria-hidden="true">?</span> <span data-i18n="tools.showTour">Show tour</span>
+</button>
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-page">
-    <section class="tools-grid">
+    <h2 class="tools-section-label" data-i18n="tools.featuredLabel">Featured</h2>
+    <section class="tools-grid tools-grid-featured" data-tour="featured-row">
         <a class="card-modern tool-card tool-featured" href="https://project.hackclub.com/" target="_blank"
             rel="noopener noreferrer">
             <div class="tool-icon" aria-hidden="true"><span data-hc-icon="easel" data-hc-size="28"
                     data-hc-color="currentColor" aria-hidden="true"></span></div>
-            <h2 data-i18n="tools.createYsws">Create Your Own YSWS</h2>
-            <p data-i18n="tools.createYswsDesc">Design custom You Ship, We Ship programs for your club with your own
-                requirements and rewards.</p>
-            <span class="tool-action" data-i18n="tools.applyNow">Apply now →</span>
+            <div class="tool-copy">
+                <h2 data-i18n="tools.createYsws">Create Your Own YSWS</h2>
+                <p data-i18n="tools.createYswsDesc">Design custom You Ship, We Ship programs for your club with your
+                    own requirements and rewards.</p>
+                <span class="tool-action" data-i18n="tools.applyNow">Apply now →</span>
+            </div>
         </a>
 
         <a class="card-modern tool-card tool-featured" href="https://spaces.hackclub.com/" target="_blank"
             rel="noopener noreferrer">
             <div class="tool-icon" aria-hidden="true"><span data-hc-icon="flag" data-hc-size="28"
                     data-hc-color="currentColor" aria-hidden="true"></span></div>
-            <h2 data-i18n="tools.spaces">Hack Club Spaces</h2>
-            <p data-i18n="tools.spacesDesc">Virtual development environments for Hack Clubbers. VSCode, Blender, KiCad,
-                and more, in the cloud.</p>
-            <span class="tool-action" data-i18n="tools.tryNow">Try now →</span>
+            <div class="tool-copy">
+                <h2 data-i18n="tools.spaces">Hack Club Spaces</h2>
+                <p data-i18n="tools.spacesDesc">Virtual development environments for Hack Clubbers. VSCode, Blender,
+                    KiCad, and more, in the cloud.</p>
+                <span class="tool-action" data-i18n="tools.tryNow">Try now →</span>
+            </div>
         </a>
 
         <a class="card-modern tool-card tool-featured" href="https://hack.club/canva" target="_blank"
             rel="noopener noreferrer">
             <div class="tool-icon" aria-hidden="true"><span data-hc-icon="easel" data-hc-size="28"
                     data-hc-color="currentColor" aria-hidden="true"></span></div>
-            <h2 data-i18n="tools.canva">Canva Pro</h2>
-            <p data-i18n="tools.canvaDesc">Unlock Canva Pro as a Hack Club leader to create meeting slideshows, club
-                posters and more.</p>
-            <span class="tool-action" data-i18n="tools.applyNow">Apply now →</span>
+            <div class="tool-copy">
+                <h2 data-i18n="tools.canva">Canva Pro</h2>
+                <p data-i18n="tools.canvaDesc">Unlock Canva Pro as a Hack Club leader to create meeting slideshows,
+                    club posters and more.</p>
+                <span class="tool-action" data-i18n="tools.applyNow">Apply now →</span>
+            </div>
         </a>
+    </section>
 
+    <h2 class="tools-section-label" data-i18n="tools.moreLabel">More resources</h2>
+    <section class="tools-grid" data-tour="standard-grid">
         <a class="card-modern tool-card" href="https://workshops.hackclub.com/" target="_blank"
             rel="noopener noreferrer">
             <div class="tool-icon" aria-hidden="true"><span data-hc-icon="leader" data-hc-size="28"
                     data-hc-color="currentColor" aria-hidden="true"></span></div>
             <h2 data-i18n="tools.workshops">Workshops</h2>
-            <p data-i18n="tools.workshopsDesc">Ready-to-run meeting content — members build websites, games, and bots in
-                under an hour.</p>
+            <p data-i18n="tools.workshopsDesc">Ready-to-run meeting content — members build websites, games, and bots
+                in under an hour.</p>
             <span class="tool-action" data-i18n="tools.browseWorkshops">Browse workshops →</span>
         </a>
 
@@ -62,8 +78,8 @@
             <div class="tool-icon" aria-hidden="true"><span data-hc-icon="docs" data-hc-size="28"
                     data-hc-color="currentColor" aria-hidden="true"></span></div>
             <h2 data-i18n="tools.clubPosters">Club Posters</h2>
-            <p data-i18n="tools.clubPostersDesc">Fill-in-the-blank posters to hang around your school and pack your next
-                meeting.</p>
+            <p data-i18n="tools.clubPostersDesc">Fill-in-the-blank posters to hang around your school and pack your
+                next meeting.</p>
             <span class="tool-action" data-i18n="tools.getPosters">Get posters →</span>
         </a>
 
@@ -72,8 +88,8 @@
             <div class="tool-icon" aria-hidden="true"><span data-hc-icon="compass" data-hc-size="28"
                     data-hc-color="currentColor" aria-hidden="true"></span></div>
             <h2 data-i18n="tools.leadersGuide">Leaders Guide</h2>
-            <p data-i18n="tools.leadersGuideDesc">The handbook for running your club — recruiting, meeting formats, and
-                hackathon planning.</p>
+            <p data-i18n="tools.leadersGuideDesc">The handbook for running your club — recruiting, meeting formats,
+                and hackathon planning.</p>
             <span class="tool-action" data-i18n="tools.readGuide">Read the guide →</span>
         </a>
 
@@ -86,13 +102,14 @@
             <span class="tool-action" data-i18n="tools.findYourClub">Find your club →</span>
         </a>
 
-        <div class="card-modern tool-card tool-placeholder">
+        <div class="card-modern tool-card tool-placeholder" data-tour="placeholder-card">
             <div class="tool-icon" aria-hidden="true"><span data-hc-icon="plus" data-hc-size="28"
                     data-hc-color="currentColor" aria-hidden="true"></span></div>
             <h2 data-i18n="tools.moreToolsComing">More tools coming soon</h2>
-            <p data-i18n="tools.moreToolsComingDesc">We're working on more resources to help you run an amazing club.
-                Stay tuned!</p>
+            <p data-i18n="tools.moreToolsComingDesc">We're working on more resources to help you run an amazing
+                club. Stay tuned!</p>
         </div>
     </section>
 </div>
+<script src="{{ url_for('static', filename='js/tools-tour.js') }}"></script>
 {% endblock %}

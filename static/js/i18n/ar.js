@@ -122,6 +122,8 @@
             'home.manage': "إدارة",
             'home.clubLevel': "مستوى النادي",
             'home.viewPerks': "عرض مزايا المستوى",
+            'home.coinsEarned': "Coins earned",
+            'home.past30Days': "past 30 days",
             'home.gettingStarted': "ابدأ الآن",
             'home.checklistDone': "تم",
             'home.upcomingEvents': "الفعاليات القادمة",

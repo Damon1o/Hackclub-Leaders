@@ -122,6 +122,8 @@
             'home.manage': "管理",
             'home.clubLevel': "俱乐部等级",
             'home.viewPerks': "查看等级福利",
+            'home.coinsEarned': "Coins earned",
+            'home.past30Days': "past 30 days",
             'home.gettingStarted': "新手上路",
             'home.checklistDone': "已完成",
             'home.upcomingEvents': "近期活动",

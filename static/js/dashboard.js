@@ -50,6 +50,10 @@
         return dashboardState.orders || [];
     }
 
+    function ledger() {
+        return dashboardState.ledger || [];
+    }
+
     function workshops() {
         return dashboardState.workshops || [];
     }
@@ -204,7 +208,7 @@
     // src/helpers.py — the server drops everything else, so a page fetches only
     // what it paints. Pages missing from this map get the full state.
     const PAGE_SECTIONS = {
-        dashboard: ['events', 'projects', 'newsletters', 'workshops'],
+        dashboard: ['events', 'projects', 'newsletters', 'workshops', 'ledger'],
         team: [],
         events: ['events'],
         ships: ['projects'],
@@ -1700,6 +1704,40 @@ const CHECKLIST_ITEMS = [
         return saved;
     }
 
+    function coinsEarnedByDay(days) {
+        const buckets = new Map();
+        const now = new Date();
+        for (let i = days - 1; i >= 0; i -= 1) {
+            const d = new Date(now);
+            d.setUTCDate(d.getUTCDate() - i);
+            buckets.set(d.toISOString().slice(0, 10), 0);
+        }
+        ledger().forEach((tx) => {
+            if (!tx || tx.delta <= 0) return;
+            const day = String(tx.at || '').slice(0, 10);
+            if (buckets.has(day)) buckets.set(day, buckets.get(day) + tx.delta);
+        });
+        return Array.from(buckets.values());
+    }
+
+    function renderCoinsWidget() {
+        const days = coinsEarnedByDay(30);
+        const total = days.reduce((sum, value) => sum + value, 0);
+        const totalEl = $('#homeCoinsTotal');
+        if (totalEl) totalEl.textContent = total;
+
+        const line = $('#homeCoinsSparkline .home-coins-line');
+        if (!line) return;
+        const max = Math.max(1, ...days);
+        const stepX = 120 / (days.length - 1 || 1);
+        const points = days.map((value, index) => {
+            const x = index * stepX;
+            const y = 32 - (value / max) * 30 - 1;
+            return `${x.toFixed(2)},${y.toFixed(2)}`;
+        }).join(' ');
+        line.setAttribute('points', points);
+    }
+
     function renderHome() {
         if (page !== 'home') return;
         removeSkeletons('home');
@@ -1809,6 +1847,7 @@ const CHECKLIST_ITEMS = [
         if (empty) empty.hidden = upcoming.length > 0;
 
         renderChecklist();
+        renderCoinsWidget();
     }
 
     function renderChecklist() {

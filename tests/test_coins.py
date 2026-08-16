@@ -82,6 +82,12 @@ def test_award_coins_negative_delta_updates_spent_cache():
     assert state['settings']['coinsSpent'] == 30
 
 
+def test_dashboard_page_section_loads_ledger():
+    from src.helpers import PAGE_SECTIONS
+
+    assert 'ledger' in PAGE_SECTIONS['dashboard']
+
+
 def test_every_state_section_has_an_airtable_table():
     from src.helpers import STATE_SECTIONS
 

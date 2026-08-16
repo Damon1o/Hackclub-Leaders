@@ -122,6 +122,8 @@
             'home.manage': "관리",
             'home.clubLevel': "클럽 레벨",
             'home.viewPerks': "레벨 혜택 보기",
+            'home.coinsEarned': "Coins earned",
+            'home.past30Days': "past 30 days",
             'home.gettingStarted': "시작하기",
             'home.checklistDone': "완료",
             'home.upcomingEvents': "예정된 이벤트",

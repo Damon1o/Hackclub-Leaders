@@ -122,6 +122,8 @@
             'home.manage': "管理",
             'home.clubLevel': "クラブレベル",
             'home.viewPerks': "レベル特典を見る",
+            'home.coinsEarned': "Coins earned",
+            'home.past30Days': "past 30 days",
             'home.gettingStarted': "はじめに",
             'home.checklistDone': "完了",
             'home.upcomingEvents': "今後のイベント",

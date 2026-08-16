@@ -122,6 +122,8 @@
             'home.manage': "Управление",
             'home.clubLevel': "Уровень клуба",
             'home.viewPerks': "Посмотреть бонусы уровня",
+            'home.coinsEarned': "Coins earned",
+            'home.past30Days': "past 30 days",
             'home.gettingStarted': "Начало работы",
             'home.checklistDone': "Готово",
             'home.upcomingEvents': "Ближайшие мероприятия",

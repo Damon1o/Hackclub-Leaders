@@ -258,6 +258,16 @@ def test_dashboard_layout_has_workshops_nav_link(auth_client, monkeypatch):
     assert b'id="homeWorkshopTotal"' in response.data
 
 
+def test_dashboard_layout_has_coins_earned_widget(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {'settings': {'clubName': 'Nav Club'}, 'members': []}
+    response = auth_client.get('/dashboard')
+    assert response.status_code == 200
+    assert b'id="homeCoinsTotal"' in response.data
+    assert b'id="homeCoinsSparkline"' in response.data
+
+
 # ── StorageError resilience (no infinite self-redirect loop) ────────────────
 
 

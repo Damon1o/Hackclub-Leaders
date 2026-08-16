@@ -279,6 +279,11 @@ window.DashboardChat = function (ctx) {
         }
         const person = { name: message.authorName, avatar: message.authorAvatar };
         const mine = (message.authorEmail || '').toLowerCase() === viewerEmail ? ' is-mine' : '';
+        const mentionsViewer = !mine && (
+            (message.mentions || []).some((email) => String(email).toLowerCase() === viewerEmail)
+            || Boolean(message.mentionsEveryone)
+        );
+        const mentioned = mentionsViewer ? ' chat-message--mentioned' : '';
         const authorKey = String(message.authorEmail || message.authorName || '').toLowerCase();
         const msgTime = new Date(message.createdAt).getTime();
         const grouped = S.lastMsgMeta
@@ -287,7 +292,7 @@ window.DashboardChat = function (ctx) {
             && (msgTime - S.lastMsgMeta.time) >= 0
             && (msgTime - S.lastMsgMeta.time) <= CHAT_GROUP_MS;
         const row = document.createElement('div');
-        row.className = 'chat-message' + mine + (grouped ? ' chat-message--grouped' : '')
+        row.className = 'chat-message' + mine + mentioned + (grouped ? ' chat-message--grouped' : '')
             + (message.deleted ? ' chat-message--deleted' : '')
             + (opts.pending ? ' chat-message--pending' : '');
         if (message.id) row.dataset.mid = String(message.id);
@@ -302,6 +307,8 @@ window.DashboardChat = function (ctx) {
         const threadLink = message.deleted ? '' : threadAffordanceMarkup(message);
         if (grouped) {
             row.innerHTML = `
+            <span class="chat-message-time chat-message-time--hover"
+                title="${escapeHtml(chatFullTime(message.createdAt))}">${escapeHtml(chatTime(message.createdAt))}</span>
             <div class="chat-message-body">
                 ${bodyHtml}${threadLink}
             </div>${actions}`;
@@ -363,8 +370,9 @@ window.DashboardChat = function (ctx) {
         let last = 0;
         let match;
         while ((match = pattern.exec(body)) !== null) {
+            const cls = match[1] === 'everyone' ? 'mention mention--everyone' : 'mention';
             html += escapeHtml(body.slice(last, match.index))
-                + `<span class="mention">@${escapeHtml(match[1])}</span>`;
+                + `<span class="${cls}">@${escapeHtml(match[1])}</span>`;
             last = match.index + match[0].length;
         }
         return html + escapeHtml(body.slice(last));
@@ -543,7 +551,7 @@ window.DashboardChat = function (ctx) {
         if (!el) return;
         if (!typing || !typing.length) {
             el.hidden = true;
-            el.textContent = '';
+            el.innerHTML = '';
             return;
         }
         const names = typing.map((person) => person.name || person.email);
@@ -555,7 +563,11 @@ window.DashboardChat = function (ctx) {
         } else {
             text = `${names[0]} and ${names.length - 1} others are typing…`;
         }
-        el.textContent = text;   // textContent, not innerHTML — names are unescaped
+        if (!el.querySelector('.chat-typing-text')) {
+            el.innerHTML = '<span class="chat-typing-dots"><span></span><span></span><span></span></span>'
+                + '<span class="chat-typing-text"></span>';
+        }
+        el.querySelector('.chat-typing-text').textContent = text;   // textContent — names are unescaped
         el.hidden = false;
     }
 
@@ -654,6 +666,8 @@ window.DashboardChat = function (ctx) {
         }
     }
 
+    const SEEN_BY_MAX = 4;
+
     function renderSeenBy(reads) {
         const box = document.getElementById('chatMessages');
         if (!box) return;
@@ -672,14 +686,17 @@ window.DashboardChat = function (ctx) {
         });
         if (!seen.length) return;
 
+        const shown = seen.slice(0, SEEN_BY_MAX);
+        const overflow = seen.length - shown.length;
         const row = document.createElement('div');
         row.className = 'chat-seen-by';
         row.innerHTML = '<span class="chat-seen-by-label">Seen by</span>'
-            + seen.map((email) => {
+            + shown.map((email) => {
                 const member = byEmail[String(email).toLowerCase()] || {};
                 const name = member.name || email;
                 return `<span class="chat-seen-by-person" title="${escapeHtml(name)}">${avatarMarkup({ name, avatar: member.avatar }, 'avatar-sm')}</span>`;
-            }).join('');
+            }).join('')
+            + (overflow > 0 ? `<span class="chat-seen-by-overflow">+${overflow}</span>` : '');
         box.appendChild(row);
     }
 
@@ -711,12 +728,18 @@ window.DashboardChat = function (ctx) {
     function openThreadPanel(parentId) {
         const panel = threadPanel();
         if (!panel) return;
+        // Cancel any pending close timeout before reopening
+        if (S.threadPanelCloseTimer) {
+            window.clearTimeout(S.threadPanelCloseTimer);
+            S.threadPanelCloseTimer = null;
+        }
         S.threadParentId = parentId;
         S.threadLastFetch = null;
         S.threadLastMsgMeta = null;
         const box = panel.querySelector('.chat-thread-messages');
         if (box) box.innerHTML = '';
         panel.hidden = false;
+        window.requestAnimationFrame(() => panel.classList.add('chat-thread-panel--visible'));
         loadThreadMessages(parentId);
         stopThreadPolling();
         S.threadPollTimer = window.setInterval(() => threadPoll(parentId), MESSAGE_POLL_MS);
@@ -724,7 +747,14 @@ window.DashboardChat = function (ctx) {
 
     function closeThreadPanel() {
         const panel = threadPanel();
-        if (panel) panel.hidden = true;
+        if (panel) {
+            if (S.threadPanelCloseTimer) window.clearTimeout(S.threadPanelCloseTimer);
+            panel.classList.remove('chat-thread-panel--visible');
+            S.threadPanelCloseTimer = window.setTimeout(() => {
+                panel.hidden = true;
+                S.threadPanelCloseTimer = null;
+            }, 200);
+        }
         S.threadParentId = null;
         stopThreadPolling();
     }

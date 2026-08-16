@@ -748,6 +748,7 @@ window.DashboardChat = function (ctx) {
     function closeThreadPanel() {
         const panel = threadPanel();
         if (panel) {
+            if (S.threadPanelCloseTimer) window.clearTimeout(S.threadPanelCloseTimer);
             panel.classList.remove('chat-thread-panel--visible');
             S.threadPanelCloseTimer = window.setTimeout(() => {
                 panel.hidden = true;

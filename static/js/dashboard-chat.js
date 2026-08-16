@@ -551,7 +551,7 @@ window.DashboardChat = function (ctx) {
         if (!el) return;
         if (!typing || !typing.length) {
             el.hidden = true;
-            el.textContent = '';
+            el.innerHTML = '';
             return;
         }
         const names = typing.map((person) => person.name || person.email);
@@ -563,7 +563,11 @@ window.DashboardChat = function (ctx) {
         } else {
             text = `${names[0]} and ${names.length - 1} others are typing…`;
         }
-        el.textContent = text;   // textContent, not innerHTML — names are unescaped
+        if (!el.querySelector('.chat-typing-text')) {
+            el.innerHTML = '<span class="chat-typing-dots"><span></span><span></span><span></span></span>'
+                + '<span class="chat-typing-text"></span>';
+        }
+        el.querySelector('.chat-typing-text').textContent = text;   // textContent — names are unescaped
         el.hidden = false;
     }
 
@@ -662,6 +666,8 @@ window.DashboardChat = function (ctx) {
         }
     }
 
+    const SEEN_BY_MAX = 4;
+
     function renderSeenBy(reads) {
         const box = document.getElementById('chatMessages');
         if (!box) return;
@@ -680,14 +686,17 @@ window.DashboardChat = function (ctx) {
         });
         if (!seen.length) return;
 
+        const shown = seen.slice(0, SEEN_BY_MAX);
+        const overflow = seen.length - shown.length;
         const row = document.createElement('div');
         row.className = 'chat-seen-by';
         row.innerHTML = '<span class="chat-seen-by-label">Seen by</span>'
-            + seen.map((email) => {
+            + shown.map((email) => {
                 const member = byEmail[String(email).toLowerCase()] || {};
                 const name = member.name || email;
                 return `<span class="chat-seen-by-person" title="${escapeHtml(name)}">${avatarMarkup({ name, avatar: member.avatar }, 'avatar-sm')}</span>`;
-            }).join('');
+            }).join('')
+            + (overflow > 0 ? `<span class="chat-seen-by-overflow">+${overflow}</span>` : '');
         box.appendChild(row);
     }
 

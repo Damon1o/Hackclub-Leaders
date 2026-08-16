@@ -467,3 +467,50 @@ def test_chat_page_has_tour_page_key(auth_client, monkeypatch):
     assert response.status_code == 200
     assert b'data-tour-page="chat"' in response.data
     assert b'class="chat-sidebar"' in response.data
+
+
+def test_notifications_page_has_tour_page_key(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {'settings': {'clubName': 'Tour Club'}, 'members': []}
+    response = auth_client.get('/dashboard/notifications')
+    assert response.status_code == 200
+    assert b'data-tour-page="notifications"' in response.data
+    assert b'id="newsletterList"' in response.data
+
+
+def test_settings_page_has_tour_page_key(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {'settings': {'clubName': 'Tour Club'}, 'members': []}
+    response = auth_client.get('/dashboard/settings')
+    assert response.status_code == 200
+    assert b'data-tour-page="settings"' in response.data
+    assert b'id="settingsNav"' in response.data
+
+
+def test_profile_page_has_tour_page_key(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {'settings': {'clubName': 'Tour Club'}, 'members': []}
+    response = auth_client.get('/dashboard/profile')
+    assert response.status_code == 200
+    assert b'data-tour-page="profile"' in response.data
+    assert b'id="profileForm"' in response.data
+
+
+def test_admin_page_has_tour_page_key(admin_client):
+    response = admin_client.get('/dashboard/admin')
+    assert response.status_code == 200
+    assert b'data-tour-page="admin"' in response.data
+    assert b'class="dashboard-metrics"' in response.data
+
+
+def test_admin_club_page_has_tour_page_key(admin_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with admin_client.session_transaction() as sess:
+        sess['dashboard_state'] = {'settings': {'clubName': 'Managed Club'}, 'members': []}
+    response = admin_client.get('/dashboard/admin/club/managed@test.com')
+    assert response.status_code == 200
+    assert b'data-tour-page="admin-club"' in response.data
+    assert b'id="adminClubForm"' in response.data

@@ -168,6 +168,81 @@
                 title: 'Start chatting',
                 body: 'Pick a channel from the sidebar to join the conversation.'
             }
+        ],
+        notifications: [
+            {
+                target: '#newsletterList',
+                title: 'Dispatches from HQ',
+                body: 'Updates from Hack Club HQ, plus anything you send your own club.'
+            },
+            {
+                target: '#notificationsMarkAllReadBtn',
+                title: 'Stay caught up',
+                body: 'Mark everything as read in one click.'
+            },
+            {
+                target: '[data-open-modal="dispatchModal"]',
+                title: 'Send an update',
+                body: 'Write a dispatch to your whole club.'
+            }
+        ],
+        settings: [
+            {
+                target: '#settingsNav',
+                title: 'Jump to a section',
+                body: 'Club profile, members, appearance, privacy, notifications — organized in one place.'
+            },
+            {
+                target: '#danger-zone',
+                title: 'Careful in here',
+                body: 'Irreversible stuff lives in the danger zone — read twice before you click.'
+            }
+        ],
+        profile: [
+            {
+                target: '#profileForm',
+                title: 'Your details',
+                body: 'Name, email, avatar, and bio — how you show up across the portal.'
+            },
+            {
+                target: '.hackatime-connect',
+                title: 'Track your coding time',
+                body: 'Connect Hackatime to show your coding time on Projects.'
+            },
+            {
+                target: '#profilePreview',
+                title: 'How others see you',
+                body: 'A live preview of your profile card.'
+            }
+        ],
+        admin: [
+            {
+                target: '.dashboard-metrics',
+                title: 'Platform at a glance',
+                body: 'Total clubs, projects waiting on review, and members across Hack Club.'
+            },
+            {
+                target: '.admin-review-list',
+                title: 'Review queue',
+                body: "Approve or reject shipped projects — approved ones count toward a club's level."
+            },
+            {
+                target: '.admin-table',
+                title: 'Every club',
+                body: 'Browse all clubs, or open one to manage it directly.'
+            }
+        ],
+        'admin-club': [
+            {
+                target: '#adminClubForm',
+                title: 'Edit on their behalf',
+                body: "Update this club's profile as an admin."
+            },
+            {
+                target: '.timeline-list',
+                title: 'Their shipped projects',
+                body: 'Approve, reject, or un-ship a project for this club.'
+            }
         ]
     };
 })(window);

@@ -57,14 +57,14 @@
     function positionOn(target) {
         var rect = target.getBoundingClientRect();
         var pad = 8;
-        spotlightEl.style.top = (rect.top - pad + window.scrollY) + 'px';
-        spotlightEl.style.left = (rect.left - pad + window.scrollX) + 'px';
+        spotlightEl.style.top = (rect.top - pad) + 'px';
+        spotlightEl.style.left = (rect.left - pad) + 'px';
         spotlightEl.style.width = (rect.width + pad * 2) + 'px';
         spotlightEl.style.height = (rect.height + pad * 2) + 'px';
 
-        var tooltipTop = rect.bottom + window.scrollY + 16;
+        var tooltipTop = rect.bottom + 16;
         var tooltipLeft = Math.min(
-            Math.max(rect.left + window.scrollX, 16),
+            Math.max(rect.left, 16),
             window.innerWidth - 340
         );
         tooltip.style.top = tooltipTop + 'px';
@@ -94,11 +94,12 @@
     }
 
     function nextStep() {
-        if (stepIndex >= STEPS.length - 1) {
+        var current = typeof stepIndex === 'number' ? stepIndex : -1;
+        if (current >= STEPS.length - 1) {
             endTour();
             return;
         }
-        showStep(stepIndex + 1);
+        showStep(current + 1);
     }
 
     function endTour() {

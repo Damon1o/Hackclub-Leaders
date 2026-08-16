@@ -858,9 +858,12 @@
                 dropzone.classList.add('drag-over');
             });
         });
-        ['dragleave', 'dragend'].forEach((type) => {
-            dropzone.addEventListener(type, () => dropzone.classList.remove('drag-over'));
+        dropzone.addEventListener('dragleave', (event) => {
+            if (!dropzone.contains(event.relatedTarget)) {
+                dropzone.classList.remove('drag-over');
+            }
         });
+        dropzone.addEventListener('dragend', () => dropzone.classList.remove('drag-over'));
         dropzone.addEventListener('drop', (event) => {
             event.preventDefault();
             dropzone.classList.remove('drag-over');
@@ -868,6 +871,16 @@
             if (file) onFile(file);
         });
     }
+
+    // Guards against the browser navigating the tab to display a dropped
+    // file when a drag misses every dropzone and lands on the page itself.
+    ['dragover', 'drop'].forEach((type) => {
+        window.addEventListener(type, (event) => {
+            if (event.dataTransfer && Array.from(event.dataTransfer.types || []).includes('Files')) {
+                event.preventDefault();
+            }
+        });
+    });
 
     function handleThumbFileChange(event) {
         const input = event.target;

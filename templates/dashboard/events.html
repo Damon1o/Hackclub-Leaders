@@ -1,5 +1,6 @@
 {% extends "dashboard_layout.html" %}
 
+{% block tour_page %}events{% endblock %}
 {% block page_title %}<span data-i18n="side.events">Events</span>{% endblock %}
 {% block page_subtitle %}<span data-i18n="events.subtitle">Plan meetings, workshops, and demo days.</span>{% endblock %}
 
@@ -39,7 +40,7 @@
         </article>
     </section>
 
-    <section class="card-modern dashboard-panel dashboard-panel-full">
+    <section class="card-modern dashboard-panel dashboard-panel-full" data-tour="events-schedule">
         <div class="panel-heading">
             <div>
                 <h2 data-i18n="events.upcomingSchedule">Upcoming schedule</h2>

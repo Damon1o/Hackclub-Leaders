@@ -1,5 +1,6 @@
 {% extends "dashboard_layout.html" %}
 
+{% block tour_page %}workshops{% endblock %}
 {% block page_title %}<span data-i18n="side.workshops">Workshops</span>{% endblock %}
 {% block page_subtitle %}<span data-i18n="workshops.subtitle">Propose a topic, or apply to run one someone else
     suggested.</span>{% endblock %}
@@ -27,7 +28,7 @@
         </div>
     </div>
 
-    <section class="card-modern dashboard-panel dashboard-panel-full">
+    <section class="card-modern dashboard-panel dashboard-panel-full" data-tour="workshops-board">
         <div class="panel-heading">
             <div>
                 <h2 data-i18n="workshops.catalogTitle">Workshop board</h2>

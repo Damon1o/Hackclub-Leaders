@@ -1,5 +1,6 @@
 {% extends "dashboard_layout.html" %}
 
+{% block tour_page %}home{% endblock %}
 {% block page_title %}<span data-i18n="side.home">Home</span>{% endblock %}
 {% block page_subtitle %}<span data-i18n="home.subtitle">Welcome back, <strong>{{ current_user.name if current_user else
         'User' }}</strong>! Here's what's happening at your club.</span>{% endblock %}

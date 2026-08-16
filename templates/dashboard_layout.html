@@ -19,7 +19,8 @@
 </head>
 
 <body class="dashboard-layout" data-viewer-role="{{ viewer_role }}"
-    data-viewer-email="{{ (current_user.email if current_user else '') | lower }}">
+    data-viewer-email="{{ (current_user.email if current_user else '') | lower }}"
+    data-tour-page="{% block tour_page %}{% endblock %}">
     <a class="skip-link" href="#dashboardMain" data-i18n="common.skipLink">Skip to dashboard</a>
     {% from 'partials/icons.html' import sidebar_icon %}
 
@@ -228,8 +229,12 @@
                             data-i18n="home.welcomeDot">.</span>{% endblock %}</p>
                 </div>
                 <div class="dashboard-header-right">
+                    <button class="icon-button tour-replay-button" type="button" id="tourReplayButton" hidden
+                        title="Show tour" aria-label="Show tour">
+                        <span aria-hidden="true">?</span>
+                    </button>
+                    {% block header_right %}{% endblock %}
                 </div>
-                {% block header_right %}{% endblock %}
             </header>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -293,6 +298,8 @@
     <script defer src="{{ url_for('static', filename='js/i18n-langs.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/tour-steps.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/tour.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/effects.js') }}"></script>
     <script id="stickerData" type="application/json">{{ sticker_files | tojson }}</script>
     <div class="sticker-field" id="stickerField" data-sticker-count="3" aria-hidden="true"></div>

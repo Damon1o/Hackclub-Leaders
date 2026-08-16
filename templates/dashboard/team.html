@@ -1,5 +1,6 @@
 {% extends "dashboard_layout.html" %}
 
+{% block tour_page %}team{% endblock %}
 {% block page_title %}<span data-i18n="side.team">Team</span>{% endblock %}
 {% block page_subtitle %}<span data-i18n="team.subtitle">Manage your club leaders and members.</span>{% endblock %}
 
@@ -65,7 +66,7 @@
     </section>
     {% endif %}
 
-    <section class="card-modern dashboard-panel dashboard-panel-full">
+    <section class="card-modern dashboard-panel dashboard-panel-full" data-tour="team-roster">
         <div class="panel-heading">
             <div>
                 <h2 data-i18n="team.roster">Your club roster</h2>

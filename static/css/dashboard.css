@@ -3315,6 +3315,10 @@ img.thumb-preview[src=""] {
         flex-wrap: wrap;
     }
 
+    .home-coins {
+        flex-wrap: wrap;
+    }
+
     .level-band-progress {
         flex-basis: 100%;
         order: 3;
@@ -3509,6 +3513,10 @@ img.thumb-preview[src=""] {
     }
 
     .level-band {
+        padding: 20px;
+    }
+
+    .home-coins {
         padding: 20px;
     }
 

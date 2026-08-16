@@ -302,6 +302,8 @@ window.DashboardChat = function (ctx) {
         const threadLink = message.deleted ? '' : threadAffordanceMarkup(message);
         if (grouped) {
             row.innerHTML = `
+            <span class="chat-message-time chat-message-time--hover"
+                title="${escapeHtml(chatFullTime(message.createdAt))}">${escapeHtml(chatTime(message.createdAt))}</span>
             <div class="chat-message-body">
                 ${bodyHtml}${threadLink}
             </div>${actions}`;

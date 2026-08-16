@@ -4004,6 +4004,29 @@ body.dark-mode .dashboard-wrapper {
     font-style: italic;
 }
 
+.chat-message--grouped {
+    padding-left: 46px;
+    margin-top: -6px;
+}
+
+.chat-message-time--hover {
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 46px;
+    text-align: right;
+    padding-right: 10px;
+    font-size: 0.68rem;
+    color: var(--dash-muted);
+    opacity: 0;
+    transition: opacity 0.12s ease-out;
+}
+
+.chat-message:hover .chat-message-time--hover,
+.chat-message:focus-within .chat-message-time--hover {
+    opacity: 1;
+}
+
 /* Hover/focus-revealed per-message edit & delete controls. */
 .chat-message {
     position: relative;

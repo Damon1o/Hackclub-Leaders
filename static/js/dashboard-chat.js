@@ -728,6 +728,11 @@ window.DashboardChat = function (ctx) {
     function openThreadPanel(parentId) {
         const panel = threadPanel();
         if (!panel) return;
+        // Cancel any pending close timeout before reopening
+        if (S.threadPanelCloseTimer) {
+            window.clearTimeout(S.threadPanelCloseTimer);
+            S.threadPanelCloseTimer = null;
+        }
         S.threadParentId = parentId;
         S.threadLastFetch = null;
         S.threadLastMsgMeta = null;
@@ -744,7 +749,10 @@ window.DashboardChat = function (ctx) {
         const panel = threadPanel();
         if (panel) {
             panel.classList.remove('chat-thread-panel--visible');
-            window.setTimeout(() => { panel.hidden = true; }, 200);
+            S.threadPanelCloseTimer = window.setTimeout(() => {
+                panel.hidden = true;
+                S.threadPanelCloseTimer = null;
+            }, 200);
         }
         S.threadParentId = null;
         stopThreadPolling();

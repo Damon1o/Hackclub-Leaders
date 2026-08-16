@@ -4120,6 +4120,7 @@ body.dark-mode .dashboard-wrapper {
 
 .chat-composer {
     display: flex;
+    align-items: center;
     gap: 10px;
     padding: 14px 18px;
     border-top: 1px solid var(--dash-border);
@@ -4128,7 +4129,7 @@ body.dark-mode .dashboard-wrapper {
 .chat-composer-input {
     flex: 1;
     padding: 10px 14px;
-    border-radius: 10px;
+    border-radius: 999px;
     border: 1px solid var(--dash-border);
     background: var(--dash-bg);
     color: var(--dash-ink);
@@ -4138,6 +4139,35 @@ body.dark-mode .dashboard-wrapper {
 .chat-composer-input:focus {
     outline: 2px solid var(--hackclub-red);
     outline-offset: 1px;
+}
+
+.chat-send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--dash-accent);
+    color: var(--dash-card);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+.chat-send-btn:hover {
+    opacity: 0.9;
+}
+
+.chat-send-btn:active {
+    transform: scale(0.94);
+}
+
+.chat-send-btn:focus-visible {
+    outline: 2px solid var(--dash-accent);
+    outline-offset: 2px;
 }
 
 .chat-typing-indicator {
@@ -4328,6 +4358,10 @@ body.dark-mode .dashboard-wrapper {
 .chat-cmd-option span {
     color: var(--dash-muted);
     font-size: 0.78rem;
+}
+
+.chat-mention-menu .chat-cmd-option strong {
+    color: var(--dash-accent);
 }
 
 .mention {

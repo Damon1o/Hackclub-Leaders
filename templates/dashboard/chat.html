@@ -68,7 +68,10 @@
             <form class="chat-composer" id="chatComposer" hidden autocomplete="off">
                 <input class="chat-composer-input" type="text" name="body" maxlength="500"
                     data-i18n-attr="placeholder:chat.messagePlaceholder" placeholder="Type a message…" aria-label="Message">
-                <button class="btn-primary" type="submit" data-i18n="chat.send">Send</button>
+                <button class="chat-send-btn" type="submit" aria-label="Send"
+                    data-i18n-attr="aria-label:chat.send">
+                    <span aria-hidden="true">&#10148;</span>
+                </button>
             </form>
             <p class="chat-typing-indicator" id="chatTypingIndicator" hidden aria-live="polite"></p>
         </main>

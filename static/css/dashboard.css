@@ -3748,7 +3748,7 @@ body.dark-mode .dashboard-wrapper {
 }
 
 .chat-sidebar {
-    width: 240px;
+    width: 220px;
     flex-shrink: 0;
     background: var(--dash-card);
     border: 1px solid var(--dash-border);
@@ -3769,8 +3769,11 @@ body.dark-mode .dashboard-wrapper {
 
 .chat-sidebar-head h2 {
     margin: 0;
-    font-size: 1rem;
-    color: var(--dash-ink);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--dash-muted);
 }
 
 .chat-channel-list {
@@ -3783,19 +3786,22 @@ body.dark-mode .dashboard-wrapper {
 }
 
 .chat-channel {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
     width: 100%;
-    padding: 8px 10px;
+    padding: 8px 10px 8px 13px;
     border: none;
+    border-left: 3px solid transparent;
     background: transparent;
     border-radius: 8px;
     color: var(--dash-slate);
     font: inherit;
     text-align: left;
     cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
 .chat-channel:hover {
@@ -3804,6 +3810,7 @@ body.dark-mode .dashboard-wrapper {
 
 .chat-channel.is-active {
     background: var(--dash-fill);
+    border-left-color: var(--dash-accent);
     color: var(--dash-ink);
     font-weight: 600;
 }
@@ -3819,6 +3826,7 @@ body.dark-mode .dashboard-wrapper {
     height: 8px;
     border-radius: 50%;
     background: var(--hackclub-red);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--hackclub-red) 25%, transparent);
     flex-shrink: 0;
 }
 

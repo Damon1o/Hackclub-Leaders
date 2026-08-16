@@ -1709,7 +1709,7 @@ const CHECKLIST_ITEMS = [
         const now = new Date();
         for (let i = days - 1; i >= 0; i -= 1) {
             const d = new Date(now);
-            d.setDate(d.getDate() - i);
+            d.setUTCDate(d.getUTCDate() - i);
             buckets.set(d.toISOString().slice(0, 10), 0);
         }
         ledger().forEach((tx) => {

@@ -122,6 +122,8 @@
             'home.manage': "प्रबंधित करें",
             'home.clubLevel': "क्लब स्तर",
             'home.viewPerks': "स्तर के लाभ देखें",
+            'home.coinsEarned': "Coins earned",
+            'home.past30Days': "past 30 days",
             'home.gettingStarted': "शुरुआत करें",
             'home.checklistDone': "पूर्ण",
             'home.upcomingEvents': "आगामी इवेंट्स",

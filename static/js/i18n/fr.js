@@ -122,6 +122,8 @@
             'home.manage': "Gérer",
             'home.clubLevel': "Niveau du club",
             'home.viewPerks': "Voir les avantages du niveau",
+            'home.coinsEarned': "Coins earned",
+            'home.past30Days': "past 30 days",
             'home.gettingStarted': "Premiers pas",
             'home.checklistDone': "Terminé",
             'home.upcomingEvents': "Événements à venir",

@@ -1,15 +1,10 @@
 {% extends "dashboard_layout.html" %}
 
+{% block tour_page %}tools{% endblock %}
 {% block title %}Club Tools{% endblock %}
 {% block page_title %}<span data-i18n="side.tools">Club Tools</span>{% endblock %}
 {% block page_subtitle %}<span data-i18n="tools.subtitle">Everything you need to run an amazing club.</span>{% endblock
 %}
-
-{% block header_right %}
-<button class="btn-secondary" type="button" id="toolsTourReplay" aria-label="Show tour" data-i18n-attr="aria-label:tools.showTour">
-    <span aria-hidden="true">?</span> <span data-i18n="tools.showTour">Show tour</span>
-</button>
-{% endblock %}
 
 {% block content %}
 <div class="dashboard-page">
@@ -111,5 +106,4 @@
         </div>
     </section>
 </div>
-<script src="{{ url_for('static', filename='js/tools-tour.js') }}"></script>
 {% endblock %}

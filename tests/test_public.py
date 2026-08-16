@@ -341,3 +341,28 @@ def test_old_newsletters_path_redirects_to_notifications(auth_client, monkeypatc
     response = auth_client.get('/dashboard/newsletters', follow_redirects=False)
     assert response.status_code == 301
     assert response.headers['Location'].endswith('/dashboard/notifications')
+
+
+# ── Site-wide guided tour ────────────────────────────────────────────────────
+
+
+def test_dashboard_layout_has_tour_button_and_scripts(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {'settings': {'clubName': 'Tour Club'}, 'members': []}
+    response = auth_client.get('/dashboard')
+    assert response.status_code == 200
+    assert b'id="tourReplayButton"' in response.data
+    assert b'js/tour-steps.js' in response.data
+    assert b'js/tour.js' in response.data
+
+
+def test_tools_page_uses_shared_tour_engine(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['dashboard_state'] = {'settings': {'clubName': 'Tour Club'}, 'members': []}
+    response = auth_client.get('/dashboard/tools')
+    assert response.status_code == 200
+    assert b'data-tour-page="tools"' in response.data
+    assert b'tools-tour.js' not in response.data
+    assert b'id="toolsTourReplay"' not in response.data

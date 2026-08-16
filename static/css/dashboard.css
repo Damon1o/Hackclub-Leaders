@@ -1824,16 +1824,22 @@ a.tool-featured:hover::before {
     }
 }
 
-/* ── Tools tour ───────────────────────────────────────────────────────────── */
+/* ── Tour ─────────────────────────────────────────────────────────────────── */
 
-.tools-tour-overlay {
+.dashboard-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tour-overlay {
     position: fixed;
     inset: 0;
     z-index: 900;
     background: transparent;
 }
 
-.tools-tour-spotlight {
+.tour-spotlight {
     position: absolute;
     border-radius: 16px;
     box-shadow: 0 0 0 4000px rgba(17, 17, 20, 0.55);
@@ -1842,9 +1848,11 @@ a.tool-featured:hover::before {
     pointer-events: none;
 }
 
-.tools-tour-tooltip {
+.tour-tooltip {
     position: absolute;
-    width: 320px;
+    display: flex;
+    gap: 12px;
+    width: 340px;
     max-width: calc(100vw - 32px);
     background: var(--dash-card);
     border: 1px solid var(--dash-border);
@@ -1854,34 +1862,46 @@ a.tool-featured:hover::before {
     transition: top 0.25s ease, left 0.25s ease;
 }
 
-.tools-tour-title {
+.tour-mascot {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.tour-tooltip-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.tour-title {
     margin: 0 0 8px;
     font-family: var(--hackclub-title-font);
     font-size: 17px;
     color: var(--dash-ink);
 }
 
-.tools-tour-body {
+.tour-body {
     margin: 0 0 16px;
     font-size: 14px;
     line-height: 1.5;
     color: var(--dash-slate);
 }
 
-.tools-tour-actions {
+.tour-actions {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
 }
 
-.tools-tour-progress {
+.tour-progress {
     font-size: 12px;
     color: var(--dash-muted);
 }
 
-.tools-tour-skip,
-.tools-tour-next {
+.tour-skip,
+.tour-next {
     border: none;
     border-radius: 8px;
     padding: 8px 14px;
@@ -1890,12 +1910,12 @@ a.tool-featured:hover::before {
     cursor: pointer;
 }
 
-.tools-tour-skip {
+.tour-skip {
     background: transparent;
     color: var(--dash-muted);
 }
 
-.tools-tour-next {
+.tour-next {
     background: var(--hackclub-red);
     color: #fff;
 }

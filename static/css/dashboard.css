@@ -898,12 +898,13 @@ body.dark-mode .badge-up {
 .home-team {
     grid-column: span 4;
     justify-content: flex-start;
+    padding: 18px 20px;
 }
 
 .home-team-total {
     margin: 8px 0 0;
     font-family: var(--hackclub-title-font);
-    font-size: 56px;
+    font-size: 40px;
     font-weight: bold;
     line-height: 1;
     color: var(--dash-ink);
@@ -914,8 +915,8 @@ body.dark-mode .badge-up {
 
 .team-donut {
     position: relative;
-    width: min(180px, 46%);
-    margin: 14px auto 0;
+    width: min(130px, 42%);
+    margin: 10px auto 0;
 }
 
 .donut-svg {
@@ -1171,6 +1172,24 @@ body.dark-mode .badge-up {
 /* Members don't see the leader checklist — let events take the full row */
 .home-events-wide {
     grid-column: 1 / -1;
+}
+
+.home-checklist,
+.home-events {
+    padding: 18px 20px;
+}
+
+.home-checklist .activity-item,
+.home-events .activity-item {
+    padding: 7px 10px;
+    gap: 10px;
+}
+
+.home-checklist .activity-icon,
+.home-events .activity-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
 }
 
 .activity-list {

@@ -108,6 +108,66 @@
                 title: "Don't see it?",
                 body: "Request an item and we'll consider adding it to the shop."
             }
+        ],
+        levels: [
+            {
+                target: '.level-status-card',
+                title: 'Where you stand',
+                body: "Your club's current level and progress to the next one."
+            },
+            {
+                target: '.levels-grid',
+                title: 'What you unlock',
+                body: 'See what perks each level brings.'
+            },
+            {
+                target: '.level-cta',
+                title: 'Ready to level up?',
+                body: 'Log a shipped project and watch the perks unlock.'
+            }
+        ],
+        map: [
+            {
+                target: '.map-card',
+                title: 'Every Hack Club, worldwide',
+                body: 'Make sure your club shows up here too.'
+            }
+        ],
+        projects: [
+            {
+                target: '[data-tour="projects-mine"]',
+                title: 'Your projects',
+                body: 'Track your own projects here — only you can edit them.'
+            },
+            {
+                target: '[data-tour="projects-submitted"]',
+                title: 'Club submissions',
+                body: 'Once you submit a project, it lands here for a leader to review.'
+            }
+        ],
+        ships: [
+            {
+                target: '.dashboard-metrics',
+                title: 'Your ship stats',
+                body: 'Total ships, current level, and members shipped toward the next one.'
+            },
+            {
+                target: '#shipList',
+                title: "What's shipped",
+                body: 'Every approved project your club has shipped.'
+            }
+        ],
+        chat: [
+            {
+                target: '.chat-sidebar',
+                title: 'Your channels',
+                body: "Jump between your club's channels, or create a new one if you're a leader."
+            },
+            {
+                target: '.chat-empty',
+                title: 'Start chatting',
+                body: 'Pick a channel from the sidebar to join the conversation.'
+            }
         ]
     };
 })(window);

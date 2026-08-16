@@ -1,5 +1,7 @@
 {% extends "dashboard_layout.html" %}
 
+{% block tour_page %}projects{% endblock %}
+
 {% block title %}Projects{% endblock %}
 {% block page_title %}<span data-i18n="side.projects">Projects</span>{% endblock %}
 {% block page_subtitle %}<span data-i18n="projects.subtitle">Create your own projects and submit them to your
@@ -40,7 +42,7 @@
         </div>
     </section>
 
-    <section class="card-modern dashboard-panel dashboard-panel-full">
+    <section class="card-modern dashboard-panel dashboard-panel-full" data-tour="projects-mine">
         <div class="panel-heading">
             <div>
                 <h2 data-i18n="projects.yourProjects">Your projects</h2>
@@ -56,7 +58,7 @@
         </div>
     </section>
 
-    <section class="card-modern dashboard-panel dashboard-panel-full">
+    <section class="card-modern dashboard-panel dashboard-panel-full" data-tour="projects-submitted">
         <div class="panel-heading">
             <div>
                 <h2 data-i18n="projects.submittedToClub">Submitted to your club</h2>

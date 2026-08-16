@@ -1140,6 +1140,18 @@ body.dark-mode .badge-up {
     gap: 2px;
 }
 
+.home-coins-value-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.home-coins-value-icon {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
 .home-coins-eyebrow {
     font-size: 12px;
     font-weight: bold;
@@ -1404,11 +1416,50 @@ body.dark-mode .badge-up {
 
 /* ── Item cards (team / shop) ─────────────────────────────────────────────── */
 
+.shop-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.shop-search {
+    position: relative;
+    flex: 0 1 260px;
+}
+
+.shop-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--dash-muted);
+    flex-shrink: 0;
+}
+
+.shop-search-input {
+    width: 100%;
+    padding: 9px 16px 9px 36px;
+    border-radius: 999px;
+    border: 1px solid var(--dash-border);
+    background: var(--dash-fill);
+    color: var(--dash-ink);
+    font: inherit;
+    font-size: 14px;
+}
+
+.shop-search-input:focus {
+    outline: 2px solid #ec3750;
+    outline-offset: 1px;
+}
+
 .shop-filters {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 18px;
+    margin-bottom: 0;
 }
 
 .shop-filter-chip {
@@ -1489,6 +1540,35 @@ body.dark-mode .badge-up {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+}
+
+.shop-card {
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.shop-card:focus-visible {
+    outline: 3px solid var(--dash-accent);
+    outline-offset: 3px;
+}
+
+.shop-card-media {
+    height: 174px;
+    background: var(--dash-fill);
+}
+
+.shop-card-media img {
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    object-fit: contain;
+    object-position: center;
+    transition: filter 0.2s ease;
+}
+
+.shop-card:hover .shop-card-media img {
+    filter: brightness(1.04);
 }
 
 .item-card h3 {
@@ -2100,6 +2180,107 @@ body.dark-mode .leaflet-popup-tip {
     gap: 4px;
     font-weight: bold;
 }
+
+.shop-price {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 2px 8px;
+}
+
+.shop-price-note,
+.shop-detail-note {
+    color: var(--dash-muted);
+    font-size: 12px;
+}
+
+.shop-price-note {
+    margin: 8px 0 0;
+}
+
+.shop-price-note-mark {
+    color: var(--dash-accent);
+    font-weight: 800;
+}
+
+.shop-detail-modal {
+    width: min(840px, 100%);
+}
+
+.shop-detail-eyebrow {
+    margin: 0 0 4px;
+    color: var(--dash-accent);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.shop-detail-body {
+    padding: 22px;
+}
+
+.shop-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(240px, 0.9fr);
+    gap: 24px;
+}
+
+.shop-detail-main-image {
+    aspect-ratio: 1.25;
+    overflow: hidden;
+    border-radius: 16px;
+    background: var(--dash-fill);
+}
+
+.shop-detail-main-image img,
+.shop-detail-thumb img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    padding: 12px;
+    box-sizing: border-box;
+    object-fit: contain;
+    object-position: center;
+}
+
+.shop-detail-thumbs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.shop-detail-thumb {
+    aspect-ratio: 1.4;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--dash-fill);
+}
+
+.shop-detail-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 16px;
+}
+
+.shop-detail-copy p {
+    margin: 0;
+    color: var(--dash-muted);
+    line-height: 1.55;
+}
+
+.shop-detail-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--dash-ink);
+    font-size: 22px;
+    font-weight: 800;
+}
+
 
 .cart-list {
     display: grid;
@@ -3503,6 +3684,14 @@ img.thumb-preview[src=""] {
     .timeline-actions,
     .modal-actions {
         justify-content: flex-start;
+    }
+
+    .shop-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .shop-detail-body {
+        padding: 18px;
     }
 
     .newsletter-row {

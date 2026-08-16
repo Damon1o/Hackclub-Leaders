@@ -12,6 +12,7 @@
     let dashboardState = {};
     let selectedNewsletterId = '';
     let shopFilter = 'All';
+    let shopSearch = '';
 
     try {
         dashboardState = JSON.parse(stateNode?.textContent || '{}') || {};
@@ -150,7 +151,65 @@
     function coinLabel(cost) {
         if (cost === null || cost === undefined) return 'TBD';
         if (Number(cost) === 0) return `${COIN_ICON_SVG}<span>Free</span>`;
-        return `${COIN_ICON_SVG}<span>${Number(cost)}</span>`;
+        return `${COIN_ICON_SVG}<span>${Number(cost).toLocaleString()}</span>`;
+    }
+
+    function normalizeShopName(name) {
+        return String(name || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    }
+
+    function shopPhotoUrl(item, index = 0) {
+        const supplied = item?.image_src || item?.['image-src'];
+        if (supplied && index === 0) return supplied;
+        const stardancePhoto = Object.entries(window.STARDANCE_SHOP_IMAGES || {})
+            .find(([name]) => normalizeShopName(name) === normalizeShopName(item?.name))?.[1];
+        if (stardancePhoto) return stardancePhoto;
+        const localFallbacks = {
+            'Meeting Posters': '/static/images/hackclub-site/white-hack-club-banner.svg',
+            'Sticker Pack': '/static/images/Stickers/logo.webp',
+        };
+        return localFallbacks[item?.name] || '';
+    }
+
+    function shopMedia(item) {
+        return [0, 1, 2].map((index) => shopPhotoUrl(item, index));
+    }
+
+    function shopDescription(item) {
+        const categoryCopy = {
+            Hardware: 'A useful piece of kit for your club’s next build, workshop, or experiment.',
+            Merch: 'A little Hack Club energy for your club room, desk, or next meetup.',
+            Digital: 'A digital boost to help your club make, publish, and ship more.',
+            Grants: 'Support for the real-world costs that help your club keep moving.',
+            Credits: 'Flexible project support for trying something ambitious with your club.',
+            Games: 'A playful pick for a club hangout, game night, or creative break.',
+        };
+        return `${item.name} — ${categoryCopy[item.filter] || 'A club-ready pick for your next project.'}`;
+    }
+
+    function renderShopItemDetail(item) {
+        const title = $('#shopItemDetailTitle');
+        const category = $('#shopItemDetailCategory');
+        const body = $('#shopItemDetailBody');
+        if (!title || !category || !body || !item) return;
+        const media = shopMedia(item);
+        title.textContent = item.name;
+        category.textContent = item.filter || 'Shop item';
+        body.innerHTML = `
+            <div class="shop-detail-grid">
+                <div class="shop-detail-gallery">
+                    <div class="shop-detail-main-image"><img src="${escapeHtml(media[0])}" alt="${escapeHtml(item.name)}" decoding="async"></div>
+                    <div class="shop-detail-thumbs" role="list" aria-label="More photos of this item">
+                        ${media.slice(1).map((src, index) => `<div class="shop-detail-thumb" role="listitem"><img src="${escapeHtml(src)}" alt="${escapeHtml(item.name)} photo ${index + 2}" loading="lazy"></div>`).join('')}
+                    </div>
+                </div>
+                <div class="shop-detail-copy">
+                    <div class="shop-detail-price">${coinLabel(item.cost)}</div>
+                    <p>${escapeHtml(shopDescription(item))}</p>
+                    <p class="shop-detail-note">Prices are shown in Hack Club Coins.</p>
+                    <button class="btn-primary full-width" type="button" data-add-cart="${escapeHtml(item.id)}" ${item.cost == null ? 'disabled' : ''}>Add to cart</button>
+                </div>
+            </div>`;
     }
 
     function initials(name) {
@@ -1295,7 +1354,7 @@
     // Shop filters shown in the catalog. "All" is special (shows everything);
     // the rest match a shop item's `filter` field. Each renders an image from
     // SHOP_FILTER_IMAGE_BASE + "<filter>.png".
-    const SHOP_FILTERS = ['All', 'Hardware', 'Swag', 'Digital'];
+    const SHOP_FILTERS = ['All', 'Hardware', 'Merch', 'Digital', 'Grants', 'Credits', 'Games'];
     const SHOP_FILTER_IMAGE_BASE = '/static/images/shop/filters/';
 
     function renderShopFilters() {
@@ -1331,14 +1390,20 @@
         renderShopFilters();
 
         if (grid) {
-            const visibleItems = shopFilter === 'All'
-                ? shopItems()
-                : shopItems().filter((item) => item.filter === shopFilter);
+            const term = shopSearch.trim().toLowerCase();
+            const visibleItems = shopItems().filter((item) =>
+                (shopFilter === 'All' || item.filter === shopFilter) &&
+                (!term || item.name.toLowerCase().includes(term))
+            ).sort((a, b) => {
+                const aCost = a.cost === null || a.cost === undefined ? Number.POSITIVE_INFINITY : Number(a.cost);
+                const bCost = b.cost === null || b.cost === undefined ? Number.POSITIVE_INFINITY : Number(b.cost);
+                return aCost - bCost;
+            });
             grid.innerHTML = visibleItems.map((item, index) => `
-                <article class="item-card shop-card" style="--card-index: ${index}">
+                <article class="item-card shop-card" style="--card-index: ${index}" data-open-shop-item="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="View details for ${escapeHtml(item.name)}">
                     <div class="shop-card-media" style="position:relative;">
                         <span class="skeleton" style="position:absolute;inset:0;border-radius:10px;" aria-hidden="true"></span>
-                        <img src="${escapeHtml(item['image-src'] || '')}" alt="${escapeHtml(item.name)}" loading="lazy" style="position:relative;"
+                        <img src="${escapeHtml(shopMedia(item)[0])}" alt="${escapeHtml(item.name)}" loading="lazy" style="position:relative;"
                             onload="this.previousElementSibling?.remove()"
                             onerror="this.previousElementSibling?.remove(); this.style.display='none'">
                     </div>
@@ -2084,6 +2149,12 @@ const CHECKLIST_ITEMS = [
     }
 
     function setupGlobalEvents() {
+        document.addEventListener('input', (event) => {
+            if (event.target.id === 'shopSearch') {
+                shopSearch = event.target.value;
+                renderShop();
+            }
+        });
         document.addEventListener('click', async (event) => {
             const approveProject = event.target.closest('[data-approve-project]');
             if (approveProject) {
@@ -2237,6 +2308,15 @@ const CHECKLIST_ITEMS = [
             if (shopFilterChip) {
                 shopFilter = shopFilterChip.dataset.shopFilter;
                 renderShop();
+                return;
+            }
+
+            const openShopItem = event.target.closest('[data-open-shop-item]');
+            if (openShopItem && !event.target.closest('[data-add-cart]')) {
+                const item = shopItem(openShopItem.dataset.openShopItem);
+                if (!item) return;
+                renderShopItemDetail(item);
+                openModal('shopItemDetailModal');
                 return;
             }
 
@@ -2475,6 +2555,17 @@ const CHECKLIST_ITEMS = [
         });
 
         document.addEventListener('keydown', (event) => {
+            const shopCard = event.target.closest?.('[data-open-shop-item]');
+            if (page === 'shop' && shopCard && !event.target.closest('[data-add-cart]')
+                && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                const item = shopItem(shopCard.dataset.openShopItem);
+                if (item) {
+                    renderShopItemDetail(item);
+                    openModal('shopItemDetailModal');
+                }
+                return;
+            }
             if (event.key === 'Escape') {
                 // Cancel any in-progress inline edit first (when focus left the input).
                 $$('#chatMessages .chat-edit-form').forEach((editor) => {

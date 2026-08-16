@@ -292,11 +292,28 @@
             </div>
         </section>
     </div>
+
+    <div class="modal-backdrop" id="shopItemDetailModal" aria-hidden="true">
+        <section class="dashboard-modal shop-detail-modal" role="dialog" aria-modal="true"
+            aria-labelledby="shopItemDetailTitle">
+            <header class="modal-header">
+                <div>
+                    <p class="shop-detail-eyebrow" id="shopItemDetailCategory">Shop item</p>
+                    <h2 id="shopItemDetailTitle">Item details</h2>
+                </div>
+                <button class="icon-button" type="button" data-modal-close aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </header>
+            <div class="shop-detail-body" id="shopItemDetailBody"></div>
+        </section>
+    </div>
     <script id="dashboard-state" type="application/json">{{ dashboard_state | default({}) | tojson }}</script>
     <script defer src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n-langs.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/stardance-shop-images.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/tour-steps.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/tour.js') }}"></script>

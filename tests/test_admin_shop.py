@@ -73,10 +73,10 @@ def test_add_shop_item_appends_and_prices(shop_file):
     assert item['cost'] == 25
 
 
-def test_add_shop_item_defaults_unpriced_and_swag(shop_file):
+def test_add_shop_item_defaults_unpriced_and_merch(shop_file):
     item = helpers.add_shop_item('Mystery Box', '', '', 'Nonsense')
     assert item['cost'] is None
-    assert item['filter'] == 'Swag'  # unknown category falls back to Swag
+    assert item['filter'] == 'Merch'  # unknown category falls back to Merch
 
 
 def test_add_shop_item_rejects_blank_name(shop_file):

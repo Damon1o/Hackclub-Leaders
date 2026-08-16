@@ -68,6 +68,10 @@
         this.spotlightEl.style.height = (rect.height + pad * 2) + 'px';
 
         var tooltipTop = rect.bottom + 16;
+        var tooltipHeight = this.tooltip.offsetHeight || 160;
+        if (tooltipTop + tooltipHeight > window.innerHeight - 12) {
+            tooltipTop = Math.max(12, rect.top - tooltipHeight - 16);
+        }
         var tooltipLeft = Math.min(Math.max(rect.left, 16), window.innerWidth - 360);
         this.tooltip.style.top = tooltipTop + 'px';
         this.tooltip.style.left = tooltipLeft + 'px';

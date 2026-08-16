@@ -17,7 +17,7 @@ from .storage import StorageError
 PROJECT_ROOT: Final[str] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BLOB_READ_WRITE_TOKEN: Final[str] = os.environ.get('BLOB_READ_WRITE_TOKEN', '')
 _SHOP_LOCK: Final[threading.Lock] = threading.Lock()
-SHOP_FILTERS: Final[set[str]] = {'Hardware', 'Swag', 'Digital'}
+SHOP_FILTERS: Final[set[str]] = {'Hardware', 'Merch', 'Digital', 'Grants', 'Credits', 'Games'}
 
 
 def _shop_json_path() -> str:
@@ -118,7 +118,7 @@ def add_shop_item(name: str, cost: str, image_src: str, item_filter: str) -> Sho
     if not name:
         raise ValueError('Item name is required.')
     slug = _slugify(name)
-    item_filter = item_filter if item_filter in SHOP_FILTERS else 'Swag'
+    item_filter = item_filter if item_filter in SHOP_FILTERS else 'Merch'
     coins = _parse_coins(cost)
     entry: dict[str, Any] = {
         'name': name,

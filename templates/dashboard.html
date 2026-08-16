@@ -89,7 +89,12 @@
     <section class="card-modern home-coins">
         <div class="home-coins-info">
             <span class="home-coins-eyebrow" data-i18n="home.coinsEarned">Coins earned</span>
-            <strong class="home-coins-value" id="homeCoinsTotal">0</strong>
+            <div class="home-coins-value-row">
+                <img class="home-coins-value-icon"
+                    src="{{ url_for('static', filename='images/hackclub-site/coin.svg') }}" alt=""
+                    aria-hidden="true">
+                <strong class="home-coins-value" id="homeCoinsTotal">0</strong>
+            </div>
             <span class="home-coins-sub" data-i18n="home.past30Days">past 30 days</span>
         </div>
         <svg class="home-coins-sparkline" id="homeCoinsSparkline" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true">

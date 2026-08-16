@@ -215,7 +215,7 @@ def register(app):
             # still stands, so swallow that.
             shop_item = None
             try:
-                shop_item = add_shop_item(item_request.get('name'), 'TBD', '', 'Swag')
+                shop_item = add_shop_item(item_request.get('name'), 'TBD', '', 'Merch')
             except ValueError:
                 pass
             _persist_club(backend, club_key, state)

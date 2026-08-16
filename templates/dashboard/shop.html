@@ -33,10 +33,23 @@ endblock %}
             <div>
                 <h2 data-i18n="shop.swagAndHardware">Swag and hardware</h2>
                 <p data-i18n="shop.swagDesc">Add items to your cart and check out for your club.</p>
+                <p class="shop-price-note"><span class="shop-price-note-mark">Hack Club Coins</span> · click any item for details</p>
             </div>
         </div>
-        <div class="shop-filters" id="shopFilters" role="tablist" aria-label="Filter shop items"
-            data-i18n-attr="aria-label:shop.filterAria"></div>
+        <div class="shop-toolbar">
+            <div class="shop-search">
+                <svg class="shop-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                </svg>
+                <input class="shop-search-input" type="search" id="shopSearch" placeholder="Search items…"
+                    aria-label="Search shop items">
+            </div>
+            <div class="shop-filters" id="shopFilters" role="tablist" aria-label="Filter shop items"
+                data-i18n-attr="aria-label:shop.filterAria"></div>
+        </div>
         <div class="item-grid" id="shopGrid"></div>
         <div class="empty-state tight" id="shopEmpty" hidden>
             <h3 data-i18n="shop.emptyTitle">Nothing here yet</h3>

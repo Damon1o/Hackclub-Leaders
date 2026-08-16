@@ -63,7 +63,7 @@
                 body: 'Share this link — anyone who opens it joins your club instantly.'
             },
             {
-                target: '#teamRoster',
+                target: '[data-tour="team-roster"]',
                 title: 'Your roster',
                 body: "Everyone in your club. Click a member to edit their role or status."
             }
@@ -75,7 +75,7 @@
                 body: 'Filter the workshop board by category.'
             },
             {
-                target: '#workshopGrid',
+                target: '[data-tour="workshops-board"]',
                 title: 'Propose or run one',
                 body: "Propose a topic for your club, or apply to run one that's already open."
             }
@@ -87,7 +87,7 @@
                 body: "Upcoming meetings, RSVPs, and how many people you're expecting."
             },
             {
-                target: '#eventList',
+                target: '[data-tour="events-schedule"]',
                 title: 'Your schedule',
                 body: 'Every meeting, workshop, and demo day your club has planned.'
             }
@@ -152,7 +152,7 @@
                 body: 'Total ships, current level, and members shipped toward the next one.'
             },
             {
-                target: '#shipList',
+                target: '[data-tour="ships-list"]',
                 title: "What's shipped",
                 body: 'Every approved project your club has shipped.'
             }
@@ -171,7 +171,7 @@
         ],
         notifications: [
             {
-                target: '#newsletterList',
+                target: '.newsletter-list-panel',
                 title: 'Dispatches from HQ',
                 body: 'Updates from Hack Club HQ, plus anything you send your own club.'
             },

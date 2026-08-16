@@ -1835,7 +1835,7 @@ a.tool-featured:hover::before {
 .tour-overlay {
     position: fixed;
     inset: 0;
-    z-index: 900;
+    z-index: 1450;
     background: transparent;
 }
 

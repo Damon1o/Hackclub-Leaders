@@ -105,10 +105,14 @@
 
     TourController.prototype.end = function () {
         clearTimeout(this.positionTimer);
-        localStorage.setItem(this.storageKey, '1');
         if (this.overlay) {
             this.overlay.remove();
             this.overlay = null;
+        }
+        try {
+            localStorage.setItem(this.storageKey, '1');
+        } catch (error) {
+            /* storage full or unavailable — non-fatal */
         }
     };
 
@@ -118,7 +122,11 @@
     };
 
     TourController.prototype.hasBeenSeen = function () {
-        return !!localStorage.getItem(this.storageKey);
+        try {
+            return !!localStorage.getItem(this.storageKey);
+        } catch (error) {
+            return false;
+        }
     };
 
     document.addEventListener('DOMContentLoaded', function () {

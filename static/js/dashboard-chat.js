@@ -734,6 +734,7 @@ window.DashboardChat = function (ctx) {
         const box = panel.querySelector('.chat-thread-messages');
         if (box) box.innerHTML = '';
         panel.hidden = false;
+        window.requestAnimationFrame(() => panel.classList.add('chat-thread-panel--visible'));
         loadThreadMessages(parentId);
         stopThreadPolling();
         S.threadPollTimer = window.setInterval(() => threadPoll(parentId), MESSAGE_POLL_MS);
@@ -741,7 +742,10 @@ window.DashboardChat = function (ctx) {
 
     function closeThreadPanel() {
         const panel = threadPanel();
-        if (panel) panel.hidden = true;
+        if (panel) {
+            panel.classList.remove('chat-thread-panel--visible');
+            window.setTimeout(() => { panel.hidden = true; }, 200);
+        }
         S.threadParentId = null;
         stopThreadPolling();
     }

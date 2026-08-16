@@ -88,9 +88,15 @@
 
     <aside class="card-modern dashboard-panel settings-side">
         <div class="club-preview" id="profilePreview">
+            {% if current_user and current_user.avatar %}
+            <div class="club-preview-avatar has-image" id="profilePreviewAvatar"
+                style="background-image: url('{{ current_user.avatar | e }}')" aria-label="{{ current_user.name }}">
+            </div>
+            {% else %}
             <div class="club-preview-avatar" id="profilePreviewAvatar">
                 {{ current_user.name[0] | upper if current_user and current_user.name else 'U' }}
             </div>
+            {% endif %}
             <div>
                 <h2 id="profilePreviewName">{{ current_user.name or 'You' }}</h2>
                 <p id="profilePreviewEmail">{{ current_user.email or '' }}</p>

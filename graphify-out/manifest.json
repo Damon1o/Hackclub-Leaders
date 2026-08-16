@@ -1,12 +1,12 @@
 {
   "app.py": {
-    "mtime": 1786410931.5372095,
-    "ast_hash": "fb4147abb09ccc56c132b4ed94223015",
+    "mtime": 1786914697.7427566,
+    "ast_hash": "ff8ba2e65fa71790272f78f8ed1b9ebe",
     "semantic_hash": ""
   },
   "pyproject.toml": {
-    "mtime": 1785535094.9752524,
-    "ast_hash": "b867c53e6880825fa9e64116a18b4200",
+    "mtime": 1786644643.772618,
+    "ast_hash": "f1aee9348bcef237cbf40f9f9e6d7dd5",
     "semantic_hash": ""
   },
   "scripts/check_airtable.py": {
@@ -30,18 +30,18 @@
     "semantic_hash": ""
   },
   "tests/test_api.py": {
-    "mtime": 1784482327.7258854,
-    "ast_hash": "6b71fb2bdc3441ab11faf59c103fdcea",
+    "mtime": 1786629512.9963188,
+    "ast_hash": "fefbeff9dbadf02e26ffffeb007943cb",
     "semantic_hash": ""
   },
   "tests/test_auth.py": {
-    "mtime": 1784482327.7258854,
-    "ast_hash": "55cb4ffa46385c7645039fdde08f48c8",
+    "mtime": 1786629523.816393,
+    "ast_hash": "ea2af89e3876f9b78005a32811b0327f",
     "semantic_hash": ""
   },
   "tests/test_public.py": {
-    "mtime": 1786545166.884117,
-    "ast_hash": "d642ec13a546da65592f48657fe4a286",
+    "mtime": 1786914724.5922701,
+    "ast_hash": "ba4a6e08f5264a2e6a60d3d21b0a98c3",
     "semantic_hash": ""
   },
   "vercel.json": {
@@ -70,8 +70,8 @@
     "semantic_hash": ""
   },
   "scripts/import_mongo_from_csv.py": {
-    "mtime": 1786400803.4091575,
-    "ast_hash": "518894192d6bab3bdc868fae4458f73e",
+    "mtime": 1786636244.050328,
+    "ast_hash": "38e4c7332b92c1ff51ad61a4286bef79",
     "semantic_hash": ""
   },
   "scripts/seed_mongo.py": {
@@ -80,8 +80,8 @@
     "semantic_hash": ""
   },
   "scripts/setup_chat_tables.py": {
-    "mtime": 1784482327.6733222,
-    "ast_hash": "fcffd443229652dbc5c9f0f8e61b468a",
+    "mtime": 1786658136.1570659,
+    "ast_hash": "3e0822253f178548ed240faac9267285",
     "semantic_hash": ""
   },
   "scripts/split_i18n_data.py": {
@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "src/helpers.py": {
-    "mtime": 1786545166.8762877,
-    "ast_hash": "660ac4d367a2afc7014f1788a51ab941",
+    "mtime": 1786901927.7566512,
+    "ast_hash": "7de98fd3a9f02c15ab5cb60bfcbc2936",
     "semantic_hash": ""
   },
   "src/notifications.py": {
@@ -110,43 +110,43 @@
     "semantic_hash": ""
   },
   "src/routes_admin.py": {
-    "mtime": 1786404552.042742,
-    "ast_hash": "11111f4a91738b7d0f624deedf29632c",
+    "mtime": 1786644937.3308809,
+    "ast_hash": "ffbfd44ea10ed1018fc174c741e6d129",
     "semantic_hash": ""
   },
   "src/routes_api.py": {
-    "mtime": 1786377865.963323,
-    "ast_hash": "dcc4566a4a33d704e609375814f0f236",
+    "mtime": 1786644538.3560362,
+    "ast_hash": "1edd782dc1543b5f9f9d04ad8f21d6fe",
     "semantic_hash": ""
   },
   "src/routes_auth.py": {
-    "mtime": 1784482327.6793697,
-    "ast_hash": "c5a54ac225c7296ca338f9855c6bb3aa",
+    "mtime": 1786636263.2037065,
+    "ast_hash": "401a5705d7712978b195f1b1f28e1c24",
     "semantic_hash": ""
   },
   "src/routes_chat.py": {
-    "mtime": 1785520560.3221385,
-    "ast_hash": "cd944f01f55087ab96bf07da96e7d106",
+    "mtime": 1786740845.094639,
+    "ast_hash": "ef9762aabb8c7fcea6defd9cc737a647",
     "semantic_hash": ""
   },
   "src/routes_club.py": {
-    "mtime": 1784482327.6813695,
-    "ast_hash": "536d557cce3bf9d252a029982bfcf21e",
+    "mtime": 1786644694.7927425,
+    "ast_hash": "1ae764e03fae6ec362032b7cde56083d",
     "semantic_hash": ""
   },
   "src/routes_web.py": {
-    "mtime": 1786545166.8768024,
-    "ast_hash": "6462e03bf11ad33b473c452e60f9c75b",
+    "mtime": 1786644749.4631407,
+    "ast_hash": "243a4dacae1898d0fb673b59e26d15fe",
     "semantic_hash": ""
   },
   "src/storage.py": {
-    "mtime": 1786574765.4214163,
-    "ast_hash": "88fbacedbe0f951a065c58b92d99ad84",
+    "mtime": 1786644721.970829,
+    "ast_hash": "15c8f0c8f67dd7a661030164b59472d5",
     "semantic_hash": ""
   },
   "src/storage_mongo.py": {
-    "mtime": 1786377865.965922,
-    "ast_hash": "e001a660080c5da1fb178ca894411a90",
+    "mtime": 1786734649.2451959,
+    "ast_hash": "91e3c5a7be0fb4b5f45e9defa6d0e03e",
     "semantic_hash": ""
   },
   "tests/test_admin_shop.py": {
@@ -155,13 +155,13 @@
     "semantic_hash": ""
   },
   "tests/test_chat.py": {
-    "mtime": 1784482332.4340029,
-    "ast_hash": "d4cf6c457b37ff712991be2fefee7775",
+    "mtime": 1786740833.6663718,
+    "ast_hash": "035ff90bef9d7e33e6fd72d2f97da1ae",
     "semantic_hash": ""
   },
   "tests/test_coins.py": {
-    "mtime": 1786285889.5266752,
-    "ast_hash": "6205ea8121737d1623336f810cc2f006",
+    "mtime": 1786901927.772428,
+    "ast_hash": "4d8ff8ed93622a0947a85908e17c07fe",
     "semantic_hash": ""
   },
   "tests/test_notifications.py": {
@@ -175,8 +175,8 @@
     "semantic_hash": ""
   },
   "tests/test_storage_mongo.py": {
-    "mtime": 1785535345.0234418,
-    "ast_hash": "166bb27358cc9bcbc30ff0d65a226cbb",
+    "mtime": 1786734631.0348442,
+    "ast_hash": "00259fc50e4e5040af6949c70acd158a",
     "semantic_hash": ""
   },
   "tests/test_workshops.py": {
@@ -190,8 +190,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1784482327.6638114,
-    "ast_hash": "cba270c6c5b28d5f2ac18837280ff5b3",
+    "mtime": 1786658136.1565397,
+    "ast_hash": "0e8093be9be98ef2a4396e941eaff328",
     "semantic_hash": ""
   },
   ".superpowers/sdd/progress.md": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "ideas.md": {
-    "mtime": 1784482332.4280026,
-    "ast_hash": "5d51a958068caf22a5399414b33a8e59",
+    "mtime": 1786575342.7632906,
+    "ast_hash": "755087db63d464557f06aa9a37ce875c",
     "semantic_hash": ""
   },
   "brag-output/brag.mp4": {
@@ -375,8 +375,128 @@
     "semantic_hash": ""
   },
   "scripts/convert_images.py": {
-    "mtime": 1786574950.587248,
-    "ast_hash": "901c7088250f36a90076df40c3824062",
+    "mtime": 1786636240.0859418,
+    "ast_hash": "b46d0c30ba948495a7611ccf5b55961b",
+    "semantic_hash": ""
+  },
+  "src/helpers_demo.py": {
+    "mtime": 1786644547.7259917,
+    "ast_hash": "73cae5bd56d38755a4f26be3dbc427db",
+    "semantic_hash": ""
+  },
+  "src/helpers_shop.py": {
+    "mtime": 1786645050.7856765,
+    "ast_hash": "9a2331121625115bfd9b4caacd101493",
+    "semantic_hash": ""
+  },
+  "src/helpers_state.py": {
+    "mtime": 1786644547.7259917,
+    "ast_hash": "8e601e6ca6a5bd12c9cfbe8111080de0",
+    "semantic_hash": ""
+  },
+  "src/helpers_types.py": {
+    "mtime": 1786636351.2783213,
+    "ast_hash": "de3a2e27e320ffb3ab1c5b579c546b24",
+    "semantic_hash": ""
+  },
+  "src/helpers_validation.py": {
+    "mtime": 1786645081.3088822,
+    "ast_hash": "4f68b074cc0f3f771b557e466582006f",
+    "semantic_hash": ""
+  },
+  "src/routes_api_projects.py": {
+    "mtime": 1786644740.9630768,
+    "ast_hash": "13450bfe939923c80d8e70b82fb33ad4",
+    "semantic_hash": ""
+  },
+  "src/routes_api_workshops.py": {
+    "mtime": 1786644547.7269921,
+    "ast_hash": "9e3c7508cc7d89e04e535cfff97f634a",
+    "semantic_hash": ""
+  },
+  "src/storage_airtable.py": {
+    "mtime": 1786658136.159683,
+    "ast_hash": "4c860e056e6f9c08b87e3d5977530a13",
+    "semantic_hash": ""
+  },
+  "src/storage_airtable_fields.py": {
+    "mtime": 1786658136.1607153,
+    "ast_hash": "4a6f9370f11714d6dfef8d240b9dade3",
+    "semantic_hash": ""
+  },
+  "tests/test_storage_airtable.py": {
+    "mtime": 1786629559.4753528,
+    "ast_hash": "9f00b9e9cf45e4e50bc01ee0810c7b4d",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-13-chat-mentions.md": {
+    "mtime": 1786679789.031922,
+    "ast_hash": "1644b97baad429f70472fb643bb2dccd",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-13-chat-read-receipts.md": {
+    "mtime": 1786679845.1296525,
+    "ast_hash": "2c8c58ce82143f65a19cadbc0282bbf8",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-13-chat-threads.md": {
+    "mtime": 1786680071.3335538,
+    "ast_hash": "231accc771392453e516e514e179d359",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-13-chat-typing-presence.md": {
+    "mtime": 1786680300.4596348,
+    "ast_hash": "5f0bfa5e26065286bcbf3dd9234f2cc4",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-14-chat-redesign.md": {
+    "mtime": 1786758296.4390392,
+    "ast_hash": "eda74946bb3f0b1ee0b1a232162800be",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-15-dashboard-home-redesign.md": {
+    "mtime": 1786849750.1156995,
+    "ast_hash": "c0be8ed3da8d681ec65b1e6340eaf7dd",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-16-site-tour.md": {
+    "mtime": 1786904275.8208997,
+    "ast_hash": "e51eb57cdb16dea368e5df53419859b1",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-13-chat-mentions-design.md": {
+    "mtime": 1786679290.9382246,
+    "ast_hash": "b82b112ef35705530ed4dc766fa32493",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-13-chat-read-receipts-design.md": {
+    "mtime": 1786679631.0420654,
+    "ast_hash": "7b5e5eac58781bcbd361ba90281a0592",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-13-chat-threads-design.md": {
+    "mtime": 1786679660.1749208,
+    "ast_hash": "8718d3ecd87923dac1e9e28a91600529",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-13-chat-typing-presence-design.md": {
+    "mtime": 1786679689.6035464,
+    "ast_hash": "00c8cc6819db390c6ce737b6ab2d91af",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-14-chat-redesign-design.md": {
+    "mtime": 1786758042.5524955,
+    "ast_hash": "203d5950b85a3a8236a3ca8878ab9876",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-15-dashboard-home-redesign-design.md": {
+    "mtime": 1786849555.5151665,
+    "ast_hash": "d7a9c26460c3c93100b8084260a7d36c",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-16-site-tour-design.md": {
+    "mtime": 1786902552.1616943,
+    "ast_hash": "8be5d8aaea925f0f6cee6f7ab8fa5292",
     "semantic_hash": ""
   }
 }

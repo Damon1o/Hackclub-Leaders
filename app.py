@@ -102,8 +102,23 @@ def inject_user() -> dict[str, Any]:
             dashboard_state = get_dashboard_state(sections_for_request())
         except StorageError:
             pass
+    user = session.get('user')
+    # The avatar a user set themselves (roster entry, saved on the profile or
+    # team page) wins over the OAuth picture captured at sign-in, which Hack
+    # Club identity often leaves empty anyway. Copy it over so the sidebar and
+    # profile preview stay in sync with the roster.
+    if user and dashboard_state:
+        email = (user.get('email') or '').strip().lower()
+        member_avatar = ''
+        for member in dashboard_state.get('members') or []:
+            if (member.get('email') or '').strip().lower() == email:
+                member_avatar = member.get('avatar') or ''
+                break
+        if member_avatar:
+            user = dict(user)
+            user['avatar'] = member_avatar
     return dict(
-        current_user=session.get('user'),
+        current_user=user,
         csrf_token=get_csrf_token() if signed_in else '',
         viewer_role=role,
         is_leader=is_leader,

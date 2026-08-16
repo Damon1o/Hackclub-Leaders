@@ -2967,10 +2967,19 @@ const CHECKLIST_ITEMS = [
                 const rail = $('#sidebarProfile');
                 if (rail) {
                     rail.title = user.name || 'Your profile';
-                    const img = rail.querySelector('img');
+                    let img = rail.querySelector('img');
                     const fallback = rail.querySelector('.sidebar-profile-fallback');
-                    if (img && user.avatar) img.src = user.avatar;
-                    if (fallback) fallback.textContent = (user.name || 'U').charAt(0).toUpperCase();
+                    if (user.avatar) {
+                        if (!img) {
+                            if (fallback) fallback.remove();
+                            img = document.createElement('img');
+                            img.alt = user.name || '';
+                            rail.appendChild(img);
+                        }
+                        img.src = user.avatar;
+                    } else if (fallback) {
+                        fallback.textContent = (user.name || 'U').charAt(0).toUpperCase();
+                    }
                 }
                 if (stateLabel) stateLabel.textContent = 'Saved';
                 showToast('Profile saved.');

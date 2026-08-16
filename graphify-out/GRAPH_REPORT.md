@@ -1,16 +1,16 @@
-# Graph Report - Hackclub Leaders  (2026-08-12)
+# Graph Report - Hackclub Leaders  (2026-08-16)
 
 ## Corpus Check
-- 65 files · ~93,381 words
+- 78 files · ~122,763 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 862 nodes · 1646 edges · 51 communities (42 shown, 9 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 46 edges (avg confidence: 0.55)
+- 1058 nodes · 1967 edges · 69 communities (62 shown, 7 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 53 edges (avg confidence: 0.68)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c6da7df9`
+- Built from commit: `7aa6b890`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -62,75 +62,89 @@
 - task-3-brief.md
 - task-4-brief.md
 - task-5-brief.md
+- Chat typing indicators + presence
+- Chat Visual Redesign — Design Spec
+- _add_member
+- Global Constraints
+- Global Constraints
+- Global Constraints
+- Server-synced chat read receipts
+- Chat threads / replies
+- Dashboard home page redesign
+- Global Constraints
+- Global Constraints
+- Global Constraints
+- _airtable
+- _FakePreviewResponse
+- feature_enabled
+- reset_rate_limits
+- reset_typing_presence
+- _i18n_translations
 
 ## God Nodes (most connected - your core abstractions)
-1. `_seed()` - 45 edges
-2. `StorageError` - 43 edges
-3. `AirtableStorage` - 39 edges
-4. `SessionStorage` - 36 edges
-5. `MongoStorage` - 33 edges
-6. `register()` - 30 edges
-7. `get_dashboard_state()` - 25 edges
+1. `_seed()` - 84 edges
+2. `_make_channel()` - 35 edges
+3. `MongoStorage` - 33 edges
+4. `get_dashboard_state()` - 30 edges
+5. `AirtableStorage` - 30 edges
+6. `SessionStorage` - 25 edges
+7. `StateTooLarge` - 24 edges
 8. `_seed_message()` - 24 edges
 9. `_msg()` - 24 edges
-10. `_seed()` - 21 edges
+10. `save_dashboard_state()` - 21 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `test_default_dashboard_state_seeds_a_starter_grant()` --calls--> `default_dashboard_state()`  [EXTRACTED]
+- `test_save_user_record_raises_when_table_missing()` --indirect_call--> `StorageError`  [INFERRED]
+  tests/test_storage_airtable.py → src/storage_airtable.py
+- `test_storage_error_on_dashboard_redirects_once_not_forever()` --indirect_call--> `AirtableStorage`  [INFERRED]
+  tests/test_public.py → src/storage_airtable.py
+- `test_storage_error_on_index_degrades_instead_of_looping()` --indirect_call--> `AirtableStorage`  [INFERRED]
+  tests/test_public.py → src/storage_airtable.py
+- `main()` --calls--> `AirtableStorage`  [INFERRED]
+  scripts/cleanup_test_data.py → src/storage_airtable.py
+- `test_coin_balance_empty_ledger_is_zero()` --calls--> `coin_balance()`  [EXTRACTED]
   tests/test_coins.py → src/helpers.py
-- `test_default_dashboard_state_seeds_empty_workshops()` --calls--> `default_dashboard_state()`  [EXTRACTED]
-  tests/test_workshops.py → src/helpers.py
-- `test_error_handlers()` --calls--> `StateTooLarge`  [EXTRACTED]
-  tests/test_api.py → src/helpers.py
-- `test_add_in_app_notification_with_explicit_state_caps_at_100()` --calls--> `add_in_app_notification()`  [EXTRACTED]
-  tests/test_notifications.py → src/notifications.py
-- `test_add_in_app_notification_with_explicit_state_skips_ambient_lookup()` --calls--> `add_in_app_notification()`  [EXTRACTED]
-  tests/test_notifications.py → src/notifications.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (51 total, 9 thin omitted)
+## Communities (69 total, 7 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.08
-Nodes (33): MongoClient, _as_bool(), _as_int(), _item_from_row(), load_states(), main(), Import club data from Airtable CSV exports into MongoDB.  Fallback for scripts/s, Mirror AirtableStorage.load() output for every club, built from CSVs. (+25 more)
+Cohesion: 0.07
+Nodes (38): MongoClient, _as_bool(), _as_int(), _item_from_row(), load_states(), main(), Import club data from Airtable CSV exports into MongoDB.  Fallback for scripts/s, Mirror AirtableStorage.load() output for every club, built from CSVs. (+30 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.07
-Nodes (21): main(), Delete test records from the live Airtable base.  During development, sign-in, AirtableStorage, make_storage(), Any, Storage backends for the dashboard state.  The app talks to one of three backe, State shared across the club via an Airtable base.      Loads/saves are whole-, All records in `table` where {field} = value, following pagination.          ` (+13 more)
+Cohesion: 0.06
+Nodes (19): main(), Delete test records from the live Airtable base.  During development, sign-in, playtest_state(), register(), AirtableStorage, Airtable column mappings for the Hack Club Leaders Portal storage layer., Any, Airtable storage backend for Hack Club Leaders Portal. (+11 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.10
-Nodes (53): reset_rate_limits(), _iso(), _make_channel(), _msg(), Chat (channels + messages) API coverage.  These exercise *successful* authenti, Append a pre-built message onto the seeded dashboard state., _reset_rate_limit(), _seed() (+45 more)
+Cohesion: 0.07
+Nodes (57): _make_channel(), Chat (channels + messages) API coverage.  These exercise *successful* authenti, _seed(), test_blank_channel_name_rejected(), test_channel_list_unread_flag(), test_channel_patch_sets_topic(), test_channel_requires_csrf(), test_channel_topic_cleared_by_empty_string() (+49 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.05
-Nodes (102): inject_user(), _payload_too_large(), _html_to_text(), Email notification system for the Hack Club Leaders Portal., Render the email sent to a member once a leader schedules them to run a workshop, Send email in background thread., Render project submission notification email., Render the email sent to a member when their shipped project is approved. (+94 more)
+Cohesion: 0.10
+Nodes (35): _html_to_text(), Email notification system for the Hack Club Leaders Portal., Render the email sent to a member once a leader schedules them to run a workshop, Send email in background thread., Render project submission notification email., Render the email sent to a member when their shipped project is approved., Send email using a template. Runs in background thread., Render the email sent to a member when their submitted project is sent back to D (+27 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.21
-Nodes (5): _save_settings(), test_default_state_has_language(), test_error_handlers(), test_settings_persists_supported_language(), test_settings_rejects_unsupported_language()
-
-### Community 5 - "Community 5"
-Cohesion: 0.05
-Nodes (4): _i18n_translations(), test_i18n_all_languages_cover_public_page_keys(), test_storage_error_on_dashboard_redirects_once_not_forever(), test_storage_error_on_index_degrades_instead_of_looping()
+Cohesion: 0.10
+Nodes (10): _save_settings(), _save_settings_v2(), test_default_state_has_language(), test_error_handlers(), test_settings_derives_empty_location_when_no_address(), test_settings_derives_location_from_city_state(), test_settings_derives_location_with_only_city(), test_settings_persists_supported_language() (+2 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.50
 Nodes (4): convert_to_webp(), main(), Convert heavyweight raster images to WebP and rewrite local references.  Targets, Convert source_path to a sibling .webp. Returns the .webp path if     converted,
 
 ### Community 8 - "Community 8"
-Cohesion: 0.11
-Nodes (27): _embedded_state(), _messages(), mongo_client(), MongoStorage backend coverage, against an in-memory Mongo (mongomock).  These lo, A signed-in test client served by the Mongo backend., _state(), storage(), test_chat_page_embeds_chat_sections() (+19 more)
+Cohesion: 0.10
+Nodes (29): _embedded_state(), _messages(), mongo_client(), MongoStorage backend coverage, against an in-memory Mongo (mongomock).  These, A signed-in test client served by the Mongo backend., _state(), storage(), test_chat_page_embeds_chat_sections() (+21 more)
 
 ### Community 9 - "Community 9"
 Cohesion: 0.67
 Nodes (3): fail(), main(), Airtable readiness check.  Run this after creating your base and setting AIRTA
 
 ### Community 13 - "test_coins.py"
-Cohesion: 0.07
-Nodes (64): Exception, F, add_shop_item(), admin_required(), award_coins(), Channel, ClubState, ClubStateLite (+56 more)
+Cohesion: 0.13
+Nodes (17): coins_spent(), _seed_cart_club(), test_award_coins_appends_transaction_and_reconciles(), test_award_coins_creates_ledger_key_if_absent(), test_award_coins_negative_delta_updates_spent_cache(), test_cart_add_rejects_unpriced_item(), test_cart_add_snapshots_coin_cost(), test_checkout_debits_ledger_on_success() (+9 more)
 
 ### Community 14 - "test_workshops.py"
 Cohesion: 0.17
@@ -153,32 +167,32 @@ Cohesion: 0.10
 Nodes (19): Audio direction, Brag Plan: Hack Club Leaders, Duration: ~19s, Format: landscape — 1920x1080, Hook (first 2-3 seconds), Key moments (the middle), Outro / punchline, Scene 1 — Hook: "Where leaders build the future!" — 3s (+11 more)
 
 ### Community 19 - "Task 4 Implementation Report: Link preview fetcher with SSRF guards"
-Cohesion: 0.11
-Nodes (18): Code Quality ✅, Commit, Completeness ✅, Discipline ✅, Files Changed, Full Suite Results, GREEN Phase (after implementation), Module Additions to `src/routes_chat.py` (+10 more)
+Cohesion: 0.16
+Nodes (35): Exception, award_coins(), coin_balance(), default_dashboard_state(), generate_join_code(), playtest_state(), Demo and default initial state builders for Hack Club Leaders Portal., Recompute the cached balance/spent totals in `settings` from the     ledger. Ca (+27 more)
 
 ### Community 20 - "Task 1: Feature Flag Helper — Implementation Report"
-Cohesion: 0.11
-Nodes (17): Code Added, Code Quality, Commit, Concerns, Correctness, Files Changed, Full Test Suite Verification, GREEN Phase: Tests Pass (After Implementation) (+9 more)
+Cohesion: 0.10
+Nodes (27): handle_state_too_large(), handle_storage_error(), _payload_too_large(), Any, Exception, HTMLParser, Response, channel_from_payload() (+19 more)
 
 ### Community 21 - "Task 2: Storage — Metadata JSON field, attachment loading, Airtable schema — Report"
-Cohesion: 0.12
-Nodes (15): Code Quality, Commit Created, Completeness, Files Changed, Full Suite Verification, GREEN Phase, Implementation Details, Key Features (+7 more)
+Cohesion: 0.14
+Nodes (26): inject_user(), F, admin_required(), _club_key(), default_dashboard_state(), get_csrf_token(), get_dashboard_state(), is_admin() (+18 more)
 
 ### Community 22 - "File Structure"
 Cohesion: 0.13
 Nodes (14): File Structure, Global Constraints, Post-plan cleanup (housekeeping, not a task), Self-Review Notes, Settings Page Redesign (Round 1) Implementation Plan, Task 1: Club profile data model — structured address + derived `location`, Task 2: Settings shell — scrollspy layout + sidebar nav, Task 3: Club profile section (fully built) (+6 more)
 
 ### Community 23 - "Task 3 Report: `AirtableStorage.upload_attachment`"
-Cohesion: 0.13
-Nodes (14): 1. **Added `import base64`** (Line 41), 2. **Added `supports_uploads` class attributes**, 3. **Implemented `AirtableStorage.upload_attachment()` method** (Lines 481-526), Commit, Files Changed, Fix Report (post-review), Full Suite Test Results, Implementation Summary (+6 more)
+Cohesion: 0.22
+Nodes (23): generate_join_code(), _item_id(), _join_missing(), login_required(), _owned_project_or_error(), parse_language(), Any, Return a supported language code, defaulting to English for anything else. (+15 more)
 
 ### Community 24 - "Sections"
 Cohesion: 0.14
 Nodes (13): 1. Club profile (fully built), 2. Members (real content, partial), 3. Your account (new section, stubbed data), 4. Appearance (real content), 5. Explore & privacy (real content), 6. Notifications (real content), 7. Danger zone (real content, gated by backend), Context (+5 more)
 
 ### Community 25 - "Task 5 Report: Wire link previews into message posting"
-Cohesion: 0.14
-Nodes (13): Code Quality Review, Commits, Completeness, Concerns, Discipline, Files Changed, Implementation Summary, Pattern Compliance (+5 more)
+Cohesion: 0.15
+Nodes (26): _iso(), _msg(), Append a pre-built message onto the seeded dashboard state., _seed_message(), test_add_reaction(), test_author_deletes_own_recent_message(), test_author_edits_own_recent_message(), test_cannot_edit_deleted_message() (+18 more)
 
 ### Community 26 - "Coins Spine: Ledger, Dollar Removal, Shop Conversion"
 Cohesion: 0.15
@@ -244,25 +258,109 @@ Nodes (5): Global Constraints, Photo Upload Preview + Crop Modal Implementation 
 Cohesion: 0.33
 Nodes (5): 1. Sidebar hover-expand, 2. Notifications fold into a renamed "Notification" page, Sidebar redesign + notifications-into-newsletters, Summary, Testing
 
+### Community 44 - "progress.md"
+Cohesion: 0.13
+Nodes (13): UTC timestamp, ISO-8601 with a 'Z' suffix (e.g. 2026-07-10T22:59:00.123456Z)., utc_iso(), _chat_reads(), _find_chat_read(), _page_limit(), _rate_limit_retry_after(), Club chat: channels + messages.  All members can read and post; only leaders/m, A sane page size from an untrusted ?limit= value. (+5 more)
+
+### Community 45 - "task-1-brief.md"
+Cohesion: 0.30
+Nodes (13): add_shop_item(), load_shop_items(), _parse_coins(), Any, Shop catalog loading, filtering, and management helpers., Resolve through src.helpers at call time so monkeypatching     helpers.SHOP_JSON, _read_shop_raw(), remove_shop_item() (+5 more)
+
+### Community 46 - "task-2-brief.md"
+Cohesion: 0.18
+Nodes (10): Architecture, Data flow, Error handling, Goal, New `data-tour` markup needed, Out of scope, Per-page step content, Scope: pages (+2 more)
+
+### Community 47 - "task-3-brief.md"
+Cohesion: 0.18
+Nodes (11): Resolve @-mentions in `body` against the club's member list.      Returns (sor, resolve_mentions(), test_resolve_mentions_duplicate_names_both_notified(), test_resolve_mentions_everyone_by_leader(), test_resolve_mentions_everyone_by_non_leader_ignored(), test_resolve_mentions_excludes_self(), test_resolve_mentions_false_positive_inside_email_avoided(), test_resolve_mentions_longest_name_wins() (+3 more)
+
+### Community 48 - "task-4-brief.md"
+Cohesion: 0.20
+Nodes (9): Chat Visual Redesign Implementation Plan, Global Constraints, Task 1: Channel rail restyle, Task 2: Grouped message spacing + hover timestamp, Task 3: Mention pills + own-mention row highlight, Task 4: Seen-by overflow cap + animated typing dots, Task 5: Thread panel slide-in + nested styling, Task 6: Composer redesign — icon send button + mention menu polish (+1 more)
+
+### Community 49 - "task-5-brief.md"
+Cohesion: 0.20
+Nodes (9): Chat @mentions + notification, Data model, Detection algorithm, Error handling / edge cases, Frontend (`static/js/dashboard-chat.js`, `templates/dashboard/chat.html`), Notification delivery, Scope, Summary (+1 more)
+
+### Community 51 - "Chat typing indicators + presence"
+Cohesion: 0.20
+Nodes (9): Chat typing indicators + presence, Data model, Endpoints (`src/routes_chat.py`), Error handling / edge cases, Frontend (`static/js/dashboard-chat.js`), Scope, Summary, Testing (+1 more)
+
+### Community 52 - "Chat Visual Redesign — Design Spec"
+Cohesion: 0.20
+Nodes (9): Chat Visual Redesign — Design Spec, Composer, Empty / loading states, Feature-specific treatment, Goal, Layout, Motion, Out of scope (+1 more)
+
+### Community 53 - "_add_member"
+Cohesion: 0.24
+Nodes (10): _add_member(), _notifications(), _switch_user(), test_everyone_mention_by_leader_notifies_all_other_members(), test_everyone_mention_by_member_not_honored(), test_mentions_persist_on_message_listing(), test_message_self_mention_not_notified(), test_message_with_mention_notifies_recipient() (+2 more)
+
+### Community 54 - "Global Constraints"
+Cohesion: 0.22
+Nodes (8): Chat Read Receipts Implementation Plan, Global Constraints, Self-Review Notes, Task 1: `chatReads` upsert endpoint, Task 2: `GET .../reads` + `unread` on channel list, Task 3: Drop `chatReads` rows on channel delete, Task 4: Mongo collection + index, Task 5: Client — server-synced unread dot + "seen by" row
+
+### Community 55 - "Global Constraints"
+Cohesion: 0.22
+Nodes (8): Chat Threads / Replies Implementation Plan, Global Constraints, Self-Review Notes, Task 1: Reply validation + parent bookkeeping on message send, Task 2: Filter replies out of the top-level channel view; `?parentId=` scopes to a thread, Task 3: `page_messages()` gains a `parent_id` parameter; new Mongo index, Task 4: Frontend — reply affordance, thread panel, scoped polling, reply composer, Task 5: Extend channel-delete test coverage to replies
+
+### Community 56 - "Global Constraints"
+Cohesion: 0.22
+Nodes (8): Chat Typing Indicators + Presence Implementation Plan, Global Constraints, Self-Review Notes, Task 1: Module-level state + `POST .../typing` endpoint, Task 2: `typing` array on `GET .../messages`, Task 3: `onlineMembers` array + presence heartbeat on `GET .../channels`, Task 4: Client — typing indicator under the compose box, Task 5: Client — presence dot on message-author avatars
+
+### Community 57 - "Server-synced chat read receipts"
+Cohesion: 0.22
+Nodes (8): Data model, Endpoints (`src/routes_chat.py`), Error handling / edge cases, Frontend (`static/js/dashboard-chat.js`), Scope, Server-synced chat read receipts, Summary, Testing
+
+### Community 58 - "Chat threads / replies"
+Cohesion: 0.22
+Nodes (8): Backend changes (`src/routes_chat.py`), Chat threads / replies, Data model, Error handling / edge cases, Frontend (`static/js/dashboard-chat.js`), Scope, Summary, Testing
+
+### Community 59 - "Dashboard home page redesign"
+Cohesion: 0.22
+Nodes (8): Dashboard home page redesign, Data plumbing, Goal, Layout order (top → bottom), New: coins widget, Out of scope, Shrink existing widgets, Unchanged
+
+### Community 60 - "Global Constraints"
+Cohesion: 0.29
+Nodes (6): Chat @mentions Implementation Plan, Global Constraints, Self-Review Notes, Task 1: Mention-resolution helper (pure function), Task 2: Persist mentions on message send + notify, Task 3: Client `@` autocomplete + mention highlighting
+
+### Community 61 - "Global Constraints"
+Cohesion: 0.29
+Nodes (6): Global Constraints, Site-Wide Guided Tour Implementation Plan, Task 1: Shared tour engine, CSS, layout wiring, and Tools page migration, Task 2: Tour steps for Home, Team, Workshops, Events, Shop, Task 3: Tour steps for Levels, Map, Projects, Ships, Chat, Task 4: Tour steps for Notifications, Settings, Profile, Admin, Admin Club
+
+### Community 62 - "Global Constraints"
+Cohesion: 0.33
+Nodes (5): Dashboard Home Redesign Implementation Plan, Global Constraints, Task 1: Load the coin ledger on the home page, Task 2: Shrink the team, checklist, and events widgets, Task 3: Add the coins-earned widget
+
+### Community 63 - "_airtable"
+Cohesion: 0.40
+Nodes (6): _airtable(), _save_messages_and_capture(), test_item_fields_no_preview_writes_blank(), test_item_fields_serializes_link_preview(), test_load_message_without_extras(), test_load_parses_message_metadata_and_attachments()
+
+### Community 64 - "_FakePreviewResponse"
+Cohesion: 0.33
+Nodes (4): _FakePreviewResponse, test_preview_happy_path(), test_preview_non_html_skipped(), test_preview_title_fallback()
+
+### Community 65 - "feature_enabled"
+Cohesion: 0.40
+Nodes (5): feature_enabled(), Env-driven feature flag: on unless the env var is set to false/0/off/no., test_feature_flags_default_on(), test_feature_flags_disabled_values(), test_feature_flags_true_value()
+
 ## Knowledge Gaps
-- **208 isolated node(s):** `$schema`, `registry`, `blocks`, `components`, `assets` (+203 more)
+- **234 isolated node(s):** `$schema`, `registry`, `blocks`, `components`, `assets` (+229 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `StorageError` connect `test_coins.py` to `Community 0`, `Community 1`, `Community 3`, `Community 5`, `Community 8`?**
-  _High betweenness centrality (0.086) - this node is a cross-community bridge._
-- **Why does `reset_rate_limits()` connect `Community 2` to `Community 3`?**
-  _High betweenness centrality (0.067) - this node is a cross-community bridge._
-- **Why does `AirtableStorage` connect `Community 1` to `Community 0`, `Community 5`, `test_coins.py`, `test_workshops.py`?**
-  _High betweenness centrality (0.059) - this node is a cross-community bridge._
-- **Are the 19 inferred relationships involving `StorageError` (e.g. with `Channel` and `ClubState`) actually correct?**
-  _`StorageError` has 19 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 3 inferred relationships involving `AirtableStorage` (e.g. with `MongoStorage` and `test_storage_error_on_dashboard_redirects_once_not_forever()`) actually correct?**
-  _`AirtableStorage` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 21 inferred relationships involving `SessionStorage` (e.g. with `Channel` and `ClubState`) actually correct?**
-  _`SessionStorage` has 21 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 3 inferred relationships involving `MongoStorage` (e.g. with `AirtableStorage` and `StorageError`) actually correct?**
-  _`MongoStorage` has 3 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `AirtableStorage` connect `Community 1` to `Community 0`, `Community 5`, `_airtable`?**
+  _High betweenness centrality (0.099) - this node is a cross-community bridge._
+- **Why does `SessionStorage` connect `Community 1` to `Community 0`, `Task 4 Implementation Report: Link preview fetcher with SSRF guards`, `Task 1: Feature Flag Helper — Implementation Report`, `Task 2: Storage — Metadata JSON field, attachment loading, Airtable schema — Report`, `Task 3 Report: `AirtableStorage.upload_attachment``?**
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Why does `MongoStorage` connect `Community 0` to `Community 8`, `Community 1`?**
+  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+- **Are the 2 inferred relationships involving `get_dashboard_state()` (e.g. with `ShopItem` and `SessionStorage`) actually correct?**
+  _`get_dashboard_state()` has 2 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 6 inferred relationships involving `AirtableStorage` (e.g. with `main()` and `SessionStorage`) actually correct?**
+  _`AirtableStorage` has 6 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `$schema`, `registry`, `blocks` to the rest of the system?**
+  _320 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Community 0` be split into smaller, more focused modules?**
+  _Cohesion score 0.07086197778952935 - nodes in this community are weakly interconnected._

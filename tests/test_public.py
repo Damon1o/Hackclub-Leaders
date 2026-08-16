@@ -499,6 +499,55 @@ def test_profile_page_has_tour_page_key(auth_client, monkeypatch):
     assert b'id="profileForm"' in response.data
 
 
+def test_profile_avatar_prefers_roster_avatar_over_oauth(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['user']['avatar'] = 'https://oauth.example/picture.png'
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Avatar Club'},
+            'members': [
+                {
+                    'id': 'm1',
+                    'name': 'Test Leader',
+                    'email': 'leader@test.com',
+                    'role': 'Leader',
+                    'avatar': 'https://cdn.example/user-set.png',
+                    'status': 'Active',
+                }
+            ],
+        }
+    response = auth_client.get('/dashboard/profile')
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert 'https://cdn.example/user-set.png' in html
+    assert 'https://oauth.example/picture.png' not in html
+    assert 'has-image' in html
+
+
+def test_profile_avatar_falls_back_to_oauth_without_roster_avatar(auth_client, monkeypatch):
+    monkeypatch.setenv('STORAGE_BACKEND', 'session')
+    with auth_client.session_transaction() as sess:
+        sess['user']['avatar'] = 'https://oauth.example/picture.png'
+        sess['dashboard_state'] = {
+            'settings': {'clubName': 'Avatar Club'},
+            'members': [
+                {
+                    'id': 'm1',
+                    'name': 'Test Leader',
+                    'email': 'leader@test.com',
+                    'role': 'Leader',
+                    'avatar': '',
+                    'status': 'Active',
+                }
+            ],
+        }
+    response = auth_client.get('/dashboard/profile')
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert 'https://oauth.example/picture.png' in html
+    assert 'has-image' in html
+
+
 def test_admin_page_has_tour_page_key(admin_client):
     response = admin_client.get('/dashboard/admin')
     assert response.status_code == 200

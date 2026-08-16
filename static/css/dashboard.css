@@ -4285,11 +4285,36 @@ body.dark-mode .dashboard-wrapper {
 }
 
 .mention {
-    padding: 0 2px;
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--dash-accent) 14%, transparent);
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--dash-accent) 16%, transparent);
     color: var(--dash-accent);
     font-weight: 600;
+    white-space: nowrap;
+}
+
+.mention--everyone {
+    background: var(--dash-accent);
+    color: var(--dash-card);
+}
+
+.chat-message--mentioned {
+    background: color-mix(in srgb, var(--dash-accent) 8%, transparent);
+    border-radius: 8px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-right: 8px;
+    margin-right: -8px;
+}
+
+.chat-message--mentioned:not(.chat-message--grouped) {
+    padding-left: 8px;
+    margin-left: -8px;
+}
+
+.chat-message--grouped.chat-message--mentioned {
+    padding-left: 54px;
+    margin-left: -8px;
 }
 
 .chat-ephemeral .chat-message-text {

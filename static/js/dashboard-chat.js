@@ -279,6 +279,11 @@ window.DashboardChat = function (ctx) {
         }
         const person = { name: message.authorName, avatar: message.authorAvatar };
         const mine = (message.authorEmail || '').toLowerCase() === viewerEmail ? ' is-mine' : '';
+        const mentionsViewer = !mine && (
+            (message.mentions || []).some((email) => String(email).toLowerCase() === viewerEmail)
+            || Boolean(message.mentionsEveryone)
+        );
+        const mentioned = mentionsViewer ? ' chat-message--mentioned' : '';
         const authorKey = String(message.authorEmail || message.authorName || '').toLowerCase();
         const msgTime = new Date(message.createdAt).getTime();
         const grouped = S.lastMsgMeta
@@ -287,7 +292,7 @@ window.DashboardChat = function (ctx) {
             && (msgTime - S.lastMsgMeta.time) >= 0
             && (msgTime - S.lastMsgMeta.time) <= CHAT_GROUP_MS;
         const row = document.createElement('div');
-        row.className = 'chat-message' + mine + (grouped ? ' chat-message--grouped' : '')
+        row.className = 'chat-message' + mine + mentioned + (grouped ? ' chat-message--grouped' : '')
             + (message.deleted ? ' chat-message--deleted' : '')
             + (opts.pending ? ' chat-message--pending' : '');
         if (message.id) row.dataset.mid = String(message.id);
@@ -365,8 +370,9 @@ window.DashboardChat = function (ctx) {
         let last = 0;
         let match;
         while ((match = pattern.exec(body)) !== null) {
+            const cls = match[1] === 'everyone' ? 'mention mention--everyone' : 'mention';
             html += escapeHtml(body.slice(last, match.index))
-                + `<span class="mention">@${escapeHtml(match[1])}</span>`;
+                + `<span class="${cls}">@${escapeHtml(match[1])}</span>`;
             last = match.index + match[0].length;
         }
         return html + escapeHtml(body.slice(last));

@@ -384,7 +384,7 @@ ALWAYS_LOADED: Final[frozenset[str]] = frozenset({'members', 'notifications'})
 # get_dashboard_state() drops the unlisted keys, and both shared backends
 # treat a missing key as "leave this section alone" on save.
 PAGE_SECTIONS: Final[dict[str, tuple[str, ...]]] = {
-    'dashboard': ('events', 'projects', 'newsletters', 'workshops'),
+    'dashboard': ('events', 'projects', 'newsletters', 'workshops', 'ledger'),
     'dashboard_team': (),
     'dashboard_events': ('events',),
     'dashboard_ships': ('projects',),

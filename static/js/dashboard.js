@@ -50,6 +50,10 @@
         return dashboardState.orders || [];
     }
 
+    function ledger() {
+        return dashboardState.ledger || [];
+    }
+
     function workshops() {
         return dashboardState.workshops || [];
     }
@@ -204,7 +208,7 @@
     // src/helpers.py — the server drops everything else, so a page fetches only
     // what it paints. Pages missing from this map get the full state.
     const PAGE_SECTIONS = {
-        dashboard: ['events', 'projects', 'newsletters', 'workshops'],
+        dashboard: ['events', 'projects', 'newsletters', 'workshops', 'ledger'],
         team: [],
         events: ['events'],
         ships: ['projects'],

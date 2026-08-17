@@ -2,301 +2,301 @@
   {
     "name": "Meeting Posters",
     "cost": 0,
-    "image-src": "",
+    "image-src": "/static/images/hackclub-site/white-hack-club-banner.svg",
     "filter": "Merch"
   },
   {
     "name": "Sticker Pack",
     "cost": 0,
-    "image-src": "",
+    "image-src": "/static/images/Stickers/logo.webp",
     "filter": "Merch"
   },
   {
     "name": "random piece of paper from hq",
     "cost": 10,
-    "image-src": "",
+    "image-src": "/static/images/shop/random-piece-of-paper-from-hq.webp",
     "filter": "Merch"
   },
   {
     "name": "Signed photo of Amber",
     "cost": 20,
-    "image-src": "",
+    "image-src": "/static/images/shop/signed-photo-of-amber.webp",
     "filter": "Merch"
   },
   {
     "name": "Hot Chocolate!",
     "cost": 20,
-    "image-src": "",
+    "image-src": "/static/images/shop/hot-chocolate.webp",
     "filter": "Merch"
   },
   {
     "name": "Nebula.tv 1 Month",
     "cost": 50,
-    "image-src": "",
+    "image-src": "/static/images/shop/nebula-tv-1-month.webp",
     "filter": "Digital"
   },
   {
     "name": "Sketch pad from HQ",
     "cost": 50,
-    "image-src": "",
+    "image-src": "/static/images/shop/sketch-pad-from-hq.webp",
     "filter": "Merch"
   },
   {
     "name": "Hack Club Pin",
     "cost": 50,
-    "image-src": "",
+    "image-src": "/static/images/shop/hack-club-pin.webp",
     "filter": "Merch"
   },
   {
     "name": "Orpheus Pico V2",
     "cost": 60,
-    "image-src": "",
+    "image-src": "/static/images/shop/orpheus-pico-v2.webp",
     "filter": "Hardware"
   },
   {
     "name": "Picoducky",
     "cost": 70,
-    "image-src": "",
+    "image-src": "/static/images/shop/picoducky.webp",
     "filter": "Hardware"
   },
   {
     "name": "Outpost Travel Stipends",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/outpost-travel-stipends.webp",
     "filter": "Grants"
   },
   {
     "name": "Cloudflare Credits",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/cloudflare-credits.webp",
     "filter": "Credits"
   },
   {
     "name": "3D Printing Credits",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/3d-printing-credits.webp",
     "filter": "Credits"
   },
   {
     "name": "PCB & Electronics Credits",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/pcb-electronics-credits.webp",
     "filter": "Credits"
   },
   {
     "name": "Free Domain",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/free-domain.webp",
     "filter": "Grants"
   },
   {
     "name": "Framework Grant",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/framework-grant.webp",
     "filter": "Grants"
   },
   {
     "name": "Ubiquiti Grant",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/ubiquiti-grant.webp",
     "filter": "Grants"
   },
   {
     "name": "Cloud Hosting Credits",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/cloud-hosting-credits.webp",
     "filter": "Credits"
   },
   {
     "name": "iFixit Credits",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/ifixit-credits.webp",
     "filter": "Credits"
   },
   {
     "name": "AI Credits",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/ai-credits.webp",
     "filter": "Credits"
   },
   {
     "name": "GitHub Invertocat Pin",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/github-invertocat-pin.webp",
     "filter": "Merch"
   },
   {
     "name": "This Is Water by David Foster-Wallace",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/this-is-water-by-david-foster-wallace.webp",
     "filter": "Merch"
   },
   {
     "name": "KeebCard",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/keebcard.webp",
     "filter": "Hardware"
   },
   {
     "name": "Object from Amber's desk",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/object-from-amber-s-desk.webp",
     "filter": "Merch"
   },
   {
     "name": "$50 Proton Credit",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/50-proton-credit.webp",
     "filter": "Credits"
   },
   {
     "name": "Steam Developer Fee Grant",
     "cost": 100,
-    "image-src": "",
+    "image-src": "/static/images/shop/steam-developer-fee-grant.webp",
     "filter": "Grants"
   },
   {
     "name": "PICO-8 Licence",
     "cost": 150,
-    "image-src": "",
+    "image-src": "/static/images/shop/pico-8-licence.webp",
     "filter": "Digital"
   },
   {
     "name": "Raspberry Pi Zero 2 W",
     "cost": 150,
-    "image-src": "",
+    "image-src": "/static/images/shop/raspberry-pi-zero-2-w.webp",
     "filter": "Hardware"
   },
   {
     "name": "USB Drive",
     "cost": 150,
-    "image-src": "",
+    "image-src": "/static/images/shop/usb-drive.webp",
     "filter": "Hardware"
   },
   {
     "name": "ESP32 Kit",
     "cost": 150,
-    "image-src": "",
+    "image-src": "/static/images/shop/esp32-kit.webp",
     "filter": "Hardware"
   },
   {
     "name": "Retro Computer Magazine",
     "cost": 150,
-    "image-src": "",
+    "image-src": "/static/images/shop/retro-computer-magazine.webp",
     "filter": "Merch"
   },
   {
     "name": "Hackazine!",
     "cost": 150,
-    "image-src": "",
+    "image-src": "/static/images/shop/hackazine.webp",
     "filter": "Merch"
   },
   {
     "name": "Hack Club Socks",
     "cost": 150,
-    "image-src": "",
+    "image-src": "/static/images/shop/hack-club-socks.webp",
     "filter": "Merch"
   },
   {
     "name": "Digital Calipers",
     "cost": 150,
-    "image-src": "",
+    "image-src": "/static/images/shop/digital-calipers.webp",
     "filter": "Hardware"
   },
   {
     "name": "UNBEATABLE",
     "cost": 150,
-    "image-src": "",
+    "image-src": "/static/images/shop/unbeatable.webp",
     "filter": "Games"
   },
   {
     "name": "GitHub Notebook",
     "cost": 150,
-    "image-src": "",
+    "image-src": "/static/images/shop/github-notebook.webp",
     "filter": "Merch"
   },
   {
     "name": "Starling Plushie",
     "cost": 200,
-    "image-src": "",
+    "image-src": "/static/images/shop/starling-plushie.webp",
     "filter": "Merch"
   },
   {
     "name": "GitHub Frisbee",
     "cost": 200,
-    "image-src": "",
+    "image-src": "/static/images/shop/github-frisbee.webp",
     "filter": "Merch"
   },
   {
     "name": "Celeste",
     "cost": 200,
-    "image-src": "",
+    "image-src": "/static/images/shop/celeste.webp",
     "filter": "Games"
   },
   {
     "name": "Hell Yes! CSS! by Julia Evans",
     "cost": 200,
-    "image-src": "",
+    "image-src": "/static/images/shop/hell-yes-css-by-julia-evans.webp",
     "filter": "Merch"
   },
   {
     "name": "Exploding Kittens Board Game",
     "cost": 200,
-    "image-src": "",
+    "image-src": "/static/images/shop/exploding-kittens-board-game.webp",
     "filter": "Merch"
   },
   {
     "name": "1 lb fudge from place next to old HQ",
     "cost": 200,
-    "image-src": "",
+    "image-src": "/static/images/shop/1-lb-fudge-from-place-next-to-old-hq.webp",
     "filter": "Merch"
   },
   {
     "name": "Hack Club Campfire T-Shirt (X-Large)",
     "cost": 250,
-    "image-src": "",
+    "image-src": "/static/images/shop/hack-club-campfire-t-shirt-x-large.webp",
     "filter": "Merch"
   },
   {
     "name": "Hack Club Campfire T-Shirt (Large)",
     "cost": 250,
-    "image-src": "",
+    "image-src": "/static/images/shop/hack-club-campfire-t-shirt-large.webp",
     "filter": "Merch"
   },
   {
     "name": "Hack Club Campfire T-Shirt (Medium)",
     "cost": 250,
-    "image-src": "",
+    "image-src": "/static/images/shop/hack-club-campfire-t-shirt-medium.webp",
     "filter": "Merch"
   },
   {
     "name": "Hack Club Campfire T-Shirt (Small)",
     "cost": 250,
-    "image-src": "",
+    "image-src": "/static/images/shop/hack-club-campfire-t-shirt-small.webp",
     "filter": "Merch"
   },
   {
     "name": "Stardance T-Shirt",
     "cost": 250,
-    "image-src": "",
+    "image-src": "/static/images/shop/stardance-t-shirt.webp",
     "filter": "Merch"
   },
   {
     "name": "Google Play Licence",
     "cost": 250,
-    "image-src": "",
+    "image-src": "/static/images/shop/google-play-licence.webp",
     "filter": "Digital"
   },
   {
     "name": "Parthenon Corduroy Hat",
     "cost": 250,
-    "image-src": "",
+    "image-src": "/static/images/shop/parthenon-corduroy-hat.webp",
     "filter": "Merch"
   },
   {
     "name": "Parthenon Tote Bag",
     "cost": 250,
-    "image-src": "",
+    "image-src": "/static/images/shop/parthenon-tote-bag.webp",
     "filter": "Merch"
   },
   {
@@ -308,325 +308,325 @@
   {
     "name": "Pinecil",
     "cost": 250,
-    "image-src": "",
+    "image-src": "/static/images/shop/pinecil.webp",
     "filter": "Hardware"
   },
   {
     "name": "Smolhåj",
     "cost": 250,
-    "image-src": "",
+    "image-src": "/static/images/shop/smolh-j.webp",
     "filter": "Merch"
   },
   {
     "name": "Anker Charger 65W",
     "cost": 300,
-    "image-src": "",
+    "image-src": "/static/images/shop/anker-charger-65w.webp",
     "filter": "Hardware"
   },
   {
     "name": "GitHub Keycaps",
     "cost": 300,
-    "image-src": "",
+    "image-src": "/static/images/shop/github-keycaps.webp",
     "filter": "Hardware"
   },
   {
     "name": "RTL-SDR Blog V3 R860",
     "cost": 300,
-    "image-src": "",
+    "image-src": "/static/images/shop/rtl-sdr-blog-v3-r860.webp",
     "filter": "Hardware"
   },
   {
     "name": "Icepi Zero",
     "cost": 300,
-    "image-src": "",
+    "image-src": "/static/images/shop/icepi-zero.webp",
     "filter": "Hardware"
   },
   {
     "name": "Pinetime",
     "cost": 350,
-    "image-src": "",
+    "image-src": "/static/images/shop/pinetime.webp",
     "filter": "Hardware"
   },
   {
     "name": "Factorio",
     "cost": 350,
-    "image-src": "",
+    "image-src": "/static/images/shop/factorio.webp",
     "filter": "Games"
   },
   {
     "name": "NZXT Zone Elite Mouse Pad (XXL)",
     "cost": 400,
-    "image-src": "",
+    "image-src": "/static/images/shop/nzxt-zone-elite-mouse-pad-xxl.webp",
     "filter": "Hardware"
   },
   {
     "name": "Blåhaj",
     "cost": 400,
-    "image-src": "",
+    "image-src": "/static/images/shop/bl-haj.webp",
     "filter": "Merch"
   },
   {
     "name": "Campfire Flagship Laptop bag",
     "cost": 500,
-    "image-src": "",
+    "image-src": "/static/images/shop/campfire-flagship-laptop-bag.webp",
     "filter": "Merch"
   },
   {
     "name": "Raspberry Pi 4B 2GB w/ 64 GB microSD card",
     "cost": 550,
-    "image-src": "",
+    "image-src": "/static/images/shop/raspberry-pi-4b-2gb-w-64-gb-microsd-card.webp",
     "filter": "Hardware"
   },
   {
     "name": "YubiKey",
     "cost": 590,
-    "image-src": "",
+    "image-src": "/static/images/shop/yubikey.webp",
     "filter": "Hardware"
   },
   {
     "name": "ugee Drawing Tablet",
     "cost": 600,
-    "image-src": "",
+    "image-src": "/static/images/shop/ugee-drawing-tablet.webp",
     "filter": "Hardware"
   },
   {
     "name": "Hyperpixel 4.0",
     "cost": 600,
-    "image-src": "",
+    "image-src": "/static/images/shop/hyperpixel-4-0.webp",
     "filter": "Hardware"
   },
   {
     "name": "NZXT Limited Edition Six Siege Drone Artisan Keycap",
     "cost": 600,
-    "image-src": "",
+    "image-src": "/static/images/shop/nzxt-limited-edition-six-siege-drone-artisan-keycap.webp",
     "filter": "Hardware"
   },
   {
     "name": "Campfire Flagship Hoodie (L)",
     "cost": 650,
-    "image-src": "",
+    "image-src": "/static/images/shop/campfire-flagship-hoodie-l.webp",
     "filter": "Merch"
   },
   {
     "name": "Campfire Flagship Hoodie (M)",
     "cost": 650,
-    "image-src": "",
+    "image-src": "/static/images/shop/campfire-flagship-hoodie-m.webp",
     "filter": "Merch"
   },
   {
     "name": "Campfire Flagship Hoodie (S)",
     "cost": 650,
-    "image-src": "",
+    "image-src": "/static/images/shop/campfire-flagship-hoodie-s.webp",
     "filter": "Merch"
   },
   {
     "name": "CMF Buds 2 Plus",
     "cost": 690,
-    "image-src": "",
+    "image-src": "/static/images/shop/cmf-buds-2-plus.webp",
     "filter": "Hardware"
   },
   {
     "name": "Mechanical Keyboard (AULA F75)",
     "cost": 800,
-    "image-src": "",
+    "image-src": "/static/images/shop/mechanical-keyboard-aula-f75.webp",
     "filter": "Hardware"
   },
   {
     "name": "NZXT Kraken Core 240 RGB Liquid Cooler",
     "cost": 800,
-    "image-src": "",
+    "image-src": "/static/images/shop/nzxt-kraken-core-240-rgb-liquid-cooler.webp",
     "filter": "Hardware"
   },
   {
     "name": "Raspberry Pi 500",
     "cost": 900,
-    "image-src": "",
+    "image-src": "/static/images/shop/raspberry-pi-500.webp",
     "filter": "Hardware"
   },
   {
     "name": "Apple Developer Licence",
     "cost": 990,
-    "image-src": "",
+    "image-src": "/static/images/shop/apple-developer-licence.webp",
     "filter": "Digital"
   },
   {
     "name": "SynthV Studio License",
     "cost": 990,
-    "image-src": "",
+    "image-src": "/static/images/shop/synthv-studio-license.webp",
     "filter": "Digital"
   },
   {
     "name": "min(amame) DIY headphones",
     "cost": 1000,
-    "image-src": "",
+    "image-src": "/static/images/shop/min-amame-diy-headphones.webp",
     "filter": "Hardware"
   },
   {
     "name": "NZXT H5 Flow",
     "cost": 1000,
-    "image-src": "",
+    "image-src": "/static/images/shop/nzxt-h5-flow.webp",
     "filter": "Hardware"
   },
   {
     "name": "Anker Prime Charging Station",
     "cost": 1100,
-    "image-src": "",
+    "image-src": "/static/images/shop/anker-prime-charging-station.webp",
     "filter": "Hardware"
   },
   {
     "name": "Apple Pencil Pro",
     "cost": 1290,
-    "image-src": "",
+    "image-src": "/static/images/shop/apple-pencil-pro.webp",
     "filter": "Hardware"
   },
   {
     "name": "TRMNL DIY Kit",
     "cost": 1390,
-    "image-src": "",
+    "image-src": "/static/images/shop/trmnl-diy-kit.webp",
     "filter": "Hardware"
   },
   {
     "name": "Flipper Zero",
     "cost": 1690,
-    "image-src": "",
+    "image-src": "/static/images/shop/flipper-zero.webp",
     "filter": "Hardware"
   },
   {
     "name": "MX Mechanical Wireless Illuminate Linear",
     "cost": 1700,
-    "image-src": "",
+    "image-src": "/static/images/shop/mx-mechanical-wireless-illuminate-linear.webp",
     "filter": "Hardware"
   },
   {
     "name": "FL Studio Licence",
     "cost": 1990,
-    "image-src": "",
+    "image-src": "/static/images/shop/fl-studio-licence.webp",
     "filter": "Digital"
   },
   {
     "name": "Insta360 Link 2",
     "cost": 1990,
-    "image-src": "",
+    "image-src": "/static/images/shop/insta360-link-2.webp",
     "filter": "Hardware"
   },
   {
     "name": "Polaroid Go Gen 3",
     "cost": 1990,
-    "image-src": "",
+    "image-src": "/static/images/shop/polaroid-go-gen-3.webp",
     "filter": "Hardware"
   },
   {
     "name": "Polaroid Flip",
     "cost": 1990,
-    "image-src": "",
+    "image-src": "/static/images/shop/polaroid-flip.webp",
     "filter": "Hardware"
   },
   {
     "name": "Pebble Time 2",
     "cost": 2250,
-    "image-src": "",
+    "image-src": "/static/images/shop/pebble-time-2.webp",
     "filter": "Hardware"
   },
   {
     "name": "Playdate",
     "cost": 2290,
-    "image-src": "",
+    "image-src": "/static/images/shop/playdate.webp",
     "filter": "Hardware"
   },
   {
     "name": "AMS Lite",
     "cost": 2490,
-    "image-src": "",
+    "image-src": "/static/images/shop/ams-lite.webp",
     "filter": "Hardware"
   },
   {
     "name": "Tulip Creative Computer",
     "cost": 2990,
-    "image-src": "",
+    "image-src": "/static/images/shop/tulip-creative-computer.webp",
     "filter": "Hardware"
   },
   {
     "name": "Bambu Lab A1 mini",
     "cost": 2990,
-    "image-src": "",
+    "image-src": "/static/images/shop/bambu-lab-a1-mini.webp",
     "filter": "Hardware"
   },
   {
     "name": "Nothing headphone (1)",
     "cost": 2990,
-    "image-src": "",
+    "image-src": "/static/images/shop/nothing-headphone-1.webp",
     "filter": "Hardware"
   },
   {
     "name": "Xbox Series S 512GB",
     "cost": 2990,
-    "image-src": "",
+    "image-src": "/static/images/shop/xbox-series-s-512gb.webp",
     "filter": "Hardware"
   },
   {
     "name": "Bambu Lab A1",
     "cost": 3990,
-    "image-src": "",
+    "image-src": "/static/images/shop/bambu-lab-a1.webp",
     "filter": "Hardware"
   },
   {
     "name": "Quest 3",
     "cost": 4990,
-    "image-src": "",
+    "image-src": "/static/images/shop/quest-3.webp",
     "filter": "Hardware"
   },
   {
     "name": "MacBook Neo",
     "cost": 5990,
-    "image-src": "",
+    "image-src": "/static/images/shop/macbook-neo.webp",
     "filter": "Hardware"
   },
   {
     "name": "iPad Air",
     "cost": 5990,
-    "image-src": "",
+    "image-src": "/static/images/shop/ipad-air.webp",
     "filter": "Hardware"
   },
   {
     "name": "Mac Mini",
     "cost": 5990,
-    "image-src": "",
+    "image-src": "/static/images/shop/mac-mini.webp",
     "filter": "Hardware"
   },
   {
     "name": "Canon R50 Camera",
     "cost": 6790,
-    "image-src": "",
+    "image-src": "/static/images/shop/canon-r50-camera.webp",
     "filter": "Hardware"
   },
   {
     "name": "Framework Laptop 12",
     "cost": 7990,
-    "image-src": "",
+    "image-src": "/static/images/shop/framework-laptop-12.webp",
     "filter": "Hardware"
   },
   {
     "name": "Framework Laptop 13",
     "cost": 9990,
-    "image-src": "",
+    "image-src": "/static/images/shop/framework-laptop-13.webp",
     "filter": "Hardware"
   },
   {
     "name": "Macbook Air",
     "cost": 10990,
-    "image-src": "",
+    "image-src": "/static/images/shop/macbook-air.webp",
     "filter": "Hardware"
   },
   {
     "name": "Framework 13 Pro",
     "cost": 14990,
-    "image-src": "",
+    "image-src": "/static/images/shop/framework-13-pro.webp",
     "filter": "Hardware"
   },
   {
     "name": "Framework Laptop 16",
     "cost": 16990,
-    "image-src": "",
+    "image-src": "/static/images/shop/framework-laptop-16.webp",
     "filter": "Hardware"
   }
 ]

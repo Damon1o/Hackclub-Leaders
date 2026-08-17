@@ -154,21 +154,10 @@
         return `${COIN_ICON_SVG}<span>${Number(cost).toLocaleString()}</span>`;
     }
 
-    function normalizeShopName(name) {
-        return String(name || '').trim().replace(/\s+/g, ' ').toLowerCase();
-    }
-
     function shopPhotoUrl(item, index = 0) {
         const supplied = item?.image_src || item?.['image-src'];
-        if (supplied && index === 0) return supplied;
-        const stardancePhoto = Object.entries(window.STARDANCE_SHOP_IMAGES || {})
-            .find(([name]) => normalizeShopName(name) === normalizeShopName(item?.name))?.[1];
-        if (stardancePhoto) return stardancePhoto;
-        const localFallbacks = {
-            'Meeting Posters': '/static/images/hackclub-site/white-hack-club-banner.svg',
-            'Sticker Pack': '/static/images/Stickers/logo.webp',
-        };
-        return localFallbacks[item?.name] || '';
+        if (supplied) return supplied;
+        return '';
     }
 
     function shopMedia(item) {

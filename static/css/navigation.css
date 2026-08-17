@@ -100,6 +100,12 @@
     text-decoration: none;
 }
 
+.navigation-bar .nav-links ul li a:active,
+.navigation-bar .mode-switch button:active {
+    transform: scale(0.97);
+    transition: transform 160ms ease-out;
+}
+
 .navigation-bar .mode-switch {
     display: flex;
     flex-direction: row;
@@ -193,6 +199,12 @@
     transition: background-color 0.4s ease;
 }
 
+.navigation-bar .apply-now-container .apply-now-link:active,
+.navigation-bar .apply-now-container .sign-in-link:active {
+    transform: scale(0.97);
+    transition: transform 160ms ease-out;
+}
+
 .navigation-bar .apply-now-container .apply-now-link p {
     margin: 0;
 }
@@ -237,10 +249,16 @@
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     min-width: 200px;
-    display: none;
+    display: flex;
     flex-direction: column;
     z-index: 100;
     align-items: left;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+    transform-origin: top left;
+    pointer-events: none;
+    transition: opacity 180ms ease-out, transform 180ms ease-out, visibility 180ms;
 }
 
 /* Keep the menu available to pointer and keyboard users, and allow the
@@ -248,7 +266,10 @@
 .navigation-bar .dropdown:hover > .dropdown-menu,
 .navigation-bar .dropdown:focus-within > .dropdown-menu,
 .navigation-bar .dropdown.is-open > .dropdown-menu {
-    display: flex;
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
 }
 
 .navigation-bar .dropdown.is-open > a,
@@ -378,6 +399,10 @@
         box-shadow: none;
         min-width: 0;
         padding: 0 0 0 16px;
+        visibility: visible;
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
     }
 
     .navigation-bar .dropdown:hover > .dropdown-menu,
@@ -419,5 +444,17 @@
 
     .navigation-bar:has(.nav-toggle:checked) .nav-hamburger span:nth-child(3) {
         transform: translateY(-8px) rotate(-45deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dropdown-menu {
+        transition: none;
+    }
+
+    .navigation-bar .nav-links ul li a:active,
+    .navigation-bar .mode-switch button:active {
+        transform: none;
+        transition: none;
     }
 }

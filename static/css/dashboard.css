@@ -663,6 +663,27 @@ body.dark-mode .btn-secondary {
     outline-offset: 2px;
 }
 
+/* ── Press feedback ──────────────────────────────────────────────────────────
+   Every pressable scales down on press so the UI confirms it heard the user.
+   Scale-down (not up) = "pressed in", matching physical buttons. */
+.btn-primary:active,
+.btn-secondary:active,
+.icon-button:active,
+.text-button:active,
+.shop-filter-chip:active,
+.checklist-toggle:active,
+.activity-item:active,
+.dashboard-sidebar-link:active,
+.btn-ghost-light:active,
+.btn-danger:active {
+    transform: scale(0.97);
+    transition: transform 160ms ease-out;
+}
+
+.btn-primary:active {
+    box-shadow: none;
+}
+
 /* ── Badges & chips ───────────────────────────────────────────────────────── */
 
 .badge {
@@ -3074,10 +3095,15 @@ input:checked + .toggle-slider:before {
     justify-content: center;
     padding: 20px;
     background: rgba(18, 18, 23, 0.6);
+    transition: opacity 150ms ease-out;
 }
 
 .modal-backdrop.is-open {
     display: flex;
+}
+
+.modal-backdrop.is-closing {
+    opacity: 0;
 }
 
 .dashboard-modal {
@@ -3089,6 +3115,12 @@ input:checked + .toggle-slider:before {
     background: var(--dash-card);
     box-shadow: 0 28px 70px rgba(17, 18, 20, 0.35);
     animation: modal-pop 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 150ms ease-out, transform 150ms ease-out;
+}
+
+.modal-backdrop.is-closing .dashboard-modal {
+    opacity: 0;
+    transform: translateY(8px);
 }
 
 @keyframes modal-pop {
@@ -3442,26 +3474,23 @@ img.thumb-preview[src=""] {
     font-size: 14px;
     font-weight: bold;
     border-left: 4px solid var(--hackclub-green);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    animation: toast-in 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
 }
 
-@keyframes toast-in {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: none;
-    }
+/* JS sets data-mounted after insertion; transitions are retargetable, so
+   rapid toast bursts animate smoothly (unlike a keyframe restart). */
+.toast[data-mounted] {
+    opacity: 1;
+    transform: none;
 }
 
 .toast-error {
     border-left-color: var(--hackclub-red);
 }
 
-.toast-leaving {
+.toast.toast-leaving {
     opacity: 0;
     transform: translateY(6px);
 }
@@ -3489,7 +3518,7 @@ img.thumb-preview[src=""] {
 }
 
 @keyframes notification-badge-pop {
-    from { transform: scale(0.4); opacity: 0; }
+    from { transform: scale(0.6); opacity: 0; }
     to   { transform: scale(1);   opacity: 1; }
 }
 
@@ -4838,4 +4867,61 @@ body.dark-mode .dashboard-wrapper {
 .btn-danger:hover {
     background: #a8122a;
     color: #fff;
+}
+
+/* ── Touch: hover states stick after tap ────────────────────────────────────
+   Transform/motion hover effects only make sense with a hover-capable
+   pointer. On coarse pointers strip the transform part of hover rules so
+   tapped elements don't stay "lifted" (press feedback via :active remains,
+   since touch fires :active during the tap). */
+@media (hover: none), (pointer: coarse) {
+    .btn-primary:hover,
+    .btn-secondary:hover,
+    .btn-ghost-light:hover {
+        transform: none;
+    }
+
+    .btn-primary:hover {
+        box-shadow: none;
+    }
+
+    .metric-tile:hover,
+    .item-card:hover,
+    .timeline-item:hover,
+    .level-card:hover,
+    .legend-item:hover,
+    .checklist-toggle:not(:disabled):hover,
+    a.tool-card:hover,
+    .sidebar-profile:hover {
+        transform: none;
+    }
+
+    .sticker:nth-child(odd):hover {
+        transform: rotate(-1.6deg);
+    }
+
+    .sticker:nth-child(even):hover {
+        transform: rotate(1.2deg);
+    }
+
+    .legend-item:hover .legend-dot,
+    .dashboard-sidebar-link:hover .sidebar-icon,
+    .shop-filter-chip:hover {
+        transform: none;
+    }
+
+    .dashboard-title:hover {
+        letter-spacing: -0.02em;
+    }
+
+    .level-band:hover {
+        filter: none;
+    }
+
+    .donut-svg:hover,
+    .donut-svg:hover .seg-leaders,
+    .donut-svg:hover .seg-members,
+    .donut-svg:hover .seg-mentors {
+        animation: none;
+    }
 }

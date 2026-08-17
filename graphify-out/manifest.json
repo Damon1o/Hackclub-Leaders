@@ -1,6 +1,6 @@
 {
   "app.py": {
-    "mtime": 1786914697.7427566,
+    "mtime": 1786984317.0739875,
     "ast_hash": "ff8ba2e65fa71790272f78f8ed1b9ebe",
     "semantic_hash": ""
   },
@@ -40,7 +40,7 @@
     "semantic_hash": ""
   },
   "tests/test_public.py": {
-    "mtime": 1786914724.5922701,
+    "mtime": 1786981997.9252176,
     "ast_hash": "ba4a6e08f5264a2e6a60d3d21b0a98c3",
     "semantic_hash": ""
   },
@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "src/routes_admin.py": {
-    "mtime": 1786644937.3308809,
-    "ast_hash": "ffbfd44ea10ed1018fc174c741e6d129",
+    "mtime": 1786916760.814098,
+    "ast_hash": "364a12f78aac80e68111cb931762fcb0",
     "semantic_hash": ""
   },
   "src/routes_api.py": {
@@ -130,13 +130,13 @@
     "semantic_hash": ""
   },
   "src/routes_club.py": {
-    "mtime": 1786644694.7927425,
-    "ast_hash": "1ae764e03fae6ec362032b7cde56083d",
+    "mtime": 1786926088.5219915,
+    "ast_hash": "941391224f68b4ab7e89860bece61fe7",
     "semantic_hash": ""
   },
   "src/routes_web.py": {
-    "mtime": 1786644749.4631407,
-    "ast_hash": "243a4dacae1898d0fb673b59e26d15fe",
+    "mtime": 1786984397.6883104,
+    "ast_hash": "66222dcfad4f858896da96dfb005c924",
     "semantic_hash": ""
   },
   "src/storage.py": {
@@ -150,8 +150,8 @@
     "semantic_hash": ""
   },
   "tests/test_admin_shop.py": {
-    "mtime": 1786404717.7498007,
-    "ast_hash": "cdfc6c373af39fe794d6a9abedafc924",
+    "mtime": 1786916782.0623932,
+    "ast_hash": "eb6921c08271673e942432df0c263bf3",
     "semantic_hash": ""
   },
   "tests/test_chat.py": {
@@ -380,13 +380,13 @@
     "semantic_hash": ""
   },
   "src/helpers_demo.py": {
-    "mtime": 1786644547.7259917,
-    "ast_hash": "73cae5bd56d38755a4f26be3dbc427db",
+    "mtime": 1786926087.7126927,
+    "ast_hash": "7359d063a103fa5e71d5ae7a4d8ae0c0",
     "semantic_hash": ""
   },
   "src/helpers_shop.py": {
-    "mtime": 1786645050.7856765,
-    "ast_hash": "9a2331121625115bfd9b4caacd101493",
+    "mtime": 1786936610.4281876,
+    "ast_hash": "94ce8fac06e55470a59c85ae5b036e6f",
     "semantic_hash": ""
   },
   "src/helpers_state.py": {
@@ -395,8 +395,8 @@
     "semantic_hash": ""
   },
   "src/helpers_types.py": {
-    "mtime": 1786636351.2783213,
-    "ast_hash": "de3a2e27e320ffb3ab1c5b579c546b24",
+    "mtime": 1786926086.9244711,
+    "ast_hash": "2b9b9e83cdc98fdfa3f01e5a92acd86f",
     "semantic_hash": ""
   },
   "src/helpers_validation.py": {
@@ -415,13 +415,13 @@
     "semantic_hash": ""
   },
   "src/storage_airtable.py": {
-    "mtime": 1786658136.159683,
-    "ast_hash": "4c860e056e6f9c08b87e3d5977530a13",
+    "mtime": 1786926090.142091,
+    "ast_hash": "a57120684a09ebf51e9076a62a65db2a",
     "semantic_hash": ""
   },
   "src/storage_airtable_fields.py": {
-    "mtime": 1786658136.1607153,
-    "ast_hash": "4a6f9370f11714d6dfef8d240b9dade3",
+    "mtime": 1786926089.3306472,
+    "ast_hash": "ad6ad71e3092e26731cb85f407ad435c",
     "semantic_hash": ""
   },
   "tests/test_storage_airtable.py": {
@@ -497,6 +497,21 @@
   "docs/superpowers/specs/2026-08-16-site-tour-design.md": {
     "mtime": 1786902552.1616943,
     "ast_hash": "8be5d8aaea925f0f6cee6f7ab8fa5292",
+    "semantic_hash": ""
+  },
+  ".impeccable.md": {
+    "mtime": 1786917417.8092933,
+    "ast_hash": "d8241045d0cdd59ef385afb75dd21a32",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-17-motion-polish.md": {
+    "mtime": 1786990908.0142775,
+    "ast_hash": "fd1a75d50be64166978fb13d75804f91",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-17-motion-polish-design.md": {
+    "mtime": 1786991087.9447298,
+    "ast_hash": "81d68c75ccfa1bb52e73f475c314c916",
     "semantic_hash": ""
   }
 }

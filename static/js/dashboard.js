@@ -340,6 +340,10 @@
         toast.textContent = message;
         toast.setAttribute('role', 'alert');
         region.appendChild(toast);
+        // Two frames so the hidden base state paints before the transition runs.
+        window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+            toast.setAttribute('data-mounted', 'true');
+        }));
         window.setTimeout(() => {
             toast.classList.add('toast-leaving');
             window.setTimeout(() => toast.remove(), 220);
@@ -356,6 +360,7 @@
     function openModal(id) {
         const modal = document.getElementById(id);
         if (!modal) return;
+        modal.classList.remove('is-closing');
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         const firstInput = $('input, select, textarea, button', modal);
@@ -367,8 +372,12 @@
             ? document.getElementById(target)
             : target?.closest('.modal-backdrop');
         if (!modal) return;
-        modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
+        if (!modal.classList.contains('is-open')) return;
+        modal.classList.add('is-closing');
+        window.setTimeout(() => {
+            modal.classList.remove('is-open', 'is-closing');
+        }, 150);
     }
 
     function roleClass(role) {

@@ -31,6 +31,42 @@ SESSION_VERSION_CHECK_INTERVAL = 60
 def register(app, HACKATIME_CLIENT_ID):
     # ── Public pages ────────────────────────────────────────────────────────
 
+    @app.route('/sitemap.xml')
+    def sitemap():
+        base = request.host_url.rstrip('/')
+        pages = [
+            {'loc': base + '/', 'changefreq': 'weekly', 'priority': '1.0'},
+            {'loc': base + '/events', 'changefreq': 'weekly', 'priority': '0.8'},
+            {'loc': base + '/sign-in', 'changefreq': 'monthly', 'priority': '0.5'},
+        ]
+        xml = flask.render_template_string(
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            '{% for p in pages %}'
+            '  <url>\n'
+            '    <loc>{{ p.loc }}</loc>\n'
+            '    <changefreq>{{ p.changefreq }}</changefreq>\n'
+            '    <priority>{{ p.priority }}</priority>\n'
+            '  </url>\n'
+            '{% endfor %}'
+            '</urlset>',
+            pages=pages,
+        )
+        return flask.Response(xml, mimetype='application/xml')
+
+    @app.route('/robots.txt')
+    def robots():
+        base = request.host_url.rstrip('/')
+        content = (
+            'User-agent: *\n'
+            'Allow: /\n'
+            'Disallow: /dashboard\n'
+            'Disallow: /api/\n'
+            'Disallow: /auth/\n'
+            f'\nSitemap: {base}/sitemap.xml\n'
+        )
+        return flask.Response(content, mimetype='text/plain')
+
     @app.route('/')
     def index():
         return flask.render_template('index.html')

@@ -350,6 +350,7 @@ class AirtableStorage:
             'publicDirectory': bool(fields.get('Public Directory', True)),
             'emailNotifications': bool(fields.get('Email Notifications', True)),
             'darkModeDefault': bool(fields.get('Dark Mode Default', False)),
+            'chatEnabledForMembers': bool(fields.get('Chat Enabled For Members', True)),
             'newsletterSubscribed': bool(fields.get('Newsletter Subscribed', True)),
             'language': fields.get('Language') or 'en',
             'coinBalance': int(fields.get('Coin Balance') or 0),

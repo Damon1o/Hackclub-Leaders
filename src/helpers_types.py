@@ -137,6 +137,7 @@ class Settings(TypedDict):
     publicDirectory: bool
     emailNotifications: bool
     darkModeDefault: bool
+    chatEnabledForMembers: bool
     newsletterSubscribed: bool
     language: str
     coinBalance: int

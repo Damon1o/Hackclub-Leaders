@@ -106,6 +106,7 @@ SETTINGS_FIELDS: Final[list[tuple[str, str]]] = [
     ('publicDirectory', 'Public Directory'),
     ('emailNotifications', 'Email Notifications'),
     ('darkModeDefault', 'Dark Mode Default'),
+    ('chatEnabledForMembers', 'Chat Enabled For Members'),
     ('newsletterSubscribed', 'Newsletter Subscribed'),
     ('language', 'Language'),
     ('coinBalance', 'Coin Balance'),

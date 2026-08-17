@@ -151,12 +151,14 @@
                         {{ sidebar_icon('email') }}
                         <span class="sidebar-label" data-i18n="side.notifications">Notification</span>
                     </a>
+                    {% if is_leader or dashboard_state.settings.chatEnabledForMembers|default(true) %}
                     <a href="/dashboard/chat"
                         class="dashboard-sidebar-link {% if current_path == '/dashboard/chat' %}active{% endif %}"
                         title="Chat" aria-label="Chat" data-i18n-attr="title:side.chat;aria-label:side.chat">
                         {{ sidebar_icon('message') }}
                         <span class="sidebar-label" data-i18n="side.chat">Chat</span>
                     </a>
+                    {% endif %}
                 </nav>
                 <nav class="dashboard-sidebar-nav dashboard-sidebar-bottom" aria-label="Dashboard utilities"
                     data-i18n-attr="aria-label:side.utilLabel">

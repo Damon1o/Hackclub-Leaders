@@ -157,6 +157,7 @@ def register(app, HACKATIME_CLIENT_ID):
                 'publicDirectory': parse_bool(payload.get('publicDirectory')),
                 'emailNotifications': parse_bool(payload.get('emailNotifications')),
                 'darkModeDefault': parse_bool(payload.get('darkModeDefault')),
+                'chatEnabledForMembers': parse_bool(payload.get('chatEnabledForMembers')),
                 'newsletterSubscribed': parse_bool(payload.get('newsletterSubscribed')),
                 'language': parse_language(payload.get('language') or ''),
             }

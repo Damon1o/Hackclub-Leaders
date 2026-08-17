@@ -14,3 +14,14 @@
         <span class="toggle-slider"></span>
     </span>
 </label>
+<label class="toggle-row">
+    <span>
+        <strong>Show Chat to members</strong>
+        <small>Let members see the Chat link in the dashboard navigation. Leaders will always see Chat.</small>
+    </span>
+    <span class="toggle-switch">
+        <input type="checkbox" name="chatEnabledForMembers" form="settingsForm"
+            {% if settings.chatEnabledForMembers|default(true) %}checked{% endif %}>
+        <span class="toggle-slider"></span>
+    </span>
+</label>

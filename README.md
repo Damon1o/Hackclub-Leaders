@@ -39,6 +39,7 @@ Every Hack Club is run by teenagers doing this on top of homework, and most of t
 - **i18n** — 12 languages (en, es, fr, de, pt, it, ru, hi, zh, ja, ko, ar)
 - **Image upload & crop** — avatar/project thumbnails with client-side crop (Vercel Blob)
 - **Dark mode** — toggleable, persisted via JS, with a per-club default in settings
+- **Right-click actions** — contextual shortcuts for adding, editing, submitting, RSVPing, shopping, copying links, refreshing, and switching themes
 - **Skeleton loaders** — shimmer placeholders on every client-hydrated dashboard page and async card
 - **Stale-while-revalidate** — client caches state in localStorage, refreshes from the API in background
 - **Flash messages** — success/error feedback on auth events
@@ -82,6 +83,16 @@ Every Hack Club is run by teenagers doing this on top of homework, and most of t
 ├── vercel.json
 └── .env.example
 ```
+
+### Context menu shortcuts
+
+Right-click anywhere in the authenticated dashboard to open a contextual action menu. The menu adapts to the surface under the pointer:
+
+- On an empty dashboard area: create the most relevant record for the current page, refresh data, or toggle the theme.
+- On a member, event, project, workshop, or shop item: open the actions already available for that record, including edit, delete, RSVP, submit, view details, or add to cart.
+- On a navigation link: open it in a new tab or copy its URL.
+
+Actions reuse the existing modal and API flows, so role permissions and server-side authorization remain the source of truth. The menu is keyboard-dismissible with `Escape`, closes when the page scrolls or resizes, avoids interfering with form fields, and respects reduced-motion preferences.
 
 ---
 

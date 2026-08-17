@@ -380,6 +380,138 @@
         }, 150);
     }
 
+    // A small, keyboard-friendly action layer for power users. It deliberately
+    // reuses the same buttons and preparation functions as the visible UI so a
+    // right-click can never drift into a second implementation of an action.
+    let contextTarget = null;
+
+    function contextDescriptor(target) {
+        const node = target?.closest?.('[data-context-type], [data-open-shop-item], [data-open-workshop], a');
+        if (!node) return { node: null, type: 'page', id: '', title: '' };
+        const type = node.dataset.contextType ||
+            (node.dataset.openShopItem ? 'shop' : node.dataset.openWorkshop ? 'workshop' : 'link');
+        const id = node.dataset.contextId || node.dataset.openShopItem || node.dataset.openWorkshop || '';
+        const title = node.querySelector('h3, h2, [data-context-title]')?.textContent?.trim() ||
+            node.getAttribute('aria-label') || node.textContent?.trim().split('\n')[0] || '';
+        return { node, type, id, title, href: node.href || '' };
+    }
+
+    function contextMenuItems(descriptor) {
+        const addItems = [];
+        if (isLeader) {
+            if (page === 'team') addItems.push(['new-member', 'Invite member', 'person-add']);
+            if (page === 'events') addItems.push(['new-event', 'Schedule event', 'calendar-add']);
+            if (page === 'workshops') addItems.push(['new-workshop', 'Propose workshop', 'spark']);
+            if (page === 'projects') addItems.push(['new-project', 'Start project', 'package-add']);
+            if (page === 'notifications') addItems.push(['new-dispatch', 'Write announcement', 'send']);
+            if (page === 'chat') addItems.push(['new-channel', 'Create channel', 'message']);
+        }
+        if (descriptor.type === 'member') {
+            return isLeader ? [['edit', 'Edit member', 'edit'], ['delete-member', 'Remove member', 'trash'], ['separator'], ...addItems] : [...addItems, ['separator'], ['copy-link', 'Copy page link', 'copy']];
+        }
+        if (descriptor.type === 'event') {
+            return [[...(isLeader ? [['edit', 'Edit event', 'edit']] : []), ['rsvp', 'Toggle RSVP', 'check'], ...(isLeader ? [['delete-event', 'Delete event', 'trash']] : []), ['separator'], ...addItems]];
+        }
+        if (descriptor.type === 'project') {
+            const project = projects().find((item) => item.id === descriptor.id);
+            const statusAction = project?.status === 'Submitted' ? ['project-draft', 'Move to draft', 'undo'] : ['project-submit', 'Submit project', 'send'];
+            return [['edit', 'Edit project', 'edit'], statusAction, ['delete-project', 'Delete project', 'trash'], ['separator'], ...addItems];
+        }
+        if (descriptor.type === 'shop') {
+            return [['view-shop', 'View details', 'eye'], ['add-cart', 'Add to cart', 'bag'], ['separator'], ...addItems];
+        }
+        if (descriptor.type === 'workshop') {
+            return [['view-workshop', 'View workshop', 'eye'], ['separator'], ...addItems];
+        }
+        if (descriptor.type === 'link') {
+            return [['open-link', 'Open in new tab', 'external'], ['copy-link', 'Copy link', 'copy'], ['separator'], ...addItems];
+        }
+        return [...addItems, ['separator'], ['refresh', 'Refresh dashboard', 'refresh'], ['theme', 'Toggle theme', 'moon']];
+    }
+
+    function contextIcon(name) {
+        const icons = { edit: '✎', trash: '⌫', check: '✓', undo: '↶', send: '↗', eye: '◉', bag: '▣', external: '↗', copy: '⧉', refresh: '↻', moon: '◐', 'person-add': '+', 'calendar-add': '+', spark: '✦', 'package-add': '+', message: '◌' };
+        return `<span class="context-menu-icon" aria-hidden="true">${icons[name] || ''}</span>`;
+    }
+
+    function closeContextMenu() {
+        const menu = $('#dashboardContextMenu');
+        if (!menu) return;
+        menu.hidden = true;
+        contextTarget = null;
+    }
+
+    function positionContextMenu(menu, x, y) {
+        menu.hidden = false;
+        menu.style.left = `${Math.min(x, window.innerWidth - menu.offsetWidth - 12)}px`;
+        menu.style.top = `${Math.min(y, window.innerHeight - menu.offsetHeight - 12)}px`;
+    }
+
+    function openContextMenu(event) {
+        if (event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+        event.preventDefault();
+        const menu = $('#dashboardContextMenu');
+        if (!menu) return;
+        contextTarget = contextDescriptor(event.target);
+        menu.innerHTML = contextMenuItems(contextTarget).map((item) => item[0] === 'separator'
+            ? '<div class="context-menu-separator" role="separator"></div>'
+            : `<button type="button" class="context-menu-item" data-context-action="${item[0]}">${contextIcon(item[2])}<span>${item[1]}</span></button>`).join('');
+        positionContextMenu(menu, event.clientX, event.clientY);
+        menu.querySelector('.context-menu-item')?.focus();
+    }
+
+    function triggerExisting(selector, id, attribute = selector.slice(1)) {
+        const node = document.querySelector(`${selector}[${attribute}="${CSS.escape(id)}"]`);
+        node?.click();
+    }
+
+    async function runContextAction(action) {
+        const target = contextTarget || { type: 'page', id: '' };
+        closeContextMenu();
+        if (action === 'refresh') { await refreshState(); return; }
+        if (action === 'theme') { $('#toggleBtn')?.click(); return; }
+        if (action === 'open-link' && target.href) { window.open(target.href, '_blank', 'noopener'); return; }
+        if (action === 'copy-link' && target.href) { await navigator.clipboard?.writeText(target.href); showToast('Link copied.'); return; }
+        if (action === 'new-member') prepareNewMember(), openModal('memberModal');
+        if (action === 'new-event') prepareNewEvent(), openModal('eventModal');
+        if (action === 'new-workshop') prepareNewWorkshop(), openModal('workshopProposeModal');
+        if (action === 'new-project') prepareNewProject(), openModal('projectModal');
+        if (action === 'new-dispatch') prepareNewDispatch(), openModal('dispatchModal');
+        if (action === 'new-channel') prepareNewChannel(), openModal('channelModal');
+        if (action === 'edit' && target.type === 'member') prepareEditMember(target.id);
+        if (action === 'edit' && target.type === 'event') prepareEditEvent(target.id);
+        if (action === 'edit' && target.type === 'project') prepareEditProject(target.id);
+        if (action === 'delete-member') { prepareEditMember(target.id); $('#deleteMemberButton')?.click(); }
+        if (action === 'delete-event') { prepareEditEvent(target.id); $('#deleteEventButton')?.click(); }
+        if (action === 'delete-project') triggerExisting('[data-delete-project]', target.id);
+        if (action === 'rsvp') triggerExisting('[data-toggle-rsvp]', target.id);
+        if (action === 'project-submit') triggerExisting('[data-submit-project]', target.id);
+        if (action === 'project-draft') triggerExisting('[data-project-status]', target.id, 'data-project-id');
+        if (action === 'view-shop') triggerExisting('[data-open-shop-item]', target.id);
+        if (action === 'add-cart') triggerExisting('[data-add-cart]', target.id);
+        if (action === 'view-workshop') triggerExisting('[data-open-workshop]', target.id);
+    }
+
+    function initContextMenu() {
+        const menu = document.createElement('div');
+        menu.id = 'dashboardContextMenu';
+        menu.className = 'dashboard-context-menu';
+        menu.hidden = true;
+        menu.setAttribute('role', 'menu');
+        document.body.appendChild(menu);
+        document.addEventListener('contextmenu', openContextMenu);
+        document.addEventListener('click', (event) => {
+            const action = event.target.closest('[data-context-action]');
+            if (action) runContextAction(action.dataset.contextAction);
+            else if (!event.target.closest('#dashboardContextMenu')) closeContextMenu();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeContextMenu();
+        });
+        window.addEventListener('resize', closeContextMenu);
+        window.addEventListener('scroll', closeContextMenu, true);
+    }
+
     function roleClass(role) {
         if (role === 'Leader') return 'badge-leader';
         if (role === 'Mentor') return 'badge-mentor';
@@ -457,7 +589,7 @@
 
         if (!roster) return;
         roster.innerHTML = people.map((member, index) => `
-            <article class="item-card member-card" style="--card-index: ${index}">
+            <article class="item-card member-card" data-context-type="member" data-context-id="${escapeHtml(member.id)}" style="--card-index: ${index}">
                 <div class="member-card-top">
                     ${avatarMarkup(member)}
                     <span class="badge-role ${roleClass(member.role)}">${escapeHtml(member.role)}</span>
@@ -594,7 +726,7 @@
                 ? `<span class="badge badge-up">Next up</span>`
                 : (statusClass === 'is-today' ? `<span class="badge badge-pending">Today</span>` : '');
             return `
-            <article class="timeline-item ${event.rsvp ? 'is-rsvped' : ''} ${statusClass}" style="--card-index: ${index}">
+            <article class="timeline-item ${event.rsvp ? 'is-rsvped' : ''} ${statusClass}" data-context-type="event" data-context-id="${escapeHtml(event.id)}" style="--card-index: ${index}">
                 <div class="timeline-date">
                     <strong>${escapeHtml(formatDate(effDate).split(',')[0])}</strong>
                     <span>${escapeHtml(formatTime(event.time))}</span>
@@ -1265,7 +1397,7 @@
                     primaryAction = `<button class="btn-primary small" type="button" data-submit-project="${escapeHtml(project.id)}">Submit to club</button>`;
                 }
                 return `
-                <article class="project-card" style="--card-index: ${index}">
+                <article class="project-card" data-context-type="project" data-context-id="${escapeHtml(project.id)}" style="--card-index: ${index}">
                     <div class="project-card-head">
                         <h3>${escapeHtml(project.name)}</h3>
                         ${projectStatusBadge(project.status)}
@@ -1286,7 +1418,7 @@
 
         if (submittedList) {
             submittedList.innerHTML = submitted.map((project, index) => `
-                <article class="project-card is-readonly" style="--card-index: ${index}">
+                    <article class="project-card is-readonly" data-context-type="project" data-context-id="${escapeHtml(project.id)}" style="--card-index: ${index}">
                     <div class="project-card-head">
                         <h3>${escapeHtml(project.name)}</h3>
                         <span class="badge badge-up">Submitted</span>
@@ -1398,7 +1530,7 @@
                 return aCost - bCost;
             });
             grid.innerHTML = visibleItems.map((item, index) => `
-                <article class="item-card shop-card" style="--card-index: ${index}" data-open-shop-item="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="View details for ${escapeHtml(item.name)}">
+                <article class="item-card shop-card" style="--card-index: ${index}" data-context-type="shop" data-context-id="${escapeHtml(item.id)}" data-open-shop-item="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="View details for ${escapeHtml(item.name)}">
                     <div class="shop-card-media" style="position:relative;">
                         <span class="skeleton" style="position:absolute;inset:0;border-radius:10px;" aria-hidden="true"></span>
                         <img src="${escapeHtml(shopMedia(item)[0])}" alt="${escapeHtml(item.name)}" loading="lazy" referrerpolicy="no-referrer" style="position:relative;"
@@ -1525,7 +1657,7 @@
 
         if (grid) {
             grid.innerHTML = visible.map((workshop, index) => `
-                <article class="item-card workshop-card" style="--card-index: ${index}" data-open-workshop="${escapeHtml(workshop.id)}">
+                <article class="item-card workshop-card" style="--card-index: ${index}" data-context-type="workshop" data-context-id="${escapeHtml(workshop.id)}" data-open-workshop="${escapeHtml(workshop.id)}">
                     <span class="status-chip">${escapeHtml(workshop.status)}</span>
                     <h3>${escapeHtml(workshop.title)}</h3>
                     <p>${escapeHtml(workshop.description)}</p>
@@ -3355,6 +3487,7 @@ const CHECKLIST_ITEMS = [
 
     function init() {
         setupGlobalEvents();
+        initContextMenu();
         setupForms();
         applyDarkModeDefault();
         applyLanguageDefault();

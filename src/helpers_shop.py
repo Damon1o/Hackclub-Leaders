@@ -51,7 +51,13 @@ def load_shop_items() -> list[ShopItem]:
                 'filter': entry.get('filter', ''),
             }
         )
-    return items
+    return sorted(
+        items,
+        key=lambda item: (
+            item['cost'] is None,
+            item['cost'] if item['cost'] is not None else 0,
+        ),
+    )
 
 
 SHOP_ITEMS: list[ShopItem] = load_shop_items()

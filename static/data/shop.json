@@ -1,13 +1,19 @@
 [
   {
     "name": "Meeting Posters",
-    "cost": 100,
+    "cost": 0,
     "image-src": "",
     "filter": "Merch"
   },
   {
     "name": "Sticker Pack",
-    "cost": 50,
+    "cost": 0,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "random piece of paper from hq",
+    "cost": 10,
     "image-src": "",
     "filter": "Merch"
   },
@@ -16,6 +22,42 @@
     "cost": 20,
     "image-src": "",
     "filter": "Merch"
+  },
+  {
+    "name": "Hot Chocolate!",
+    "cost": 20,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Nebula.tv 1 Month",
+    "cost": 50,
+    "image-src": "",
+    "filter": "Digital"
+  },
+  {
+    "name": "Sketch pad from HQ",
+    "cost": 50,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Hack Club Pin",
+    "cost": 50,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Orpheus Pico V2",
+    "cost": 60,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Picoducky",
+    "cost": 70,
+    "image-src": "",
+    "filter": "Hardware"
   },
   {
     "name": "Outpost Travel Stipends",
@@ -42,12 +84,6 @@
     "filter": "Credits"
   },
   {
-    "name": "random piece of paper from hq",
-    "cost": 10,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
     "name": "Free Domain",
     "cost": 100,
     "image-src": "",
@@ -72,12 +108,6 @@
     "filter": "Credits"
   },
   {
-    "name": "Nebula.tv 1 Month",
-    "cost": 50,
-    "image-src": "",
-    "filter": "Digital"
-  },
-  {
     "name": "iFixit Credits",
     "cost": 100,
     "image-src": "",
@@ -88,6 +118,138 @@
     "cost": 100,
     "image-src": "",
     "filter": "Credits"
+  },
+  {
+    "name": "GitHub Invertocat Pin",
+    "cost": 100,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "This Is Water by David Foster-Wallace",
+    "cost": 100,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "KeebCard",
+    "cost": 100,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Object from Amber's desk",
+    "cost": 100,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "$50 Proton Credit",
+    "cost": 100,
+    "image-src": "",
+    "filter": "Credits"
+  },
+  {
+    "name": "Steam Developer Fee Grant",
+    "cost": 100,
+    "image-src": "",
+    "filter": "Grants"
+  },
+  {
+    "name": "PICO-8 Licence",
+    "cost": 150,
+    "image-src": "",
+    "filter": "Digital"
+  },
+  {
+    "name": "Raspberry Pi Zero 2 W",
+    "cost": 150,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "USB Drive",
+    "cost": 150,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "ESP32 Kit",
+    "cost": 150,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Retro Computer Magazine",
+    "cost": 150,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Hackazine!",
+    "cost": 150,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Hack Club Socks",
+    "cost": 150,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Digital Calipers",
+    "cost": 150,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "UNBEATABLE",
+    "cost": 150,
+    "image-src": "",
+    "filter": "Games"
+  },
+  {
+    "name": "GitHub Notebook",
+    "cost": 150,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Starling Plushie",
+    "cost": 200,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "GitHub Frisbee",
+    "cost": 200,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Celeste",
+    "cost": 200,
+    "image-src": "",
+    "filter": "Games"
+  },
+  {
+    "name": "Hell Yes! CSS! by Julia Evans",
+    "cost": 200,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Exploding Kittens Board Game",
+    "cost": 200,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "1 lb fudge from place next to old HQ",
+    "cost": 200,
+    "image-src": "",
+    "filter": "Merch"
   },
   {
     "name": "Hack Club Campfire T-Shirt (X-Large)",
@@ -114,54 +276,6 @@
     "filter": "Merch"
   },
   {
-    "name": "PICO-8 Licence",
-    "cost": 150,
-    "image-src": "",
-    "filter": "Digital"
-  },
-  {
-    "name": "Sketch pad from HQ",
-    "cost": 50,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "Orpheus Pico V2",
-    "cost": 60,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "Picoducky",
-    "cost": 70,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "Starling Plushie",
-    "cost": 200,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "Hot Chocolate!",
-    "cost": 20,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "YubiKey",
-    "cost": 590,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "Raspberry Pi Zero 2 W",
-    "cost": 150,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
     "name": "Stardance T-Shirt",
     "cost": 250,
     "image-src": "",
@@ -180,98 +294,8 @@
     "filter": "Merch"
   },
   {
-    "name": "GitHub Frisbee",
-    "cost": 200,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "Hack Club Pin",
-    "cost": 50,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "USB Drive",
-    "cost": 150,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "GitHub Invertocat Pin",
-    "cost": 100,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "ESP32 Kit",
-    "cost": 150,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
     "name": "Parthenon Tote Bag",
     "cost": 250,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "Celeste",
-    "cost": 200,
-    "image-src": "",
-    "filter": "Games"
-  },
-  {
-    "name": "This Is Water by David Foster-Wallace",
-    "cost": 100,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "KeebCard",
-    "cost": 100,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "Object from Amber's desk",
-    "cost": 100,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "Retro Computer Magazine",
-    "cost": 150,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "Campfire Flagship Laptop bag",
-    "cost": 500,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "Pinetime",
-    "cost": 350,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "Hackazine!",
-    "cost": 150,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "Hell Yes! CSS! by Julia Evans",
-    "cost": 200,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "Hack Club Socks",
-    "cost": 150,
     "image-src": "",
     "filter": "Merch"
   },
@@ -282,40 +306,10 @@
     "filter": "Hardware"
   },
   {
-    "name": "Digital Calipers",
-    "cost": 150,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "Exploding Kittens Board Game",
-    "cost": 200,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
     "name": "Pinecil",
     "cost": 250,
     "image-src": "",
     "filter": "Hardware"
-  },
-  {
-    "name": "Anker Charger 65W",
-    "cost": 300,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "NZXT Zone Elite Mouse Pad (XXL)",
-    "cost": 400,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "UNBEATABLE",
-    "cost": 150,
-    "image-src": "",
-    "filter": "Games"
   },
   {
     "name": "Smolhåj",
@@ -324,68 +318,20 @@
     "filter": "Merch"
   },
   {
+    "name": "Anker Charger 65W",
+    "cost": 300,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
     "name": "GitHub Keycaps",
     "cost": 300,
     "image-src": "",
     "filter": "Hardware"
   },
   {
-    "name": "ugee Drawing Tablet",
-    "cost": 600,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "$50 Proton Credit",
-    "cost": 100,
-    "image-src": "",
-    "filter": "Credits"
-  },
-  {
-    "name": "Factorio",
-    "cost": 350,
-    "image-src": "",
-    "filter": "Games"
-  },
-  {
-    "name": "Blåhaj",
-    "cost": 400,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
     "name": "RTL-SDR Blog V3 R860",
     "cost": 300,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "GitHub Notebook",
-    "cost": 150,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "min(amame) DIY headphones",
-    "cost": 1000,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "1 lb fudge from place next to old HQ",
-    "cost": 200,
-    "image-src": "",
-    "filter": "Merch"
-  },
-  {
-    "name": "TRMNL DIY Kit",
-    "cost": 1390,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "Tulip Creative Computer",
-    "cost": 2990,
     "image-src": "",
     "filter": "Hardware"
   },
@@ -396,26 +342,50 @@
     "filter": "Hardware"
   },
   {
-    "name": "Mechanical Keyboard (AULA F75)",
-    "cost": 800,
+    "name": "Pinetime",
+    "cost": 350,
     "image-src": "",
     "filter": "Hardware"
   },
   {
-    "name": "Apple Developer Licence",
-    "cost": 990,
+    "name": "Factorio",
+    "cost": 350,
     "image-src": "",
-    "filter": "Digital"
+    "filter": "Games"
   },
   {
-    "name": "Anker Prime Charging Station",
-    "cost": 1100,
+    "name": "NZXT Zone Elite Mouse Pad (XXL)",
+    "cost": 400,
     "image-src": "",
     "filter": "Hardware"
   },
   {
-    "name": "NZXT H5 Flow",
-    "cost": 1000,
+    "name": "Blåhaj",
+    "cost": 400,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Campfire Flagship Laptop bag",
+    "cost": 500,
+    "image-src": "",
+    "filter": "Merch"
+  },
+  {
+    "name": "Raspberry Pi 4B 2GB w/ 64 GB microSD card",
+    "cost": 550,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "YubiKey",
+    "cost": 590,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "ugee Drawing Tablet",
+    "cost": 600,
     "image-src": "",
     "filter": "Hardware"
   },
@@ -426,50 +396,8 @@
     "filter": "Hardware"
   },
   {
-    "name": "Raspberry Pi 4B 2GB w/ 64 GB microSD card",
-    "cost": 550,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "Steam Developer Fee Grant",
-    "cost": 100,
-    "image-src": "",
-    "filter": "Grants"
-  },
-  {
-    "name": "NZXT Kraken Core 240 RGB Liquid Cooler",
-    "cost": 800,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
     "name": "NZXT Limited Edition Six Siege Drone Artisan Keycap",
     "cost": 600,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "FL Studio Licence",
-    "cost": 1990,
-    "image-src": "",
-    "filter": "Digital"
-  },
-  {
-    "name": "SynthV Studio License",
-    "cost": 990,
-    "image-src": "",
-    "filter": "Digital"
-  },
-  {
-    "name": "CMF Buds 2 Plus",
-    "cost": 690,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "Apple Pencil Pro",
-    "cost": 1290,
     "image-src": "",
     "filter": "Hardware"
   },
@@ -492,20 +420,20 @@
     "filter": "Merch"
   },
   {
-    "name": "Flipper Zero",
-    "cost": 1690,
+    "name": "CMF Buds 2 Plus",
+    "cost": 690,
     "image-src": "",
     "filter": "Hardware"
   },
   {
-    "name": "AMS Lite",
-    "cost": 2490,
+    "name": "Mechanical Keyboard (AULA F75)",
+    "cost": 800,
     "image-src": "",
     "filter": "Hardware"
   },
   {
-    "name": "Bambu Lab A1 mini",
-    "cost": 2990,
+    "name": "NZXT Kraken Core 240 RGB Liquid Cooler",
+    "cost": 800,
     "image-src": "",
     "filter": "Hardware"
   },
@@ -516,10 +444,64 @@
     "filter": "Hardware"
   },
   {
+    "name": "Apple Developer Licence",
+    "cost": 990,
+    "image-src": "",
+    "filter": "Digital"
+  },
+  {
+    "name": "SynthV Studio License",
+    "cost": 990,
+    "image-src": "",
+    "filter": "Digital"
+  },
+  {
+    "name": "min(amame) DIY headphones",
+    "cost": 1000,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "NZXT H5 Flow",
+    "cost": 1000,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Anker Prime Charging Station",
+    "cost": 1100,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Apple Pencil Pro",
+    "cost": 1290,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "TRMNL DIY Kit",
+    "cost": 1390,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Flipper Zero",
+    "cost": 1690,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
     "name": "MX Mechanical Wireless Illuminate Linear",
     "cost": 1700,
     "image-src": "",
     "filter": "Hardware"
+  },
+  {
+    "name": "FL Studio Licence",
+    "cost": 1990,
+    "image-src": "",
+    "filter": "Digital"
   },
   {
     "name": "Insta360 Link 2",
@@ -529,6 +511,12 @@
   },
   {
     "name": "Polaroid Go Gen 3",
+    "cost": 1990,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Polaroid Flip",
     "cost": 1990,
     "image-src": "",
     "filter": "Hardware"
@@ -546,8 +534,20 @@
     "filter": "Hardware"
   },
   {
-    "name": "Bambu Lab A1",
-    "cost": 3990,
+    "name": "AMS Lite",
+    "cost": 2490,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Tulip Creative Computer",
+    "cost": 2990,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Bambu Lab A1 mini",
+    "cost": 2990,
     "image-src": "",
     "filter": "Hardware"
   },
@@ -558,20 +558,14 @@
     "filter": "Hardware"
   },
   {
-    "name": "Polaroid Flip",
-    "cost": 1990,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
     "name": "Xbox Series S 512GB",
     "cost": 2990,
     "image-src": "",
     "filter": "Hardware"
   },
   {
-    "name": "Framework Laptop 12",
-    "cost": 7990,
+    "name": "Bambu Lab A1",
+    "cost": 3990,
     "image-src": "",
     "filter": "Hardware"
   },
@@ -582,20 +576,8 @@
     "filter": "Hardware"
   },
   {
-    "name": "Canon R50 Camera",
-    "cost": 6790,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
     "name": "MacBook Neo",
     "cost": 5990,
-    "image-src": "",
-    "filter": "Hardware"
-  },
-  {
-    "name": "Framework Laptop 13",
-    "cost": 9990,
     "image-src": "",
     "filter": "Hardware"
   },
@@ -608,6 +590,24 @@
   {
     "name": "Mac Mini",
     "cost": 5990,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Canon R50 Camera",
+    "cost": 6790,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Framework Laptop 12",
+    "cost": 7990,
+    "image-src": "",
+    "filter": "Hardware"
+  },
+  {
+    "name": "Framework Laptop 13",
+    "cost": 9990,
     "image-src": "",
     "filter": "Hardware"
   },

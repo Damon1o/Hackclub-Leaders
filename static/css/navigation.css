@@ -243,6 +243,19 @@
     align-items: left;
 }
 
+/* Keep the menu available to pointer and keyboard users, and allow the
+   navigation script to control it on click. */
+.navigation-bar .dropdown:hover > .dropdown-menu,
+.navigation-bar .dropdown:focus-within > .dropdown-menu,
+.navigation-bar .dropdown.is-open > .dropdown-menu {
+    display: flex;
+}
+
+.navigation-bar .dropdown.is-open > a,
+.navigation-bar .dropdown > a:focus-visible {
+    color: var(--hackclub-red);
+}
+
 .navigation-bar .nav-links ul li .dropdown-menu a {
     padding: 12px 20px;
     color: #333;
@@ -365,6 +378,12 @@
         box-shadow: none;
         min-width: 0;
         padding: 0 0 0 16px;
+    }
+
+    .navigation-bar .dropdown:hover > .dropdown-menu,
+    .navigation-bar .dropdown:focus-within > .dropdown-menu,
+    .navigation-bar .dropdown.is-open > .dropdown-menu {
+        display: flex;
     }
 
     .navigation-bar .mode-switch {

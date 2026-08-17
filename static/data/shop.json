@@ -2,13 +2,13 @@
   {
     "name": "Meeting Posters",
     "cost": 0,
-    "image-src": "/static/images/hackclub-site/white-hack-club-banner.svg",
+    "image-src": "/static/images/shop/club-posters.webp",
     "filter": "Merch"
   },
   {
     "name": "Sticker Pack",
     "cost": 0,
-    "image-src": "/static/images/Stickers/logo.webp",
+    "image-src": "/static/images/shop/hackclub-stickers.webp",
     "filter": "Merch"
   },
   {

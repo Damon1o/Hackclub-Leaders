@@ -1838,6 +1838,31 @@ a.tool-card:hover {
     flex-shrink: 0;
 }
 
+.tool-icon-brand {
+    background: #20212a;
+    color: #fff;
+}
+
+.tool-brand-logo {
+    width: 32px;
+    height: 32px;
+    display: block;
+    object-fit: contain;
+}
+
+.tool-brand-svg {
+    width: 32px;
+    height: 32px;
+    display: block;
+}
+
+.lucide-tool-icon {
+    width: 28px;
+    height: 28px;
+    display: block;
+    flex: 0 0 auto;
+}
+
 .tool-featured {
     flex-direction: row;
     align-items: center;

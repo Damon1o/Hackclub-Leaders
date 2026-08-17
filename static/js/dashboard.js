@@ -198,9 +198,9 @@
         body.innerHTML = `
             <div class="shop-detail-grid">
                 <div class="shop-detail-gallery">
-                    <div class="shop-detail-main-image"><img src="${escapeHtml(media[0])}" alt="${escapeHtml(item.name)}" decoding="async"></div>
+                    <div class="shop-detail-main-image"><img src="${escapeHtml(media[0])}" alt="${escapeHtml(item.name)}" decoding="async" referrerpolicy="no-referrer"></div>
                     <div class="shop-detail-thumbs" role="list" aria-label="More photos of this item">
-                        ${media.slice(1).map((src, index) => `<div class="shop-detail-thumb" role="listitem"><img src="${escapeHtml(src)}" alt="${escapeHtml(item.name)} photo ${index + 2}" loading="lazy"></div>`).join('')}
+                        ${media.slice(1).map((src, index) => `<div class="shop-detail-thumb" role="listitem"><img src="${escapeHtml(src)}" alt="${escapeHtml(item.name)} photo ${index + 2}" loading="lazy" referrerpolicy="no-referrer"></div>`).join('')}
                     </div>
                 </div>
                 <div class="shop-detail-copy">
@@ -1403,7 +1403,7 @@
                 <article class="item-card shop-card" style="--card-index: ${index}" data-open-shop-item="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="View details for ${escapeHtml(item.name)}">
                     <div class="shop-card-media" style="position:relative;">
                         <span class="skeleton" style="position:absolute;inset:0;border-radius:10px;" aria-hidden="true"></span>
-                        <img src="${escapeHtml(shopMedia(item)[0])}" alt="${escapeHtml(item.name)}" loading="lazy" style="position:relative;"
+                        <img src="${escapeHtml(shopMedia(item)[0])}" alt="${escapeHtml(item.name)}" loading="lazy" referrerpolicy="no-referrer" style="position:relative;"
                             onload="this.previousElementSibling?.remove()"
                             onerror="this.previousElementSibling?.remove(); this.style.display='none'">
                     </div>

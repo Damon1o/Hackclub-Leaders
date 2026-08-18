@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-page newsletter-layout" data-dashboard-page="notifications">
+<div class="dashboard-page mailbox" data-dashboard-page="notifications">
     <div class="skeleton-block" data-skeleton="newsletters" style="padding:20px;">
       <div class="skeleton skeleton-heading"></div>
       <div class="skeleton skeleton-text medium"></div>
@@ -22,12 +22,16 @@
       <div class="skeleton skeleton-card" style="margin-top:12px;"></div>
       <div class="skeleton skeleton-card" style="margin-top:12px;"></div>
     </div>
-    <section class="card-modern dashboard-panel newsletter-list-panel">
-        <div class="panel-heading">
-            <div>
-                <h2 data-i18n="newsletters.leaderDispatches">Leader dispatches</h2>
-                <p data-i18n="newsletters.dispatchesDesc">Open, mark, and draft updates from one archive.</p>
+    <section class="card-modern dashboard-panel mailbox-panel">
+        <header class="mailbox-toolbar">
+            <div class="mailbox-tabs" role="tablist" aria-label="Filter">
+                <button class="mailbox-tab active" type="button" data-mail-filter="all" role="tab" aria-selected="true" data-i18n="newsletters.all">All</button>
+                <button class="mailbox-tab" type="button" data-mail-filter="unread" role="tab" aria-selected="false" data-i18n="newsletters.unread">Unread</button>
             </div>
+            <input class="mailbox-search" type="search" id="mailboxSearch" placeholder="Search messages" data-i18n-attr="placeholder:newsletters.searchPlaceholder">
+            <label class="mailbox-check mailbox-check-header" title="Select all" data-i18n-attr="title:newsletters.selectAll">
+                <input type="checkbox" id="mailSelectAll" aria-label="Select all" data-i18n-attr="aria-label:newsletters.selectAll">
+            </label>
             <button class="icon-button" type="button" id="notificationsMarkAllReadBtn" aria-label="Mark all as read"
                 data-i18n-attr="aria-label:notifications.markAllRead">
                 {{ sidebar_icon('checkmark-all', 16) }}
@@ -41,14 +45,19 @@
                 </span>
             </label>
             {% endif %}
+        </header>
+        <div class="mailbox-bulkbar" id="mailBulkBar" hidden>
+            <span id="mailBulkCount"></span>
+            <button class="btn-secondary" type="button" id="mailBulkMarkRead" data-i18n="newsletters.markRead">Mark read</button>
         </div>
-        <div class="newsletter-list" id="newsletterList"></div>
+        <div class="mailbox-list" id="newsletterList"></div>
     </section>
 
-    <aside class="card-modern dashboard-panel newsletter-reader" id="newsletterReader">
+    <aside class="card-modern dashboard-panel mailbox-reader" id="newsletterReader">
         <span class="badge badge-up" id="newsletterReadTime" data-i18n="newsletters.archive">Archive</span>
+        <p class="mailbox-sender" id="newsletterSender"></p>
         <h2 id="newsletterTitle" data-i18n="newsletters.selectDispatch">Select a dispatch</h2>
-        <p id="newsletterDate" data-i18n="newsletters.noMessageOpen">No message open.</p>
+        <p class="mailbox-date" id="newsletterDate" data-i18n="newsletters.noMessageOpen">No message open.</p>
         <p id="newsletterBody" data-i18n="newsletters.chooseDispatch">Choose a dispatch from the archive to read it here.</p>
         <button class="btn-secondary" type="button" id="toggleReadButton" hidden data-i18n="newsletters.markRead">Mark read</button>
     </aside>

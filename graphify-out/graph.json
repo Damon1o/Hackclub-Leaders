@@ -873,7 +873,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_helpers",
-      "community": 19,
+      "community": 69,
       "norm_label": "helpers.py"
     },
     {
@@ -933,7 +933,7 @@
       "source_location": "L208",
       "_origin": "ast",
       "id": "src_helpers_require_leader_api",
-      "community": 73,
+      "community": 75,
       "norm_label": "require_leader_api()"
     },
     {
@@ -943,7 +943,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_helpers_py_any",
-      "community": 73,
+      "community": 75,
       "norm_label": "any"
     },
     {
@@ -973,7 +973,7 @@
       "source_location": "L232",
       "_origin": "ast",
       "id": "src_helpers_require_admin_api",
-      "community": 69,
+      "community": 20,
       "norm_label": "require_admin_api()"
     },
     {
@@ -983,7 +983,7 @@
       "source_location": "L241",
       "_origin": "ast",
       "id": "src_helpers_item_id",
-      "community": 75,
+      "community": 3,
       "norm_label": "_item_id()"
     },
     {
@@ -993,7 +993,7 @@
       "source_location": "L245",
       "_origin": "ast",
       "id": "src_helpers_utc_iso",
-      "community": 73,
+      "community": 3,
       "norm_label": "utc_iso()"
     },
     {
@@ -1003,7 +1003,7 @@
       "source_location": "L250",
       "_origin": "ast",
       "id": "src_helpers_coin_balance",
-      "community": 19,
+      "community": 77,
       "norm_label": "coin_balance()"
     },
     {
@@ -1013,7 +1013,7 @@
       "source_location": "L254",
       "_origin": "ast",
       "id": "src_helpers_coins_spent",
-      "community": 19,
+      "community": 77,
       "norm_label": "coins_spent()"
     },
     {
@@ -1023,7 +1023,7 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "src_helpers_reconcile_coins",
-      "community": 19,
+      "community": 77,
       "norm_label": "reconcile_coins()"
     },
     {
@@ -1033,7 +1033,7 @@
       "source_location": "L269",
       "_origin": "ast",
       "id": "src_helpers_award_coins",
-      "community": 19,
+      "community": 3,
       "norm_label": "award_coins()"
     },
     {
@@ -1043,7 +1043,7 @@
       "source_location": "L292",
       "_origin": "ast",
       "id": "src_helpers_generate_join_code",
-      "community": 19,
+      "community": 75,
       "norm_label": "generate_join_code()"
     },
     {
@@ -1073,7 +1073,7 @@
       "source_location": "L315",
       "_origin": "ast",
       "id": "src_helpers_require_dashboard_csrf",
-      "community": 73,
+      "community": 75,
       "norm_label": "require_dashboard_csrf()"
     },
     {
@@ -1113,7 +1113,7 @@
       "source_location": "L361",
       "_origin": "ast",
       "id": "src_helpers_playtest_state",
-      "community": 19,
+      "community": 1,
       "norm_label": "playtest_state()"
     },
     {
@@ -1143,7 +1143,7 @@
       "source_location": "L425",
       "_origin": "ast",
       "id": "src_helpers_sections_for_page",
-      "community": 19,
+      "community": 20,
       "norm_label": "sections_for_page()"
     },
     {
@@ -1163,7 +1163,7 @@
       "source_location": "L446",
       "_origin": "ast",
       "id": "src_helpers_viewer_club_state",
-      "community": 19,
+      "community": 75,
       "norm_label": "viewer_club_state()"
     },
     {
@@ -1203,7 +1203,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "exception",
-      "community": 0,
+      "community": 19,
       "norm_label": "exception"
     },
     {
@@ -1213,7 +1213,7 @@
       "source_location": "L579",
       "_origin": "ast",
       "id": "src_helpers_state_cookie_size",
-      "community": 19,
+      "community": 75,
       "norm_label": "_state_cookie_size()"
     },
     {
@@ -1273,7 +1273,7 @@
       "source_location": "L246",
       "_origin": "ast",
       "id": "src_helpers_rationale_246",
-      "community": 73,
+      "community": 3,
       "norm_label": "utc timestamp, iso-8601 with a 'z' suffix (e.g. 2026-07-10t22:59:00.123456z)."
     },
     {
@@ -1283,7 +1283,7 @@
       "source_location": "L259",
       "_origin": "ast",
       "id": "src_helpers_rationale_259",
-      "community": 19,
+      "community": 77,
       "norm_label": "recompute the cached balance/spent totals in `settings` from the     ledger. ca"
     },
     {
@@ -1293,7 +1293,7 @@
       "source_location": "L272",
       "_origin": "ast",
       "id": "src_helpers_rationale_272",
-      "community": 19,
+      "community": 3,
       "norm_label": "append a ledger transaction and refresh the balance/spent cache.      the only"
     },
     {
@@ -1313,7 +1313,7 @@
       "source_location": "L426",
       "_origin": "ast",
       "id": "src_helpers_rationale_426",
-      "community": 19,
+      "community": 20,
       "norm_label": "the sections the given endpoint needs, or none for \"everything\"."
     },
     {
@@ -1333,7 +1333,7 @@
       "source_location": "L447",
       "_origin": "ast",
       "id": "src_helpers_rationale_447",
-      "community": 19,
+      "community": 75,
       "norm_label": "the club's stored state. `sections` limits which parts are fetched;     none me"
     },
     {
@@ -1553,7 +1553,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "src_helpers_shop_get_sticker_files",
-      "community": 19,
+      "community": 20,
       "norm_label": "get_sticker_files()"
     },
     {
@@ -1953,7 +1953,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_helpers_validation",
-      "community": 19,
+      "community": 69,
       "norm_label": "helpers_validation.py"
     },
     {
@@ -1963,7 +1963,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "src_helpers_validation_find_by_id",
-      "community": 19,
+      "community": 69,
       "norm_label": "find_by_id()"
     },
     {
@@ -1973,7 +1973,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_helpers_validation_py_any",
-      "community": 19,
+      "community": 69,
       "norm_label": "any"
     },
     {
@@ -1983,7 +1983,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "src_helpers_validation_clean_text",
-      "community": 19,
+      "community": 69,
       "norm_label": "clean_text()"
     },
     {
@@ -1993,7 +1993,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "src_helpers_validation_auto_flag_reasons",
-      "community": 19,
+      "community": 69,
       "norm_label": "auto_flag_reasons()"
     },
     {
@@ -2003,7 +2003,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "src_helpers_validation_parse_bool",
-      "community": 19,
+      "community": 69,
       "norm_label": "parse_bool()"
     },
     {
@@ -2013,7 +2013,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "src_helpers_validation_positive_int",
-      "community": 19,
+      "community": 69,
       "norm_label": "_positive_int()"
     },
     {
@@ -2023,7 +2023,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "src_helpers_validation_paginate",
-      "community": 19,
+      "community": 69,
       "norm_label": "paginate()"
     },
     {
@@ -2033,7 +2033,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "src_helpers_validation_json_payload",
-      "community": 19,
+      "community": 69,
       "norm_label": "json_payload()"
     },
     {
@@ -2043,7 +2043,7 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "src_helpers_validation_json_error",
-      "community": 19,
+      "community": 69,
       "norm_label": "json_error()"
     },
     {
@@ -2053,7 +2053,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "src_helpers_validation_parse_repeat",
-      "community": 19,
+      "community": 69,
       "norm_label": "parse_repeat()"
     },
     {
@@ -2063,7 +2063,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "src_helpers_validation_event_from_payload",
-      "community": 19,
+      "community": 69,
       "norm_label": "event_from_payload()"
     },
     {
@@ -2083,7 +2083,7 @@
       "source_location": "L160",
       "_origin": "ast",
       "id": "src_helpers_validation_channel_from_payload",
-      "community": 19,
+      "community": 69,
       "norm_label": "channel_from_payload()"
     },
     {
@@ -2093,7 +2093,7 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "src_helpers_validation_persist_club",
-      "community": 19,
+      "community": 69,
       "norm_label": "_persist_club()"
     },
     {
@@ -2103,7 +2103,7 @@
       "source_location": "L182",
       "_origin": "ast",
       "id": "src_helpers_validation_load_admin_club",
-      "community": 19,
+      "community": 69,
       "norm_label": "_load_admin_club()"
     },
     {
@@ -2113,7 +2113,7 @@
       "source_location": "L191",
       "_origin": "ast",
       "id": "src_helpers_validation_find_club_by_project",
-      "community": 19,
+      "community": 69,
       "norm_label": "_find_club_by_project()"
     },
     {
@@ -2123,7 +2123,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_helpers_validation_rationale_1",
-      "community": 19,
+      "community": 69,
       "norm_label": "payload validation and construction helpers for hack club leaders portal."
     },
     {
@@ -2133,7 +2133,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "src_helpers_validation_rationale_54",
-      "community": 19,
+      "community": 69,
       "norm_label": "return a comma-joined list of matched blocklist words, or '' if clean."
     },
     {
@@ -2163,7 +2163,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "src_notifications_add_in_app_notification",
-      "community": 75,
+      "community": 3,
       "norm_label": "add_in_app_notification()"
     },
     {
@@ -2213,7 +2213,7 @@
       "source_location": "L149",
       "_origin": "ast",
       "id": "src_notifications_notify_admins_of_project_submission",
-      "community": 3,
+      "community": 73,
       "norm_label": "notify_admins_of_project_submission()"
     },
     {
@@ -2223,7 +2223,7 @@
       "source_location": "L170",
       "_origin": "ast",
       "id": "src_notifications_notify_owner_of_project_review",
-      "community": 69,
+      "community": 20,
       "norm_label": "notify_owner_of_project_review()"
     },
     {
@@ -2243,7 +2243,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "src_notifications_rationale_28",
-      "community": 75,
+      "community": 3,
       "norm_label": "add a notification to the user's in-app notification center.      `state` lets"
     },
     {
@@ -2293,7 +2293,7 @@
       "source_location": "L150",
       "_origin": "ast",
       "id": "src_notifications_rationale_150",
-      "community": 3,
+      "community": 73,
       "norm_label": "notify admins when a project is submitted for review."
     },
     {
@@ -2303,7 +2303,7 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "src_notifications_rationale_171",
-      "community": 69,
+      "community": 20,
       "norm_label": "notify a project's owner once a leader/admin reviews their submission.      ta"
     },
     {
@@ -2313,7 +2313,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_routes_admin",
-      "community": 69,
+      "community": 20,
       "norm_label": "routes_admin.py"
     },
     {
@@ -2323,7 +2323,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "src_routes_admin_admin_email",
-      "community": 69,
+      "community": 20,
       "norm_label": "_admin_email()"
     },
     {
@@ -2333,7 +2333,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "src_routes_admin_register",
-      "community": 69,
+      "community": 20,
       "norm_label": "register()"
     },
     {
@@ -2343,7 +2343,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_routes_api",
-      "community": 73,
+      "community": 3,
       "norm_label": "routes_api.py"
     },
     {
@@ -2353,7 +2353,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "src_routes_api_register",
-      "community": 73,
+      "community": 3,
       "norm_label": "register()"
     },
     {
@@ -2403,7 +2403,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_routes_api_workshops",
-      "community": 73,
+      "community": 3,
       "norm_label": "routes_api_workshops.py"
     },
     {
@@ -2413,7 +2413,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "src_routes_api_workshops_register_workshop_routes",
-      "community": 73,
+      "community": 3,
       "norm_label": "register_workshop_routes()"
     },
     {
@@ -2423,7 +2423,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_routes_api_workshops_py_flask",
-      "community": 73,
+      "community": 3,
       "norm_label": "flask"
     },
     {
@@ -2433,7 +2433,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_routes_api_workshops_rationale_1",
-      "community": 73,
+      "community": 3,
       "norm_label": "workshop api routes for hack club leaders portal."
     },
     {
@@ -6143,7 +6143,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_coins",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_coins.py"
     },
     {
@@ -6153,7 +6153,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "tests_test_coins_tx",
-      "community": 19,
+      "community": 77,
       "norm_label": "_tx()"
     },
     {
@@ -6163,7 +6163,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "tests_test_coins_test_coin_balance_sums_all_deltas",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_coin_balance_sums_all_deltas()"
     },
     {
@@ -6173,7 +6173,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "tests_test_coins_test_coin_balance_empty_ledger_is_zero",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_coin_balance_empty_ledger_is_zero()"
     },
     {
@@ -6183,7 +6183,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "tests_test_coins_test_coins_spent_only_counts_negative_deltas",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_coins_spent_only_counts_negative_deltas()"
     },
     {
@@ -6193,7 +6193,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "tests_test_coins_test_coins_spent_ignores_earn_entries",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_coins_spent_ignores_earn_entries()"
     },
     {
@@ -6203,7 +6203,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "tests_test_coins_test_reconcile_coins_writes_cache_into_settings",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_reconcile_coins_writes_cache_into_settings()"
     },
     {
@@ -6213,7 +6213,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "tests_test_coins_test_reconcile_coins_handles_missing_ledger_key",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_reconcile_coins_handles_missing_ledger_key()"
     },
     {
@@ -6223,7 +6223,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "tests_test_coins_test_award_coins_appends_transaction_and_reconciles",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_award_coins_appends_transaction_and_reconciles()"
     },
     {
@@ -6233,7 +6233,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "tests_test_coins_test_award_coins_creates_ledger_key_if_absent",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_award_coins_creates_ledger_key_if_absent()"
     },
     {
@@ -6243,7 +6243,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "tests_test_coins_test_award_coins_negative_delta_updates_spent_cache",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_award_coins_negative_delta_updates_spent_cache()"
     },
     {
@@ -6253,7 +6253,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "tests_test_coins_test_dashboard_page_section_loads_ledger",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_dashboard_page_section_loads_ledger()"
     },
     {
@@ -6263,7 +6263,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "tests_test_coins_test_every_state_section_has_an_airtable_table",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_every_state_section_has_an_airtable_table()"
     },
     {
@@ -6273,7 +6273,7 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "tests_test_coins_test_every_state_section_has_a_mongo_collection",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_every_state_section_has_a_mongo_collection()"
     },
     {
@@ -6283,7 +6283,7 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "tests_test_coins_test_every_mongo_collection_has_an_index",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_every_mongo_collection_has_an_index()"
     },
     {
@@ -6293,7 +6293,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "tests_test_coins_test_every_settings_key_has_an_airtable_field",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_every_settings_key_has_an_airtable_field()"
     },
     {
@@ -6313,7 +6313,7 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "tests_test_coins_test_get_dashboard_state_reconciles_stale_mongo_settings_cache",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_get_dashboard_state_reconciles_stale_mongo_settings_cache()"
     },
     {
@@ -6323,7 +6323,7 @@
       "source_location": "L198",
       "_origin": "ast",
       "id": "tests_test_coins_seed_cart_club",
-      "community": 19,
+      "community": 77,
       "norm_label": "_seed_cart_club()"
     },
     {
@@ -6333,7 +6333,7 @@
       "source_location": "L259",
       "_origin": "ast",
       "id": "tests_test_coins_test_cart_add_snapshots_coin_cost",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_cart_add_snapshots_coin_cost()"
     },
     {
@@ -6343,7 +6343,7 @@
       "source_location": "L270",
       "_origin": "ast",
       "id": "tests_test_coins_test_cart_add_rejects_unpriced_item",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_cart_add_rejects_unpriced_item()"
     },
     {
@@ -6353,7 +6353,7 @@
       "source_location": "L278",
       "_origin": "ast",
       "id": "tests_test_coins_test_checkout_debits_ledger_on_success",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_checkout_debits_ledger_on_success()"
     },
     {
@@ -6363,7 +6363,7 @@
       "source_location": "L300",
       "_origin": "ast",
       "id": "tests_test_coins_test_checkout_rejects_when_over_budget",
-      "community": 19,
+      "community": 77,
       "norm_label": "test_checkout_rejects_when_over_budget()"
     },
     {
@@ -6373,7 +6373,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "tests_test_coins_rationale_140",
-      "community": 19,
+      "community": 77,
       "norm_label": "regression for a pre-existing mongodb-backed club whose stored     `settings` d"
     },
     {
@@ -8393,7 +8393,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "tests_test_workshops_test_default_dashboard_state_seeds_empty_workshops",
-      "community": 14,
+      "community": 19,
       "norm_label": "test_default_dashboard_state_seeds_empty_workshops()"
     },
     {
@@ -10337,6 +10337,86 @@
       "norm_label": "step 8 \u2014 verify"
     },
     {
+      "label": "2026-08-17-mailbox-inbox.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_superpowers_plans_2026_08_17_mailbox_inbox",
+      "community": 81,
+      "norm_label": "2026-08-17-mailbox-inbox.md"
+    },
+    {
+      "label": "Notifications Mailbox Inbox Implementation Plan",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_superpowers_plans_2026_08_17_mailbox_inbox_notifications_mailbox_inbox_implementation_plan",
+      "community": 81,
+      "norm_label": "notifications mailbox inbox implementation plan"
+    },
+    {
+      "label": "Global Constraints",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "docs_superpowers_plans_2026_08_17_mailbox_inbox_global_constraints",
+      "community": 81,
+      "norm_label": "global constraints"
+    },
+    {
+      "label": "Task 1: Template \u2014 mailbox layout",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "docs_superpowers_plans_2026_08_17_mailbox_inbox_task_1_template_mailbox_layout",
+      "community": 81,
+      "norm_label": "task 1: template \u2014 mailbox layout"
+    },
+    {
+      "label": "Task 2: JS \u2014 feed rendering + selection state",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L84",
+      "_origin": "ast",
+      "id": "docs_superpowers_plans_2026_08_17_mailbox_inbox_task_2_js_feed_rendering_selection_state",
+      "community": 81,
+      "norm_label": "task 2: js \u2014 feed rendering + selection state"
+    },
+    {
+      "label": "Task 3: CSS \u2014 mailbox styles",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L242",
+      "_origin": "ast",
+      "id": "docs_superpowers_plans_2026_08_17_mailbox_inbox_task_3_css_mailbox_styles",
+      "community": 81,
+      "norm_label": "task 3: css \u2014 mailbox styles"
+    },
+    {
+      "label": "Task 4: Tour + i18n",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L293",
+      "_origin": "ast",
+      "id": "docs_superpowers_plans_2026_08_17_mailbox_inbox_task_4_tour_i18n",
+      "community": 81,
+      "norm_label": "task 4: tour + i18n"
+    },
+    {
+      "label": "Task 5: Verification",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L314",
+      "_origin": "ast",
+      "id": "docs_superpowers_plans_2026_08_17_mailbox_inbox_task_5_verification",
+      "community": 81,
+      "norm_label": "task 5: verification"
+    },
+    {
       "label": "2026-08-17-motion-polish.md",
       "file_type": "document",
       "source_file": "docs/superpowers/plans/2026-08-17-motion-polish.md",
@@ -12004,6 +12084,126 @@
       "_origin": "ast",
       "id": "docs_superpowers_specs_2026_08_17_explore_design_out_of_scope",
       "community": 21,
+      "norm_label": "out of scope"
+    },
+    {
+      "label": "2026-08-17-mailbox-inbox-design.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design",
+      "community": 80,
+      "norm_label": "2026-08-17-mailbox-inbox-design.md"
+    },
+    {
+      "label": "Notifications page: mailbox inbox design",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_notifications_page_mailbox_inbox_design",
+      "community": 80,
+      "norm_label": "notifications page: mailbox inbox design"
+    },
+    {
+      "label": "Goal",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_goal",
+      "community": 80,
+      "norm_label": "goal"
+    },
+    {
+      "label": "Unchanged",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_unchanged",
+      "community": 80,
+      "norm_label": "unchanged"
+    },
+    {
+      "label": "Changes",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_changes",
+      "community": 80,
+      "norm_label": "changes"
+    },
+    {
+      "label": "1. Layout: single mailbox panel + reader",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_1_layout_single_mailbox_panel_reader",
+      "community": 80,
+      "norm_label": "1. layout: single mailbox panel + reader"
+    },
+    {
+      "label": "2. Row anatomy (email-like)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L62",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_2_row_anatomy_email_like",
+      "community": 80,
+      "norm_label": "2. row anatomy (email-like)"
+    },
+    {
+      "label": "3. Toolbar state (client-side only)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L81",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_3_toolbar_state_client_side_only",
+      "community": 80,
+      "norm_label": "3. toolbar state (client-side only)"
+    },
+    {
+      "label": "4. Reader pane (message view)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L94",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_4_reader_pane_message_view",
+      "community": 80,
+      "norm_label": "4. reader pane (message view)"
+    },
+    {
+      "label": "5. CSS",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L101",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_5_css",
+      "community": 80,
+      "norm_label": "5. css"
+    },
+    {
+      "label": "6. Tour + tests",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L112",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_6_tour_tests",
+      "community": 80,
+      "norm_label": "6. tour + tests"
+    },
+    {
+      "label": "Out of scope",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L119",
+      "_origin": "ast",
+      "id": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_out_of_scope",
+      "community": 80,
       "norm_label": "out of scope"
     },
     {
@@ -15252,7 +15452,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/routes_chat.py",
-      "source_location": "L535",
+      "source_location": "L545",
       "weight": 1.0,
       "source": "src_routes_chat_register",
       "target": "src_helpers_viewer_is_leader",
@@ -15735,7 +15935,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/routes_chat.py",
-      "source_location": "L522",
+      "source_location": "L532",
       "weight": 1.0,
       "source": "src_routes_chat_register",
       "target": "src_helpers_utc_iso",
@@ -17698,7 +17898,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/routes_chat.py",
-      "source_location": "L543",
+      "source_location": "L553",
       "weight": 1.0,
       "source": "src_routes_chat_register",
       "target": "src_helpers_feature_enabled",
@@ -19868,7 +20068,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/routes_chat.py",
-      "source_location": "L562",
+      "source_location": "L572",
       "weight": 1.0,
       "source": "src_routes_chat_register",
       "target": "src_notifications_add_in_app_notification",
@@ -33923,6 +34123,76 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_superpowers_plans_2026_08_17_mailbox_inbox",
+      "target": "docs_superpowers_plans_2026_08_17_mailbox_inbox_notifications_mailbox_inbox_implementation_plan",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "docs_superpowers_plans_2026_08_17_mailbox_inbox_notifications_mailbox_inbox_implementation_plan",
+      "target": "docs_superpowers_plans_2026_08_17_mailbox_inbox_global_constraints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "docs_superpowers_plans_2026_08_17_mailbox_inbox_global_constraints",
+      "target": "docs_superpowers_plans_2026_08_17_mailbox_inbox_task_1_template_mailbox_layout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "docs_superpowers_plans_2026_08_17_mailbox_inbox_global_constraints",
+      "target": "docs_superpowers_plans_2026_08_17_mailbox_inbox_task_2_js_feed_rendering_selection_state",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L242",
+      "weight": 1.0,
+      "source": "docs_superpowers_plans_2026_08_17_mailbox_inbox_global_constraints",
+      "target": "docs_superpowers_plans_2026_08_17_mailbox_inbox_task_3_css_mailbox_styles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L293",
+      "weight": 1.0,
+      "source": "docs_superpowers_plans_2026_08_17_mailbox_inbox_global_constraints",
+      "target": "docs_superpowers_plans_2026_08_17_mailbox_inbox_task_4_tour_i18n",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/plans/2026-08-17-mailbox-inbox.md",
+      "source_location": "L314",
+      "weight": 1.0,
+      "source": "docs_superpowers_plans_2026_08_17_mailbox_inbox_global_constraints",
+      "target": "docs_superpowers_plans_2026_08_17_mailbox_inbox_task_5_verification",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "docs/superpowers/plans/2026-08-17-motion-polish.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -35433,6 +35703,116 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_notifications_page_mailbox_inbox_design",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_notifications_page_mailbox_inbox_design",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_changes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_notifications_page_mailbox_inbox_design",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_goal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_notifications_page_mailbox_inbox_design",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_out_of_scope",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_notifications_page_mailbox_inbox_design",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_unchanged",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_changes",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_1_layout_single_mailbox_panel_reader",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_changes",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_2_row_anatomy_email_like",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L81",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_changes",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_3_toolbar_state_client_side_only",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_changes",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_4_reader_pane_message_view",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L101",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_changes",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_5_css",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/superpowers/specs/2026-08-17-mailbox-inbox-design.md",
+      "source_location": "L112",
+      "weight": 1.0,
+      "source": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_changes",
+      "target": "docs_superpowers_specs_2026_08_17_mailbox_inbox_design_6_tour_tests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "docs/superpowers/specs/2026-08-17-motion-polish-design.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -35632,5 +36012,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "6d0e27abd3f3024a9e9459463f77244d9032e48a"
+  "built_at_commit": "d72bed16248d128950c2d6cb3aa326efbc022274"
 }

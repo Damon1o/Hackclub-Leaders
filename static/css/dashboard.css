@@ -657,7 +657,8 @@ body.dark-mode .btn-secondary {
 .text-button:focus-visible,
 .icon-button:focus-visible,
 .form-input:focus-visible,
-.newsletter-row:focus-visible,
+.mailbox-row:focus-visible,
+.mailbox-tab:focus-visible,
 .checklist-toggle:focus-visible {
     outline: 3px solid rgba(51, 142, 218, 0.4);
     outline-offset: 2px;
@@ -2084,20 +2085,27 @@ body.dark-mode .leaflet-popup-tip {
 /* ── Shop & cart ──────────────────────────────────────────────────────────── */
 
 .shop-layout,
-.newsletter-layout,
 .settings-layout {
     grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
     align-items: start;
 }
 
+.mailbox {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
 .shop-catalog,
-.newsletter-list-panel,
+.mailbox-panel,
 .settings-main {
     grid-column: 1;
 }
 
 .cart-panel,
-.newsletter-reader,
+.mailbox-reader,
 .settings-side {
     grid-column: 2;
     position: sticky;
@@ -2590,47 +2598,199 @@ body.dark-mode .leaflet-popup-tip {
     flex-shrink: 0;
 }
 
-/* ── Newsletters ──────────────────────────────────────────────────────────── */
+/* ── Notifications mailbox ────────────────────────────────────────────────── */
 
-.newsletter-list {
-    display: grid;
-    gap: 10px;
+/* Let the mail page fill the viewport: the wrapper stretches its main column
+   (sidebar height wins), so .mailbox flex:1 gets a definite height to split
+   into its own scrolling list/reader panes. */
+.dashboard-wrapper:has(.mailbox) {
+    align-items: stretch;
 }
 
-.newsletter-row {
-    width: 100%;
-    border: 1px solid var(--dash-border);
+.mailbox-panel {
+    grid-column: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+.mailbox-list {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+}
+
+.mailbox-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 14px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--dash-border);
+}
+
+.mailbox-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
     border-radius: 12px;
     background: var(--dash-fill);
+}
+
+.mailbox-tab {
+    border: none;
+    border-radius: 9px;
+    padding: 7px 14px;
+    background: transparent;
+    color: var(--dash-slate);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mailbox-tab:hover {
+    color: var(--dash-ink);
+}
+
+.mailbox-tab.active {
+    background: var(--hackclub-red);
+    color: #fff;
+}
+
+.mailbox-search {
+    flex: 1 1 160px;
+    min-width: 140px;
+    padding: 8px 12px;
+    border: 1px solid var(--dash-border);
+    border-radius: 10px;
+    background: var(--dash-fill);
+    color: var(--dash-ink);
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.15s ease;
+}
+
+.mailbox-search:focus {
+    outline: none;
+    border-color: rgba(236, 55, 80, 0.5);
+}
+
+.mailbox-search::placeholder {
+    color: var(--dash-muted);
+}
+
+.mailbox-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.mailbox-check input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--hackclub-red);
+    cursor: pointer;
+}
+
+.mailbox-check-header {
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+}
+
+.mailbox-check-header:hover {
+    background: var(--dash-fill);
+}
+
+.mailbox-bulkbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(236, 55, 80, 0.35);
+    border-radius: 12px;
+    background: rgba(236, 55, 80, 0.08);
+    color: var(--dash-ink);
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.mailbox-bulkbar[hidden] {
+    display: none;
+}
+
+.mailbox-empty {
+    margin: 0;
+    padding: 24px 14px;
+    color: var(--dash-muted);
+    font-size: 14px;
+    text-align: center;
+}
+
+.mailbox-row {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--dash-border);
+    background: transparent;
     color: inherit;
     font-family: inherit;
     cursor: pointer;
     display: grid;
-    grid-template-columns: 14px minmax(0, 1fr) auto;
+    grid-template-columns: 22px 12px minmax(0, 1fr) auto;
     gap: 12px;
     align-items: center;
-    padding: 14px;
+    padding: 12px 10px;
     text-align: left;
-    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.15s ease;
 }
 
-.newsletter-row:hover,
-.newsletter-row.active {
-    border-color: rgba(236, 55, 80, 0.45);
-    background: var(--dash-card);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(236, 55, 80, 0.08);
+.mailbox-row:first-child {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
-.newsletter-row strong {
+.mailbox-row:last-child {
+    border-bottom: none;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.mailbox-row:hover,
+.mailbox-row.active {
+    background: var(--dash-fill);
+}
+
+.mailbox-row.active {
+    box-shadow: inset 3px 0 0 var(--hackclub-red);
+}
+
+.mailbox-row-main {
+    min-width: 0;
+}
+
+.mailbox-row strong {
     display: block;
-    color: var(--dash-ink);
+    color: var(--dash-slate);
+    font-weight: normal;
     overflow-wrap: anywhere;
 }
 
-.newsletter-row small {
+.mailbox-row.unread strong {
+    color: var(--dash-ink);
+    font-weight: bold;
+}
+
+.mailbox-row small {
     display: -webkit-box;
-    margin-top: 4px;
+    margin-top: 3px;
     color: var(--dash-muted);
     line-height: 1.35;
     -webkit-line-clamp: 2;
@@ -2638,7 +2798,7 @@ body.dark-mode .leaflet-popup-tip {
     overflow: hidden;
 }
 
-.newsletter-row em {
+.mailbox-row-time {
     color: var(--dash-muted);
     font-size: 12px;
     font-style: normal;
@@ -2647,21 +2807,26 @@ body.dark-mode .leaflet-popup-tip {
 }
 
 .read-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
+    background: transparent;
+}
+
+.mailbox-row.unread .read-dot {
     background: var(--hackclub-red);
 }
 
-.read-dot.read {
-    background: var(--dash-border);
-}
-
-.newsletter-reader {
+.mailbox-reader {
+    position: relative;
+    top: auto;
     gap: 14px;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
-.newsletter-reader h2 {
+.mailbox-reader h2 {
     margin: 0;
     color: var(--dash-ink);
     font-family: var(--hackclub-title-font);
@@ -2671,14 +2836,31 @@ body.dark-mode .leaflet-popup-tip {
     overflow-wrap: anywhere;
 }
 
-.newsletter-reader p {
+.mailbox-reader p {
     margin: 0;
     color: var(--dash-slate);
     line-height: 1.6;
 }
 
-.newsletter-reader .badge {
+.mailbox-reader .badge {
     align-self: flex-start;
+}
+
+.mailbox-sender {
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--dash-muted);
+}
+
+.mailbox-sender[hidden] {
+    display: none;
+}
+
+.mailbox-date {
+    font-size: 13px;
+    color: var(--dash-muted);
 }
 
 /* ── Settings ─────────────────────────────────────────────────────────────── */
@@ -3873,22 +4055,32 @@ img.thumb-preview[src=""] {
 
 @media (max-width: 980px) {
     .shop-layout,
-    .newsletter-layout,
+    .mailbox,
     .settings-layout {
         grid-template-columns: 1fr;
     }
 
+    .mailbox {
+        flex: 0 0 auto;
+        grid-template-rows: auto;
+    }
+
+    .mailbox-list {
+        flex: 0 0 auto;
+        max-height: 50vh;
+    }
+
     .shop-catalog,
-    .newsletter-list-panel,
+    .mailbox-panel,
     .settings-main,
     .cart-panel,
-    .newsletter-reader,
+    .mailbox-reader,
     .settings-side {
         grid-column: 1;
     }
 
     .cart-panel,
-    .newsletter-reader,
+    .mailbox-reader,
     .settings-side {
         position: static;
     }
@@ -4039,12 +4231,21 @@ img.thumb-preview[src=""] {
         padding: 18px;
     }
 
-    .newsletter-row {
-        grid-template-columns: 14px minmax(0, 1fr);
+    .mailbox-row {
+        grid-template-columns: 22px 12px minmax(0, 1fr);
     }
 
-    .newsletter-row em {
-        grid-column: 2;
+    .mailbox-row-time {
+        display: none;
+    }
+
+    .mailbox-toolbar {
+        gap: 8px;
+    }
+
+    .mailbox-search {
+        order: 5;
+        flex-basis: 100%;
     }
 
     .modal-backdrop {
@@ -4088,6 +4289,10 @@ img.thumb-preview[src=""] {
     .dashboard-layout *::after {
         transition-duration: 0.01ms !important;
         animation-duration: 0.01ms !important;
+    }
+
+    .mailbox-list {
+        scroll-behavior: auto;
     }
 
     .sticker:nth-child(odd),
@@ -4301,7 +4506,7 @@ body.dark-mode .timeline-item.is-past { border-left-color: #2a2a30; }
 .metric-tile,
 .tool-card,
 .project-card,
-.newsletter-row {
+.mailbox-row {
     animation: card-enter 0.4s ease both;
     animation-delay: calc(var(--card-index, 0) * 70ms);
 }

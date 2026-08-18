@@ -277,7 +277,16 @@ window.DashboardChat = function (ctx) {
             const existing = box.querySelector(`[data-mid="${window.CSS.escape(String(message.id))}"]`);
             if (existing) return null;
         }
-        const person = { name: message.authorName, avatar: message.authorAvatar };
+        // Old or partial messages may lack a name/avatar. Heal from the club
+        // roster — member records carry the freshest profile for an email.
+        let authorName = message.authorName;
+        let authorAvatar = message.authorAvatar;
+        const rosterEntry = clubMembers().find((member) =>
+            member && member.email && String(member.email).toLowerCase()
+            === String(message.authorEmail || '').toLowerCase());
+        if (!authorName && rosterEntry && rosterEntry.name) authorName = rosterEntry.name;
+        if (!authorAvatar && rosterEntry && rosterEntry.avatar) authorAvatar = rosterEntry.avatar;
+        const person = { name: authorName, avatar: authorAvatar };
         const mine = (message.authorEmail || '').toLowerCase() === viewerEmail ? ' is-mine' : '';
         const mentionsViewer = !mine && (
             (message.mentions || []).some((email) => String(email).toLowerCase() === viewerEmail)
@@ -321,7 +330,7 @@ window.DashboardChat = function (ctx) {
             </span>
             <div class="chat-message-body">
                 <div class="chat-message-meta">
-                    <span class="chat-message-author">${escapeHtml(message.authorName || message.authorEmail || 'Member')}</span>
+                    <span class="chat-message-author">${escapeHtml(authorName || message.authorEmail || 'Member')}</span>
                     <span class="chat-message-time" title="${escapeHtml(chatFullTime(message.createdAt))}">${escapeHtml(chatTime(message.createdAt))}</span>
                     ${edited}
                 </div>

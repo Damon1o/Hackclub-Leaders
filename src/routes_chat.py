@@ -519,13 +519,23 @@ def register(app):
                 return json_error('This message was deleted.', 409)
 
         user = session.get('user') or {}
+        # Club roster is the authoritative profile source — members update
+        # their own name/avatar there. Fall back to the session identity,
+        # then to the email so a message is never anonymous.
+        member = next(
+            (
+                m for m in state.get('members', [])
+                if (m.get('email') or '').strip().lower() == _viewer_email()
+            ),
+            None,
+        )
         created_at = utc_iso()
         message = {
             'id': _item_id('msg'),
             'channelId': channel_id,
             'authorEmail': _viewer_email(),
-            'authorName': user.get('name') or _viewer_email(),
-            'authorAvatar': user.get('avatar') or '',
+            'authorName': (member or {}).get('name') or user.get('name') or _viewer_email(),
+            'authorAvatar': (member or {}).get('avatar') or user.get('avatar') or '',
             'body': body,
             'createdAt': created_at,
         }

@@ -1,16 +1,16 @@
 # Graph Report - Hackclub Leaders  (2026-08-17)
 
 ## Corpus Check
-- 88 files · ~131,379 words
+- 90 files · ~133,548 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1222 nodes · 2233 edges · 79 communities (71 shown, 8 thin omitted)
+- 1242 nodes · 2251 edges · 82 communities (74 shown, 8 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 54 edges (avg confidence: 0.68)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6d0e27ab`
+- Built from commit: `d72bed16`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -88,8 +88,11 @@
 - test_coins.py
 - SessionStorage
 - routes_chat.py
+- test_coins.py
 - helpers_bans.py
 - storage.py
+- Changes
+- Global Constraints
 
 ## God Nodes (most connected - your core abstractions)
 1. `_seed()` - 84 edges
@@ -118,23 +121,23 @@
 ## Import Cycles
 - None detected.
 
-## Communities (79 total, 8 thin omitted)
+## Communities (82 total, 8 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.06
-Nodes (43): Exception, MongoClient, _as_bool(), _as_int(), _item_from_row(), load_states(), main(), Import club data from Airtable CSV exports into MongoDB.  Fallback for scripts/s (+35 more)
+Cohesion: 0.07
+Nodes (42): MongoClient, _as_bool(), _as_int(), _item_from_row(), load_states(), main(), Import club data from Airtable CSV exports into MongoDB.  Fallback for scripts/s, Mirror AirtableStorage.load() output for every club, built from CSVs. (+34 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.08
-Nodes (16): main(), Delete test records from the live Airtable base.  During development, sign-in, register(), AirtableStorage, Airtable column mappings for the Hack Club Leaders Portal storage layer., Any, Airtable storage backend for Hack Club Leaders Portal., Return a deliberately narrow, anonymous-safe projection for Explore. (+8 more)
+Nodes (17): main(), Delete test records from the live Airtable base.  During development, sign-in, playtest_state(), register(), AirtableStorage, Airtable column mappings for the Hack Club Leaders Portal storage layer., Any, Airtable storage backend for Hack Club Leaders Portal. (+9 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.07
 Nodes (57): _make_channel(), Chat (channels + messages) API coverage.  These exercise *successful* authenti, _seed(), test_blank_channel_name_rejected(), test_channel_list_unread_flag(), test_channel_patch_sets_topic(), test_channel_requires_csrf(), test_channel_topic_cleared_by_empty_string() (+49 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.11
-Nodes (31): _html_to_text(), Email notification system for the Hack Club Leaders Portal., Render the email sent to a member once a leader schedules them to run a workshop, Send email in background thread., Render project submission notification email., Render the email sent to a member when their shipped project is approved., Send email using a template. Runs in background thread., Render the email sent to a member when their submitted project is sent back to D (+23 more)
+Cohesion: 0.10
+Nodes (40): _html_to_text(), Email notification system for the Hack Club Leaders Portal., Render the email sent to a member once a leader schedules them to run a workshop, Send email in background thread., Render project submission notification email., Render the email sent to a member when their shipped project is approved., Send email using a template. Runs in background thread., Render the email sent to a member when their submitted project is sent back to D (+32 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.10
@@ -157,8 +160,8 @@ Cohesion: 0.14
 Nodes (22): _fake_shared_backend(), _patch_project(), Dashboard Explore: auth-gated routes, filters, pagination, publish gating., _seed_project(), _seed_session_club(), test_explore_category_filter(), test_explore_empty_state(), test_explore_invalid_category_is_ignored() (+14 more)
 
 ### Community 14 - "test_workshops.py"
-Cohesion: 0.17
-Nodes (24): workshop_from_payload(), _base_workshop(), _seed_workshop_club(), test_apply_does_not_require_leader_role(), test_apply_rejected_once_workshop_is_scheduled(), test_apply_to_missing_workshop_404s(), test_apply_to_workshop_adds_viewer_to_applicants(), test_default_dashboard_state_seeds_empty_workshops() (+16 more)
+Cohesion: 0.18
+Nodes (23): workshop_from_payload(), _base_workshop(), _seed_workshop_club(), test_apply_does_not_require_leader_role(), test_apply_rejected_once_workshop_is_scheduled(), test_apply_to_missing_workshop_404s(), test_apply_to_workshop_adds_viewer_to_applicants(), test_delete_workshop_rejects_once_scheduled() (+15 more)
 
 ### Community 15 - "test_admin_shop.py"
 Cohesion: 0.11
@@ -177,12 +180,12 @@ Cohesion: 0.10
 Nodes (19): Audio direction, Brag Plan: Hack Club Leaders, Duration: ~19s, Format: landscape — 1920x1080, Hook (first 2-3 seconds), Key moments (the middle), Outro / punchline, Scene 1 — Hook: "Where leaders build the future!" — 3s (+11 more)
 
 ### Community 19 - "Task 4 Implementation Report: Link preview fetcher with SSRF guards"
-Cohesion: 0.05
-Nodes (95): award_coins(), coin_balance(), coins_spent(), default_dashboard_state(), default_dashboard_state(), generate_join_code(), playtest_state(), Demo and default initial state builders for Hack Club Leaders Portal. (+87 more)
+Cohesion: 0.09
+Nodes (49): Exception, default_dashboard_state(), default_dashboard_state(), generate_join_code(), playtest_state(), Demo and default initial state builders for Hack Club Leaders Portal., add_shop_item(), load_shop_items() (+41 more)
 
 ### Community 20 - "Task 1: Feature Flag Helper — Implementation Report"
-Cohesion: 0.25
-Nodes (13): handle_state_too_large(), handle_storage_error(), inject_user(), _payload_too_large(), Any, Exception, Response, get_csrf_token() (+5 more)
+Cohesion: 0.14
+Nodes (20): handle_state_too_large(), handle_storage_error(), inject_user(), _payload_too_large(), Any, Exception, Response, get_csrf_token() (+12 more)
 
 ### Community 21 - "Task 2: Storage — Metadata JSON field, attachment loading, Airtable schema — Report"
 Cohesion: 0.14
@@ -349,8 +352,8 @@ Cohesion: 0.40
 Nodes (5): feature_enabled(), Env-driven feature flag: on unless the env var is set to false/0/off/no., test_feature_flags_default_on(), test_feature_flags_disabled_values(), test_feature_flags_true_value()
 
 ### Community 69 - "get_dashboard_state"
-Cohesion: 0.24
-Nodes (8): F, admin_required(), leader_required(), login_required(), require_admin_api(), notify_owner_of_project_review(), Notify a project's owner once a leader/admin reviews their submission.      Ta, register()
+Cohesion: 0.23
+Nodes (21): F, admin_required(), leader_required(), login_required(), auto_flag_reasons(), channel_from_payload(), clean_text(), event_from_payload() (+13 more)
 
 ### Community 70 - "Changes"
 Cohesion: 0.17
@@ -365,20 +368,24 @@ Cohesion: 0.33
 Nodes (5): Aesthetic Direction, Brand Personality, Design Context, Design Principles, Users
 
 ### Community 73 - "routes_api.py"
-Cohesion: 0.25
-Nodes (16): _join_missing(), _owned_project_or_error(), Any, UTC timestamp, ISO-8601 with a 'Z' suffix (e.g. 2026-07-10T22:59:00.123456Z)., require_dashboard_csrf(), require_leader_api(), _slugify(), utc_iso() (+8 more)
+Cohesion: 0.36
+Nodes (9): _join_missing(), _owned_project_or_error(), _slugify(), _viewer_email(), notify_admins_of_project_submission(), Notify admins when a project is submitted for review., Flask, Project and image upload API routes for Hack Club Leaders Portal. (+1 more)
 
 ### Community 74 - "test_coins.py"
 Cohesion: 0.20
 Nodes (9): _club_row(), _fake_list_all_for(), _project_row(), AirtableStorage coverage for the cross-club Users table (get_user_record() and s, storage(), test_list_public_projects_excludes_unpublished_rows(), test_list_public_projects_filters_to_one_club(), test_list_public_projects_returns_narrow_projection() (+1 more)
 
 ### Community 75 - "SessionStorage"
-Cohesion: 0.31
-Nodes (15): _club_key(), get_dashboard_state(), _item_id(), parse_language(), Return a supported language code, defaulting to English for anything else., The viewer's dashboard state.      `sections` names the state keys the caller, save_dashboard_state(), _storage() (+7 more)
+Cohesion: 0.23
+Nodes (19): _club_key(), generate_join_code(), get_dashboard_state(), parse_language(), Any, Return a supported language code, defaulting to English for anything else., The club's stored state. `sections` limits which parts are fetched;     None me, The viewer's dashboard state.      `sections` names the state keys the caller (+11 more)
 
 ### Community 76 - "routes_chat.py"
 Cohesion: 0.10
 Nodes (17): HTMLParser, _chat_reads(), fetch_link_preview(), _find_chat_read(), _find_message(), _host_is_public(), _messages(), _OgParser (+9 more)
+
+### Community 77 - "test_coins.py"
+Cohesion: 0.12
+Nodes (21): coin_balance(), coins_spent(), Recompute the cached balance/spent totals in `settings` from the     ledger. Ca, reconcile_coins(), Regression for a pre-existing MongoDB-backed club whose stored     `settings` d, _seed_cart_club(), test_award_coins_appends_transaction_and_reconciles(), test_award_coins_creates_ledger_key_if_absent() (+13 more)
 
 ### Community 78 - "helpers_bans.py"
 Cohesion: 0.33
@@ -388,8 +395,16 @@ Nodes (9): ban_email(), is_banned_email(), load_banned_emails(), Site-wide banne
 Cohesion: 0.11
 Nodes (23): ban_file(), Admin moderation + fulfillment endpoints added with the admin-page update., Point the ban writer at a throwaway file so tests never touch the real     banne, A banned email is rejected by the join-code route., _seed_state(), test_admin_page_renders_new_panels(), test_ban_and_unban(), test_banned_user_cannot_join() (+15 more)
 
+### Community 80 - "Changes"
+Cohesion: 0.17
+Nodes (11): 1. Layout: single mailbox panel + reader, 2. Row anatomy (email-like), 3. Toolbar state (client-side only), 4. Reader pane (message view), 5. CSS, 6. Tour + tests, Changes, Goal (+3 more)
+
+### Community 81 - "Global Constraints"
+Cohesion: 0.25
+Nodes (7): Global Constraints, Notifications Mailbox Inbox Implementation Plan, Task 1: Template — mailbox layout, Task 2: JS — feed rendering + selection state, Task 3: CSS — mailbox styles, Task 4: Tour + i18n, Task 5: Verification
+
 ## Knowledge Gaps
-- **283 isolated node(s):** `$schema`, `registry`, `blocks`, `components`, `assets` (+278 more)
+- **297 isolated node(s):** `$schema`, `registry`, `blocks`, `components`, `assets` (+292 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -397,16 +412,16 @@ Nodes (23): ban_file(), Admin moderation + fulfillment endpoints added with the 
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `AirtableStorage` connect `Community 1` to `Community 0`, `test_coins.py`, `Community 5`, `_airtable`?**
-  _High betweenness centrality (0.094) - this node is a cross-community bridge._
-- **Why does `SessionStorage` connect `Community 1` to `Community 0`, `SessionStorage`, `Task 4 Implementation Report: Link preview fetcher with SSRF guards`?**
-  _High betweenness centrality (0.063) - this node is a cross-community bridge._
-- **Why does `StateTooLarge` connect `Task 4 Implementation Report: Link preview fetcher with SSRF guards` to `Community 0`, `Community 1`, `Community 4`, `SessionStorage`, `Task 1: Feature Flag Helper — Implementation Report`?**
-  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+  _High betweenness centrality (0.091) - this node is a cross-community bridge._
+- **Why does `SessionStorage` connect `Community 1` to `Task 4 Implementation Report: Link preview fetcher with SSRF guards`, `Community 0`, `SessionStorage`, `get_dashboard_state`?**
+  _High betweenness centrality (0.061) - this node is a cross-community bridge._
+- **Why does `StateTooLarge` connect `Task 4 Implementation Report: Link preview fetcher with SSRF guards` to `Community 1`, `Community 4`, `get_dashboard_state`, `SessionStorage`, `Task 1: Feature Flag Helper — Implementation Report`?**
+  _High betweenness centrality (0.049) - this node is a cross-community bridge._
 - **Are the 6 inferred relationships involving `AirtableStorage` (e.g. with `main()` and `SessionStorage`) actually correct?**
   _`AirtableStorage` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 2 inferred relationships involving `get_dashboard_state()` (e.g. with `ShopItem` and `SessionStorage`) actually correct?**
   _`get_dashboard_state()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `$schema`, `registry`, `blocks` to the rest of the system?**
-  _385 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _399 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.0647887323943662 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06625258799171843 - nodes in this community are weakly interconnected._

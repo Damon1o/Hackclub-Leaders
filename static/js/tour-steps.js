@@ -159,7 +159,7 @@
         ],
         notifications: [
             {
-                target: '.newsletter-list-panel',
+                target: '.mailbox-panel',
                 title: 'Dispatches from HQ',
                 body: 'Updates from Hack Club HQ, plus anything you send your own club.'
             },

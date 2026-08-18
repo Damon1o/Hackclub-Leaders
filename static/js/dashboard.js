@@ -11,6 +11,9 @@
 
     let dashboardState = {};
     let selectedNewsletterId = '';
+    let mailboxFilter = 'all';
+    let mailboxQuery = '';
+    const selectedMailIds = new Set();
     let shopFilter = 'All';
     let shopSearch = '';
 
@@ -1170,8 +1173,8 @@
         img.classList.toggle('has-image', Boolean(url));
     }
 
-    function initSettingsScrollspy() {
-        const nav = $('#settingsNav');
+    function initSettingsScrollspy(navSelector = '#settingsNav') {
+        const nav = $(navSelector);
         const sections = document.querySelectorAll('[data-settings-section]');
         if (!nav || !sections.length || !window.IntersectionObserver) return;
 
@@ -1694,23 +1697,58 @@
         removeSkeletons('newsletters');
         const list = $('#newsletterList');
         const archive = notificationFeedItems();
+        const visible = visibleMailItems();
         const prefs = settings();
-        if (!selectedNewsletterId && archive.length) {
-            selectedNewsletterId = archive[0].id;
+
+        if (!visible.some((row) => row.id === selectedNewsletterId)) {
+            selectedNewsletterId = visible.length ? visible[0].id : '';
         }
-        $('#newsletterSubscribe').checked = Boolean(prefs.newsletterSubscribed);
+
+        const subscribe = $('#newsletterSubscribe');
+        if (subscribe) subscribe.checked = Boolean(prefs.newsletterSubscribed);
+
+        // Prune ids hidden by the current filter/search and sync select-all.
+        [...selectedMailIds].forEach((id) => {
+            if (!visible.some((row) => row.id === id)) selectedMailIds.delete(id);
+        });
+        const selectAll = $('#mailSelectAll');
+        if (selectAll) {
+            const selectedCount = visible.filter((row) => selectedMailIds.has(row.id)).length;
+            selectAll.checked = visible.length > 0 && selectedCount === visible.length;
+            selectAll.indeterminate = selectedCount > 0 && selectedCount < visible.length;
+            selectAll.disabled = visible.length === 0;
+        }
+        const bulkBar = $('#mailBulkBar');
+        if (bulkBar) {
+            bulkBar.hidden = selectedMailIds.size === 0;
+            const count = $('#mailBulkCount');
+            if (count) count.textContent = `${selectedMailIds.size} selected`;
+        }
 
         if (list) {
-            list.innerHTML = archive.map((item, index) => `
-                <button class="newsletter-row ${item.id === selectedNewsletterId ? 'active' : ''}" type="button" data-open-dispatch="${escapeHtml(item.id)}" style="--card-index: ${index}">
-                    <span class="read-dot ${item.read ? 'read' : ''}" aria-hidden="true"></span>
-                    <span>
-                        <strong>${escapeHtml(item.title)}</strong>
+            list.innerHTML = visible.length ? visible.map((item, index) => {
+                const kindLabel = mailboxKindLabel(item);
+                return `
+                <button class="mailbox-row ${item.id === selectedNewsletterId ? 'active' : ''} ${item.read ? '' : 'unread'}" type="button" data-open-dispatch="${escapeHtml(item.id)}" style="--card-index: ${index}">
+                    <span class="mailbox-check">
+                        <input type="checkbox" data-mail-check="${escapeHtml(item.id)}" ${selectedMailIds.has(item.id) ? 'checked' : ''} aria-label="Select message">
+                    </span>
+                    <span class="read-dot" aria-hidden="true"></span>
+                    <span class="mailbox-row-main">
+                        <strong>${escapeHtml(kindLabel)} · ${escapeHtml(item.title)}</strong>
                         <small>${escapeHtml(item.excerpt)}</small>
                     </span>
-                    <em>${escapeHtml(item.readLabel)}</em>
+                    <em class="mailbox-row-time">${escapeHtml(item.readLabel)}</em>
                 </button>
-            `).join('');
+            `;
+            }).join('') : `<p class="mailbox-empty">No messages match.</p>`;
+        }
+        // Keep the open message in view inside the scrolling list; skip the
+        // animation for reduced-motion users.
+        const activeRow = list?.querySelector('.mailbox-row.active');
+        if (activeRow) {
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            activeRow.scrollIntoView({ block: 'nearest', behavior: reducedMotion ? 'auto' : 'smooth' });
         }
         renderNotificationReader();
         updateNotificationsNavBadge(archive);
@@ -1734,6 +1772,7 @@
         const notificationRows = (dashboardState.notifications || []).map((n) => ({
             kind: 'notification',
             id: n.id,
+            type: n.type,
             title: n.title,
             excerpt: n.message,
             body: n.message,
@@ -1744,11 +1783,40 @@
         return dispatchRows.concat(notificationRows).sort((a, b) => (b.sortKey || '').localeCompare(a.sortKey || ''));
     }
 
+    const NOTIFICATION_TYPE_LABELS = {
+        event_rsvp: 'Event RSVP',
+        workshop_application: 'Workshop application',
+        workshop_scheduled: 'Workshop scheduled',
+        project_submitted: 'Project submitted',
+        project_reviewed: 'Project reviewed',
+        order_placed: 'Order placed',
+    };
+
+    function mailboxKindLabel(item) {
+        if (item.kind === 'dispatch') return 'Leader dispatch';
+        return NOTIFICATION_TYPE_LABELS[item.type] || 'Notification';
+    }
+
+    function visibleMailItems() {
+        const query = mailboxQuery.trim().toLowerCase();
+        return notificationFeedItems().filter((row) => {
+            if (mailboxFilter === 'unread' && row.read) return false;
+            if (query && !`${row.title} ${row.excerpt}`.toLowerCase().includes(query)) return false;
+            return true;
+        });
+    }
+
     function renderNotificationReader() {
         const item = notificationFeedItems().find((row) => row.id === selectedNewsletterId);
         const button = $('#toggleReadButton');
-        if (!item) return;
+        const sender = $('#newsletterSender');
+        if (sender) sender.hidden = !item;
+        if (!item) {
+            if (button) button.hidden = true;
+            return;
+        }
         $('#newsletterReadTime').textContent = item.readLabel || (item.kind === 'dispatch' ? 'Dispatch' : 'Notification');
+        if (sender) sender.textContent = mailboxKindLabel(item);
         $('#newsletterTitle').textContent = item.title || 'Untitled';
         $('#newsletterDate').textContent = item.kind === 'dispatch'
             ? formatDate(newsletters().find((n) => n.id === item.id)?.date)
@@ -3163,6 +3231,7 @@ const CHECKLIST_ITEMS = [
 
             const dispatchRow = event.target.closest('[data-open-dispatch]');
             if (dispatchRow) {
+                if (event.target.closest('[data-mail-check]')) return;
                 selectedNewsletterId = dispatchRow.dataset.openDispatch;
                 const feedItem = notificationFeedItems().find((row) => row.id === selectedNewsletterId);
                 renderNotificationFeed();
@@ -3172,6 +3241,13 @@ const CHECKLIST_ITEMS = [
                         : `/api/dashboard/newsletters/${feedItem.id}`;
                     try {
                         await apiRequest(endpoint, { method: 'PATCH', body: { read: true } });
+                        // Notification PATCH responses carry no `state` —
+                        // reflect the read flag locally, then repaint.
+                        if (feedItem.kind === 'notification') {
+                            const local = notifications.find((n) => n.id === feedItem.id);
+                            if (local) local.read = true;
+                            renderNotificationFeed();
+                        }
                     } catch (error) {
                         showToast(error.message, 'error');
                     }
@@ -3596,6 +3672,13 @@ const CHECKLIST_ITEMS = [
                 : `/api/dashboard/newsletters/${feedItem.id}`;
             try {
                 await apiRequest(endpoint, { method: 'PATCH', body: { read: !feedItem.read } });
+                // Notification PATCH responses carry no `state` — reflect
+                // the flag locally, then repaint (dispatches arrive via state).
+                if (feedItem.kind === 'notification') {
+                    const local = notifications.find((n) => n.id === feedItem.id);
+                    if (local) local.read = !feedItem.read;
+                    renderNotificationFeed();
+                }
                 showToast(feedItem.read ? 'Marked unread.' : 'Marked read.');
             } catch (error) {
                 showToast(error.message, 'error');
@@ -3603,6 +3686,39 @@ const CHECKLIST_ITEMS = [
         });
 
         $('#notificationsMarkAllReadBtn')?.addEventListener('click', markAllNotificationsRead);
+
+        $$('.mailbox-tab').forEach((tab) => tab.addEventListener('click', () => {
+            $$('.mailbox-tab').forEach((other) => {
+                other.classList.toggle('active', other === tab);
+                other.setAttribute('aria-selected', other === tab ? 'true' : 'false');
+            });
+            mailboxFilter = tab.dataset.mailFilter;
+            renderNotificationFeed();
+        }));
+
+        $('#mailboxSearch')?.addEventListener('input', (event) => {
+            mailboxQuery = event.currentTarget.value;
+            renderNotificationFeed();
+        });
+
+        $('#mailSelectAll')?.addEventListener('change', (event) => {
+            const checked = event.currentTarget.checked;
+            visibleMailItems().forEach((row) => {
+                if (checked) selectedMailIds.add(row.id);
+                else selectedMailIds.delete(row.id);
+            });
+            renderNotificationFeed();
+        });
+
+        $('#newsletterList')?.addEventListener('change', (event) => {
+            const checkbox = event.target.closest('[data-mail-check]');
+            if (!checkbox) return;
+            if (checkbox.checked) selectedMailIds.add(checkbox.dataset.mailCheck);
+            else selectedMailIds.delete(checkbox.dataset.mailCheck);
+            renderNotificationFeed();
+        });
+
+        $('#mailBulkMarkRead')?.addEventListener('click', bulkMarkSelectedRead);
 
         $('#newsletterSubscribe')?.addEventListener('change', async (event) => {
             // currentTarget is null after the await — read it up front.
@@ -4012,6 +4128,41 @@ const CHECKLIST_ITEMS = [
         });
     }
 
+    async function bulkMarkSelectedRead() {
+        const items = visibleMailItems().filter((row) => selectedMailIds.has(row.id));
+        if (!items.length) return;
+        // Notifications PATCH responses carry no `state`, so reflect the
+        // change locally (same objects dashboardState holds) and revert on
+        // failure — mirroring markAllNotificationsRead.
+        const changed = [];
+        items.forEach((item) => {
+            const target = item.kind === 'notification'
+                ? notifications.find((n) => n.id === item.id)
+                : newsletters().find((n) => n.id === item.id);
+            if (target && !target.read) {
+                target.read = true;
+                changed.push(target);
+            }
+        });
+        renderNotificationFeed();
+        const requests = items.map((item) => {
+            const endpoint = item.kind === 'notification'
+                ? `/api/dashboard/notifications/${item.id}`
+                : `/api/dashboard/newsletters/${item.id}`;
+            return apiRequest(endpoint, { method: 'PATCH', body: { read: true } });
+        });
+        try {
+            await Promise.all(requests);
+            selectedMailIds.clear();
+            renderNotificationFeed();
+            showToast(`${items.length} message${items.length === 1 ? '' : 's'} marked read.`);
+        } catch (error) {
+            changed.forEach((target) => { target.read = false; });
+            renderNotificationFeed();
+            showToast(error.message || 'Could not mark selected as read.', 'error');
+        }
+    }
+
     function initNotificationData() {
         loadNotifications();
     }
@@ -4037,6 +4188,7 @@ const CHECKLIST_ITEMS = [
         initHacktime();
         initAvatarUploads();
         initSettingsScrollspy();
+        if (page === 'admin') initSettingsScrollspy('#adminNav');
         if (clientDataPage) refreshState();
         if (page === 'admin') {
             renderAdminItemRequests();

@@ -136,6 +136,41 @@ class SessionStorage:
             for request in state.get('itemRequests') or []
         ]
 
+    def list_orders(self) -> list[dict[str, Any]]:
+        clubs = self.list_clubs()
+        club_key = clubs[0]['clubKey'] if clubs else ''
+        club_name = clubs[0]['clubName'] if clubs else ''
+        state = self._session.get('dashboard_state') or {}
+        return [
+            {'clubKey': club_key, 'clubName': club_name, 'order': order}
+            for order in state.get('orders') or []
+        ]
+
+    def list_messages(
+        self, limit: int = 200, flagged_only: bool = False
+    ) -> list[dict[str, Any]]:
+        clubs = self.list_clubs()
+        club_key = clubs[0]['clubKey'] if clubs else ''
+        club_name = clubs[0]['clubName'] if clubs else ''
+        state = self._session.get('dashboard_state') or {}
+        messages = state.get('messages') or []
+        if flagged_only:
+            messages = [m for m in messages if m.get('autoFlagged')]
+        return [
+            {'clubKey': club_key, 'clubName': club_name, 'message': message}
+            for message in messages[-limit:]
+        ]
+
+    def list_reports(self) -> list[dict[str, Any]]:
+        clubs = self.list_clubs()
+        club_key = clubs[0]['clubKey'] if clubs else ''
+        club_name = clubs[0]['clubName'] if clubs else ''
+        state = self._session.get('dashboard_state') or {}
+        return [
+            {'clubKey': club_key, 'clubName': club_name, 'report': report}
+            for report in (state.get('reports') or [])
+        ]
+
 
 def make_storage(session: dict[str, Any]) -> Any:
     """Build the backend named by STORAGE_BACKEND (default: session)."""

@@ -10,6 +10,9 @@ from urllib.parse import quote
 import requests
 
 from .storage_airtable_fields import (
+    AUDIT_FIELDS as AUDIT_FIELDS,
+)
+from .storage_airtable_fields import (
     CHANNEL_FIELDS as CHANNEL_FIELDS,
 )
 from .storage_airtable_fields import (
@@ -38,6 +41,9 @@ from .storage_airtable_fields import (
 )
 from .storage_airtable_fields import (
     PROJECT_FIELDS as PROJECT_FIELDS,
+)
+from .storage_airtable_fields import (
+    REPORT_FIELDS as REPORT_FIELDS,
 )
 from .storage_airtable_fields import (
     SETTINGS_FIELDS as SETTINGS_FIELDS,
@@ -71,6 +77,8 @@ class AirtableStorage:
         ('CHANNELS', 'Channels', 'channels', CHANNEL_FIELDS),
         ('MESSAGES', 'Messages', 'messages', MESSAGE_FIELDS),
         ('NOTIFICATIONS', 'Notifications', 'notifications', NOTIFICATION_FIELDS),
+        ('REPORTS', 'Reports', 'reports', REPORT_FIELDS),
+        ('AUDIT_LOG', 'Audit Log', 'auditLog', AUDIT_FIELDS),
         ('LEDGER', 'Ledger', 'ledger', LEDGER_FIELDS),
         ('WORKSHOPS', 'Workshops', 'workshops', WORKSHOP_FIELDS),
     ]
@@ -79,6 +87,8 @@ class AirtableStorage:
         'newsletters',
         'orders',
         'itemRequests',
+        'reports',
+        'auditLog',
         'channels',
         'messages',
         'notifications',
@@ -372,6 +382,92 @@ class AirtableStorage:
             for r in records
             if r['fields'].get('Club Email')
         ]
+
+    def list_orders(self) -> list[dict[str, Any]]:
+        clubs = {c['clubKey']: c['clubName'] for c in self.list_clubs()}
+        records = self._list_all(self.tables['orders'])
+        orders = []
+        for r in records:
+            fields = r['fields']
+            raw_items = fields.get('Items', '[]')
+            try:
+                items = json.loads(raw_items) if isinstance(raw_items, str) else raw_items
+            except ValueError:
+                items = []
+            orders.append(
+                {
+                    'clubKey': (fields.get('Club Email') or '').strip().lower(),
+                    'clubName': clubs.get((fields.get('Club Email') or '').strip().lower(), ''),
+                    'order': {
+                        'id': fields.get('App Id', r['id']),
+                        'date': fields.get('Date', ''),
+                        'status': fields.get('Status', 'Requested'),
+                        'items': items or [],
+                    },
+                }
+            )
+        return orders
+
+    def list_reports(self) -> list[dict[str, Any]]:
+        clubs = {c['clubKey']: c['clubName'] for c in self.list_clubs()}
+        records = self._list_all(self.tables['reports'])
+        return [
+            {
+                'clubKey': (r['fields'].get('Club Email') or '').strip().lower(),
+                'clubName': clubs.get((r['fields'].get('Club Email') or '').strip().lower(), ''),
+                'report': {
+                    'id': r['fields'].get('App Id', r['id']),
+                    'channelId': r['fields'].get('Channel Id', ''),
+                    'messageId': r['fields'].get('Message Id', ''),
+                    'reason': r['fields'].get('Reason', ''),
+                    'reporterEmail': r['fields'].get('Reporter Email', ''),
+                    'reporterName': r['fields'].get('Reporter Name', ''),
+                    'createdAt': r['fields'].get('Created At', ''),
+                    'status': r['fields'].get('Status', 'Open'),
+                },
+            }
+            for r in records
+            if r['fields'].get('Club Email')
+        ]
+
+    def list_messages(
+        self, limit: int = 200, flagged_only: bool = False
+    ) -> list[dict[str, Any]]:
+        clubs = {c['clubKey']: c['clubName'] for c in self.list_clubs()}
+        records = self._list_all(self.tables['messages'])
+        rows = []
+        for r in records[-limit:]:
+            fields = r['fields']
+            if flagged_only and not fields.get('Auto Flagged'):
+                continue
+            raw_attachments = fields.get('Attachments') or []
+            rows.append(
+                {
+                    'clubKey': (fields.get('Club Email') or '').strip().lower(),
+                    'clubName': clubs.get((fields.get('Club Email') or '').strip().lower(), ''),
+                    'message': {
+                        'id': fields.get('App Id', r['id']),
+                        'channelId': fields.get('Channel Id', ''),
+                        'body': fields.get('Body', ''),
+                        'authorEmail': fields.get('Author Email', ''),
+                        'authorName': fields.get('Author Name', ''),
+                        'createdAt': fields.get('Created At', ''),
+                        'deleted': bool(fields.get('Deleted', False)),
+                        'autoFlagged': bool(fields.get('Auto Flagged', False)),
+                        'flagReason': fields.get('Flag Reason', ''),
+                        'attachments': [
+                            {
+                                'url': att.get('url', ''),
+                                'filename': att.get('filename', ''),
+                                'type': att.get('type', ''),
+                                'size': att.get('size', 0),
+                            }
+                            for att in raw_attachments
+                        ],
+                    },
+                }
+            )
+        return rows
 
     def load_lite(self, club_key: str) -> dict[str, Any] | None:
         return self.load(club_key, sections=['members'])

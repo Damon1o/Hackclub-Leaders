@@ -35,6 +35,8 @@ def default_dashboard_state(shop_items: list[ShopItem]) -> DashboardState:
         'cart': [],
         'orders': [],
         'itemRequests': [],
+        'reports': [],
+        'auditLog': [],
         'projects': [],
         'channels': [],
         'messages': [],
@@ -219,5 +221,7 @@ def playtest_state(shop_items: list[ShopItem] | None = None) -> DashboardState:
         'cart': [],
         'orders': [],
         'itemRequests': [],
+        'reports': [],
+        'auditLog': [],
         'newsletters': default_dashboard_state(shop_items)['newsletters'],
     }

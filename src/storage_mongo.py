@@ -40,6 +40,8 @@ CHILD_COLLECTIONS: Final[list[str]] = [
     'newsletters',
     'orders',
     'itemRequests',
+    'reports',
+    'auditLog',
     'projects',
     'channels',
     'messages',
@@ -77,6 +79,13 @@ INDEXES: Final[dict[str, list[_IndexSpec]]] = {
         ([('clubKey', ASCENDING)], False),
         ([('date', DESCENDING)], False),
     ],
+    # list_reports(): every club's reports, newest first.
+    'reports': [
+        ([('clubKey', ASCENDING)], False),
+        ([('createdAt', DESCENDING)], False),
+    ],
+    # load() reads one club's audit rows, newest first.
+    'auditLog': [([('clubKey', ASCENDING), ('at', DESCENDING)], False)],
     # list_pending_projects() filters Status across all clubs and sorts by
     # date; list_clubs() counts ships per club by (clubKey, status).
     'projects': [
@@ -94,6 +103,7 @@ INDEXES: Final[dict[str, list[_IndexSpec]]] = {
         ([('clubKey', ASCENDING), ('channelId', ASCENDING), ('createdAt', ASCENDING)], False),
         ([('clubKey', ASCENDING), ('createdAt', ASCENDING)], False),
         ([('clubKey', ASCENDING), ('parentId', ASCENDING), ('createdAt', ASCENDING)], False),
+        ([('autoFlagged', ASCENDING), ('createdAt', DESCENDING)], False),
     ],
     # One read cursor per (channel, member) — upserted, never duplicated.
     'chatReads': [
@@ -368,6 +378,61 @@ class MongoStorage:
                     (doc.get('clubKey') or '').strip().lower() or 'Unknown club',
                 ),
                 'request': self._to_item(doc),
+            }
+            for doc in docs
+        ]
+
+    def list_orders(self) -> list[dict[str, Any]]:
+        """Every shop order across all clubs, newest first."""
+        self._ensure_indexes_once()
+        club_names = self._club_names()
+        docs = self._find('orders', {}, sort=[('date', DESCENDING)])
+        return [
+            {
+                'clubKey': (doc.get('clubKey') or '').strip().lower(),
+                'clubName': club_names.get(
+                    (doc.get('clubKey') or '').strip().lower(),
+                    (doc.get('clubKey') or '').strip().lower() or 'Unknown club',
+                ),
+                'order': self._to_item(doc),
+            }
+            for doc in docs
+        ]
+
+    def list_reports(self) -> list[dict[str, Any]]:
+        """Every chat report across all clubs, newest first."""
+        self._ensure_indexes_once()
+        club_names = self._club_names()
+        docs = self._find('reports', {}, sort=[('createdAt', DESCENDING)])
+        return [
+            {
+                'clubKey': (doc.get('clubKey') or '').strip().lower(),
+                'clubName': club_names.get(
+                    (doc.get('clubKey') or '').strip().lower(),
+                    (doc.get('clubKey') or '').strip().lower() or 'Unknown club',
+                ),
+                'report': self._to_item(doc),
+            }
+            for doc in docs
+        ]
+
+    def list_messages(
+        self, limit: int = 200, flagged_only: bool = False
+    ) -> list[dict[str, Any]]:
+        """The newest chat messages across all clubs, for admin moderation.
+        With `flagged_only`, only auto-flagged messages come back."""
+        self._ensure_indexes_once()
+        club_names = self._club_names()
+        query: dict[str, Any] = {'autoFlagged': True} if flagged_only else {}
+        docs = self._find('messages', query, sort=[('createdAt', DESCENDING)], limit=limit)
+        return [
+            {
+                'clubKey': (doc.get('clubKey') or '').strip().lower(),
+                'clubName': club_names.get(
+                    (doc.get('clubKey') or '').strip().lower(),
+                    (doc.get('clubKey') or '').strip().lower() or 'Unknown club',
+                ),
+                'message': self._to_item(doc),
             }
             for doc in docs
         ]

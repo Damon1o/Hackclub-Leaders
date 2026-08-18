@@ -161,6 +161,45 @@ def remove_shop_item(slug: str) -> bool:
     return True
 
 
+def update_shop_item(
+    slug: str, name: str, cost: str, image_src: str, item_filter: str
+) -> ShopItem | None:
+    """Update an existing shop entry by slug. Returns the updated item, or
+    None when the slug doesn't match anything."""
+    global SHOP_ITEMS
+    slug = (slug or '').strip()
+    name = (name or '').strip()
+    if not name:
+        raise ValueError('Item name is required.')
+    item_filter = item_filter if item_filter in SHOP_FILTERS else 'Merch'
+    coins = _parse_coins(cost)
+    new_slug = _slugify(name)
+    with _SHOP_LOCK:
+        raw = _read_shop_raw()
+        found = False
+        for entry in raw:
+            if _slugify(entry.get('name', '')) != slug:
+                continue
+            if any(_slugify(e.get('name', '')) == new_slug for e in raw if e is not entry):
+                raise ValueError('An item with that name already exists.')
+            entry['name'] = name
+            entry['cost'] = coins
+            entry['image-src'] = (image_src or '').strip()
+            entry['filter'] = item_filter
+            found = True
+        if not found:
+            return None
+        _write_shop_raw(raw)
+        SHOP_ITEMS = load_shop_items()
+    return {
+        'id': new_slug,
+        'name': name,
+        'cost': coins,
+        'image_src': (image_src or '').strip(),
+        'filter': item_filter,
+    }
+
+
 def _sniff_image(data: bytes) -> tuple[str | None, str | None]:
     if data[:8] == b'\x89PNG\r\n\x1a\n':
         return 'image/png', 'png'

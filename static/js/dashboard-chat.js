@@ -412,7 +412,10 @@ window.DashboardChat = function (ctx) {
         const deleteBtn = (mine || isLeader)
             ? '<button class="chat-msg-action" type="button" data-delete-msg aria-label="Delete message">Delete</button>'
             : '';
-        return `<span class="chat-message-actions">${reactBtns}${replyBtn}${editBtn}${deleteBtn}</span>`;
+        const reportBtn = mine
+            ? ''
+            : '<button class="chat-msg-action" type="button" data-report-msg aria-label="Report message">Report</button>';
+        return `<span class="chat-message-actions">${reactBtns}${replyBtn}${editBtn}${deleteBtn}${reportBtn}</span>`;
     }
 
     function editedBadgeMarkup(message) {
@@ -513,6 +516,21 @@ window.DashboardChat = function (ctx) {
                 `/api/dashboard/chat/channels/${encodeURIComponent(S.activeId)}/messages/${encodeURIComponent(mid)}`,
                 { method: 'DELETE' });
             applyMessageDelete(row);
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    }
+
+    async function reportMessage(row) {
+        const mid = row && row.dataset.mid;
+        if (!mid || !S.activeId) return;
+        const reason = window.prompt('Why are you reporting this message? (optional)');
+        if (reason === null) return;
+        try {
+            await apiRequest(
+                `/api/dashboard/chat/channels/${encodeURIComponent(S.activeId)}/messages/${encodeURIComponent(mid)}/report`,
+                { method: 'POST', body: { reason: (reason || '').slice(0, 200) } });
+            showToast('Report sent — club leaders and admins will review it.');
         } catch (error) {
             showToast(error.message, 'error');
         }
@@ -1198,6 +1216,7 @@ window.DashboardChat = function (ctx) {
             prepareNewChannel: prepareNewChannel,
             reactionsMarkup: reactionsMarkup,
             renderChat: renderChat,
+            reportMessage: reportMessage,
             resetJumpButton: resetJumpButton,
             runChatCommand: runChatCommand,
             saveInlineEdit: saveInlineEdit,

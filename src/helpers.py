@@ -11,6 +11,13 @@ from typing import Any, Final, TypeVar, cast
 
 from flask import flash, g, jsonify, redirect, request, session, url_for
 
+from .helpers_bans import (
+    BANS_JSON_PATH,
+    ban_email,
+    is_banned_email,
+    load_banned_emails,
+    unban_email,
+)
 from .helpers_demo import default_dashboard_state as _default_dashboard_state
 from .helpers_demo import playtest_state as _playtest_state
 from .helpers_shop import (
@@ -23,8 +30,9 @@ from .helpers_shop import (
     get_sticker_files,
     load_shop_items,
     remove_shop_item,
+    update_shop_item,
 )
-from .helpers_state import award_coins_if_unprocessed
+from .helpers_state import award_coins_if_unprocessed, log_action
 from .helpers_types import (
     Channel,
     ClubState,
@@ -46,6 +54,7 @@ from .helpers_types import (
 )
 from .helpers_validation import (
     ADMIN_REVIEW_STATUSES,
+    AUTO_FLAG_WORDS,
     DEFAULT_PAGE_SIZE,
     EVENT_REPEAT_OPTIONS,
     MAX_PAGE_SIZE,
@@ -54,6 +63,7 @@ from .helpers_validation import (
     _load_admin_club,
     _persist_club,
     _positive_int,
+    auto_flag_reasons,
     channel_from_payload,
     clean_text,
     event_from_payload,
@@ -90,6 +100,12 @@ __all__ = [
     'Settings',
     'ShopItem',
     'Workshop',
+    # Banned emails
+    'BANS_JSON_PATH',
+    'ban_email',
+    'is_banned_email',
+    'load_banned_emails',
+    'unban_email',
     # Shop catalog
     'SHOP_FILTERS',
     'SHOP_ITEMS',
@@ -98,14 +114,17 @@ __all__ = [
     'get_sticker_files',
     'load_shop_items',
     'remove_shop_item',
+    'update_shop_item',
     # Validation / payload helpers
     'ADMIN_REVIEW_STATUSES',
+    'AUTO_FLAG_WORDS',
     'DEFAULT_PAGE_SIZE',
     'EVENT_REPEAT_OPTIONS',
     'MAX_PAGE_SIZE',
     '_find_club_by_project',
     '_load_admin_club',
     '_persist_club',
+    'auto_flag_reasons',
     '_positive_int',
     'channel_from_payload',
     'clean_text',
@@ -123,6 +142,7 @@ __all__ = [
     '_sniff_image',
     '_upload_to_blob',
     'award_coins_if_unprocessed',
+    'log_action',
 ]
 
 # ── Config constants (derived from env) ────────────────────────────────────────
@@ -366,6 +386,8 @@ STATE_SECTIONS: Final[tuple[str, ...]] = (
     'newsletters',
     'orders',
     'itemRequests',
+    'reports',
+    'auditLog',
     'projects',
     'channels',
     'messages',
@@ -543,6 +565,12 @@ MAX_SESSION_MESSAGES: Final[int] = 30
 # Same reasoning as MAX_SESSION_MESSAGES, for the coin ledger.
 MAX_SESSION_LEDGER_ENTRIES: Final[int] = 100
 
+# Same reasoning again, for chat reports.
+MAX_SESSION_REPORTS: Final[int] = 50
+
+# Same reasoning again, for the admin audit log.
+MAX_SESSION_AUDIT_ENTRIES: Final[int] = 100
+
 
 class StateTooLarge(Exception):  # noqa: N818
     pass
@@ -568,6 +596,10 @@ def save_dashboard_state(state: DashboardState) -> None:
         # the persisted list here only drops old audit rows — never coins.
         if persisted.get('ledger'):
             persisted['ledger'] = persisted['ledger'][-MAX_SESSION_LEDGER_ENTRIES:]
+        if persisted.get('reports'):
+            persisted['reports'] = persisted['reports'][-MAX_SESSION_REPORTS:]
+        if persisted.get('auditLog'):
+            persisted['auditLog'] = persisted['auditLog'][-MAX_SESSION_AUDIT_ENTRIES:]
         if _state_cookie_size(cast(DashboardState, persisted)) > MAX_STATE_COOKIE_BYTES:
             raise StateTooLarge()
         backend.save(_club_key(), persisted)

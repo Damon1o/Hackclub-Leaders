@@ -69,5 +69,8 @@ graphify-out/
 .DS_Store
 Thumbs.db
 
+# Admin ban list (created at runtime on first ban)
+banned_emails.json
+
 # Local git worktrees
 .worktrees/

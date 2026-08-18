@@ -83,6 +83,8 @@ MESSAGE_FIELDS: Final[list[tuple[str, str]]] = [
     ('body', 'Body'),
     ('createdAt', 'Created At'),
     ('linkPreview', 'Metadata'),
+    ('autoFlagged', 'Auto Flagged'),
+    ('flagReason', 'Flag Reason'),
 ]
 NOTIFICATION_FIELDS: Final[list[tuple[str, str]]] = [
     ('type', 'Type'),
@@ -90,6 +92,21 @@ NOTIFICATION_FIELDS: Final[list[tuple[str, str]]] = [
     ('message', 'Message'),
     ('read', 'Read'),
     ('createdAt', 'Created At'),
+]
+REPORT_FIELDS: Final[list[tuple[str, str]]] = [
+    ('channelId', 'Channel Id'),
+    ('messageId', 'Message Id'),
+    ('reason', 'Reason'),
+    ('reporterEmail', 'Reporter Email'),
+    ('reporterName', 'Reporter Name'),
+    ('createdAt', 'Created At'),
+    ('status', 'Status'),
+]
+AUDIT_FIELDS: Final[list[tuple[str, str]]] = [
+    ('actor', 'Actor'),
+    ('action', 'Action'),
+    ('target', 'Target'),
+    ('at', 'At'),
 ]
 SETTINGS_FIELDS: Final[list[tuple[str, str]]] = [
     ('clubName', 'Club Name'),

@@ -24,11 +24,13 @@ from .helpers import (
     _item_id,
     _storage,
     _viewer_email,
+    auto_flag_reasons,
     channel_from_payload,
     clean_text,
     feature_enabled,
     find_by_id,
     get_dashboard_state,
+    is_banned_email,
     json_error,
     json_payload,
     login_required,
@@ -490,6 +492,9 @@ def register(app):
         if not channel:
             return json_error('Channel not found.', 404)
 
+        if is_banned_email(_viewer_email()):
+            return json_error('This account is banned from posting.', 403)
+
         body = clean_text(json_payload().get('body'), max_len=MAX_MESSAGE_LEN)
         if not body:
             return json_error('Type a message first.')
@@ -531,6 +536,10 @@ def register(app):
         )
         message['mentions'] = mention_emails
         message['mentionsEveryone'] = mentions_everyone
+        flag_reasons = auto_flag_reasons(body)
+        if flag_reasons:
+            message['autoFlagged'] = True
+            message['flagReason'] = flag_reasons
         if body and feature_enabled('FEATURE_CHAT_LINK_PREVIEWS'):
             url = first_url(body)
             if url:
@@ -673,6 +682,13 @@ def register(app):
 
         message['body'] = body
         message['editedAt'] = utc_iso()
+        flag_reasons = auto_flag_reasons(body)
+        if flag_reasons:
+            message['autoFlagged'] = True
+            message['flagReason'] = flag_reasons
+        else:
+            message.pop('autoFlagged', None)
+            message.pop('flagReason', None)
         save_dashboard_state(state)
         return flask.jsonify({'message': message})
 
@@ -705,6 +721,47 @@ def register(app):
         message['body'] = ''
         save_dashboard_state(state)
         return flask.jsonify({'message': message})
+
+    # ── Reporting ─────────────────────────────────────────────────────────────
+
+    @app.post('/api/dashboard/chat/channels/<channel_id>/messages/'
+              '<message_id>/report')
+    @login_required
+    def api_chat_message_report(channel_id, message_id):
+        csrf_error = require_dashboard_csrf()
+        if csrf_error:
+            return csrf_error
+
+        state = get_dashboard_state()
+        message = _find_message(state, channel_id, message_id)
+        if not message:
+            return json_error('Message not found.', 404)
+
+        payload = json_payload()
+        reason = clean_text(payload.get('reason'), max_len=200)
+        reports = state.setdefault('reports', [])
+        reporter_email = _viewer_email()
+        # One open report per (reporter, message) — repeat clicks update it.
+        for report in reports:
+            if report.get('messageId') == message_id and report.get('reporterEmail') == reporter_email:
+                if reason:
+                    report['reason'] = reason
+                save_dashboard_state(state)
+                return flask.jsonify({'report': report, 'state': state})
+
+        report = {
+            'id': _item_id('report'),
+            'channelId': channel_id,
+            'messageId': message_id,
+            'reason': reason,
+            'reporterEmail': reporter_email,
+            'reporterName': (session.get('user') or {}).get('name') or reporter_email,
+            'createdAt': utc_iso(),
+            'status': 'Open',
+        }
+        reports.append(report)
+        save_dashboard_state(state)
+        return flask.jsonify({'report': report, 'state': state})
 
     # ── Reactions ─────────────────────────────────────────────────────────────
 

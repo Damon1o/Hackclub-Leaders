@@ -2141,6 +2141,7 @@ const CHECKLIST_ITEMS = [
     function prepareNewChannel(...args) { return chat && chat.prepareNewChannel(...args); }
     function reactionsMarkup(...args) { return chat && chat.reactionsMarkup(...args); }
     function renderChat(...args) { return chat && chat.renderChat(...args); }
+    function reportMessage(...args) { return chat && chat.reportMessage(...args); }
     function resetJumpButton(...args) { return chat && chat.resetJumpButton(...args); }
     function runChatCommand(...args) { return chat && chat.runChatCommand(...args); }
     function saveInlineEdit(...args) { return chat && chat.saveInlineEdit(...args); }
@@ -2193,8 +2194,50 @@ const CHECKLIST_ITEMS = [
     }
 
     // ── Admin: item requests ─────────────────────────────────────────────────
-    // The admin page is server-rendered outside dashboardState, so this panel
-    // fetches its own data and paints the pending requests from every club.
+    // Compact animated list (vanilla port of React Bits' AnimatedList):
+    // scrollable container, gradient fades, arrow/Tab navigation, Enter to
+    // approve the selected request, per-row reject button.
+
+    let adminListSelected = -1;
+    let adminListRows = [];
+    let adminListKeyHandler = null;
+
+    function adminListSelect(index) {
+        const list = $('#adminItemRequestList');
+        if (!list) return;
+        adminListSelected = Math.max(-1, Math.min(index, adminListRows.length - 1));
+        list.querySelectorAll('.ailist-item').forEach((row, i) => {
+            row.classList.toggle('selected', i === adminListSelected);
+        });
+        const selectedRow = list.querySelector(`[data-index="${adminListSelected}"]`);
+        if (selectedRow && selectedRow.scrollIntoView) {
+            selectedRow.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    }
+
+    function bindAdminListKeys(list) {
+        if (adminListKeyHandler) window.removeEventListener('keydown', adminListKeyHandler);
+        adminListKeyHandler = (event) => {
+            if (!document.body.contains(list)) {
+                window.removeEventListener('keydown', adminListKeyHandler);
+                adminListKeyHandler = null;
+                return;
+            }
+            if (event.key === 'ArrowDown' || (event.key === 'Tab' && !event.shiftKey)) {
+                event.preventDefault();
+                adminListSelect(adminListSelected + 1);
+            } else if (event.key === 'ArrowUp' || (event.key === 'Tab' && event.shiftKey)) {
+                event.preventDefault();
+                adminListSelect(adminListSelected - 1);
+            } else if (event.key === 'Enter' && adminListSelected >= 0) {
+                event.preventDefault();
+                const row = list.querySelector(`[data-index="${adminListSelected}"]`);
+                const approve = row && row.querySelector('[data-approve-item-request]');
+                if (approve) approve.click();
+            }
+        };
+        window.addEventListener('keydown', adminListKeyHandler);
+    }
 
     async function renderAdminItemRequests() {
         const list = $('#adminItemRequestList');
@@ -2204,31 +2247,71 @@ const CHECKLIST_ITEMS = [
             const pending = (payload.itemRequests || []).filter(
                 (entry) => (entry.request?.status || 'Submitted') === 'Submitted');
             if (!pending.length) {
+                adminListRows = [];
                 list.innerHTML = `<div class="empty-state"><p>${
                     escapeHtml(list.dataset.emptyText || 'No pending item requests.')}</p></div>`;
                 return;
             }
-            list.innerHTML = pending.map((entry) => {
-                const req = entry.request || {};
-                const key = `${entry.clubKey}::${req.id}`;
-                const note = req.note ? ` — ${escapeHtml(req.note)}` : '';
-                const when = req.date ? ` · ${escapeHtml(req.date)}` : '';
-                return `
-                <article class="admin-review-item">
-                    <div class="admin-review-main">
-                        <h3>${escapeHtml(req.name || 'Item')}</h3>
-                        <p class="admin-review-meta">
-                            <strong>${escapeHtml(entry.clubName || 'Club')}</strong>${note}${when}
-                        </p>
+            adminListRows = pending;
+            if (adminListSelected >= adminListRows.length) adminListSelected = -1;
+            list.innerHTML = `
+                <div class="ailist">
+                    <div class="ailist-scroll" role="listbox" aria-label="Item requests">
+                        ${pending.map((entry, index) => {
+                            const req = entry.request || {};
+                            const key = `${entry.clubKey}::${req.id}`;
+                            const note = req.note ? ` — ${escapeHtml(req.note)}` : '';
+                            const when = req.date ? ` · ${escapeHtml(req.date)}` : '';
+                            return `
+                            <div class="ailist-item ${index === adminListSelected ? 'selected' : ''}"
+                                data-index="${index}" role="option" aria-selected="${index === adminListSelected}"
+                                tabindex="0">
+                                <div class="ailist-main">
+                                    <span class="ailist-name">${escapeHtml(req.name || 'Item')}</span>
+                                    <span class="ailist-meta">${escapeHtml(entry.clubName || 'Club')}${note}${when}</span>
+                                </div>
+                                <div class="ailist-actions">
+                                    <button class="btn-primary small" type="button"
+                                        data-approve-item-request data-admin-item-request="${escapeHtml(key)}">Approve</button>
+                                    <button class="text-button" type="button"
+                                        data-reject-item-request data-admin-item-request="${escapeHtml(key)}">Reject</button>
+                                </div>
+                            </div>`;
+                        }).join('')}
                     </div>
-                    <div class="admin-review-actions">
-                        <button class="btn-primary small" type="button"
-                            data-approve-item-request data-admin-item-request="${escapeHtml(key)}">Approve</button>
-                        <button class="btn-secondary small" type="button"
-                            data-reject-item-request data-admin-item-request="${escapeHtml(key)}">Reject</button>
-                    </div>
-                </article>`;
-            }).join('');
+                    <div class="ailist-gradient ailist-gradient-top"></div>
+                    <div class="ailist-gradient ailist-gradient-bottom"></div>
+                </div>`;
+            list.querySelectorAll('.ailist-item').forEach((row) => {
+                row.addEventListener('mouseenter', () => adminListSelect(Number(row.dataset.index)));
+                row.addEventListener('focus', () => adminListSelect(Number(row.dataset.index)));
+            });
+            const scroller = list.querySelector('.ailist-scroll');
+            if ('IntersectionObserver' in window) {
+                const reveal = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('in');
+                            reveal.unobserve(entry.target);
+                        }
+                    });
+                }, { root: scroller, threshold: 0.3 });
+                list.querySelectorAll('.ailist-item').forEach((row) => reveal.observe(row));
+            } else {
+                list.querySelectorAll('.ailist-item').forEach((row) => row.classList.add('in'));
+            }
+            scroller.addEventListener('scroll', () => {
+                const { scrollTop, scrollHeight, clientHeight } = scroller;
+                const top = list.querySelector('.ailist-gradient-top');
+                const bottom = list.querySelector('.ailist-gradient-bottom');
+                if (top) top.style.opacity = String(Math.min(scrollTop / 50, 1));
+                if (bottom) {
+                    bottom.style.opacity = String(
+                        scrollHeight <= clientHeight ? 0 : Math.min((scrollHeight - scrollTop - clientHeight) / 50, 1)
+                    );
+                }
+            });
+            bindAdminListKeys(list);
         } catch (error) {
             list.innerHTML = `<div class="empty-state"><p>${escapeHtml(error.message)}</p></div>`;
         }
@@ -2251,11 +2334,367 @@ const CHECKLIST_ITEMS = [
         }
     }
 
+    // ── Admin: orders ─────────────────────────────────────────────────────────
+
+    async function renderAdminOrders() {
+        const list = $('#adminOrderList');
+        if (!list) return;
+        try {
+            const payload = await apiRequest('/api/admin/orders');
+            const orders = payload.orders || [];
+            if (!orders.length) {
+                list.innerHTML = `<div class="empty-state"><p>${
+                    escapeHtml(list.dataset.emptyText || 'No orders yet.')}</p></div>`;
+                return;
+            }
+            list.innerHTML = orders.map((entry) => {
+                const order = entry.order || {};
+                const key = `${entry.clubKey}::${order.id}`;
+                const names = (order.items || [])
+                    .map((item) => `${escapeHtml(item.name || item.id || 'Item')} ×${item.quantity || 1}`)
+                    .join(', ');
+                const status = escapeHtml(order.status || 'Requested');
+                const statusBadge = order.status === 'Fulfilled'
+                    ? '<span class="badge badge-up">Fulfilled</span>'
+                    : `<span class="badge badge-pending">${status}</span>`;
+                const fulfill = order.status !== 'Fulfilled' && order.status !== 'Cancelled'
+                    ? `<button class="btn-primary small" type="button"
+                        data-fulfill-order data-admin-order="${escapeHtml(key)}">Mark fulfilled</button>`
+                    : '';
+                return `
+                <article class="admin-review-item">
+                    <div class="admin-review-main">
+                        <h3>${names || 'Order'}</h3>
+                        <p class="admin-review-meta">
+                            <strong>${escapeHtml(entry.clubName || 'Club')}</strong>
+                            · ${escapeHtml(order.date || '')}
+                        </p>
+                    </div>
+                    <div class="admin-review-actions">
+                        ${statusBadge}
+                        ${fulfill}
+                    </div>
+                </article>`;
+            }).join('');
+        } catch (error) {
+            list.innerHTML = `<div class="empty-state"><p>${escapeHtml(error.message)}</p></div>`;
+        }
+    }
+
+    async function adminOrderFulfill(trigger) {
+        const [clubKey, orderId] = String(trigger.dataset.adminOrder || '').split('::');
+        if (!clubKey || !orderId) return;
+        trigger.disabled = true;
+        try {
+            await apiRequest(`/api/admin/orders/${encodeURIComponent(clubKey)}/${encodeURIComponent(orderId)}`, {
+                method: 'PATCH',
+                body: { status: 'Fulfilled' },
+            });
+            showToast('Order marked fulfilled.');
+            renderAdminOrders();
+        } catch (error) {
+            trigger.disabled = false;
+            showToast(error.message, 'error');
+        }
+    }
+
+    // ── Admin: chat moderation ────────────────────────────────────────────────
+
+    async function renderAdminChat() {
+        const list = $('#adminChatList');
+        if (!list) return;
+        try {
+            const payload = await apiRequest('/api/admin/chat/messages?flagged=1');
+            const messages = payload.messages || [];
+            if (!messages.length) {
+                list.innerHTML = `<div class="empty-state"><p>${
+                    escapeHtml(list.dataset.emptyText || 'No flagged messages.')}</p></div>`;
+                return;
+            }
+            list.innerHTML = messages.map((entry) => {
+                const msg = entry.message || {};
+                const key = `${entry.clubKey}::${msg.id}`;
+                const body = msg.deleted
+                    ? '<em>(deleted)</em>'
+                    : escapeHtml(String(msg.body || '').slice(0, 300));
+                const reason = msg.flagReason ? ` · flagged: ${escapeHtml(msg.flagReason)}` : '';
+                const when = msg.createdAt ? ` · ${escapeHtml(String(msg.createdAt).slice(0, 16))}` : '';
+                return `
+                <article class="admin-review-item">
+                    <div class="admin-review-main">
+                        <p class="admin-review-meta">
+                            <strong>${escapeHtml(msg.authorName || msg.authorEmail || 'Unknown')}</strong>
+                            in <strong>${escapeHtml(entry.clubName || 'Club')}</strong>${when}${reason}
+                        </p>
+                        <p class="admin-review-desc">${body}</p>
+                    </div>
+                    <div class="admin-review-actions">
+                        <button class="btn-primary small" type="button"
+                            data-admin-delete-message data-admin-message="${escapeHtml(key)}">Delete</button>
+                        <button class="btn-secondary small" type="button"
+                            data-admin-dismiss-message data-admin-message="${escapeHtml(key)}">Keep</button>
+                    </div>
+                </article>`;
+            }).join('');
+        } catch (error) {
+            list.innerHTML = `<div class="empty-state"><p>${escapeHtml(error.message)}</p></div>`;
+        }
+    }
+
+    async function adminChatMessageDelete(trigger) {
+        const [clubKey, messageId] = String(trigger.dataset.adminMessage || '').split('::');
+        if (!clubKey || !messageId) return;
+        trigger.disabled = true;
+        try {
+            await apiRequest(`/api/admin/chat/messages/${encodeURIComponent(clubKey)}/${encodeURIComponent(messageId)}`, {
+                method: 'DELETE',
+            });
+            showToast('Message deleted.');
+            renderAdminChat();
+        } catch (error) {
+            trigger.disabled = false;
+            showToast(error.message, 'error');
+        }
+    }
+
+    async function adminChatMessageDismiss(trigger) {
+        const [clubKey, messageId] = String(trigger.dataset.adminMessage || '').split('::');
+        if (!clubKey || !messageId) return;
+        trigger.disabled = true;
+        try {
+            await apiRequest(`/api/admin/chat/messages/${encodeURIComponent(clubKey)}/${encodeURIComponent(messageId)}`, {
+                method: 'PATCH',
+            });
+            showToast('Flag cleared — message stays.');
+            renderAdminChat();
+        } catch (error) {
+            trigger.disabled = false;
+            showToast(error.message, 'error');
+        }
+    }
+
+    // ── Admin: reports ────────────────────────────────────────────────────────
+
+    async function renderAdminReports() {
+        const list = $('#adminReportList');
+        if (!list) return;
+        try {
+            const payload = await apiRequest('/api/admin/reports');
+            const reports = payload.reports || [];
+            if (!reports.length) {
+                list.innerHTML = `<div class="empty-state"><p>${
+                    escapeHtml(list.dataset.emptyText || 'No reports.')}</p></div>`;
+                return;
+            }
+            list.innerHTML = reports.map((entry) => {
+                const report = entry.report || {};
+                const key = `${entry.clubKey}::${report.id}`;
+                const reason = report.reason ? ` — ${escapeHtml(report.reason)}` : '';
+                const when = report.createdAt ? ` · ${escapeHtml(String(report.createdAt).slice(0, 16))}` : '';
+                const open = report.status === 'Open';
+                const actions = open
+                    ? `<button class="btn-primary small" type="button"
+                            data-resolve-report data-admin-report="${escapeHtml(key)}">Resolve</button>
+                       <button class="btn-secondary small" type="button"
+                            data-dismiss-report data-admin-report="${escapeHtml(key)}">Dismiss</button>`
+                    : `<span class="badge ${report.status === 'Resolved' ? 'badge-up' : ''}">${escapeHtml(report.status || 'Closed')}</span>`;
+                return `
+                <article class="admin-review-item">
+                    <div class="admin-review-main">
+                        <h3>Message reported</h3>
+                        <p class="admin-review-meta">
+                            by <strong>${escapeHtml(report.reporterName || report.reporterEmail || 'Unknown')}</strong>
+                            in <strong>${escapeHtml(entry.clubName || 'Club')}</strong>${when}
+                        </p>
+                        ${reason ? `<p class="admin-review-desc">Reason: ${reason}</p>` : ''}
+                    </div>
+                    <div class="admin-review-actions">${actions}</div>
+                </article>`;
+            }).join('');
+        } catch (error) {
+            list.innerHTML = `<div class="empty-state"><p>${escapeHtml(error.message)}</p></div>`;
+        }
+    }
+
+    async function adminReportAction(trigger, status, message) {
+        const [clubKey, reportId] = String(trigger.dataset.adminReport || '').split('::');
+        if (!clubKey || !reportId) return;
+        trigger.disabled = true;
+        try {
+            await apiRequest(`/api/admin/reports/${encodeURIComponent(clubKey)}/${encodeURIComponent(reportId)}`, {
+                method: 'PATCH',
+                body: { status },
+            });
+            showToast(message);
+            renderAdminReports();
+        } catch (error) {
+            trigger.disabled = false;
+            showToast(error.message, 'error');
+        }
+    }
+
+    // ── Admin: banned emails ──────────────────────────────────────────────────
+
+    async function renderAdminBans() {
+        const list = $('#adminBanList');
+        if (!list) return;
+        try {
+            const payload = await apiRequest('/api/admin/banned-emails');
+            const banned = payload.bannedEmails || [];
+            if (!banned.length) {
+                list.innerHTML = '<li class="admin-empty-note">No banned accounts.</li>';
+                return;
+            }
+            list.innerHTML = banned.map((email) => `
+                <li>
+                    <span>${escapeHtml(email)}</span>
+                    <button class="text-button" type="button" data-unban-email="${escapeHtml(email)}">Unban</button>
+                </li>`).join('');
+        } catch (error) {
+            list.innerHTML = `<li class="admin-empty-note">${escapeHtml(error.message)}</li>`;
+        }
+    }
+    // ── Admin: shop catalog ───────────────────────────────────────────────────
+    // Each catalog row is a server-rendered form; save ships the row's fields to
+    // the PATCH endpoint, delete hits the DELETE endpoint, then the page
+    // reloads so the table reflects the server's shop JSON.
+    // Selection/keyboard nav mirrors the item-request list, but is suppressed
+    // while the user is typing in a row's inputs.
+
+    let shopListSelected = -1;
+    let shopListKeyHandler = null;
+
+    function shopListSelect(index) {
+        const list = $('#adminShopCatalogList');
+        if (!list) return;
+        const rows = list.querySelectorAll('.ailist-item');
+        shopListSelected = Math.max(-1, Math.min(index, rows.length - 1));
+        rows.forEach((row, i) => row.classList.toggle('selected', i === shopListSelected));
+        const selectedRow = list.querySelector(`[data-index="${shopListSelected}"]`);
+        if (selectedRow && selectedRow.scrollIntoView) {
+            selectedRow.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    }
+
+    function initAdminShopList() {
+        const list = $('#adminShopCatalogList');
+        if (!list) return;
+        list.querySelectorAll('.ailist-item').forEach((row) => {
+            row.addEventListener('mouseenter', () => shopListSelect(Number(row.dataset.index)));
+            row.addEventListener('focus', () => shopListSelect(Number(row.dataset.index)));
+        });
+        const scroller = list.querySelector('.ailist-scroll');
+        if (scroller) {
+            if ('IntersectionObserver' in window) {
+                const reveal = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('in');
+                            reveal.unobserve(entry.target);
+                        }
+                    });
+                }, { root: scroller, threshold: 0.3 });
+                list.querySelectorAll('.ailist-item').forEach((row) => reveal.observe(row));
+            } else {
+                list.querySelectorAll('.ailist-item').forEach((row) => row.classList.add('in'));
+            }
+            scroller.addEventListener('scroll', () => {
+                const { scrollTop, scrollHeight, clientHeight } = scroller;
+                const top = list.querySelector('.ailist-gradient-top');
+                const bottom = list.querySelector('.ailist-gradient-bottom');
+                if (top) top.style.opacity = String(Math.min(scrollTop / 50, 1));
+                if (bottom) {
+                    bottom.style.opacity = String(
+                        scrollHeight <= clientHeight ? 0 : Math.min((scrollHeight - scrollTop - clientHeight) / 50, 1)
+                    );
+                }
+            });
+        }
+        if (shopListKeyHandler) window.removeEventListener('keydown', shopListKeyHandler);
+        shopListKeyHandler = (event) => {
+            if (!document.body.contains(list)) return;
+            const tag = (event.target && event.target.tagName) || '';
+            if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+            if (event.key === 'ArrowDown' || (event.key === 'Tab' && !event.shiftKey)) {
+                event.preventDefault();
+                shopListSelect(shopListSelected + 1);
+            } else if (event.key === 'ArrowUp' || (event.key === 'Tab' && event.shiftKey)) {
+                event.preventDefault();
+                shopListSelect(shopListSelected - 1);
+            } else if (event.key === 'Enter' && shopListSelected >= 0) {
+                event.preventDefault();
+                const row = list.querySelector(`[data-index="${shopListSelected}"]`);
+                const save = row && row.querySelector('[data-shop-save]');
+                if (save) save.click();
+            }
+        };
+        window.addEventListener('keydown', shopListKeyHandler);
+    }
+
+    async function adminShopCatalogSave(trigger) {
+        const row = trigger.closest('[data-shop-row]');
+        if (!row) return;
+        const slug = String(trigger.dataset.shopItem || '');
+        trigger.disabled = true;
+        try {
+            const payload = {};
+            row.querySelectorAll('input[name], select[name]').forEach((input) => {
+                payload[input.name] = input.value;
+            });
+            await apiRequest(`/api/admin/shop-items/${encodeURIComponent(slug)}`, {
+                method: 'PATCH',
+                body: payload,
+            });
+            showToast('Shop item updated.');
+            setTimeout(() => window.location.reload(), 350);
+        } catch (error) {
+            trigger.disabled = false;
+            showToast(error.message, 'error');
+        }
+    }
+
+    async function adminShopCatalogDelete(trigger) {
+        const slug = String(trigger.dataset.shopItem || '');
+        if (!slug) return;
+        if (!window.confirm('Remove this item from the shop?')) return;
+        trigger.disabled = true;
+        try {
+            await apiRequest(`/api/admin/shop-items/${encodeURIComponent(slug)}`, {
+                method: 'DELETE',
+            });
+            showToast('Shop item removed.');
+            setTimeout(() => window.location.reload(), 350);
+        } catch (error) {
+            trigger.disabled = false;
+            showToast(error.message, 'error');
+        }
+    }
+
     function setupGlobalEvents() {
         document.addEventListener('input', (event) => {
             if (event.target.id === 'shopSearch') {
                 shopSearch = event.target.value;
                 renderShop();
+            }
+        });
+        document.addEventListener('change', async (event) => {
+            const roleSelect = event.target.closest('.admin-member-role');
+            if (!roleSelect) return;
+            const row = roleSelect.closest('[data-admin-member]');
+            if (!row) return;
+            const [clubKey, memberId] = String(row.dataset.adminMember || '').split('::');
+            if (!clubKey || !memberId) return;
+            roleSelect.disabled = true;
+            try {
+                await apiRequest(`/api/admin/clubs/${encodeURIComponent(clubKey)}/members/${encodeURIComponent(memberId)}`, {
+                    method: 'PATCH',
+                    body: { role: roleSelect.value },
+                });
+                showToast('Member role updated.');
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                roleSelect.disabled = false;
             }
         });
         document.addEventListener('click', async (event) => {
@@ -2271,6 +2710,27 @@ const CHECKLIST_ITEMS = [
                 return;
             }
 
+            const removeMember = event.target.closest('.admin-member-remove');
+            if (removeMember) {
+                const row = removeMember.closest('[data-admin-member]');
+                if (!row) return;
+                const [clubKey, memberId] = String(row.dataset.adminMember || '').split('::');
+                if (!clubKey || !memberId) return;
+                if (!window.confirm('Remove this member from the club?')) return;
+                removeMember.disabled = true;
+                try {
+                    await apiRequest(`/api/admin/clubs/${encodeURIComponent(clubKey)}/members/${encodeURIComponent(memberId)}`, {
+                        method: 'DELETE',
+                    });
+                    showToast('Member removed.');
+                    row.remove();
+                } catch (error) {
+                    removeMember.disabled = false;
+                    showToast(error.message, 'error');
+                }
+                return;
+            }
+
             const approveItemRequest = event.target.closest('[data-approve-item-request]');
             if (approveItemRequest) {
                 await adminItemRequestAction(approveItemRequest, 'approved', 'Item approved — added to the shop.');
@@ -2279,6 +2739,62 @@ const CHECKLIST_ITEMS = [
             const rejectItemRequest = event.target.closest('[data-reject-item-request]');
             if (rejectItemRequest) {
                 await adminItemRequestAction(rejectItemRequest, 'rejected', 'Item request rejected.');
+                return;
+            }
+
+            const saveShopItem = event.target.closest('[data-shop-save]');
+            if (saveShopItem) {
+                await adminShopCatalogSave(saveShopItem);
+                return;
+            }
+            const deleteShopItem = event.target.closest('[data-shop-delete]');
+            if (deleteShopItem) {
+                await adminShopCatalogDelete(deleteShopItem);
+                return;
+            }
+
+            const fulfillOrder = event.target.closest('[data-fulfill-order]');
+            if (fulfillOrder) {
+                await adminOrderFulfill(fulfillOrder);
+                return;
+            }
+
+            const deleteChatMessage = event.target.closest('[data-admin-delete-message]');
+            if (deleteChatMessage) {
+                await adminChatMessageDelete(deleteChatMessage);
+                return;
+            }
+
+            const dismissChatMessage = event.target.closest('[data-admin-dismiss-message]');
+            if (dismissChatMessage) {
+                await adminChatMessageDismiss(dismissChatMessage);
+                return;
+            }
+
+            const resolveReport = event.target.closest('[data-resolve-report]');
+            if (resolveReport) {
+                await adminReportAction(resolveReport, 'Resolved', 'Report resolved.');
+                return;
+            }
+            const dismissReport = event.target.closest('[data-dismiss-report]');
+            if (dismissReport) {
+                await adminReportAction(dismissReport, 'Dismissed', 'Report dismissed.');
+                return;
+            }
+
+            const unbanBtn = event.target.closest('[data-unban-email]');
+            if (unbanBtn) {
+                unbanBtn.disabled = true;
+                try {
+                    await apiRequest(`/api/admin/banned-emails/${encodeURIComponent(unbanBtn.dataset.unbanEmail)}`, {
+                        method: 'DELETE',
+                    });
+                    showToast('Account unbanned.');
+                    renderAdminBans();
+                } catch (error) {
+                    unbanBtn.disabled = false;
+                    showToast(error.message, 'error');
+                }
                 return;
             }
 
@@ -2364,6 +2880,12 @@ const CHECKLIST_ITEMS = [
             const deleteMsgBtn = event.target.closest('[data-delete-msg]');
             if (deleteMsgBtn) {
                 await deleteMessage(deleteMsgBtn.closest('.chat-message'));
+                return;
+            }
+
+            const reportMsgBtn = event.target.closest('[data-report-msg]');
+            if (reportMsgBtn) {
+                await reportMessage(reportMsgBtn.closest('.chat-message'));
                 return;
             }
 
@@ -3203,6 +3725,42 @@ const CHECKLIST_ITEMS = [
             }
         });
 
+        $('#adminBanForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.currentTarget;
+            setFormError('adminBanFormError', '');
+            try {
+                const result = await apiRequest('/api/admin/banned-emails', {
+                    method: 'POST',
+                    body: formObject(form),
+                });
+                showToast(result.added ? 'Account banned.' : 'That email was already banned.');
+                form.reset();
+                renderAdminBans();
+            } catch (error) {
+                setFormError('adminBanFormError', error.message);
+            }
+        });
+
+        $('#adminCoinForm')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const clubKey = form.dataset.clubKey;
+            setFormError('adminCoinFormError', '');
+            try {
+                const result = await apiRequest(`/api/admin/clubs/${encodeURIComponent(clubKey)}/coins`, {
+                    method: 'PATCH',
+                    body: formObject(form),
+                });
+                const balance = $('#adminCoinBalance');
+                if (balance) balance.textContent = result.coinBalance;
+                showToast('Coins adjusted.');
+                form.reset();
+            } catch (error) {
+                setFormError('adminCoinFormError', error.message);
+            }
+        });
+
         $('#adminShopItemForm')?.addEventListener('submit', async (event) => {
             event.preventDefault();
             const form = event.currentTarget;
@@ -3480,7 +4038,14 @@ const CHECKLIST_ITEMS = [
         initAvatarUploads();
         initSettingsScrollspy();
         if (clientDataPage) refreshState();
-        if (page === 'admin') renderAdminItemRequests();
+        if (page === 'admin') {
+            renderAdminItemRequests();
+            renderAdminOrders();
+            renderAdminChat();
+            renderAdminReports();
+            renderAdminBans();
+            initAdminShopList();
+        }
         // The chat module is a separate file; renderPage()'s renderChat() call
         // above no-ops until it lands, so paint chat again once it has.
         if (page === 'chat') loadChat().then((loaded) => loaded && renderChat());

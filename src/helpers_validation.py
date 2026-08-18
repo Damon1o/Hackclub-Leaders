@@ -2,6 +2,7 @@
 
 import math
 import os
+import re
 from datetime import date
 from typing import Any, Final
 
@@ -12,6 +13,21 @@ MAX_PAGE_SIZE: Final[int] = 200
 EVENT_REPEAT_OPTIONS: Final[set[str]] = {'', 'daily', 'weekly', 'biweekly', 'monthly', 'weekdays'}
 ADMIN_REVIEW_STATUSES: Final[set[str]] = {'Shipped', 'Draft'}
 DEFAULT_LANGUAGE: Final[str] = 'en'
+
+# Chat auto-moderation: messages containing any of these words get flagged for
+# admin review instead of being posted silently. Keep it small and obvious —
+# the point is to surface the worst cases, not to replace human judgment.
+AUTO_FLAG_WORDS: Final[tuple[str, ...]] = (
+    'fuck',
+    'shit',
+    'bitch',
+    'cunt',
+    'nigger',
+    'faggot',
+    'retard',
+    'free robux',
+    'join my discord',
+)
 
 # Shared catalog path — helpers_shop resolves it through helpers at call time so
 # tests can monkeypatch src.helpers.SHOP_JSON_PATH and reach the shop writer.
@@ -32,6 +48,13 @@ def clean_text(value: Any, fallback: str = '', max_len: int = 300) -> str:
     if value is None:
         return fallback
     return str(value).strip()[:max_len]
+
+
+def auto_flag_reasons(body: str) -> str:
+    """Return a comma-joined list of matched blocklist words, or '' if clean."""
+    text = (body or '').lower()
+    hits = [word for word in AUTO_FLAG_WORDS if re.search(rf'\b{re.escape(word)}\b', text)]
+    return ', '.join(hits)
 
 
 def parse_bool(value: Any) -> bool:

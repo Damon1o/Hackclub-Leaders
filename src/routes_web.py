@@ -12,6 +12,7 @@ from .helpers import (
     default_dashboard_state,
     get_dashboard_state,
     is_admin,
+    is_banned_email,
     json_error,
     leader_required,
     login_required,
@@ -211,6 +212,12 @@ def register(app, HACKATIME_CLIENT_ID):
             flash('Your session expired. Please try again.', 'error')
             return redirect(url_for('dashboard_welcome'))
 
+        user = session.get('user') or {}
+        email = (user.get('email') or '').strip().lower()
+        if is_banned_email(email):
+            flash('This account is not allowed to join clubs.', 'error')
+            return redirect(url_for('dashboard_welcome'))
+
         code = clean_text(request.form.get('joinCode'), max_len=20)
         backend = _storage()
         target_key = backend.find_club_by_join_code(code) if code else None
@@ -218,8 +225,6 @@ def register(app, HACKATIME_CLIENT_ID):
             flash('That join code was not found. Double-check it with your club leader.', 'error')
             return redirect(url_for('dashboard_welcome', code=code))
 
-        user = session.get('user') or {}
-        email = (user.get('email') or '').strip().lower()
         has_club = viewer_club_lite() is not None
         current_key = backend.resolve_club_key(email) if has_club else None
 

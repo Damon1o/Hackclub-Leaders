@@ -36,6 +36,18 @@
             <span class="metric-label" data-i18n="admin.totalMembers">Total members</span>
             <strong>{{ total_members }}</strong>
         </article>
+        <article class="metric-tile">
+            <span class="metric-label" data-i18n="admin.shipsThisWeek">Ships this week</span>
+            <strong>{{ ships_this_week }}</strong>
+        </article>
+        <article class="metric-tile">
+            <span class="metric-label" data-i18n="admin.totalOrders">Orders</span>
+            <strong>{{ orders_count }}</strong>
+        </article>
+        <article class="metric-tile">
+            <span class="metric-label" data-i18n="admin.openReports">Open reports</span>
+            <strong>{{ open_reports }}</strong>
+        </article>
     </section>
 
     <section class="card-modern dashboard-panel dashboard-panel-full">
@@ -99,6 +111,68 @@
     <section class="card-modern dashboard-panel dashboard-panel-full">
         <div class="panel-heading">
             <div>
+                <h2 data-i18n="admin.orders">Orders</h2>
+                <p data-i18n="admin.ordersDesc">Every shop order across clubs, newest first. Mark them fulfilled once shipped.</p>
+            </div>
+        </div>
+        <div class="admin-review-list" id="adminOrderList"
+            data-empty-text="No orders yet."
+            data-loading-text="Loading orders…">
+            <div class="empty-state"><p data-i18n="admin.ordersLoading">Loading orders…</p></div>
+        </div>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2 data-i18n="admin.flaggedChat">Auto-flagged messages</h2>
+                <p data-i18n="admin.flaggedChatDesc">Messages the filter caught across every club. Delete the bad ones, or clear the flag to keep them.</p>
+            </div>
+        </div>
+        <div class="admin-review-list" id="adminChatList"
+            data-empty-text="No flagged messages."
+            data-loading-text="Loading messages…">
+            <div class="empty-state"><p data-i18n="admin.chatLoading">Loading messages…</p></div>
+        </div>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2 data-i18n="admin.reports">Reports</h2>
+                <p data-i18n="admin.reportsDesc">Messages that members flagged. Resolve or dismiss each one.</p>
+            </div>
+        </div>
+        <div class="admin-review-list" id="adminReportList"
+            data-empty-text="No reports."
+            data-loading-text="Loading reports…">
+            <div class="empty-state"><p data-i18n="admin.reportsLoading">Loading reports…</p></div>
+        </div>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2 data-i18n="admin.bannedEmails">Banned accounts</h2>
+                <p data-i18n="admin.bannedEmailsDesc">Banned accounts can't join clubs or post in chat.</p>
+            </div>
+        </div>
+        <form class="settings-form admin-ban-form" id="adminBanForm" autocomplete="off">
+            <label class="form-group">
+                <span class="form-label" data-i18n="admin.banEmailLabel">Email to ban</span>
+                <input type="email" class="form-input" name="email" maxlength="120" required placeholder="member@example.com">
+            </label>
+            <p class="form-error" id="adminBanFormError" hidden></p>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary" data-i18n="admin.banSubmit">Ban</button>
+            </div>
+        </form>
+        <ul class="admin-ban-list" id="adminBanList"></ul>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
                 <h2 data-i18n="admin.addItem">Add an item to the shop</h2>
                 <p data-i18n="admin.addItemDesc">New items show up in every club's shop right away.</p>
             </div>
@@ -132,6 +206,47 @@
                 <span class="save-state" id="adminShopItemSaveState" aria-live="polite"></span>
             </div>
         </form>
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2 data-i18n="admin.shopCatalog">Shop catalog</h2>
+                <p data-i18n="admin.shopCatalogDesc">Price, recategorize, or remove anything in the shop. Unpriced items block checkout.</p>
+            </div>
+        </div>
+
+        {% if shop_items %}
+        <div class="ailist" id="adminShopCatalogList">
+            <div class="ailist-scroll" role="listbox" aria-label="Shop catalog">
+                {% for item in shop_items %}
+                <div class="ailist-item ailist-form" data-index="{{ loop.index0 }}" data-shop-row="{{ item.id }}" role="option" tabindex="0">
+                    <div class="ailist-fields">
+                        <input type="text" class="form-input admin-shop-inline" name="name" maxlength="120" value="{{ item.name }}" aria-label="Item name">
+                        <input type="text" class="form-input admin-shop-inline admin-shop-cost" name="cost" maxlength="20" value="{{ item.cost if item.cost is not none else '' }}" aria-label="Cost">
+                        <select class="form-input admin-shop-inline" name="filter" aria-label="Category">
+                            {% for f in ['Swag', 'Hardware', 'Digital', 'Merch', 'Grants', 'Credits', 'Games'] %}
+                            <option value="{{ f }}" {% if item.filter == f %}selected{% endif %}>{{ f }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="text" class="form-input admin-shop-inline ailist-image" name="image" maxlength="500" value="{{ item.image_src }}" aria-label="Image URL">
+                    </div>
+                    <div class="ailist-actions">
+                        <button class="btn-secondary small" type="button" data-shop-save data-shop-item="{{ item.id }}">Save</button>
+                        <button class="text-button" type="button" data-shop-delete data-shop-item="{{ item.id }}">Delete</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="ailist-gradient ailist-gradient-top"></div>
+            <div class="ailist-gradient ailist-gradient-bottom"></div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3 data-i18n="admin.noShopItems">No items in the shop</h3>
+            <p data-i18n="admin.noShopItemsDesc">Add your first item above.</p>
+        </div>
+        {% endif %}
     </section>
 
     <section class="card-modern dashboard-panel dashboard-panel-full">

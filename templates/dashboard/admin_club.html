@@ -38,6 +38,48 @@
                 <span class="form-label" data-i18n="admin.avatar">Profile image URL</span>
                 <input type="url" class="form-input" name="avatar" value="{{ settings.avatar }}" placeholder="https://..." data-i18n-attr="placeholder:common.urlPlaceholder">
             </label>
+            <label class="form-group">
+                <span class="form-label" data-i18n="admin.clubBio">Club bio</span>
+                <textarea class="form-input" name="clubBio" maxlength="500" rows="3">{{ settings.clubBio }}</textarea>
+            </label>
+            <label class="form-group">
+                <span class="form-label" data-i18n="admin.venue">Meeting venue</span>
+                <input type="text" class="form-input" name="venue" maxlength="120" value="{{ settings.venue }}">
+            </label>
+            <div class="form-row">
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.addressLine1">Address line 1</span>
+                    <input type="text" class="form-input" name="addressLine1" maxlength="120" value="{{ settings.addressLine1 }}">
+                </label>
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.addressLine2">Address line 2</span>
+                    <input type="text" class="form-input" name="addressLine2" maxlength="120" value="{{ settings.addressLine2 }}">
+                </label>
+            </div>
+            <div class="form-row">
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.city">City</span>
+                    <input type="text" class="form-input" name="city" maxlength="80" value="{{ settings.city }}">
+                </label>
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.state">State</span>
+                    <input type="text" class="form-input" name="state" maxlength="80" value="{{ settings.state }}">
+                </label>
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.zip">ZIP / postal code</span>
+                    <input type="text" class="form-input" name="zip" maxlength="20" value="{{ settings.zip }}">
+                </label>
+            </div>
+            <div class="form-row">
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.country">Country</span>
+                    <input type="text" class="form-input" name="country" maxlength="80" value="{{ settings.country }}">
+                </label>
+                <label class="form-group">
+                    <span class="form-label" data-i18n="admin.meetingDay">Meeting day</span>
+                    <input type="text" class="form-input" name="meetingDay" maxlength="20" value="{{ settings.meetingDay }}">
+                </label>
+            </div>
             <label class="toggle-row">
                 <span>
                     <strong data-i18n="admin.publicDirectory">Public directory</strong>
@@ -60,14 +102,50 @@
         <h2 data-i18n="admin.members">Members</h2>
         <ul class="admin-member-list">
             {% for member in club.members %}
-            <li>
+            <li class="admin-member-row" data-admin-member="{{ club_key }}::{{ member.id }}">
                 <span class="admin-member-name">{{ member.name }}</span>
-                <span class="badge badge-role">{{ member.role }}</span>
+                <select class="form-input admin-member-role" name="role">
+                    {% for role in ['Leader', 'Member', 'Mentor'] %}
+                    <option value="{{ role }}" {% if member.role == role %}selected{% endif %}>{{ role }}</option>
+                    {% endfor %}
+                </select>
+                <span class="admin-member-status">{{ member.status or 'Active' }}</span>
+                <button class="text-button admin-member-remove" type="button" data-i18n="admin.remove">Remove</button>
             </li>
             {% else %}
             <li class="admin-empty-note" data-i18n="admin.noMembers">No members yet.</li>
             {% endfor %}
         </ul>
+
+        <h2 class="admin-coin-heading" data-i18n="admin.coinBalance">Coin balance</h2>
+        <p class="admin-coin-balance" id="adminCoinBalance">{{ club.settings.coinBalance or 0 }}</p>
+        <form class="admin-coin-form" id="adminCoinForm" data-club-key="{{ club_key }}">
+            <label class="form-group">
+                <span class="form-label" data-i18n="admin.coinDelta">Adjust (coins, can be negative)</span>
+                <input type="number" class="form-input" name="delta" step="1" required placeholder="50 or -50">
+            </label>
+            <label class="form-group">
+                <span class="form-label" data-i18n="admin.coinReason">Reason</span>
+                <input type="text" class="form-input" name="reason" maxlength="200" required>
+            </label>
+            <p class="form-error" id="adminCoinFormError" hidden></p>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary small" data-i18n="admin.coinApply">Apply</button>
+            </div>
+        </form>
+        {% if club.ledger %}
+        <h3 class="admin-coin-ledger-heading" data-i18n="admin.coinRecent">Recent transactions</h3>
+        <ul class="admin-coin-ledger">
+            {% for tx in club.ledger[:5] %}
+            <li>
+                <strong class="{% if tx.delta > 0 %}coin-plus{% else %}coin-minus{% endif %}">
+                    {% if tx.delta > 0 %}+{% endif %}{{ tx.delta }}
+                </strong>
+                <span>{{ tx.note or tx.kind }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
     </aside>
 
     <section class="card-modern dashboard-panel dashboard-panel-full">
@@ -118,6 +196,95 @@
         <div class="empty-state">
             <h3 data-i18n="admin.noProjects">No projects yet</h3>
             <p data-i18n="admin.noProjectsDesc">This club hasn't created any projects.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2 data-i18n="admin.events">Events</h2>
+                <p data-i18n="admin.eventsDesc">Read-only — leaders edit events from their own dashboard.</p>
+            </div>
+        </div>
+        {% if club.events %}
+        <div class="admin-table-scroll">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th data-i18n="admin.colEvent">Event</th>
+                        <th data-i18n="admin.colDate">Date</th>
+                        <th data-i18n="admin.colLocation">Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in club.events %}
+                    <tr>
+                        <td><strong>{{ event.title }}</strong></td>
+                        <td>{{ event.date }}</td>
+                        <td>{{ event.location or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3 data-i18n="admin.noEvents">No events yet</h3>
+            <p data-i18n="admin.noEventsDesc">This club hasn't scheduled any events.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2 data-i18n="admin.dispatches">Dispatches</h2>
+                <p data-i18n="admin.dispatchesDesc">Read-only — leaders write dispatches from their own dashboard.</p>
+            </div>
+        </div>
+        {% if club.newsletters %}
+        <div class="timeline-list">
+            {% for dispatch in club.newsletters %}
+            <article class="timeline-item">
+                <div class="timeline-date"><strong>{{ dispatch.date or dispatch.sentAt or '—' }}</strong></div>
+                <div class="timeline-body">
+                    <div>
+                        <h3>{{ dispatch.title }}</h3>
+                        {% if dispatch.body %}<p class="project-desc">{{ dispatch.body[:300] }}{% if dispatch.body|length > 300 %}…{% endif %}</p>{% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3 data-i18n="admin.noDispatches">No dispatches yet</h3>
+            <p data-i18n="admin.noDispatchesDesc">This club hasn't sent any dispatches.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="card-modern dashboard-panel dashboard-panel-full">
+        <div class="panel-heading">
+            <div>
+                <h2 data-i18n="admin.auditLog">Audit log</h2>
+                <p data-i18n="admin.auditLogDesc">Admin actions on this club, newest first.</p>
+            </div>
+        </div>
+        {% if club.auditLog %}
+        <ul class="admin-audit-list">
+            {% for entry in club.auditLog[:50] %}
+            <li>
+                <span class="admin-audit-action">{{ entry.action }}{% if entry.target %} — {{ entry.target }}{% endif %}</span>
+                <span class="admin-audit-meta">{{ entry.actor }} · {{ entry.at[:16] }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state">
+            <h3 data-i18n="admin.noAudit">No admin actions yet</h3>
+            <p data-i18n="admin.noAuditDesc">Admin actions on this club will be recorded here.</p>
         </div>
         {% endif %}
     </section>

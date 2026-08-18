@@ -2945,6 +2945,19 @@ body.dark-mode .form-error {
     text-align: right;
 }
 
+.admin-shop-inline {
+    min-width: 90px;
+    padding: 6px 10px;
+}
+
+.admin-shop-cost {
+    max-width: 90px;
+}
+
+.admin-table-action .btn-secondary + .text-button {
+    margin-left: 8px;
+}
+
 .admin-member-list {
     list-style: none;
     margin: 12px 0 0;
@@ -2952,6 +2965,284 @@ body.dark-mode .form-error {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.admin-member-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.admin-member-row .admin-member-name {
+    flex: 1 1 auto;
+    min-width: 90px;
+}
+
+.admin-member-role {
+    padding: 4px 8px;
+    font-size: 13px;
+    max-width: 110px;
+}
+
+.admin-member-status {
+    font-size: 12px;
+    color: var(--dash-muted);
+}
+
+.admin-coin-heading {
+    margin-top: 24px;
+}
+.admin-coin-balance {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 4px 0 12px;
+}
+
+.admin-coin-form .form-actions {
+    margin-top: 8px;
+}
+
+.admin-coin-ledger-heading {
+    margin-top: 20px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--dash-muted);
+}
+
+.admin-coin-ledger {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.admin-coin-ledger li {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+}
+
+.admin-coin-ledger span {
+    color: var(--dash-muted);
+}
+
+.coin-plus {
+    color: var(--dash-green, #33d6a6);
+}
+
+.coin-minus {
+    color: var(--dash-red, #ec3750);
+}
+
+.admin-ban-form .form-actions {
+    margin-top: 12px;
+}
+
+.admin-ban-list {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.admin-ban-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--dash-border);
+    border-radius: 8px;
+}
+
+.admin-audit-list {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.admin-audit-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--dash-border);
+}
+
+.admin-audit-list li:last-child {
+    border-bottom: none;
+}
+
+.admin-audit-action {
+    font-weight: 600;
+}
+
+.admin-audit-meta {
+    color: var(--dash-muted);
+    white-space: nowrap;
+}
+
+/* Compact animated list (vanilla AnimatedList port) for the item-request queue. */
+.ailist {
+    position: relative;
+    max-width: 100%;
+}
+
+.ailist-scroll {
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    outline: none;
+}
+
+.ailist-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ailist-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ailist-scroll::-webkit-scrollbar-thumb {
+    background: var(--dash-border);
+    border-radius: 3px;
+}
+
+.ailist-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--dash-surface, rgba(0, 0, 0, 0.03));
+    border: 1px solid var(--dash-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transform: scale(0.7);
+    opacity: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.ailist-item.selected,
+.ailist-item.in {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.ailist-item.selected {
+    border-color: var(--dash-accent, #ec3750);
+}
+
+.ailist-item:not(.selected):hover {
+    border-color: var(--dash-muted);
+}
+
+.ailist-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.ailist-name {
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ailist-meta {
+    font-size: 12px;
+    color: var(--dash-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ailist-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.ailist-form {
+    flex-wrap: wrap;
+    cursor: default;
+}
+
+.ailist-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ailist-fields .admin-shop-inline {
+    flex: 1 1 120px;
+}
+
+.ailist-fields .admin-shop-cost {
+    flex: 0 0 90px;
+}
+
+.ailist-fields .ailist-image {
+    flex: 2 1 200px;
+}
+
+@media (max-width: 640px) {
+    .ailist-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ailist-actions {
+        justify-content: flex-end;
+    }
+}
+
+.ailist-gradient {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 40px;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.ailist-gradient-top {
+    top: 0;
+    background: linear-gradient(to bottom, var(--dash-bg, #fff), transparent);
+}
+
+.ailist-gradient-bottom {
+    bottom: 0;
+    background: linear-gradient(to top, var(--dash-bg, #fff), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ailist-item {
+        transform: none;
+        opacity: 1;
+        transition: none;
+    }
 }
 
 .admin-member-list li {

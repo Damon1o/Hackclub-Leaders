@@ -47,3 +47,19 @@ def award_coins_if_unprocessed(
     if ref and any(tx.get('ref') == ref and tx.get('kind') == kind for tx in ledger):
         return None
     return award_coins(state, delta, kind, ref, note)
+
+
+def log_action(state: DashboardState, actor: str, action: str, target: str = '') -> dict:
+    """Append one audit row to the club's audit log, newest first."""
+    import secrets
+
+    entry = {
+        'id': f'al-{secrets.token_hex(4)}',
+        'actor': (actor or 'admin').strip(),
+        'action': action,
+        'target': (target or '').strip(),
+        'at': utc_iso(),
+    }
+    log = state.setdefault('auditLog', [])
+    log.insert(0, entry)
+    return entry

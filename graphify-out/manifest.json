@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "src/helpers.py": {
-    "mtime": 1787017196.0582092,
-    "ast_hash": "41d5cda43bad303027e9bd9a4e0117a4",
+    "mtime": 1787020451.7727582,
+    "ast_hash": "dd5556d72de41bcc2aba7fb9939021f4",
     "semantic_hash": ""
   },
   "src/notifications.py": {
@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "src/routes_admin.py": {
-    "mtime": 1786916760.814098,
-    "ast_hash": "364a12f78aac80e68111cb931762fcb0",
+    "mtime": 1787020514.7853055,
+    "ast_hash": "3240b4eabf73033ba3d9036d8bcc55f0",
     "semantic_hash": ""
   },
   "src/routes_api.py": {
@@ -125,8 +125,8 @@
     "semantic_hash": ""
   },
   "src/routes_chat.py": {
-    "mtime": 1786740845.094639,
-    "ast_hash": "ef9762aabb8c7fcea6defd9cc737a647",
+    "mtime": 1787020466.754142,
+    "ast_hash": "0b8eb8924efc369ee1e001de5c98cadc",
     "semantic_hash": ""
   },
   "src/routes_club.py": {
@@ -135,18 +135,18 @@
     "semantic_hash": ""
   },
   "src/routes_web.py": {
-    "mtime": 1787017349.834982,
-    "ast_hash": "e671335d2f1c5ddc1f360a210f80977d",
+    "mtime": 1787019786.7534003,
+    "ast_hash": "5dc8e35e8eb0bb2df1027e757223c89c",
     "semantic_hash": ""
   },
   "src/storage.py": {
-    "mtime": 1786644721.970829,
-    "ast_hash": "15c8f0c8f67dd7a661030164b59472d5",
+    "mtime": 1787020473.1589794,
+    "ast_hash": "6f328180eb2bda931a070c35cd8dbb1d",
     "semantic_hash": ""
   },
   "src/storage_mongo.py": {
-    "mtime": 1787017324.526096,
-    "ast_hash": "c55d5e43f89d27dbcf12376ec62899df",
+    "mtime": 1787020502.1837392,
+    "ast_hash": "2137d179201cc6f0f93bf87335cac062",
     "semantic_hash": ""
   },
   "tests/test_admin_shop.py": {
@@ -380,18 +380,18 @@
     "semantic_hash": ""
   },
   "src/helpers_demo.py": {
-    "mtime": 1787012474.4642923,
-    "ast_hash": "1586607ba2929d271b8154d3f9fb6c70",
+    "mtime": 1787019432.057656,
+    "ast_hash": "c9ce8d937ce2604774544c7fab3c95cb",
     "semantic_hash": ""
   },
   "src/helpers_shop.py": {
-    "mtime": 1786936610.4281876,
-    "ast_hash": "94ce8fac06e55470a59c85ae5b036e6f",
+    "mtime": 1787018582.3530438,
+    "ast_hash": "fcdd87117e49b6be5d6e7e8aa319e3a9",
     "semantic_hash": ""
   },
   "src/helpers_state.py": {
-    "mtime": 1786644547.7259917,
-    "ast_hash": "8e601e6ca6a5bd12c9cfbe8111080de0",
+    "mtime": 1787019387.864639,
+    "ast_hash": "b7edf5e5dcd347adf9b940142311a11e",
     "semantic_hash": ""
   },
   "src/helpers_types.py": {
@@ -400,8 +400,8 @@
     "semantic_hash": ""
   },
   "src/helpers_validation.py": {
-    "mtime": 1786645081.3088822,
-    "ast_hash": "4f68b074cc0f3f771b557e466582006f",
+    "mtime": 1787020432.9094417,
+    "ast_hash": "3d38c0f033c3a21055e8ae113fa21860",
     "semantic_hash": ""
   },
   "src/routes_api_projects.py": {
@@ -415,13 +415,13 @@
     "semantic_hash": ""
   },
   "src/storage_airtable.py": {
-    "mtime": 1787017310.8644333,
-    "ast_hash": "99942a00ce205158de1c03c78ef22c2c",
+    "mtime": 1787020489.827216,
+    "ast_hash": "21fe8cbf0b2dd928dd8f5a3c4496fce2",
     "semantic_hash": ""
   },
   "src/storage_airtable_fields.py": {
-    "mtime": 1787012475.199219,
-    "ast_hash": "b3d0433e923043001d6d3af1d0310093",
+    "mtime": 1787020495.8584566,
+    "ast_hash": "1aafeed79ce9ffcdfdfc23fd42acddb8",
     "semantic_hash": ""
   },
   "tests/test_storage_airtable.py": {
@@ -537,6 +537,21 @@
   "docs/superpowers/specs/2026-08-17-explore-design.md": {
     "mtime": 1787016698.0316255,
     "ast_hash": "c2673063829018118ad06ef52a0b293e",
+    "semantic_hash": ""
+  },
+  "src/helpers_bans.py": {
+    "mtime": 1787019255.3234117,
+    "ast_hash": "cb2ea0fab406e7b663fcc25c96523147",
+    "semantic_hash": ""
+  },
+  "banned_emails.json": {
+    "mtime": 1787019923.9511714,
+    "ast_hash": "96d952f14ccd9f6579553a0df04244f3",
+    "semantic_hash": ""
+  },
+  "tests/test_admin_moderation.py": {
+    "mtime": 1787020554.912727,
+    "ast_hash": "ad8527481fcf06ff9544bfb3d2972ef5",
     "semantic_hash": ""
   }
 }

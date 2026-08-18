@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/effects.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-mode.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/stickers.css') }}">
+    {% block styles %}{% endblock %}
     <link rel="icon" href="{{ url_for('static', filename='images/hackclub-site/favicon.ico') }}">
 </head>
 
@@ -117,18 +118,18 @@
                         {{ sidebar_icon('workshop') }}
                         <span class="sidebar-label" data-i18n="side.workshops">Workshops</span>
                     </a>
-                    <a href="/dashboard/ships"
-                        class="dashboard-sidebar-link {% if current_path == '/dashboard/ships' %}active{% endif %}"
-                        title="Ships" aria-label="Ships" data-i18n-attr="title:side.ships;aria-label:side.ships">
-                        {{ sidebar_icon('rocket') }}
-                        <span class="sidebar-label" data-i18n="side.ships">Ships</span>
-                    </a>
                     <a href="/dashboard/projects"
                         class="dashboard-sidebar-link {% if current_path == '/dashboard/projects' %}active{% endif %}"
                         title="Projects" aria-label="Projects"
                         data-i18n-attr="title:side.projects;aria-label:side.projects">
                         {{ sidebar_icon('package') }}
                         <span class="sidebar-label" data-i18n="side.projects">Projects</span>
+                    </a>
+                    <a href="/dashboard/explore"
+                        class="dashboard-sidebar-link {% if current_path.startswith('/dashboard/explore') %}active{% endif %}"
+                        title="Explore" aria-label="Explore" data-i18n-attr="title:side.explore;aria-label:side.explore">
+                        {{ sidebar_icon('compass') }}
+                        <span class="sidebar-label" data-i18n="side.explore">Explore</span>
                     </a>
                     <a href="/dashboard/levels"
                         class="dashboard-sidebar-link {% if current_path == '/dashboard/levels' %}active{% endif %}"

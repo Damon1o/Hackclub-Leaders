@@ -1,6 +1,5 @@
-"""AirtableStorage coverage for the cross-club Users table: get_user_record()
-and save_user_record() only (the rest of AirtableStorage is exercised via the
-app's integration tests, not unit-mocked here)."""
+"""AirtableStorage coverage for the cross-club Users table (get_user_record()
+and save_user_record()) and the Explore read path (list_public_projects)."""
 
 import pytest
 
@@ -103,3 +102,71 @@ def test_save_user_record_updates_existing_row(storage, monkeypatch):
     assert table == storage.users_table
     assert kwargs['record_path'] == 'rec1'
     assert kwargs['json']['fields'] == {'Session Version': 2}
+
+
+def _club_row(leader_email, club_name, public=True):
+    return {'id': f'rec-{leader_email}', 'fields': {
+        'Leader Email': leader_email, 'Club Name': club_name, 'Public Directory': public,
+    }}
+
+
+def _project_row(public_id, club_email, name='Ship', category='Web'):
+    return {'id': f'rec-{public_id}', 'fields': {
+        'Club Email': club_email, 'Status': 'Shipped', 'Public': True,
+        'Public ID': public_id, 'Name': name, 'Description': 'desc',
+        'Thumbnail': '', 'Demo URL': '', 'URL': '', 'Repo URL': '',
+        'Owner Name': 'Ada', 'Category': category, 'Date': '2026-08-01',
+    }}
+
+
+def _fake_list_all_for(rows):
+    def fake_list_all(table, fields=None):
+        return list(rows.get(table, []))
+
+    return fake_list_all
+
+
+def test_list_public_projects_returns_narrow_projection(storage, monkeypatch):
+    rows = {
+        storage.clubs_table: [
+            _club_row('a@club.com', 'Club A'),
+            _club_row('b@club.com', 'Club B'),
+        ],
+        storage.tables['projects']: [
+            _project_row('showcase-a', 'a@club.com', 'Alpha'),
+            _project_row('showcase-b', 'b@club.com', 'Beta'),
+        ],
+    }
+    monkeypatch.setattr(storage, '_list_all', _fake_list_all_for(rows))
+    projects = storage.list_public_projects()
+    assert [p['publicId'] for p in projects] == ['showcase-a', 'showcase-b']
+    assert projects[0]['clubName'] == 'Club A'
+    assert 'ownerEmail' not in projects[0]
+    assert 'id' not in projects[0]
+
+
+def test_list_public_projects_filters_to_one_club(storage, monkeypatch):
+    rows = {
+        storage.clubs_table: [
+            _club_row('a@club.com', 'Club A'),
+            _club_row('b@club.com', 'Club B'),
+        ],
+        storage.tables['projects']: [
+            _project_row('showcase-a', 'a@club.com', 'Alpha'),
+            _project_row('showcase-b', 'b@club.com', 'Beta'),
+        ],
+    }
+    monkeypatch.setattr(storage, '_list_all', _fake_list_all_for(rows))
+    projects = storage.list_public_projects('b@club.com')
+    assert [p['publicId'] for p in projects] == ['showcase-b']
+
+
+def test_list_public_projects_excludes_unpublished_rows(storage, monkeypatch):
+    hidden = _project_row('showcase-h', 'a@club.com', 'Hidden')
+    hidden['fields']['Public'] = False
+    rows = {
+        storage.clubs_table: [_club_row('a@club.com', 'Club A')],
+        storage.tables['projects']: [_project_row('showcase-a', 'a@club.com'), hidden],
+    }
+    monkeypatch.setattr(storage, '_list_all', _fake_list_all_for(rows))
+    assert [p['publicId'] for p in storage.list_public_projects()] == ['showcase-a']

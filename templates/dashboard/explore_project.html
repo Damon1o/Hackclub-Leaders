@@ -1,0 +1,58 @@
+{% extends "dashboard_layout.html" %}
+
+{% block title %}{{ project.name if project else 'Explore' }}{% endblock %}
+{% block page_title %}<span data-i18n="side.explore">Explore</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="explore.subtitle">Shipped projects from Hack Clubs everywhere.</span>{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/explore.css') }}">
+{% endblock %}
+
+{% block content %}
+
+{% if unavailable %}
+
+<div class="explore-unavailable">
+    <span data-hc-icon="rocket" data-hc-size="48" data-hc-color="currentColor" aria-hidden="true"></span>
+    <h1 data-i18n="explore.unavailableTitle">Explore is offline right now</h1>
+    <p data-i18n="explore.unavailableBody">Project sharing needs the shared club backend. Check back once this
+        deployment is connected.</p>
+</div>
+
+{% else %}
+
+<a class="explore-back" href="{{ url_for('dashboard_explore') }}" data-i18n="explore.back">&larr; Back to Explore</a>
+
+<article class="explore-detail">
+    <div class="explore-detail-visual">
+        {% if project.thumbnail %}
+        <img src="{{ project.thumbnail }}" alt="{{ project.name }}" referrerpolicy="no-referrer">
+        {% else %}
+        <span class="explore-card-placeholder" aria-hidden="true">
+            <span data-hc-icon="rocket" data-hc-size="64" data-hc-color="currentColor"></span>
+        </span>
+        {% endif %}
+    </div>
+    <div class="explore-detail-body">
+        <span class="explore-card-badge">{{ project.category }}</span>
+        <h1>{{ project.name }}</h1>
+        <p class="explore-detail-meta">{{ project.ownerName }} &middot; {{ project.clubName }}</p>
+        {% if project.description %}
+        <p class="explore-detail-desc">{{ project.description }}</p>
+        {% endif %}
+        <div class="explore-detail-actions">
+            {% if project.demoUrl %}
+            <a class="btn-primary" href="{{ project.demoUrl }}" target="_blank" rel="noopener noreferrer"
+                data-i18n="explore.demo">Try the demo &rarr;</a>
+            {% endif %}
+            {% if project.repoUrl %}
+            <a class="btn-secondary" href="{{ project.repoUrl }}" target="_blank" rel="noopener noreferrer"
+                data-i18n="explore.repo">View the repo</a>
+            {% endif %}
+        </div>
+    </div>
+</article>
+
+{% endif %}
+
+{% endblock %}

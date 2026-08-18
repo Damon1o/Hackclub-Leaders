@@ -1,0 +1,108 @@
+{% extends "dashboard_layout.html" %}
+
+{% block title %}Explore{% endblock %}
+{% block page_title %}<span data-i18n="side.explore">Explore</span>{% endblock %}
+{% block page_subtitle %}<span data-i18n="explore.subtitle">Shipped projects from Hack Clubs everywhere.</span>{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/explore.css') }}">
+{% endblock %}
+
+{% block content %}
+
+{% if unavailable %}
+
+<div class="explore-unavailable">
+    <span data-hc-icon="rocket" data-hc-size="48" data-hc-color="currentColor" aria-hidden="true"></span>
+    <h1 data-i18n="explore.unavailableTitle">Explore is offline right now</h1>
+    <p data-i18n="explore.unavailableBody">Project sharing needs the shared club backend. Check back once this
+        deployment is connected.</p>
+</div>
+
+{% else %}
+
+<div class="explore-search">
+    <form action="{{ url_for('dashboard_explore') }}" method="get">
+        <input type="text" name="q" value="{{ query }}" data-i18n-attr="placeholder:explore.searchPlaceholder"
+            placeholder="Search projects, makers, clubs&hellip;" autocomplete="off">
+        <button type="submit" data-i18n="explore.search">Search</button>
+    </form>
+
+    <div class="explore-filter-tags">
+        <a class="filter-tag {% if not selected_category and not only_club %}active{% endif %}"
+            href="{{ url_for('dashboard_explore', q=query or None) }}" data-i18n="explore.filterAll">All</a>
+        <a class="filter-tag {% if only_club %}active{% endif %}"
+            href="{{ url_for('dashboard_explore', q=query or None, club='1') }}"
+            data-i18n="explore.yourClub">Your club</a>
+        {% for category in categories %}
+        <a class="filter-tag {% if selected_category == category %}active{% endif %}"
+            href="{{ url_for('dashboard_explore', q=query or None, category=category, club='1' if only_club else None) }}">{{ category }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+{% if projects %}
+
+<div class="explore-count" role="status">{{ total }} project{{ 's' if total != 1 }} found</div>
+
+<div class="explore-grid">
+    {% for project in projects %}
+    <a class="explore-card" href="{{ url_for('dashboard_explore_project', public_id=project.publicId) }}"
+        style="--card-index: {{ loop.index0 }}">
+        <div class="explore-card-visual">
+            {% if project.thumbnail %}
+            <img src="{{ project.thumbnail }}" alt="{{ project.name }}" loading="lazy" referrerpolicy="no-referrer">
+            {% else %}
+            <span class="explore-card-placeholder" aria-hidden="true">
+                <span data-hc-icon="rocket" data-hc-size="40" data-hc-color="currentColor"></span>
+            </span>
+            {% endif %}
+        </div>
+        <div class="explore-card-body">
+            <h3>{{ project.name }}</h3>
+            <p class="explore-card-meta">{{ project.ownerName }} &middot; {{ project.clubName }}</p>
+            {% if project.description %}
+            <p class="explore-card-desc">{{ project.description }}</p>
+            {% endif %}
+            <span class="explore-card-badge">{{ project.category }}</span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+{% if total_pages > 1 %}
+<nav class="explore-pagination" aria-label="Pagination">
+    {% if page > 1 %}
+    <a class="explore-page-link"
+        href="{{ url_for('dashboard_explore', q=query or None, category=selected_category or None, club='1' if only_club else None, page=page - 1) }}"
+        data-i18n="explore.prev">&larr; Newer</a>
+    {% else %}
+    <span class="explore-page-link is-disabled" data-i18n="explore.prev">&larr; Newer</span>
+    {% endif %}
+    <span class="explore-page-info">{{ page }} / {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a class="explore-page-link"
+        href="{{ url_for('dashboard_explore', q=query or None, category=selected_category or None, club='1' if only_club else None, page=page + 1) }}"
+        data-i18n="explore.next">Older &rarr;</a>
+    {% else %}
+    <span class="explore-page-link is-disabled" data-i18n="explore.next">Older &rarr;</span>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+
+<div class="explore-empty">
+    <span data-hc-icon="rocket" data-hc-size="48" data-hc-color="currentColor" aria-hidden="true"></span>
+    <h2 data-i18n="explore.emptyTitle">Nothing here yet</h2>
+    <p data-i18n="explore.emptyBody">No projects match that search or category. Try different words — or ship the
+        first one.</p>
+    <a class="btn-primary" href="{{ url_for('dashboard_explore') }}" data-i18n="explore.clearFilters">Clear
+        filters</a>
+</div>
+
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

@@ -46,6 +46,9 @@ PROJECT_FIELDS: Final[list[tuple[str, str]]] = [
     ('ownerEmail', 'Owner Email'),
     ('ownerName', 'Owner Name'),
     ('date', 'Date'),
+    ('publicId', 'Public ID'),
+    ('isPublic', 'Public'),
+    ('category', 'Category'),
 ]
 LEDGER_FIELDS: Final[list[tuple[str, str]]] = [
     ('delta', 'Delta'),

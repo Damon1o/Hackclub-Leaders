@@ -33,6 +33,7 @@ Every Hack Club is run by teenagers doing this on top of homework, and most of t
 - **Shop** — coin-based catalog with cart, checkout, and item requests
 - **Chat** — shared club channels with message polling and per-channel unread dots
 - **Club map** — every active Hack Club plotted from the official directory
+- **Explore** — signed-in-only gallery of shipped projects across every club, with search, category filters, and pagination
 - **Notifications** — in-app feed with mark-all-read
 - **Hackatime integration** — coding-time stats and project linking via OAuth or user ID
 - **Admin tools** — review queue for submitted projects, per-club detail, item request log
@@ -65,7 +66,7 @@ Every Hack Club is run by teenagers doing this on top of homework, and most of t
 │   ├── events.html         # public events page
 │   ├── sign-in.html, join.html, welcome.html
 │   ├── dashboard.html, dashboard_layout.html
-│   ├── dashboard/          # team, events, workshops, ships, projects, levels, shop,
+│   ├── dashboard/          # team, events, workshops, projects, levels, shop,
 │   │                       # chat, notifications, map, tools, settings, profile,
 │   │                       # admin, admin_club
 │   ├── landing/            # landing page partials
@@ -165,8 +166,9 @@ The app will be available at [http://127.0.0.1:5000](http://127.0.0.1:5000).
 | `/dashboard/team` | Yes | Team roster management |
 | `/dashboard/events` | Yes | Events management |
 | `/dashboard/workshops` | Yes | Workshop proposals & scheduling |
-| `/dashboard/ships` | Yes | Shipped-project tracker |
 | `/dashboard/projects` | Yes | Projects, drafts, submissions, Hackatime stats |
+| `/dashboard/explore` | Yes | Cross-club shipped-project gallery (search, categories, pagination) |
+| `/dashboard/explore/projects/<id>` | Yes | Explore project detail page |
 | `/dashboard/levels` | Yes | Club level progression |
 | `/dashboard/shop` | Yes (leader) | Shop & cart |
 | `/dashboard/chat` | Yes | Club chat channels |

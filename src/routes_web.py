@@ -21,6 +21,9 @@ from .helpers import (
 )
 from .storage import SessionStorage, StorageError
 
+EXPLORE_CATEGORIES = ('Web', 'Game', 'Hardware', 'Mobile', 'Art & Design', 'Music', 'Other')
+EXPLORE_PAGE_SIZE = 12
+
 # How often (seconds) the shared-backend session-staleness check re-hits the
 # Users table. Below this, we trust the last check — the chat UI polls
 # /api/dashboard* every 4s, and hitting Airtable that often is unnecessary
@@ -74,6 +77,13 @@ def register(app, HACKATIME_CLIENT_ID):
     @app.route('/events')
     def events():
         return flask.render_template('events.html')
+
+    def _public_projects(club_key: str = '') -> list[dict[str, Any]] | None:
+        """The cookie-backed demo has no safe cross-club data source."""
+        backend = _storage()
+        if isinstance(backend, SessionStorage):
+            return None
+        return backend.list_public_projects(club_key)
 
     @app.route('/sign-in')
     def sign_in():
@@ -314,15 +324,62 @@ def register(app, HACKATIME_CLIENT_ID):
     def dashboard_workshops():
         return flask.render_template('dashboard/workshops.html')
 
-    @app.route('/dashboard/ships')
-    @login_required
-    def dashboard_ships():
-        return flask.render_template('dashboard/ships.html')
-
     @app.route('/dashboard/projects')
     @login_required
     def dashboard_projects():
         return flask.render_template('dashboard/projects.html')
+
+    @app.route('/dashboard/explore')
+    @login_required
+    def dashboard_explore():
+        only_club = request.args.get('club') == '1'
+        club_key = ''
+        if only_club:
+            email = (session.get('user') or {}).get('email') or ''
+            club_key = _storage().resolve_club_key(email)
+        projects = _public_projects(club_key)
+        if projects is None:
+            return flask.render_template('dashboard/explore.html', unavailable=True, projects=[]), 503
+
+        query = clean_text(request.args.get('q'), max_len=100)
+        category = clean_text(request.args.get('category'), max_len=40)
+        if category not in EXPLORE_CATEGORIES:
+            category = ''
+        term = query.casefold()
+        filtered = [
+            project for project in projects
+            if (not category or project['category'] == category)
+            and (
+                not term
+                or term in ' '.join(
+                    [project['name'], project['description'], project['ownerName'], project['clubName']]
+                ).casefold()
+            )
+        ]
+        try:
+            page = max(1, int(request.args.get('page', '1')))
+        except (TypeError, ValueError):
+            page = 1
+        total_pages = max(1, (len(filtered) + EXPLORE_PAGE_SIZE - 1) // EXPLORE_PAGE_SIZE)
+        page = min(page, total_pages)
+        start = (page - 1) * EXPLORE_PAGE_SIZE
+        return flask.render_template(
+            'dashboard/explore.html', unavailable=False,
+            projects=filtered[start : start + EXPLORE_PAGE_SIZE],
+            categories=EXPLORE_CATEGORIES, query=query, selected_category=category,
+            page=page, total_pages=total_pages, total=len(filtered), only_club=only_club,
+        )
+
+    @app.route('/dashboard/explore/projects/<public_id>')
+    @login_required
+    def dashboard_explore_project(public_id: str):
+        projects = _public_projects()
+        if projects is None:
+            return flask.render_template('dashboard/explore_project.html', unavailable=True, project=None), 503
+        project = next((item for item in projects if item['publicId'] == public_id), None)
+        if project is None:
+            flask.abort(404)
+        return flask.render_template('dashboard/explore_project.html', unavailable=False, project=project)
 
     @app.route('/dashboard/levels')
     @login_required

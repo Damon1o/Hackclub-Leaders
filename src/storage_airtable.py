@@ -302,6 +302,58 @@ class AirtableStorage:
             )
         return pending
 
+    def list_public_projects(self, club_key: str = '') -> list[dict[str, Any]]:
+        """Return a deliberately narrow, anonymous-safe projection for Explore.
+
+        `club_key` set scopes the list to one club (the "Your club" filter);
+        the key itself is never included in the projection.
+        """
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            clubs_future = pool.submit(
+                self._list_all,
+                self.clubs_table,
+                ['Leader Email', 'Club Name', 'Public Directory'],
+            )
+            projects_future = pool.submit(self._list_all, self.tables['projects'])
+            club_rows = clubs_future.result()
+            project_rows = projects_future.result()
+
+        club_filter = (club_key or '').strip().lower()
+        public_clubs = {
+            (record['fields'].get('Leader Email') or '').strip().lower():
+                record['fields'].get('Club Name') or 'Hack Club'
+            for record in club_rows
+            if record['fields'].get('Public Directory', True)
+            and (record['fields'].get('Leader Email') or '').strip()
+        }
+        projects: list[dict[str, Any]] = []
+        for record in project_rows:
+            fields = record['fields']
+            club_key_row = (fields.get('Club Email') or '').strip().lower()
+            if (
+                fields.get('Status') != SHIPPED_STATUS
+                or not bool(fields.get('Public'))
+                or club_key_row not in public_clubs
+                or not fields.get('Public ID')
+                or (club_filter and club_key_row != club_filter)
+            ):
+                continue
+            projects.append(
+                {
+                    'publicId': fields.get('Public ID') or '',
+                    'name': fields.get('Name') or 'Untitled project',
+                    'description': fields.get('Description') or '',
+                    'thumbnail': fields.get('Thumbnail') or '',
+                    'demoUrl': fields.get('Demo URL') or fields.get('URL') or '',
+                    'repoUrl': fields.get('Repo URL') or '',
+                    'ownerName': fields.get('Owner Name') or 'Hack Clubber',
+                    'clubName': public_clubs[club_key_row],
+                    'category': fields.get('Category') or 'Other',
+                    'date': fields.get('Date') or '',
+                }
+            )
+        return sorted(projects, key=lambda project: project['date'], reverse=True)
+
     def list_item_requests(self) -> list[dict[str, Any]]:
         clubs = {c['clubKey']: c['clubName'] for c in self.list_clubs()}
         records = self._list_all(self.tables['itemRequests'])
@@ -373,7 +425,7 @@ class AirtableStorage:
                 row: dict[str, Any] = {'id': f.get('App Id', r['id'])}
                 for key_name, airtable_name in field_pairs:
                     val = f.get(airtable_name)
-                    if key_name in ('rsvp', 'read'):
+                    if key_name in ('rsvp', 'read', 'isPublic'):
                         row[key_name] = bool(val)
                     elif key_name in ('attendees', 'delta'):
                         row[key_name] = int(val or 0)

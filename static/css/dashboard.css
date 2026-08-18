@@ -3822,7 +3822,6 @@ img.thumb-preview[src=""] {
 .dashboard-wrapper:has([data-dashboard-page="events"])   { --dash-accent: var(--hackclub-blue); }
 .dashboard-wrapper:has([data-dashboard-page="team"])     { --dash-accent: var(--hackclub-orange); }
 .dashboard-wrapper:has([data-dashboard-page="shop"])     { --dash-accent: var(--hackclub-purple); }
-.dashboard-wrapper:has([data-dashboard-page="ships"])    { --dash-accent: var(--hackclub-green); }
 .dashboard-wrapper:has([data-dashboard-page="projects"]) { --dash-accent: var(--hackclub-cyan); }
 .dashboard-wrapper:has([data-dashboard-page="home"]),
 .dashboard-wrapper:has([data-dashboard-page="levels"])   { --dash-accent: var(--hackclub-red); }
@@ -3890,7 +3889,6 @@ img.thumb-preview[src=""] {
 .dashboard-sidebar-link:not(.active)[href="/dashboard"]:hover            { color: var(--hackclub-red); }
 .dashboard-sidebar-link:not(.active)[href="/dashboard/team"]:hover       { color: var(--hackclub-orange); }
 .dashboard-sidebar-link:not(.active)[href="/dashboard/events"]:hover     { color: var(--hackclub-blue); }
-.dashboard-sidebar-link:not(.active)[href="/dashboard/ships"]:hover      { color: var(--hackclub-green); }
 .dashboard-sidebar-link:not(.active)[href="/dashboard/projects"]:hover   { color: var(--hackclub-cyan); }
 .dashboard-sidebar-link:not(.active)[href="/dashboard/levels"]:hover     { color: var(--hackclub-red); }
 .dashboard-sidebar-link:not(.active)[href="/dashboard/shop"]:hover       { color: var(--hackclub-purple); }
@@ -3908,11 +3906,6 @@ img.thumb-preview[src=""] {
 
 [data-dashboard-page="events"] .level-progress-fill {
     background: linear-gradient(90deg, var(--hackclub-blue), var(--hackclub-cyan));
-}
-
-[data-dashboard-page="ships"] .level-progress-fill {
-    /* no --hackclub-teal token exists; #17b8a1 is a green→teal endpoint */
-    background: linear-gradient(90deg, var(--hackclub-green), #17b8a1);
 }
 
 /* ── 5. Animated gradient shop-card borders ───────────────────────────────── */

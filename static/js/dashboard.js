@@ -259,7 +259,6 @@
         dashboard: ['events', 'projects', 'newsletters', 'workshops', 'ledger'],
         team: [],
         events: ['events'],
-        ships: ['projects'],
         projects: ['projects'],
         levels: ['projects'],
         tools: [],
@@ -747,41 +746,6 @@
             `;
         }).join('');
         if (empty) empty.hidden = upcoming.length > 0;
-    }
-
-    function renderShips() {
-        if (page !== 'ships') return;
-        removeSkeletons('ships');
-        const list = $('#shipList');
-        const empty = $('#shipsEmpty');
-        const progress = levelProgress();
-        const shipped = shippedProjects();
-
-        // Ships are admin-approved projects; the level credits every one of them.
-        $('#shipTotal').textContent = shipped.length;
-        $('#shipLevel').textContent = progress.level;
-        $('#shipToNext').textContent = `${progress.shippers} / ${SHIPPERS_REQUIRED}`;
-
-        if (!list) return;
-        list.innerHTML = shipped.map((project, index) => `
-            <article class="timeline-item ship-item" style="--card-index: ${index}">
-                <div class="timeline-date">
-                    <strong>${escapeHtml(formatDate(project.date).split(',')[0])}</strong>
-                    <span>${escapeHtml(project.ownerName || project.ownerEmail || '')}</span>
-                </div>
-                <div class="timeline-body">
-                    <div>
-                        <h3>${escapeHtml(project.name)}</h3>
-                        ${project.description ? `<p class="project-desc">${escapeHtml(project.description)}</p>` : ''}
-                        ${projectLinks(project)}
-                    </div>
-                    <div class="timeline-actions">
-                        <span class="badge badge-up">Shipped</span>
-                    </div>
-                </div>
-            </article>
-        `).join('');
-        if (empty) empty.hidden = shipped.length > 0;
     }
 
     async function initHacktime() {
@@ -1357,6 +1321,8 @@
                     demoUrl: data.demoUrl,
                     thumbnail: data.thumbnail,
                     hackatimeProject: data.hackatimeProject,
+                    category: data.category,
+                    isPublic: Boolean(data.isPublic),
                 },
             });
         return { response, isEdit };
@@ -1815,6 +1781,10 @@
         form.reset();
         form.elements.id.value = '';
         form.elements.hackatimeProject.value = '';
+        form.elements.category.value = '';
+        form.elements.isPublic.checked = false;
+        const publication = $('#projectPublication');
+        if (publication) publication.disabled = true;
         $('#projectModalTitle').textContent = 'New project';
         setFormError('projectFormError', '');
         setFormError('projectThumbError', '');
@@ -1835,6 +1805,10 @@
         form.elements.demoUrl.value = project.demoUrl || '';
         form.elements.thumbnail.value = project.thumbnail || '';
         form.elements.hackatimeProject.value = project.hackatimeProject || '';
+        form.elements.category.value = project.category || '';
+        form.elements.isPublic.checked = Boolean(project.isPublic);
+        const publication = $('#projectPublication');
+        if (publication) publication.disabled = project.status !== 'Shipped';
         $('#projectModalTitle').textContent = 'Edit project';
         setFormError('projectFormError', '');
         setFormError('projectThumbError', '');
@@ -2181,7 +2155,6 @@ const CHECKLIST_ITEMS = [
         renderTeam();
         renderEvents();
         renderWorkshops();
-        renderShips();
         renderProjects();
         renderLevels();
         renderJoinLink();

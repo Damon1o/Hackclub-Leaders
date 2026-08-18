@@ -21,11 +21,16 @@ from .helpers import (
     json_error,
     json_payload,
     login_required,
+    parse_bool,
     require_dashboard_csrf,
     save_dashboard_state,
 )
 from .notifications import notify_admins_of_project_submission
 from .storage import StorageError
+
+PROJECT_CATEGORIES = {
+    'Web', 'Game', 'Hardware', 'Mobile', 'Art & Design', 'Music', 'Other',
+}
 
 
 def register_project_routes(app: flask.Flask, max_image_bytes: int) -> None:
@@ -113,6 +118,9 @@ def register_project_routes(app: flask.Flask, max_image_bytes: int) -> None:
                 'ownerEmail': _viewer_email(),
                 'ownerName': user.get('name') or _viewer_email(),
                 'date': date.today().isoformat(),
+                'publicId': _item_id('showcase'),
+                'isPublic': False,
+                'category': '',
             },
         )
         state.setdefault('projects', []).insert(0, project)
@@ -167,6 +175,21 @@ def register_project_routes(app: flask.Flask, max_image_bytes: int) -> None:
             project['hackatimeProject'] = clean_text(
                 payload.get('hackatimeProject'), project.get('hackatimeProject', ''), max_len=120
             )
+        if 'category' in payload:
+            category = clean_text(payload.get('category'), max_len=40)
+            if category and category not in PROJECT_CATEGORIES:
+                return json_error('Choose a valid project category.')
+            project['category'] = category
+        if 'isPublic' in payload:
+            is_public = parse_bool(payload.get('isPublic'))
+            if is_public and project.get('status') != 'Shipped':
+                return json_error('Only shipped projects can be published to Explore.')
+            if is_public and project.get('category') not in PROJECT_CATEGORIES:
+                return json_error('Choose a project category before publishing.')
+            project['isPublic'] = is_public
+        project.setdefault('publicId', _item_id('showcase'))
+        project.setdefault('isPublic', False)
+        project.setdefault('category', '')
         if 'status' in payload:
             status = clean_text(payload.get('status'), project.get('status', 'Draft')).title()
             if status not in {'Draft', 'Submitted'}:

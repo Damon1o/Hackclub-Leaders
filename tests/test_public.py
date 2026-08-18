@@ -57,7 +57,6 @@ def test_dashboard_subpages_require_login(client):
     pages = [
         '/dashboard/team',
         '/dashboard/events',
-        '/dashboard/ships',
         '/dashboard/projects',
         '/dashboard/levels',
         '/dashboard/tools',
@@ -76,7 +75,6 @@ def test_dashboard_subpages_redirect_to_welcome_when_no_club(auth_client):
     pages = [
         '/dashboard/team',
         '/dashboard/events',
-        '/dashboard/ships',
         '/dashboard/projects',
         '/dashboard/levels',
         '/dashboard/newsletters',
@@ -447,16 +445,6 @@ def test_projects_page_has_tour_page_key_and_data_tour_attrs(auth_client, monkey
     assert b'data-tour-page="projects"' in response.data
     assert b'data-tour="projects-mine"' in response.data
     assert b'data-tour="projects-submitted"' in response.data
-
-
-def test_ships_page_has_tour_page_key(auth_client, monkeypatch):
-    monkeypatch.setenv('STORAGE_BACKEND', 'session')
-    with auth_client.session_transaction() as sess:
-        sess['dashboard_state'] = {'settings': {'clubName': 'Tour Club'}, 'members': []}
-    response = auth_client.get('/dashboard/ships')
-    assert response.status_code == 200
-    assert b'data-tour-page="ships"' in response.data
-    assert b'id="shipList"' in response.data
 
 
 def test_chat_page_has_tour_page_key(auth_client, monkeypatch):

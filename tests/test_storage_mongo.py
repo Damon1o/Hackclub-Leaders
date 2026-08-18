@@ -68,7 +68,8 @@ def test_indexes_cover_every_declared_collection(storage):
     ensure_indexes(storage.db)
     for collection, specs in INDEXES.items():
         existing = storage.db[collection].index_information()
-        for keys, _unique in specs:
+        for spec in specs:
+            keys, _unique = spec[0], spec[1]
             wanted = [list(pair) for pair in keys]
             assert any(
                 [list(k) for k in info['key']] == wanted for info in existing.values()
@@ -325,3 +326,113 @@ def test_saving_from_a_partial_page_keeps_other_sections(mongo_client, storage):
     # The write went through a members-only page; chat history must survive it.
     assert len(stored['messages']) == 5
     assert len(stored['projects']) == 2
+
+
+def test_public_id_sparse_index_allows_projects_without_public_id(storage):
+    # Projects created before Explore existed have no publicId. The index is
+    # sparse-unique: missing values are skipped instead of colliding as nulls.
+    storage.save('leader@test.com', _state())
+    storage.save(
+        'leader@test.com',
+        _state(
+            projects=[
+                {'id': 'p1', 'name': 'A', 'status': 'Shipped', 'date': '2026-02-01'},
+                {'id': 'p2', 'name': 'B', 'status': 'Shipped', 'date': '2026-02-02'},
+            ]
+        ),
+    )
+
+
+def test_public_id_sparse_index_rejects_duplicates(storage):
+    projects = [
+        {'id': 'p1', 'name': 'A', 'status': 'Shipped', 'publicId': 'dup'},
+        {'id': 'p2', 'name': 'B', 'status': 'Shipped', 'publicId': 'dup'},
+    ]
+    with pytest.raises(StorageError):
+        storage.save('leader@test.com', _state(projects=projects))
+
+
+def test_list_public_projects_filters_and_projects(storage):
+    storage.save(
+        'leader@test.com',
+        _state(
+            settings={'clubName': 'Test Club', 'joinCode': 'abc123', 'publicDirectory': True},
+            projects=[
+                {
+                    'id': 'p1', 'name': 'Shipped public', 'status': 'Shipped',
+                    'isPublic': True, 'category': 'Web', 'publicId': 'showcase-a',
+                    'date': '2026-02-01', 'description': 'Cool', 'ownerName': 'Ada',
+                },
+                {
+                    'id': 'p2', 'name': 'Shipped private', 'status': 'Shipped',
+                    'isPublic': False, 'category': 'Web', 'publicId': 'showcase-b',
+                    'date': '2026-02-02',
+                },
+                {
+                    'id': 'p3', 'name': 'Draft public-ish', 'status': 'Draft',
+                    'isPublic': True, 'category': 'Web', 'publicId': 'showcase-c',
+                    'date': '2026-02-03',
+                },
+            ],
+        ),
+    )
+    public = storage.list_public_projects()
+    assert [project['publicId'] for project in public] == ['showcase-a']
+    project = public[0]
+    assert project['name'] == 'Shipped public'
+    assert project['clubName'] == 'Test Club'
+    assert project['category'] == 'Web'
+    # The projection must not leak internal ids or emails.
+    assert 'ownerEmail' not in project
+    assert 'id' not in project
+    assert 'clubKey' not in project
+
+
+def test_list_public_projects_excludes_private_directory_clubs(storage):
+    storage.save(
+        'leader@test.com',
+        _state(
+            settings={'clubName': 'Private Club', 'joinCode': 'abc123', 'publicDirectory': False},
+            projects=[
+                {
+                    'id': 'p1', 'name': 'Hidden ship', 'status': 'Shipped',
+                    'isPublic': True, 'category': 'Web', 'publicId': 'showcase-x',
+                    'date': '2026-02-01',
+                },
+            ],
+        ),
+    )
+    assert storage.list_public_projects() == []
+
+
+def test_list_public_projects_filters_to_one_club(storage):
+    public_project = {
+        'id': 'p1', 'name': 'Shipped public', 'status': 'Shipped',
+        'isPublic': True, 'category': 'Web', 'publicId': 'showcase-a',
+        'date': '2026-02-01', 'ownerName': 'Ada',
+    }
+    storage.save(
+        'leader@test.com',
+        _state(
+            settings={'clubName': 'Test Club', 'joinCode': 'abc123', 'publicDirectory': True},
+            projects=[public_project],
+        ),
+    )
+    storage.save(
+        'other@test.com',
+        _state(
+            settings={'clubName': 'Other Club', 'joinCode': 'xyz789', 'publicDirectory': True},
+            projects=[
+                {
+                    'id': 'p2', 'name': 'Their ship', 'status': 'Shipped',
+                    'isPublic': True, 'category': 'Game', 'publicId': 'showcase-b',
+                    'date': '2026-02-02',
+                },
+            ],
+        ),
+    )
+    mine = storage.list_public_projects('leader@test.com')
+    assert [project['publicId'] for project in mine] == ['showcase-a']
+    assert mine[0]['clubName'] == 'Test Club'
+    theirs = storage.list_public_projects('other@test.com')
+    assert [project['publicId'] for project in theirs] == ['showcase-b']

@@ -20,7 +20,7 @@ scripts/seed_mongo.py calls after importing from Airtable.
 """
 
 import os
-from typing import Any, Final
+from typing import Any, Final, TypeAlias
 
 from pymongo import ASCENDING, DESCENDING, MongoClient, ReplaceOne
 from pymongo.errors import PyMongoError
@@ -50,7 +50,10 @@ CHILD_COLLECTIONS: Final[list[str]] = [
 
 # Every index the app's read paths rely on: {collection: [(keys, unique), ...]}.
 # Each entry exists because some query below filters or sorts on exactly it.
-INDEXES: Final[dict[str, list[tuple[list[tuple[str, int]], bool]]]] = {
+# A third element, when present, is a dict of extra create_index kwargs
+# (e.g. {'sparse': True} so pre-existing docs missing the field don't collide).
+_IndexSpec: TypeAlias = tuple[list[tuple[str, int]], bool] | tuple[list[tuple[str, int]], bool, dict[str, bool]]
+INDEXES: Final[dict[str, list[_IndexSpec]]] = {
     # find_club_by_join_code(); list_clubs() sorts by name.
     CLUBS_COLLECTION: [
         ([('joinCode', ASCENDING)], False),
@@ -79,6 +82,10 @@ INDEXES: Final[dict[str, list[tuple[list[tuple[str, int]], bool]]]] = {
     'projects': [
         ([('clubKey', ASCENDING), ('status', ASCENDING)], False),
         ([('status', ASCENDING), ('date', DESCENDING)], False),
+        ([('isPublic', ASCENDING), ('status', ASCENDING), ('category', ASCENDING), ('date', DESCENDING)], False),
+        # Sparse: projects created before Explore existed have no publicId;
+        # a plain unique index would reject the second one as a duplicate null.
+        ([('publicId', ASCENDING)], True, {'sparse': True}),
     ],
     'channels': [([('clubKey', ASCENDING)], False)],
     # The chat read path: one channel's thread in chronological order, which
@@ -132,8 +139,21 @@ def ensure_indexes(db: Any) -> None:
     """Create every index in INDEXES. Idempotent — Mongo no-ops on an index
     that already exists with the same spec."""
     for collection, specs in INDEXES.items():
-        for keys, unique in specs:
-            db[collection].create_index(keys, unique=unique, background=True)
+        for spec in specs:
+            keys, unique = spec[0], spec[1]
+            options: dict[str, bool] = spec[2] if len(spec) > 2 else {}
+            # Any spec that diverges from the default (unique/sparse/partial)
+            # gets an explicit name: Mongo auto-names by key pattern alone,
+            # so changing options on an existing index raises IndexKeySpecsConflict
+            # (code 86) instead of recreating it.
+            name = None
+            if options:
+                name = '_'.join(field for field, _d in keys) + '_' + '_'.join(options)
+            kwargs: dict[str, Any] = {'unique': unique, 'background': True}
+            if name:
+                kwargs['name'] = name
+            kwargs.update(options)
+            db[collection].create_index(keys, **kwargs)
 
 
 class MongoStorage:
@@ -284,6 +304,55 @@ class MongoStorage:
                 'project': self._to_item(doc),
             }
             for doc in docs
+        ]
+
+    def list_public_projects(self, club_key: str = '') -> list[dict[str, Any]]:
+        """Return only fields that are safe to render on the private Explore pages.
+
+        `club_key` set scopes the list to one club (the "Your club" filter);
+        the key itself is never included in the projection.
+        """
+        self._ensure_indexes_once()
+        clubs = self._find(
+            CLUBS_COLLECTION,
+            {'publicDirectory': True},
+            projection={'clubKey': 1, 'clubName': 1},
+        )
+        public_clubs = {
+            (club.get('clubKey') or '').strip().lower(): club.get('clubName') or 'Hack Club'
+            for club in clubs
+            if (club.get('clubKey') or '').strip()
+        }
+        if not public_clubs:
+            return []
+        club_filter = (club_key or '').strip().lower()
+        query: dict[str, Any] = {
+            'clubKey': {'$in': list(public_clubs)},
+            'status': SHIPPED_STATUS,
+            'isPublic': True,
+        }
+        if club_filter:
+            query['clubKey'] = club_filter
+        docs = self._find(
+            'projects',
+            query,
+            sort=[('date', DESCENDING)],
+        )
+        return [
+            {
+                'publicId': doc.get('publicId') or '',
+                'name': doc.get('name') or 'Untitled project',
+                'description': doc.get('description') or '',
+                'thumbnail': doc.get('thumbnail') or '',
+                'demoUrl': doc.get('demoUrl') or doc.get('url') or '',
+                'repoUrl': doc.get('repoUrl') or '',
+                'ownerName': doc.get('ownerName') or 'Hack Clubber',
+                'clubName': public_clubs.get((doc.get('clubKey') or '').strip().lower(), 'Hack Club'),
+                'category': doc.get('category') or 'Other',
+                'date': doc.get('date') or '',
+            }
+            for doc in docs
+            if doc.get('publicId')
         ]
 
     def list_item_requests(self) -> list[dict[str, Any]]:

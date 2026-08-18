@@ -37,6 +37,9 @@ class Project(TypedDict):
     ownerEmail: str
     ownerName: str
     date: str
+    publicId: str
+    isPublic: bool
+    category: str
 
 
 class Workshop(TypedDict):

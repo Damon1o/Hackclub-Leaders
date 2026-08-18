@@ -142,6 +142,24 @@
                 <li class="req-item" data-req="hackatimeProject"><span class="req-check" aria-hidden="true"></span>
                     <span data-i18n="projects.reqHackatimeProject">Hackatime project linked</span></li>
             </ul>
+            <fieldset class="project-publication" id="projectPublication" disabled>
+                <legend>Share on Explore</legend>
+                <p class="form-hint">After this project ships, choose a category and share it with new makers.</p>
+                <label class="form-group">
+                    <span class="form-label">Build category</span>
+                    <select class="form-input" name="category">
+                        <option value="">Choose a category</option>
+                        <option value="Web">Web</option><option value="Game">Game</option>
+                        <option value="Hardware">Hardware</option><option value="Mobile">Mobile</option>
+                        <option value="Art &amp; Design">Art &amp; Design</option><option value="Music">Music</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </label>
+                <label class="toggle-row project-publication-toggle">
+                    <span><strong>Show this project publicly</strong><small>Your name and club will be shown, never your email or location.</small></span>
+                    <span class="toggle-switch"><input type="checkbox" name="isPublic"><span class="toggle-slider"></span></span>
+                </label>
+            </fieldset>
             <p class="form-error" id="projectFormError" hidden></p>
         </form>
         <div class="modal-actions">

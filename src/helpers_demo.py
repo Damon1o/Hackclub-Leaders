@@ -193,6 +193,9 @@ def playtest_state(shop_items: list[ShopItem] | None = None) -> DashboardState:
                 'ownerName': 'Test Leader',
                 'status': 'Shipped',
                 'date': today,
+                'publicId': 'showcase-playtest-led',
+                'isPublic': False,
+                'category': '',
             },
             {
                 'id': 'playtest-proj-2',
@@ -207,6 +210,9 @@ def playtest_state(shop_items: list[ShopItem] | None = None) -> DashboardState:
                 'ownerName': 'Test Member',
                 'status': 'Submitted',
                 'date': today,
+                'publicId': 'showcase-playtest-site',
+                'isPublic': False,
+                'category': '',
             },
         ],
         'shopItems': [dict(item) for item in shop_items],  # type: ignore[misc]

@@ -145,18 +145,6 @@
                 body: 'Once you submit a project, it lands here for a leader to review.'
             }
         ],
-        ships: [
-            {
-                target: '.dashboard-metrics',
-                title: 'Your ship stats',
-                body: 'Total ships, current level, and members shipped toward the next one.'
-            },
-            {
-                target: '[data-tour="ships-list"]',
-                title: "What's shipped",
-                body: 'Every approved project your club has shipped.'
-            }
-        ],
         chat: [
             {
                 target: '.chat-sidebar',

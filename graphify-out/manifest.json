@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "tests/test_public.py": {
-    "mtime": 1786981997.9252176,
-    "ast_hash": "ba4a6e08f5264a2e6a60d3d21b0a98c3",
+    "mtime": 1787017271.4238198,
+    "ast_hash": "3bda2c054f1a22abd4d05773e4596e2c",
     "semantic_hash": ""
   },
   "vercel.json": {
@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "src/helpers.py": {
-    "mtime": 1786901927.7566512,
-    "ast_hash": "7de98fd3a9f02c15ab5cb60bfcbc2936",
+    "mtime": 1787017196.0582092,
+    "ast_hash": "41d5cda43bad303027e9bd9a4e0117a4",
     "semantic_hash": ""
   },
   "src/notifications.py": {
@@ -135,8 +135,8 @@
     "semantic_hash": ""
   },
   "src/routes_web.py": {
-    "mtime": 1786984397.6883104,
-    "ast_hash": "66222dcfad4f858896da96dfb005c924",
+    "mtime": 1787017349.834982,
+    "ast_hash": "e671335d2f1c5ddc1f360a210f80977d",
     "semantic_hash": ""
   },
   "src/storage.py": {
@@ -145,8 +145,8 @@
     "semantic_hash": ""
   },
   "src/storage_mongo.py": {
-    "mtime": 1786734649.2451959,
-    "ast_hash": "91e3c5a7be0fb4b5f45e9defa6d0e03e",
+    "mtime": 1787017324.526096,
+    "ast_hash": "c55d5e43f89d27dbcf12376ec62899df",
     "semantic_hash": ""
   },
   "tests/test_admin_shop.py": {
@@ -175,8 +175,8 @@
     "semantic_hash": ""
   },
   "tests/test_storage_mongo.py": {
-    "mtime": 1786734631.0348442,
-    "ast_hash": "00259fc50e4e5040af6949c70acd158a",
+    "mtime": 1787017438.122631,
+    "ast_hash": "f95f24b6aa5921be21b3648159d60692",
     "semantic_hash": ""
   },
   "tests/test_workshops.py": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "src/helpers_demo.py": {
-    "mtime": 1786926087.7126927,
-    "ast_hash": "7359d063a103fa5e71d5ae7a4d8ae0c0",
+    "mtime": 1787012474.4642923,
+    "ast_hash": "1586607ba2929d271b8154d3f9fb6c70",
     "semantic_hash": ""
   },
   "src/helpers_shop.py": {
@@ -395,8 +395,8 @@
     "semantic_hash": ""
   },
   "src/helpers_types.py": {
-    "mtime": 1786926086.9244711,
-    "ast_hash": "2b9b9e83cdc98fdfa3f01e5a92acd86f",
+    "mtime": 1787012473.7458708,
+    "ast_hash": "d5f9b106f9e2f44f9572de9352139273",
     "semantic_hash": ""
   },
   "src/helpers_validation.py": {
@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "src/routes_api_projects.py": {
-    "mtime": 1786644740.9630768,
-    "ast_hash": "13450bfe939923c80d8e70b82fb33ad4",
+    "mtime": 1787014060.761505,
+    "ast_hash": "c9df47b6c56c866a9baa515739ddc72f",
     "semantic_hash": ""
   },
   "src/routes_api_workshops.py": {
@@ -415,18 +415,18 @@
     "semantic_hash": ""
   },
   "src/storage_airtable.py": {
-    "mtime": 1786926090.142091,
-    "ast_hash": "a57120684a09ebf51e9076a62a65db2a",
+    "mtime": 1787017310.8644333,
+    "ast_hash": "99942a00ce205158de1c03c78ef22c2c",
     "semantic_hash": ""
   },
   "src/storage_airtable_fields.py": {
-    "mtime": 1786926089.3306472,
-    "ast_hash": "ad6ad71e3092e26731cb85f407ad435c",
+    "mtime": 1787012475.199219,
+    "ast_hash": "b3d0433e923043001d6d3af1d0310093",
     "semantic_hash": ""
   },
   "tests/test_storage_airtable.py": {
-    "mtime": 1786629559.4753528,
-    "ast_hash": "9f00b9e9cf45e4e50bc01ee0810c7b4d",
+    "mtime": 1787017428.9384198,
+    "ast_hash": "586471042d53f2ade4d944b03a678636",
     "semantic_hash": ""
   },
   "docs/superpowers/plans/2026-08-13-chat-mentions.md": {
@@ -512,6 +512,31 @@
   "docs/superpowers/specs/2026-08-17-motion-polish-design.md": {
     "mtime": 1786991087.9447298,
     "ast_hash": "81d68c75ccfa1bb52e73f475c314c916",
+    "semantic_hash": ""
+  },
+  "scripts/migrate_publicid_index.py": {
+    "mtime": 1787014667.8795502,
+    "ast_hash": "35db6dc206d3b37d95b8d0405fd613e2",
+    "semantic_hash": ""
+  },
+  "tests/test_explore.py": {
+    "mtime": 1787017397.5790198,
+    "ast_hash": "0612def460a250896ec40d1c2ca58ac6",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-08-17-explore.md": {
+    "mtime": 1787016713.8849633,
+    "ast_hash": "1dd7bf5910c1371ef76ad893e367bfde",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-17-context-menu-design.md": {
+    "mtime": 1787009253.1348193,
+    "ast_hash": "d92865c3734afe692a857442b1911177",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-08-17-explore-design.md": {
+    "mtime": 1787016698.0316255,
+    "ast_hash": "c2673063829018118ad06ef52a0b293e",
     "semantic_hash": ""
   }
 }

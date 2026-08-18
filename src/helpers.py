@@ -387,7 +387,6 @@ PAGE_SECTIONS: Final[dict[str, tuple[str, ...]]] = {
     'dashboard': ('events', 'projects', 'newsletters', 'workshops', 'ledger'),
     'dashboard_team': (),
     'dashboard_events': ('events',),
-    'dashboard_ships': ('projects',),
     'dashboard_projects': ('projects',),
     'dashboard_levels': ('projects',),
     'dashboard_tools': (),
